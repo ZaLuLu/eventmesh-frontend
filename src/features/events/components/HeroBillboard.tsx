@@ -44,64 +44,66 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({ events }) => {
 
   return (
     <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 pt-5 pb-8">
-      {/* Subtle Google Blue Ambient Aura */}
+      {/* Vibrant Feral Iridescent Ambient Aura */}
       <div
-        className="absolute -top-10 left-1/2 -translate-x-1/2 w-full max-w-4xl h-80 sm:h-96 pointer-events-none rounded-full overflow-hidden z-0"
+        className="absolute -top-12 left-1/2 -translate-x-1/2 w-full max-w-5xl h-96 sm:h-[450px] pointer-events-none rounded-full overflow-hidden z-0"
         style={{
           background:
-            'radial-gradient(circle, rgba(26, 115, 232, 0.15) 0%, rgba(232, 240, 254, 0.3) 40%, transparent 70%)',
-          filter: 'blur(60px)',
+            'radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, rgba(236, 72, 153, 0.15) 30%, rgba(99, 102, 241, 0.1) 55%, transparent 75%)',
+          filter: 'blur(75px)',
         }}
       />
 
       {/* Top Banner Tagline & Quick Action */}
-      <div className="relative z-10 flex items-center justify-between mb-3 px-1">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-md-primary text-white text-xs font-semibold shadow-xs">
+      <div className="relative z-10 flex items-center justify-between mb-3.5 px-1">
+        <div className="flex items-center gap-2.5">
+          <span className="neo-gradient-btn inline-flex items-center gap-1.5 px-3.5 py-1 text-xs font-bold text-white shadow-neo-sm select-none">
             <Sparkles className="h-3.5 w-3.5" />
-            #1 Trending Showcase
+            #1 Trending Discovery
           </span>
-          <span className="hidden sm:inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/80 border border-md-outline/60 text-xs font-medium text-slate-700 backdrop-blur-xs">
+          <span className="neo-pill hidden sm:inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold text-slate-700 select-none">
             <Zap className="h-3 w-3 text-amber-500 fill-amber-500" />
-            Interactive Spring Deck • Click card to book pass
+            Spring Physics Deck • Tap card to claim pass
           </span>
         </div>
 
         <button
           type="button"
           onClick={() => navigate('/explore')}
-          className="text-xs font-semibold text-md-primary hover:underline flex items-center gap-1"
+          className="neo-pill px-3.5 py-1 text-xs font-bold text-indigo-600 hover:text-purple-600 flex items-center gap-1 transition-all"
         >
           <span>View All ({events.length})</span>
           <ArrowRight className="h-3.5 w-3.5" />
         </button>
       </div>
 
-      {/* Main Feral Blinds Interactive Spring Carousel */}
+      {/* Main Feral Blinds Interactive Spring Carousel in Neomorphic Frame */}
       <div
-        className="relative z-10 rounded-2xl sm:rounded-3xl overflow-hidden border border-[#DADCE0] shadow-card bg-slate-900/40 backdrop-blur-xs"
-        style={{ height: 520 }}
+        className="relative z-10 neo-card p-2 sm:p-2.5 overflow-hidden"
+        style={{ height: 535 }}
       >
-        <Blinds
-          items={items}
-          mode="snap"
-          labelStyle="steady"
-          labelPosition="bottom"
-          spread={1.3}
-          radius={17}
-          gap={14}
-          textSize={1.05}
-          expandRatio={1.5}
-          tuning={{ k: 75, c: 17, lean: 0.3, squeeze: 1 }}
-          autoPlay={3500}
-          showIndex={false}
-          showBody={false}
-          onActivate={(i) => {
-            if (items[i]?.href) {
-              navigate(items[i].href)
-            }
-          }}
-        />
+        <div className="w-full h-full rounded-[22px] overflow-hidden bg-slate-900 shadow-neo-inset">
+          <Blinds
+            items={items}
+            mode="snap"
+            labelStyle="steady"
+            labelPosition="bottom"
+            spread={1.3}
+            radius={17}
+            gap={14}
+            textSize={1.05}
+            expandRatio={1.5}
+            tuning={{ k: 75, c: 17, lean: 0.3, squeeze: 1 }}
+            autoPlay={3500}
+            showIndex={false}
+            showBody={false}
+            onActivate={(i) => {
+              if (items[i]?.href) {
+                navigate(items[i].href)
+              }
+            }}
+          />
+        </div>
       </div>
     </section>
   )

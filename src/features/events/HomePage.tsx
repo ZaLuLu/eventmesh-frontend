@@ -196,25 +196,25 @@ export const HomePage: React.FC = () => {
             exploreLink="/explore?category=WORKSHOP"
           />
 
-          {/* M3 Community Announcement Banner */}
+          {/* Neomorphic Community Announcement Banner */}
           {announcements.length > 0 && (
             <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-8">
-              <div className="rounded-3xl p-6 sm:p-8 bg-md-primary-container border border-[#D3E3FD] shadow-subtle flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="rounded-3xl p-6 sm:p-8 neo-card border border-white/80 shadow-neo-card flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 text-md-primary border border-[#D3E3FD] text-xs font-semibold mb-3">
-                    <Sparkles className="h-3.5 w-3.5 text-md-primary" />
+                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full neo-pill text-indigo-700 text-xs font-bold mb-3 shadow-2xs">
+                    <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
                     Latest Broadcast
                   </span>
-                  <h3 className="font-display font-bold text-xl sm:text-2xl tracking-tight text-slate-900 mb-2">
+                  <h3 className="font-display font-extrabold text-xl sm:text-2xl tracking-tight text-slate-900 mb-2">
                     {announcements[0].title}
                   </h3>
-                  <p className="text-slate-600 text-xs sm:text-sm line-clamp-2 max-w-2xl leading-relaxed">
+                  <p className="text-slate-600 text-xs sm:text-sm line-clamp-2 max-w-2xl leading-relaxed font-medium">
                     {announcements[0].body}
                   </p>
                 </div>
 
                 <Link to="/announcements" className="flex-shrink-0">
-                  <Button variant="primary" size="md" arrow>
+                  <Button variant="gradient" size="md" arrow>
                     View All Updates
                   </Button>
                 </Link>

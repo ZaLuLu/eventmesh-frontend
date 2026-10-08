@@ -52,10 +52,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   ]
 
   return (
-    <section className="sticky top-16 z-30 bg-white border-b border-md-outline/60 py-2.5 transition-all shadow-subtle">
+    <section className="sticky top-16 z-30 bg-[#EEF2F6]/95 backdrop-blur-md border-b border-white/60 py-3 transition-all shadow-[0_4px_16px_rgba(163,177,198,0.15)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4 overflow-x-auto hide-scrollbar">
-        {/* Category M3 Filter Chips */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Category Neomorphic Chips */}
+        <div className="flex items-center gap-2.5 flex-shrink-0">
           {categories.map((cat) => {
             const isSelected = selectedCategory === cat.id
             return (
@@ -63,24 +63,24 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                 key={cat.id}
                 type="button"
                 onClick={() => onSelectCategory(cat.id)}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-all duration-150 select-none whitespace-nowrap active:scale-[0.98] ${
+                className={`inline-flex items-center gap-1.5 px-4 py-1.5 text-xs transition-all duration-200 select-none whitespace-nowrap active:scale-[0.98] ${
                   isSelected
-                    ? 'bg-md-primary-container text-md-on-primary-container border-[#D3E3FD] font-semibold'
-                    : 'bg-white text-md-on-surface-variant border-md-outline hover:bg-black/[0.04]'
+                    ? 'neo-gradient-btn font-bold'
+                    : 'neo-pill text-slate-700 hover:text-indigo-600 font-semibold'
                 }`}
               >
-                {isSelected ? <Check className="h-3.5 w-3.5 text-md-primary" /> : cat.icon}
+                {isSelected ? <Check className="h-3.5 w-3.5 text-white" /> : cat.icon}
                 <span>{cat.label}</span>
               </button>
             )
           })}
         </div>
 
-        {/* Vertical Divider */}
-        <div className="h-5 w-px bg-md-outline/80 flex-shrink-0 hidden md:block" />
+        {/* Tactile Divider */}
+        <div className="h-6 w-px bg-slate-300/60 shadow-[1px_0_0_#FFF] flex-shrink-0 hidden md:block" />
 
-        {/* Date Filter Chips & Verification Toggle */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Date Filter & Rapid Toggles */}
+        <div className="flex items-center gap-2.5 flex-shrink-0">
           {dateFilters.map((df) => {
             const isSelected = selectedDateFilter === df.id
             return (
@@ -88,10 +88,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                 key={df.id}
                 type="button"
                 onClick={() => onSelectDateFilter(df.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap font-medium ${
+                className={`px-3.5 py-1.5 rounded-full text-xs transition-all whitespace-nowrap select-none ${
                   isSelected
-                    ? 'bg-md-primary-container text-md-on-primary-container font-semibold border border-[#D3E3FD]'
-                    : 'text-md-on-surface-variant hover:text-md-on-surface hover:bg-black/[0.04]'
+                    ? 'neo-inset text-indigo-600 font-bold'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/40 font-semibold'
                 }`}
               >
                 {df.label}
@@ -104,13 +104,13 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             <button
               type="button"
               onClick={onToggleFree}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border transition-all whitespace-nowrap ${
+              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs transition-all whitespace-nowrap ${
                 freeOnly
-                  ? 'bg-[#E6F4EA] text-[#137333] border-[#CEEAD6] font-semibold'
-                  : 'text-md-on-surface-variant border-md-outline hover:bg-black/[0.04]'
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-neo-glow-emerald neo-pill font-bold'
+                  : 'neo-pill text-slate-700 hover:text-emerald-600 font-semibold'
               }`}
             >
-              {freeOnly && <Check className="h-3.5 w-3.5 text-[#137333]" />}
+              {freeOnly && <Check className="h-3.5 w-3.5 text-white" />}
               <span>Free Pass</span>
             </button>
           )}
@@ -120,13 +120,13 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             <button
               type="button"
               onClick={onToggleOnline}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border transition-all whitespace-nowrap ${
+              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs transition-all whitespace-nowrap ${
                 onlineOnly
-                  ? 'bg-md-primary-container text-md-on-primary-container border-[#D3E3FD] font-semibold'
-                  : 'text-md-on-surface-variant border-md-outline hover:bg-black/[0.04]'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-neo-sm neo-pill font-bold'
+                  : 'neo-pill text-slate-700 hover:text-cyan-600 font-semibold'
               }`}
             >
-              {onlineOnly && <Check className="h-3.5 w-3.5 text-md-primary" />}
+              {onlineOnly && <Check className="h-3.5 w-3.5 text-white" />}
               <span>Online</span>
             </button>
           )}

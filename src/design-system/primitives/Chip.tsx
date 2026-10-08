@@ -22,17 +22,17 @@ export const Chip: React.FC<ChipProps> = ({
   size = 'md',
   className = '',
 }) => {
-  const sizeClasses = size === 'sm' ? 'px-3 py-1 text-xs' : 'px-3.5 py-1.5 text-xs font-semibold'
+  const sizeClasses = size === 'sm' ? 'px-3 py-1 text-xs' : 'px-4 py-1.5 text-xs font-semibold'
 
   const activeClasses = active
-    ? 'bg-md-primary-container text-md-on-primary-container border-md-primary-container font-bold shadow-2xs'
-    : 'bg-white text-md-on-surface-variant border-md-outline hover:bg-black/[0.04] shadow-none'
+    ? 'bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 text-white shadow-neo-sm font-bold border-transparent'
+    : 'bg-[#EEF2F6] text-slate-700 shadow-neo-sm hover:shadow-neo-card hover:text-slate-900 border border-white/60 active:shadow-neo-inset'
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded-lg border transition-all duration-150 select-none whitespace-nowrap active:scale-[0.98] ${sizeClasses} ${activeClasses} ${className}`}
+      className={`inline-flex items-center gap-2 rounded-full transition-all duration-200 select-none whitespace-nowrap active:scale-[0.98] ${sizeClasses} ${activeClasses} ${className}`}
     >
       {icon && <span className="flex-shrink-0 text-current">{icon}</span>}
       {color && (

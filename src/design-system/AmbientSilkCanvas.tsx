@@ -135,24 +135,19 @@ void main() {
 `
 
 /**
- * Helper to build Google Material 3 256x1 palette texture
- * Primary (#1A73E8), Container (#E8F0FE), Surface (#F8F9FA), Pure White (#FFFFFF)
+ * Helper to build Vibrant Feral UI Gradient 256x1 palette texture
+ * Infused with Electric Indigo, Radiant Violet, Neon Pink, and Sunset Amber
  */
-function createMaterial3Palette(): Uint8Array {
+function createFeralPalette(): Uint8Array {
   const palette = new Uint8Array(256 * 3)
   
-  // Key color stops in 0..1 range:
-  // 0.0:  #E8F0FE (Light Blue Tonal Container)
-  // 0.35: #D3E3FD (Soft Ambient Blue)
-  // 0.65: #F8F9FA (Google Surface)
-  // 0.85: #1A73E8 (Google Blue Accent Peak)
-  // 1.0:  #FFFFFF (Pure White Glow)
   const stops = [
-    { pos: 0.0,  r: 232, g: 240, b: 254 }, // #E8F0FE
-    { pos: 0.35, r: 211, g: 227, b: 253 }, // #D3E3FD
-    { pos: 0.65, r: 248, g: 249, b: 250 }, // #F8F9FA
-    { pos: 0.85, r: 168, g: 200, b: 250 }, // Soft Google Blue tint
-    { pos: 1.0,  r: 255, g: 255, b: 255 }, // Pure White
+    { pos: 0.0,  r: 238, g: 242, b: 246 }, // #EEF2F6 (Soft Pearl Base)
+    { pos: 0.20, r: 99,  g: 102, b: 241 }, // #6366F1 (Electric Indigo)
+    { pos: 0.45, r: 139, g: 92,  b: 246 }, // #8B5CF6 (Radiant Violet)
+    { pos: 0.70, r: 236, g: 72,  b: 153 }, // #EC4899 (Neon Fuchsia)
+    { pos: 0.88, r: 245, g: 158, b: 11  }, // #F59E0B (Sunset Amber)
+    { pos: 1.0,  r: 255, g: 255, b: 255 }, // #FFFFFF (Pearlescent Sheen)
   ]
 
   for (let i = 0; i < 256; i++) {
@@ -170,7 +165,6 @@ function createMaterial3Palette(): Uint8Array {
 
     const range = Math.max(1e-5, c2.pos - c1.pos)
     const factor = (t - c1.pos) / range
-    // Smooth cosine interpolation
     const smooth = 0.5 - 0.5 * Math.cos(factor * Math.PI)
 
     palette[i * 3 + 0] = Math.round(c1.r + (c2.r - c1.r) * smooth)
@@ -250,8 +244,8 @@ export const AmbientSilkCanvas: React.FC<AmbientSilkCanvasProps> = ({
       gl.enableVertexAttribArray(aPos)
       gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0)
 
-      // 256x1 Color Palette Texture
-      const paletteData = createMaterial3Palette()
+      // 256x1 Feral Gradient Color Palette Texture
+      const paletteData = createFeralPalette()
       const texture = gl.createTexture()
       gl.bindTexture(gl.TEXTURE_2D, texture)
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)

@@ -106,41 +106,41 @@ export const EventDetailPage: React.FC = () => {
   )
 
   return (
-    <div className="w-full bg-canvas text-md-on-surface min-h-screen pb-20">
+    <div className="w-full bg-canvas text-slate-900 min-h-screen pb-20">
       {/* ==============================================================
-          1. GOOGLE M3 TOP BREADCRUMB & HEADER STRIP
+          1. NEOMORPHIC TOP BREADCRUMB & ACTION STRIP
           ============================================================== */}
-      <div className="bg-white border-b border-[#DADCE0]">
+      <div className="bg-[#EEF2F6] border-b border-white/70 shadow-neo-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-              <Link to="/" className="hover:text-md-primary">
+              <Link to="/" className="hover:text-indigo-600 transition-colors">
                 Home
               </Link>
               <ChevronRight className="h-3 w-3" />
-              <Link to="/explore" className="hover:text-md-primary">
+              <Link to="/explore" className="hover:text-indigo-600 transition-colors">
                 Events
               </Link>
               <ChevronRight className="h-3 w-3" />
               <Link
                 to={`/clubs/${event.organizerId}`}
-                className="hover:text-md-primary font-semibold text-slate-700 flex items-center gap-1.5"
+                className="hover:text-indigo-600 font-bold text-slate-800 flex items-center gap-1.5"
               >
                 <span
-                  className="inline-block h-2 w-2 rounded-full"
-                  style={{ backgroundColor: event.organizerColor || '#1A73E8' }}
+                  className="inline-block h-2.5 w-2.5 rounded-full shadow-xs"
+                  style={{ backgroundColor: event.organizerColor || '#6366F1' }}
                 />
                 <span>{event.organizerName}</span>
               </Link>
             </div>
 
             {/* Actions: Share & Calendar */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <button
                 type="button"
                 onClick={handleShare}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#DADCE0] bg-white hover:bg-[#F1F3F4] text-xs font-semibold text-slate-700 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full neo-pill hover:shadow-neo-card text-xs font-semibold text-slate-700 transition-all"
               >
                 <Share2 className="h-3.5 w-3.5 text-slate-500" />
                 <span>Share</span>
@@ -148,9 +148,9 @@ export const EventDetailPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleDownloadCalendar}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#DADCE0] bg-white hover:bg-[#F1F3F4] text-xs font-semibold text-slate-700 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full neo-pill hover:shadow-neo-card text-xs font-semibold text-slate-700 transition-all"
               >
-                <CalendarPlus className="h-3.5 w-3.5 text-md-primary" />
+                <CalendarPlus className="h-3.5 w-3.5 text-indigo-600" />
                 <span>Add to Calendar</span>
               </button>
             </div>
@@ -161,30 +161,30 @@ export const EventDetailPage: React.FC = () => {
       {/* ==============================================================
           2. HERO TITLE SECTION
           ============================================================== */}
-      <section className="bg-white border-b border-[#DADCE0] pt-6 sm:pt-8 pb-8 sm:pb-10">
+      <section className="bg-[#EEF2F6] border-b border-white/60 pt-6 sm:pt-8 pb-8 sm:pb-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="max-w-4xl space-y-4">
             {/* Category Pill & Trending */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-md-primary-container text-md-primary">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="px-3.5 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 text-white shadow-neo-sm">
                 {event.category}
               </span>
 
               {event.certificateInfo && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#E6F4EA] text-[#137333] border border-[#CEEAD6]">
-                  <Award className="h-3.5 w-3.5" />
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold neo-pill text-emerald-700">
+                  <Award className="h-3.5 w-3.5 text-emerald-600" />
                   Certificate Included
                 </span>
               )}
 
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#FEF7E0] text-[#B06000] border border-[#FEEFC3]">
-                <Sparkles className="h-3.5 w-3.5" />
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold neo-pill text-amber-700">
+                <Sparkles className="h-3.5 w-3.5 text-amber-500" />
                 {spotsPercent}% Booked
               </span>
             </div>
 
             {/* Event Title */}
-            <h1 className="font-display font-bold text-3xl sm:text-5xl text-slate-900 tracking-tight leading-tight">
+            <h1 className="font-display font-extrabold text-3xl sm:text-5xl text-slate-900 tracking-tight leading-tight">
               {event.title}
             </h1>
 
@@ -196,22 +196,22 @@ export const EventDetailPage: React.FC = () => {
             )}
 
             {/* Quick Logistics Badges */}
-            <div className="flex flex-wrap items-center gap-6 pt-2 text-xs text-slate-600 font-medium">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-md-primary" />
+            <div className="flex flex-wrap items-center gap-4 sm:gap-6 pt-2 text-xs text-slate-600 font-semibold">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full neo-pill">
+                <Calendar className="h-3.5 w-3.5 text-indigo-600" />
                 <span>{formatDate(event.startsAt)}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-md-primary" />
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full neo-pill">
+                <Clock className="h-3.5 w-3.5 text-indigo-600" />
                 <span>{formatTime(event.startsAt)} – {formatTime(event.endsAt)}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-md-primary" />
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full neo-pill">
+                <MapPin className="h-3.5 w-3.5 text-indigo-600" />
                 <span>{event.venue.name}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-md-primary" />
-                <span>{registeredCount} Attendees Registered</span>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full neo-pill">
+                <Users className="h-3.5 w-3.5 text-indigo-600" />
+                <span>{registeredCount} Registered</span>
               </div>
             </div>
           </div>
@@ -226,7 +226,7 @@ export const EventDetailPage: React.FC = () => {
           {/* Left Column (8 cols): Media, Overview, Schedule, Speakers, Rules */}
           <div className="lg:col-span-8 space-y-8">
             {/* Event Cover Banner */}
-            <div className="rounded-2xl overflow-hidden border border-[#DADCE0] bg-white shadow-subtle aspect-[16/9] w-full">
+            <div className="rounded-3xl overflow-hidden neo-card aspect-[16/9] w-full border border-white/80">
               <img
                 src={event.banner || event.poster}
                 alt={event.title}
@@ -235,7 +235,7 @@ export const EventDetailPage: React.FC = () => {
             </div>
 
             {/* About Event Card */}
-            <div className="rounded-2xl border border-[#DADCE0] bg-white p-6 sm:p-8 shadow-subtle space-y-4">
+            <div className="rounded-3xl neo-card p-6 sm:p-8 space-y-4 border border-white/80">
               <h2 className="font-display font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">
                 About This Event
               </h2>
@@ -246,7 +246,7 @@ export const EventDetailPage: React.FC = () => {
 
             {/* Schedule & Agenda Card */}
             {event.schedule && event.schedule.length > 0 && (
-              <div className="rounded-2xl border border-[#DADCE0] bg-white p-6 sm:p-8 shadow-subtle space-y-6">
+              <div className="rounded-3xl neo-card p-6 sm:p-8 space-y-6 border border-white/80">
                 <h2 className="font-display font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">
                   Schedule & Timeline
                 </h2>
@@ -254,9 +254,9 @@ export const EventDetailPage: React.FC = () => {
                   {event.schedule.map((item, idx) => (
                     <div
                       key={idx}
-                      className="flex items-start gap-4 p-4 rounded-xl bg-[#F8F9FA] border border-[#DADCE0]"
+                      className="flex items-start gap-4 p-4 rounded-2xl neo-inset"
                     >
-                      <div className="px-3 py-1 rounded-lg bg-md-primary-container text-md-primary font-bold text-xs flex-shrink-0">
+                      <div className="px-3 py-1 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-xs flex-shrink-0 shadow-neo-sm">
                         {item.time}
                       </div>
                       <div className="flex-1">
@@ -277,7 +277,7 @@ export const EventDetailPage: React.FC = () => {
 
             {/* Speakers, Judges & Instructors */}
             {event.people && event.people.length > 0 && (
-              <div className="rounded-2xl border border-[#DADCE0] bg-white p-6 sm:p-8 shadow-subtle space-y-6">
+              <div className="rounded-3xl neo-card p-6 sm:p-8 space-y-6 border border-white/80">
                 <h2 className="font-display font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">
                   Featured Speakers & Mentors
                 </h2>
@@ -285,21 +285,21 @@ export const EventDetailPage: React.FC = () => {
                   {event.people.map((person, idx) => (
                     <div
                       key={idx}
-                      className="flex items-start gap-4 p-4 rounded-xl border border-[#DADCE0] bg-[#F8F9FA]"
+                      className="flex items-start gap-4 p-4 rounded-2xl neo-card"
                     >
                       {person.photo ? (
                         <img
                           src={person.photo}
                           alt={person.name}
-                          className="w-14 h-14 rounded-full object-cover border border-[#DADCE0] flex-shrink-0"
+                          className="w-14 h-14 rounded-2xl object-cover neo-card flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-14 h-14 rounded-full bg-md-primary-container text-md-primary font-bold text-lg flex items-center justify-center flex-shrink-0">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white font-bold text-lg flex items-center justify-center flex-shrink-0 shadow-neo-sm">
                           {person.name[0]}
                         </div>
                       )}
                       <div>
-                        <span className="text-[11px] font-semibold text-md-primary uppercase tracking-normal block">
+                        <span className="text-[11px] font-bold text-indigo-600 uppercase tracking-normal block">
                           {person.role}
                         </span>
                         <h4 className="font-bold text-sm text-slate-900 mt-0.5">
@@ -319,14 +319,14 @@ export const EventDetailPage: React.FC = () => {
 
             {/* Rules & Eligibility */}
             {event.rules && event.rules.length > 0 && (
-              <div className="rounded-2xl border border-[#DADCE0] bg-white p-6 sm:p-8 shadow-subtle space-y-4">
+              <div className="rounded-3xl neo-card p-6 sm:p-8 space-y-4 border border-white/80">
                 <h2 className="font-display font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">
                   Guidelines & Eligibility
                 </h2>
                 <ul className="space-y-3">
                   {event.rules.map((rule, idx) => (
                     <li key={idx} className="flex items-start gap-3 text-xs sm:text-sm text-slate-700">
-                      <span className="w-5 h-5 rounded-full bg-md-primary-container text-md-primary font-bold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="w-5 h-5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5 shadow-neo-sm">
                         {idx + 1}
                       </span>
                       <span>{rule}</span>
@@ -341,18 +341,18 @@ export const EventDetailPage: React.FC = () => {
           <div className="lg:col-span-4">
             <div className="sticky top-24 space-y-6">
               {/* Ticket Card */}
-              <div className="rounded-3xl border border-[#DADCE0] bg-white p-6 sm:p-8 shadow-card-hover space-y-6">
+              <div className="rounded-3xl neo-card p-6 sm:p-8 shadow-neo-card-hover border border-white/90 space-y-6">
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-md-primary uppercase tracking-normal">
+                    <span className="text-xs font-bold text-indigo-600 uppercase tracking-normal">
                       Pass Reservation
                     </span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-[#E6F4EA] text-[#137333] text-[11px] font-bold">
+                    <span className="px-3 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold shadow-2xs">
                       Free Entry
                     </span>
                   </div>
 
-                  <h3 className="font-display font-bold text-2xl text-slate-900">
+                  <h3 className="font-display font-extrabold text-2xl text-slate-900">
                     {isRegistrationOpen
                       ? isWaitlistOnly
                         ? 'Waitlist Open'
@@ -360,16 +360,16 @@ export const EventDetailPage: React.FC = () => {
                       : 'Registration Closed'}
                   </h3>
 
-                  <div className="mt-3">
-                    <div className="flex items-center justify-between text-xs text-slate-500 mb-1.5 font-medium">
+                  <div className="mt-4">
+                    <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-medium">
                       <span>Live Capacity</span>
                       <span className="font-bold text-slate-800">
                         {event.seatsLeft} of {event.capacity} left
                       </span>
                     </div>
-                    <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                    <div className="h-2.5 w-full rounded-full neo-inset p-0.5 overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-md-primary transition-all duration-500"
+                        className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 transition-all duration-500 shadow-neo-sm"
                         style={{ width: `${spotsPercent}%` }}
                       />
                     </div>
@@ -382,7 +382,7 @@ export const EventDetailPage: React.FC = () => {
                     <Button
                       size="lg"
                       fullWidth
-                      variant="primary"
+                      variant="gradient"
                       arrow
                       onClick={() => setIsPassModalOpen(true)}
                     >
@@ -407,22 +407,22 @@ export const EventDetailPage: React.FC = () => {
                 </div>
 
                 {/* Event Logistics Checklist */}
-                <div className="border-t border-[#DADCE0] pt-4 space-y-3 text-xs">
+                <div className="border-t border-slate-200/80 pt-4 space-y-3 text-xs">
                   <div className="flex items-center justify-between text-slate-600">
                     <span>Date</span>
-                    <span className="font-semibold text-slate-900">{formatDate(event.startsAt)}</span>
+                    <span className="font-bold text-slate-900">{formatDate(event.startsAt)}</span>
                   </div>
                   <div className="flex items-center justify-between text-slate-600">
                     <span>Time</span>
-                    <span className="font-semibold text-slate-900">{formatTime(event.startsAt)}</span>
+                    <span className="font-bold text-slate-900">{formatTime(event.startsAt)}</span>
                   </div>
                   <div className="flex items-center justify-between text-slate-600">
                     <span>Venue</span>
-                    <span className="font-semibold text-slate-900 truncate max-w-[160px]">{event.venue.name}</span>
+                    <span className="font-bold text-slate-900 truncate max-w-[160px]">{event.venue.name}</span>
                   </div>
                   <div className="flex items-center justify-between text-slate-600">
                     <span>Team Format</span>
-                    <span className="font-semibold text-slate-900">
+                    <span className="font-bold text-slate-900">
                       {event.features.team
                         ? `Teams of ${event.teamConfig?.minSize}–${event.teamConfig?.maxSize}`
                         : 'Individual Entry'}
@@ -430,19 +430,19 @@ export const EventDetailPage: React.FC = () => {
                   </div>
                   <div className="flex items-center justify-between text-slate-600">
                     <span>Digital Pass</span>
-                    <span className="font-semibold text-emerald-600">Instant QR Pass</span>
+                    <span className="font-bold text-emerald-600">Instant QR Pass</span>
                   </div>
                 </div>
 
                 {/* Organizer Contact Info */}
-                <div className="border-t border-[#DADCE0] pt-4">
-                  <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-normal block mb-2">
+                <div className="border-t border-slate-200/80 pt-4">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-normal block mb-2">
                     Organized by
                   </span>
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-xs"
-                      style={{ backgroundColor: event.organizerColor || '#1A73E8' }}
+                      className="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-bold text-xs shadow-neo-sm"
+                      style={{ backgroundColor: event.organizerColor || '#6366F1' }}
                     >
                       {(event.organizerName || 'ORG').slice(0, 3).toUpperCase()}
                     </div>
@@ -452,7 +452,7 @@ export const EventDetailPage: React.FC = () => {
                       </h4>
                       <a
                         href={`mailto:${event.contact.email}`}
-                        className="text-[11px] text-md-primary hover:underline block"
+                        className="text-[11px] text-indigo-600 font-semibold hover:underline block"
                       >
                         {event.contact.email}
                       </a>
@@ -466,9 +466,9 @@ export const EventDetailPage: React.FC = () => {
       </section>
 
       {/* Mobile Sticky Bottom CTA Bar */}
-      <div className="fixed bottom-16 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-[#DADCE0] px-4 py-3 sm:hidden flex items-center justify-between gap-4 shadow-card">
+      <div className="fixed bottom-16 left-0 right-0 z-30 bg-[#EEF2F6]/95 backdrop-blur-md border-t border-white/80 px-4 py-3 sm:hidden flex items-center justify-between gap-4 shadow-neo-card">
         <div>
-          <span className="text-[10px] font-bold text-[#B06000] block">
+          <span className="text-[10px] font-bold text-amber-600 block">
             ⚡ {event.seatsLeft} SEATS LEFT
           </span>
           <span className="font-display font-bold text-sm text-slate-900 truncate max-w-[180px] block">
@@ -478,7 +478,7 @@ export const EventDetailPage: React.FC = () => {
 
         <Button
           size="sm"
-          variant="primary"
+          variant="gradient"
           arrow
           disabled={!isRegistrationOpen}
           onClick={() => setIsPassModalOpen(true)}

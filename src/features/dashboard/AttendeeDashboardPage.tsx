@@ -154,15 +154,15 @@ export const AttendeeDashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="w-full bg-canvas text-md-on-surface min-h-screen pb-16">
+    <div className="w-full bg-canvas text-slate-900 min-h-screen pb-16">
       {/* Header */}
-      <div className="bg-white border-b border-[#DADCE0]">
+      <div className="bg-[#EEF2F6] border-b border-white/70 shadow-neo-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <span className="text-xs font-semibold text-md-primary block mb-1">
+            <span className="text-xs font-bold text-indigo-600 block mb-1">
               Attendee Account
             </span>
-            <h1 className="font-display font-bold text-2xl sm:text-4xl text-slate-900 tracking-tight">
+            <h1 className="font-display font-extrabold text-2xl sm:text-4xl text-slate-900 tracking-tight">
               {session?.name || 'My Profile'}
             </h1>
             <p className="text-xs text-slate-500 mt-1 font-medium">
@@ -172,32 +172,32 @@ export const AttendeeDashboardPage: React.FC = () => {
 
           {/* Quick summary stats */}
           <div className="flex items-center gap-3">
-            <div className="px-4 py-2.5 rounded-2xl bg-md-primary-container border border-[#D3E3FD] text-center min-w-[90px]">
-              <p className="font-bold text-xl text-md-primary">{registrations.length}</p>
-              <p className="text-[10px] font-semibold text-md-on-primary-container">Passes</p>
+            <div className="px-5 py-3 rounded-2xl neo-card border border-white/80 text-center min-w-[100px]">
+              <p className="font-extrabold text-xl text-indigo-600">{registrations.length}</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Passes</p>
             </div>
-            <div className="px-4 py-2.5 rounded-2xl bg-[#E6F4EA] border border-[#CEEAD6] text-center min-w-[90px]">
-              <p className="font-bold text-xl text-[#137333]">
+            <div className="px-5 py-3 rounded-2xl neo-card border border-white/80 text-center min-w-[100px]">
+              <p className="font-extrabold text-xl text-emerald-600">
                 {registrations.filter((r) => r.status === 'checked_in').length}
               </p>
-              <p className="text-[10px] font-semibold text-[#137333]">Attended</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Attended</p>
             </div>
-            <div className="px-4 py-2.5 rounded-2xl bg-[#FEF7E0] border border-[#FEEFC3] text-center min-w-[90px]">
-              <p className="font-bold text-xl text-[#B06000]">{certificates.length}</p>
-              <p className="text-[10px] font-semibold text-[#B06000]">Credentials</p>
+            <div className="px-5 py-3 rounded-2xl neo-card border border-white/80 text-center min-w-[100px]">
+              <p className="font-extrabold text-xl text-amber-600">{certificates.length}</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Credentials</p>
             </div>
           </div>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-2 overflow-x-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-2.5 pb-4 overflow-x-auto">
           <button
             type="button"
             onClick={() => setActiveTab('passes')}
-            className={`py-3.5 px-4 text-xs font-semibold transition-all border-b-2 flex items-center gap-2 ${
+            className={`py-2 px-4 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${
               activeTab === 'passes'
-                ? 'border-md-primary text-md-primary'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 text-white shadow-neo-sm'
+                : 'neo-pill text-slate-600 hover:text-slate-900'
             }`}
           >
             <Ticket className="h-4 w-4" />
@@ -206,10 +206,10 @@ export const AttendeeDashboardPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('certificates')}
-            className={`py-3.5 px-4 text-xs font-semibold transition-all border-b-2 flex items-center gap-2 ${
+            className={`py-2 px-4 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${
               activeTab === 'certificates'
-                ? 'border-md-primary text-md-primary'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 text-white shadow-neo-sm'
+                : 'neo-pill text-slate-600 hover:text-slate-900'
             }`}
           >
             <Award className="h-4 w-4" />
@@ -218,10 +218,10 @@ export const AttendeeDashboardPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('clubs')}
-            className={`py-3.5 px-4 text-xs font-semibold transition-all border-b-2 flex items-center gap-2 ${
+            className={`py-2 px-4 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${
               activeTab === 'clubs'
-                ? 'border-md-primary text-md-primary'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 text-white shadow-neo-sm'
+                : 'neo-pill text-slate-600 hover:text-slate-900'
             }`}
           >
             <span>Followed Clubs ({followedClubs.length})</span>
@@ -235,14 +235,14 @@ export const AttendeeDashboardPage: React.FC = () => {
           {regsLoading ? (
             <p className="text-xs text-slate-500">Loading entry passes...</p>
           ) : registrations.length === 0 ? (
-            <div className="rounded-2xl border border-[#DADCE0] bg-white p-12 text-center max-w-md mx-auto space-y-4">
-              <Ticket className="h-8 w-8 text-slate-400 mx-auto" />
-              <p className="text-sm font-semibold text-slate-700">No active passes found</p>
-              <p className="text-xs text-slate-500">
+            <div className="rounded-3xl neo-card p-12 text-center max-w-md mx-auto space-y-4 border border-white/80">
+              <Ticket className="h-10 w-10 text-indigo-500 mx-auto" />
+              <p className="text-base font-bold text-slate-800">No active passes found</p>
+              <p className="text-xs text-slate-500 font-medium">
                 Explore our upcoming events to reserve your free pass.
               </p>
               <Link to="/explore">
-                <Button size="sm" variant="primary">Explore Events</Button>
+                <Button size="sm" variant="gradient">Explore Events</Button>
               </Link>
             </div>
           ) : (
@@ -250,16 +250,16 @@ export const AttendeeDashboardPage: React.FC = () => {
               {registrations.map((reg) => (
                 <div
                   key={reg.id}
-                  className="rounded-2xl border border-[#DADCE0] bg-white p-6 shadow-subtle hover:shadow-card-hover transition-all flex flex-col justify-between space-y-5"
+                  className="rounded-3xl neo-card p-6 shadow-neo-card hover:shadow-neo-card-hover transition-all flex flex-col justify-between space-y-5 border border-white/80"
                 >
                   <div>
                     <div className="flex items-center justify-between mb-3 text-xs">
-                      <span className="font-bold text-slate-800">{reg.ticketCode}</span>
+                      <span className="font-mono font-bold text-slate-800">{reg.ticketCode}</span>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-2xs ${
                           reg.status === 'checked_in'
-                            ? 'bg-[#E6F4EA] text-[#137333]'
-                            : 'bg-md-primary-container text-md-primary'
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
                         }`}
                       >
                         {reg.status.replace('_', ' ').toUpperCase()}
@@ -272,13 +272,13 @@ export const AttendeeDashboardPage: React.FC = () => {
 
                     {reg.eventStartsAt && (
                       <p className="text-xs text-slate-500 mt-2 flex items-center gap-1.5 font-medium">
-                        <Calendar className="h-3.5 w-3.5 text-md-primary" />
+                        <Calendar className="h-3.5 w-3.5 text-indigo-600" />
                         <span>{formatDate(reg.eventStartsAt)}</span>
                       </p>
                     )}
                   </div>
 
-                  <div className="pt-4 border-t border-[#DADCE0] flex items-center justify-between">
+                  <div className="pt-4 border-t border-slate-200/80 flex items-center justify-between">
                     <Button
                       size="sm"
                       variant="primary"
@@ -289,7 +289,7 @@ export const AttendeeDashboardPage: React.FC = () => {
                     </Button>
                     <Link
                       to={`/events/${reg.eventSlug}`}
-                      className="text-xs font-semibold text-md-primary hover:underline"
+                      className="text-xs font-bold text-indigo-600 hover:underline"
                     >
                       Event Details
                     </Link>
@@ -307,10 +307,10 @@ export const AttendeeDashboardPage: React.FC = () => {
           {certsLoading ? (
             <p className="text-xs text-slate-500">Loading certificates...</p>
           ) : certificates.length === 0 ? (
-            <div className="rounded-2xl border border-[#DADCE0] bg-white p-12 text-center max-w-md mx-auto space-y-4">
-              <Award className="h-8 w-8 text-slate-400 mx-auto" />
-              <p className="text-sm font-semibold text-slate-700">No certificates issued yet</p>
-              <p className="text-xs text-slate-500">
+            <div className="rounded-3xl neo-card p-12 text-center max-w-md mx-auto space-y-4 border border-white/80">
+              <Award className="h-10 w-10 text-emerald-500 mx-auto" />
+              <p className="text-base font-bold text-slate-800">No certificates issued yet</p>
+              <p className="text-xs text-slate-500 font-medium">
                 Certificates are issued following verified event check-in and completion.
               </p>
             </div>
@@ -319,23 +319,23 @@ export const AttendeeDashboardPage: React.FC = () => {
               {certificates.map((cert) => (
                 <div
                   key={cert.id}
-                  className="rounded-2xl border border-[#DADCE0] bg-white p-6 shadow-subtle hover:shadow-card-hover transition-all flex flex-col justify-between space-y-4"
+                  className="rounded-3xl neo-card p-6 shadow-neo-card hover:shadow-neo-card-hover transition-all flex flex-col justify-between space-y-4 border border-white/80"
                 >
                   <div>
                     <div className="flex items-center justify-between text-xs mb-2">
-                      <span className="font-semibold text-md-primary">{cert.certificateId}</span>
-                      <span className="text-slate-400">{formatDate(cert.issuedAt)}</span>
+                      <span className="font-bold text-indigo-600">{cert.certificateId}</span>
+                      <span className="text-slate-400 font-medium">{formatDate(cert.issuedAt)}</span>
                     </div>
 
                     <h3 className="font-display font-bold text-base text-slate-900 line-clamp-2">
                       {cert.eventTitle}
                     </h3>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-slate-500 mt-1 font-medium">
                       Issued to {cert.recipientName}
                     </p>
                   </div>
 
-                  <div className="pt-3 border-t border-[#DADCE0] flex items-center justify-between">
+                  <div className="pt-3 border-t border-slate-200/80 flex items-center justify-between">
                     <Button
                       size="sm"
                       variant="primary"
@@ -346,7 +346,7 @@ export const AttendeeDashboardPage: React.FC = () => {
                     </Button>
                     <Link
                       to={`/verify/${cert.certificateId}`}
-                      className="text-xs font-semibold text-md-primary hover:underline inline-flex items-center gap-1"
+                      className="text-xs font-bold text-indigo-600 hover:underline inline-flex items-center gap-1"
                     >
                       <span>Verify</span>
                       <ExternalLink className="h-3 w-3" />
@@ -363,13 +363,13 @@ export const AttendeeDashboardPage: React.FC = () => {
       {activeTab === 'clubs' && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
           {followedClubs.length === 0 ? (
-            <div className="rounded-2xl border border-[#DADCE0] bg-white p-12 text-center max-w-md mx-auto space-y-4">
-              <p className="text-sm font-semibold text-slate-700">Not following any clubs yet</p>
-              <p className="text-xs text-slate-500">
+            <div className="rounded-3xl neo-card p-12 text-center max-w-md mx-auto space-y-4 border border-white/80">
+              <p className="text-base font-bold text-slate-800">Not following any clubs yet</p>
+              <p className="text-xs text-slate-500 font-medium">
                 Follow clubs to receive notifications whenever they host workshops or hackathons.
               </p>
               <Link to="/clubs">
-                <Button size="sm" variant="primary">Browse Clubs</Button>
+                <Button size="sm" variant="gradient">Browse Clubs</Button>
               </Link>
             </div>
           ) : (
@@ -378,21 +378,21 @@ export const AttendeeDashboardPage: React.FC = () => {
                 <Link
                   key={club.id}
                   to={`/clubs/${club.slug}`}
-                  className="rounded-2xl border border-[#DADCE0] bg-white p-6 shadow-subtle hover:shadow-card-hover transition-all flex items-center justify-between"
+                  className="rounded-3xl neo-card p-6 shadow-neo-card hover:shadow-neo-card-hover transition-all flex items-center justify-between border border-white/80"
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-xs"
-                      style={{ backgroundColor: club.color || '#1A73E8' }}
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-sm shadow-neo-sm"
+                      style={{ backgroundColor: club.color || '#6366F1' }}
                     >
                       {club.name.slice(0, 3).toUpperCase()}
                     </div>
                     <div>
                       <h4 className="font-bold text-sm text-slate-900">{club.name}</h4>
-                      <p className="text-xs text-slate-500">{club.followersCount} members</p>
+                      <p className="text-xs text-slate-500 font-medium">{club.followersCount} members</p>
                     </div>
                   </div>
-                  <span className="text-xs font-semibold text-md-primary">View →</span>
+                  <span className="text-xs font-bold text-indigo-600">View →</span>
                 </Link>
               ))}
             </div>
@@ -408,8 +408,10 @@ export const AttendeeDashboardPage: React.FC = () => {
           title="Digital Entry Pass"
         >
           <div className="space-y-6 text-center">
-            <div className="p-4 rounded-2xl bg-white border border-[#DADCE0] inline-block shadow-subtle">
-              <QRCode value={selectedTicket.ticketCode} size={180} />
+            <div className="p-4 rounded-3xl neo-inset inline-block">
+              <div className="p-3 bg-white rounded-2xl border border-slate-200/60 shadow-neo-sm">
+                <QRCode value={selectedTicket.ticketCode} size={180} />
+              </div>
             </div>
 
             <div>
@@ -419,7 +421,7 @@ export const AttendeeDashboardPage: React.FC = () => {
               <h3 className="font-display font-bold text-lg text-slate-900 mt-2">
                 {selectedTicket.eventTitle}
               </h3>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-slate-500 mt-1 font-medium">
                 Passholder: {selectedTicket.userName} ({selectedTicket.userEmail})
               </p>
             </div>

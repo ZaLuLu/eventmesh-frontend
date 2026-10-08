@@ -7,69 +7,98 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Google Material 3 System Colors
-        canvas: '#F8F9FA',
-        surface: '#FFFFFF',
-        'surface-variant': '#F1F3F4',
-        'surface-subtle': '#F8F9FA',
-        
-        md: {
-          primary: '#1A73E8',          // Google Blue
-          'primary-hover': '#1557B0',
-          'primary-container': '#E8F0FE',
-          'on-primary-container': '#041E49',
-          secondary: '#5F6368',
-          'secondary-container': '#F1F3F4',
-          surface: '#F8F9FA',
-          'surface-card': '#FFFFFF',
-          outline: '#DADCE0',
-          'outline-variant': '#E8EAED',
-          'on-surface': '#1F1F1F',
-          'on-surface-variant': '#5F6368',
+        // Neomorphic Base Pearl Canvas & Surface
+        canvas: '#EEF2F6',
+        surface: '#EEF2F6',
+        'surface-card': '#EEF2F6',
+        'surface-variant': '#E5ECF4',
+        'surface-subtle': '#F4F7FA',
+
+        // Neomorphic Shadow Targets
+        neo: {
+          bg: '#EEF2F6',
+          card: '#EEF2F6',
+          inset: '#E4EBF3',
+          border: 'rgba(255, 255, 255, 0.7)',
         },
 
-        // Legacy mappings mapped to clean Material 3 tones
-        paper: '#F8F9FA',
-        ink: '#1F1F1F',
-        'ink-60': '#5F6368',
-        'ink-15': '#DADCE0',
-        'paper-deep': '#F1F3F4',
-        premium: '#E37400',
-        event: '#1A73E8',
-        'on-event': '#FFFFFF',
-        'brand-red': '#1A73E8', // Streamlined to Google Blue!
-        'brand-blue': '#1A73E8',
-        'brand-pink': '#1A73E8',
-        'brand-purple': '#5F6368',
+        // Feral & Vibrant Energetic Chromas
+        feral: {
+          indigo: '#6366F1',
+          violet: '#8B5CF6',
+          purple: '#A855F7',
+          pink: '#EC4899',
+          rose: '#F43F5E',
+          amber: '#F59E0B',
+          cyan: '#06B6D4',
+          emerald: '#10B981',
+        },
 
-        // Admin Console (Clean Material)
-        'admin-canvas': '#F8F9FA',
-        'admin-sidebar': '#1F1F1F',
-        'admin-accent': '#1A73E8',
+        // M3 Compatibility aliases mapped to vibrant colors
+        md: {
+          primary: '#6366F1',          // Electric Indigo
+          'primary-hover': '#4F46E5',
+          'primary-container': '#EEF2FF',
+          'on-primary-container': '#312E81',
+          secondary: '#64748B',
+          'secondary-container': '#F1F5F9',
+          surface: '#EEF2F6',
+          'surface-card': '#EEF2F6',
+          outline: 'rgba(255, 255, 255, 0.8)',
+          'outline-variant': '#CBD5E1',
+          'on-surface': '#1E293B',
+          'on-surface-variant': '#64748B',
+        },
+
+        // Text & Contrast
+        paper: '#EEF2F6',
+        ink: '#1E293B',
+        'ink-60': '#64748B',
+        'ink-15': '#CBD5E1',
+        'paper-deep': '#E2E8F0',
+        premium: '#F59E0B',
+        event: '#6366F1',
+        'on-event': '#FFFFFF',
+
+        // Admin Console
+        'admin-canvas': '#EEF2F6',
+        'admin-sidebar': '#0F172A',
+        'admin-accent': '#6366F1',
         'admin-on-accent': '#FFFFFF',
-        'admin-border': '#DADCE0',
+        'admin-border': '#E2E8F0',
       },
       fontFamily: {
-        display: ['"Plus Jakarta Sans"', 'Roboto', 'sans-serif'],
-        body: ['"Plus Jakarta Sans"', 'Roboto', 'sans-serif'],
-        heading: ['"Plus Jakarta Sans"', 'Roboto', 'sans-serif'],
+        display: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        body: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        heading: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
       },
       boxShadow: {
-        'subtle': '0 1px 2px 0 rgba(60, 64, 67, 0.1)',
-        'card': '0 1px 3px 0 rgba(60, 64, 67, 0.15), 0 1px 2px 0 rgba(60, 64, 67, 0.08)',
-        'card-hover': '0 4px 12px 0 rgba(60, 64, 67, 0.15)',
-        'elevated': '0 8px 24px 0 rgba(60, 64, 67, 0.12)',
+        // Neomorphic Dual Light/Dark Shadows
+        'neo-sm': '3px 3px 6px rgba(163, 177, 198, 0.35), -3px -3px 6px rgba(255, 255, 255, 0.85)',
+        'neo-card': '7px 7px 16px rgba(163, 177, 198, 0.4), -7px -7px 16px rgba(255, 255, 255, 0.9)',
+        'neo-card-hover': '11px 11px 24px rgba(163, 177, 198, 0.5), -11px -11px 24px rgba(255, 255, 255, 1)',
+        'neo-inset': 'inset 3px 3px 6px rgba(163, 177, 198, 0.45), inset -3px -3px 6px rgba(255, 255, 255, 0.85)',
+        'neo-inset-deep': 'inset 4px 4px 8px rgba(163, 177, 198, 0.55), inset -4px -4px 8px rgba(255, 255, 255, 0.9)',
+        'neo-glow-indigo': '0 8px 24px -4px rgba(99, 102, 241, 0.4)',
+        'neo-glow-pink': '0 8px 24px -4px rgba(236, 72, 153, 0.4)',
+        'neo-glow-emerald': '0 8px 24px -4px rgba(16, 185, 129, 0.4)',
+
+        // Fallbacks
+        'subtle': '3px 3px 6px rgba(163, 177, 198, 0.35), -3px -3px 6px rgba(255, 255, 255, 0.85)',
+        'card': '7px 7px 16px rgba(163, 177, 198, 0.4), -7px -7px 16px rgba(255, 255, 255, 0.9)',
+        'card-hover': '11px 11px 24px rgba(163, 177, 198, 0.5), -11px -11px 24px rgba(255, 255, 255, 1)',
+        'elevated': '14px 14px 30px rgba(163, 177, 198, 0.55), -14px -14px 30px rgba(255, 255, 255, 1)',
       },
       borderRadius: {
-        'sm': '6px',
-        DEFAULT: '8px',
-        'md': '12px',
-        'lg': '16px',
-        'xl': '20px',
-        '2xl': '24px', // M3 Medium Card
-        '3xl': '28px', // M3 Large Card / Dialog
-        'full': '9999px', // M3 Pill
+        'sm': '8px',
+        DEFAULT: '12px',
+        'md': '16px',
+        'lg': '20px',
+        'xl': '24px',
+        '2xl': '28px',
+        '3xl': '34px',
+        'full': '9999px',
       },
     },
   },

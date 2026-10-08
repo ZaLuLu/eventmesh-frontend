@@ -51,10 +51,10 @@ export const EventCardModern: React.FC<EventCardModernProps> = ({
     <div
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="group relative flex flex-col rounded-2xl bg-white border border-[#DADCE0] shadow-subtle hover:shadow-card-hover transition-all duration-300 overflow-hidden hover:-translate-y-1"
+      className="group relative flex flex-col neo-card overflow-hidden select-none"
     >
       {/* Top Media Container */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
+      <div className="relative aspect-[16/10] w-[calc(100%-16px)] m-2 rounded-2xl overflow-hidden bg-slate-200/60 shadow-neo-inset">
         <img
           src={fallbackCover}
           alt={event.title}
@@ -62,39 +62,39 @@ export const EventCardModern: React.FC<EventCardModernProps> = ({
           loading="lazy"
         />
 
-        {/* Gradient Overlay */}
+        {/* Gradient Shadow Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-black/10" />
 
-        {/* M3 Date Stamp Ribbon (Top Left) */}
-        <div className="absolute top-3 left-3 rounded-xl bg-white/95 backdrop-blur-md px-2.5 py-1 text-center shadow-xs border border-[#DADCE0]">
-          <span className="block text-[10px] font-bold tracking-wider text-md-primary leading-none">
+        {/* Tactile Date Stamp Ribbon (Top Left) */}
+        <div className="absolute top-2.5 left-2.5 rounded-xl neo-pill px-2.5 py-1 text-center bg-[#EEF2F6]/95 backdrop-blur-md">
+          <span className="block text-[10px] font-black tracking-wider text-indigo-600 leading-none">
             {monthStr}
           </span>
-          <span className="block text-base font-extrabold text-slate-900 leading-tight">
+          <span className="block text-base font-black text-slate-900 leading-tight">
             {dayStr}
           </span>
         </div>
 
         {/* Category Tag (Top Right) */}
-        <div className="absolute top-3 right-3">
-          <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-normal text-slate-800 backdrop-blur-md bg-white/90 border border-[#DADCE0] shadow-2xs">
+        <div className="absolute top-2.5 right-2.5">
+          <span className="neo-pill inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold tracking-normal text-slate-800 bg-[#EEF2F6]/90 backdrop-blur-md">
             {event.category}
           </span>
         </div>
 
-        {/* Fast Filling Badge (Bottom Left of Media) */}
+        {/* Fast Filling Badge (Bottom Left) */}
         {isFastFilling && (
-          <div className="absolute bottom-2.5 left-3">
-            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold text-[#B06000] bg-[#FEF7E0] border border-[#FEEFC3] shadow-2xs">
+          <div className="absolute bottom-2.5 left-2.5">
+            <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold text-white bg-gradient-to-r from-amber-500 to-rose-500 shadow-neo-sm">
               ⚡ Filling Fast
             </span>
           </div>
         )}
 
-        {/* Free Pass Tag (Bottom Right of Media) */}
-        <div className="absolute bottom-2.5 right-3">
-          <span className="rounded-md bg-[#E6F4EA] text-[#137333] border border-[#CEEAD6] text-[10px] font-bold uppercase px-2 py-0.5 shadow-2xs">
-            Free Pass
+        {/* Free Pass Tag (Bottom Right) */}
+        <div className="absolute bottom-2.5 right-2.5">
+          <span className="rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold uppercase px-2.5 py-0.5 shadow-neo-sm">
+            {event.isFree ? 'Free Pass' : `₹${event.price || 0}`}
           </span>
         </div>
       </div>
@@ -105,33 +105,30 @@ export const EventCardModern: React.FC<EventCardModernProps> = ({
         <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
           <div className="flex items-center gap-1.5 font-medium">
             <span
-              className="h-2 w-2 rounded-full flex-shrink-0"
+              className="h-2.5 w-2.5 rounded-full flex-shrink-0 shadow-xs"
               style={{ backgroundColor: accentColor }}
             />
-            <span className="truncate max-w-[150px] font-semibold text-slate-700">
+            <span className="truncate max-w-[150px] font-bold text-slate-700">
               {event.organizerName}
             </span>
           </div>
 
-          {event.certificateInfo && (
-            <span className="flex items-center gap-1 text-[11px] font-medium text-[#137333] bg-[#E6F4EA] border border-[#CEEAD6] px-2 py-0.5 rounded-full">
-              <Award className="h-3 w-3" />
-              Certificate
-            </span>
-          )}
+          <span className="neo-inset px-2 py-0.5 rounded-full text-[10px] font-bold text-indigo-600">
+            Verified Host
+          </span>
         </div>
 
         {/* Title */}
-        <Link to={`/events/${event.slug}`} className="group-hover:text-md-primary transition-colors">
-          <h3 className="font-display font-bold text-base sm:text-lg text-slate-900 line-clamp-2 leading-snug mb-2">
+        <Link to={`/events/${event.slug}`} className="group-hover:text-indigo-600 transition-colors">
+          <h3 className="font-display font-extrabold text-base sm:text-lg text-slate-900 line-clamp-2 leading-snug mb-2">
             {event.title}
           </h3>
         </Link>
 
         {/* Location & Time */}
-        <div className="flex items-center gap-3 text-xs text-slate-500 mb-4">
+        <div className="flex items-center gap-3 text-xs text-slate-500 mb-4 font-medium">
           <div className="flex items-center gap-1 truncate">
-            <MapPin className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
+            <MapPin className="h-3.5 w-3.5 text-indigo-500 flex-shrink-0" />
             <span className="truncate">{event.venue.name}</span>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0">
@@ -141,29 +138,27 @@ export const EventCardModern: React.FC<EventCardModernProps> = ({
         </div>
 
         {/* Capacity Progress Bar */}
-        <div className="mt-auto pt-3 border-t border-slate-100">
-          <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1.5 font-medium">
+        <div className="mt-auto pt-3 border-t border-slate-300/40">
+          <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1.5 font-semibold">
             <span className="flex items-center gap-1">
               <Users className="h-3 w-3 text-slate-400" />
               <span>{registeredCount} Registered</span>
             </span>
-            <span className={isFastFilling ? 'text-amber-700 font-bold' : 'text-slate-600'}>
+            <span className={isFastFilling ? 'text-amber-600 font-bold' : 'text-slate-600'}>
               {spotsPercent}% booked
             </span>
           </div>
 
-          <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+          <div className="neo-inset h-2 w-full rounded-full overflow-hidden p-[1px]">
             <div
-              className={`h-full rounded-full transition-all duration-500 ${
-                isFastFilling ? 'bg-amber-500' : 'bg-md-primary'
-              }`}
+              className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all duration-500"
               style={{ width: `${spotsPercent}%` }}
             />
           </div>
 
           {/* Action Row */}
-          <div className="mt-3.5 flex items-center gap-2">
-            <Link to={`/events/${event.slug}/register`} className="flex-1">
+          <div className="mt-4 flex items-center gap-2.5">
+            <Link to={`/events/${event.slug}`} className="flex-1">
               <Button variant="primary" size="sm" fullWidth arrow>
                 Book Pass
               </Button>

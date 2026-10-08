@@ -24,36 +24,36 @@ export const ClubSpotlightRow: React.FC<ClubSpotlightRowProps> = ({ clubs }) => 
 
         <Link
           to="/clubs"
-          className="text-xs font-semibold text-md-primary hover:underline inline-flex items-center gap-1"
+          className="neo-pill px-3.5 py-1 text-xs font-bold text-indigo-600 hover:text-purple-600 inline-flex items-center gap-1 transition-all"
         >
           <span>All Clubs</span>
           <ArrowRight className="h-3 w-3" />
         </Link>
       </div>
 
-      <div className="flex items-center gap-3 sm:gap-4 overflow-x-auto hide-scrollbar pb-3 -mx-4 px-4 sm:-mx-6 sm:px-6">
+      <div className="flex items-center gap-3 sm:gap-4 overflow-x-auto hide-scrollbar pb-4 -mx-4 px-4 sm:-mx-6 sm:px-6">
         {clubs.map((club) => {
-          const color = club.color || '#1A73E8'
+          const color = club.color || '#6366F1'
           return (
             <Link
               key={club.id}
               to={`/clubs/${club.slug}`}
-              className="flex-shrink-0 group flex items-center gap-3 px-4 py-3 rounded-2xl bg-white border border-[#DADCE0] shadow-subtle hover:shadow-card-hover transition-all duration-200 hover:-translate-y-0.5 min-w-[200px]"
+              className="flex-shrink-0 group flex items-center gap-3 px-4 py-3.5 rounded-2xl neo-card min-w-[210px] select-none"
             >
               {/* Club Avatar Dot / Icon */}
               <div
-                className="h-10 w-10 rounded-xl flex items-center justify-center text-white font-bold text-xs shadow-xs transition-transform group-hover:scale-105"
+                className="h-11 w-11 rounded-2xl flex items-center justify-center text-white font-black text-xs shadow-neo-sm transition-transform group-hover:scale-105"
                 style={{ backgroundColor: color }}
               >
                 {club.name.slice(0, 3).toUpperCase()}
               </div>
 
               <div>
-                <h4 className="font-display font-bold text-sm text-slate-900 group-hover:text-md-primary transition-colors truncate max-w-[130px]">
+                <h4 className="font-display font-extrabold text-sm text-slate-900 group-hover:text-indigo-600 transition-colors truncate max-w-[130px]">
                   {club.name}
                 </h4>
-                <div className="flex items-center gap-1 text-[11px] text-slate-500 font-medium">
-                  <Users className="h-3 w-3" />
+                <div className="flex items-center gap-1 text-[11px] text-slate-500 font-semibold mt-0.5">
+                  <Users className="h-3 w-3 text-indigo-500" />
                   <span>{club.followersCount || 40}+ members</span>
                 </div>
               </div>

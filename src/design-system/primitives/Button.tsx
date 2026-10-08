@@ -40,29 +40,29 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const radiusClass = rounded === 'default' ? 'rounded-xl' : 'rounded-full'
 
-    // Google M3 Variant Styling (Streamlined & Harmonious)
+    // Neomorphic & Feral Gradient Variant Styling (Tactile & High-Energy)
     const getVariantClasses = () => {
       if (variant === 'primary' || variant === 'gradient') {
         if (surface === 'admin') {
-          return 'bg-[#1F1F1F] text-white hover:bg-admin-accent hover:text-admin-on-accent shadow-xs active:scale-[0.98]'
+          return 'bg-[#0F172A] text-white hover:bg-admin-accent hover:text-admin-on-accent shadow-[3px_3px_8px_rgba(0,0,0,0.15)] active:scale-[0.98]'
         }
-        return 'bg-md-primary text-white hover:bg-md-primary-hover shadow-xs active:scale-[0.98]'
+        return 'bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 text-white border border-white/30 shadow-[4px_4px_14px_rgba(99,102,241,0.38),-2px_-2px_8px_rgba(255,255,255,0.8)] hover:shadow-[6px_6px_20px_rgba(99,102,241,0.5),-3px_-3px_10px_rgba(255,255,255,0.95)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[inset_2px_2px_4px_rgba(0,0,0,0.25)]'
       }
 
       if (variant === 'tonal') {
-        return 'bg-md-primary-container text-md-on-primary-container hover:bg-[#D3E3FD] shadow-none active:scale-[0.98]'
+        return 'bg-[#E4EBF3] text-indigo-700 border border-white/50 shadow-[inset_2px_2px_5px_rgba(163,177,198,0.45),inset_-2px_-2px_5px_rgba(255,255,255,0.85)] hover:bg-[#DEE7F0] active:scale-[0.98]'
       }
 
       if (variant === 'secondary' || variant === 'glass') {
-        return 'border border-md-outline bg-white text-md-primary hover:bg-md-primary-container/40 active:scale-[0.98]'
+        return 'bg-[#EEF2F6] text-slate-800 border border-white/80 shadow-[4px_4px_10px_rgba(163,177,198,0.4),-4px_-4px_10px_rgba(255,255,255,0.85)] hover:text-indigo-600 hover:shadow-[6px_6px_14px_rgba(163,177,198,0.48),-6px_-6px_14px_rgba(255,255,255,1)] hover:-translate-y-0.5 active:shadow-[inset_2px_2px_5px_rgba(163,177,198,0.45),inset_-2px_-2px_5px_rgba(255,255,255,0.85)] active:translate-y-0'
       }
 
       if (variant === 'ghost') {
-        return 'bg-transparent text-md-on-surface-variant hover:bg-black/[0.04] active:bg-black/[0.08]'
+        return 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-black/[0.04] active:bg-black/[0.08]'
       }
 
       if (variant === 'danger') {
-        return 'bg-[#BA1A1A] text-white hover:bg-[#93000A] shadow-xs active:scale-[0.98]'
+        return 'bg-gradient-to-r from-rose-500 to-red-600 text-white border border-white/20 shadow-[4px_4px_12px_rgba(244,63,94,0.35)] hover:shadow-[6px_6px_18px_rgba(244,63,94,0.45)] hover:-translate-y-0.5 active:translate-y-0'
       }
 
       return ''

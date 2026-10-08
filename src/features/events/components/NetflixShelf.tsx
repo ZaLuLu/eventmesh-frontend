@@ -49,22 +49,22 @@ export const NetflixShelf: React.FC<NetflixShelfProps> = ({
         </div>
 
         {/* Carousel Arrow Controls & View All */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           {exploreLink && (
             <Link
               to={exploreLink}
-              className="text-xs font-semibold text-md-primary hover:underline inline-flex items-center gap-1 mr-2"
+              className="neo-pill px-3.5 py-1 text-xs font-bold text-indigo-600 hover:text-purple-600 inline-flex items-center gap-1 transition-all mr-1"
             >
               <span>See All</span>
               <ArrowRight className="h-3 w-3" />
             </Link>
           )}
 
-          <div className="hidden sm:flex items-center gap-1.5">
+          <div className="hidden sm:flex items-center gap-2">
             <button
               type="button"
               onClick={() => handleScroll('left')}
-              className="h-8 w-8 rounded-full border border-[#DADCE0] bg-white hover:bg-[#F1F3F4] text-slate-700 flex items-center justify-center shadow-2xs hover:shadow-sm active:scale-95 transition-all"
+              className="neo-pill h-8 w-8 text-slate-700 hover:text-indigo-600 flex items-center justify-center transition-all select-none"
               aria-label="Scroll left"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -72,7 +72,7 @@ export const NetflixShelf: React.FC<NetflixShelfProps> = ({
             <button
               type="button"
               onClick={() => handleScroll('right')}
-              className="h-8 w-8 rounded-full border border-[#DADCE0] bg-white hover:bg-[#F1F3F4] text-slate-700 flex items-center justify-center shadow-2xs hover:shadow-sm active:scale-95 transition-all"
+              className="neo-pill h-8 w-8 text-slate-700 hover:text-indigo-600 flex items-center justify-center transition-all select-none"
               aria-label="Scroll right"
             >
               <ChevronRight className="h-4 w-4" />
