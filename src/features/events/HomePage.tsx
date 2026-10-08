@@ -121,7 +121,7 @@ export const HomePage: React.FC = () => {
                 setSelectedDateFilter('ALL')
                 setOnlyWithCertificates(false)
               }}
-              className="text-xs font-semibold text-brand-red hover:underline"
+              className="text-xs font-semibold text-md-primary hover:underline"
             >
               Reset Filters
             </button>
@@ -134,13 +134,13 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
       ) : (
-        /* Default Netflix Thematic Shelves Experience */
+        /* Default Thematic Shelves Experience */
         <div className="space-y-4 sm:space-y-8 pb-16">
           {/* Shelf 1: 🔥 TOP 10 TRENDING IN YOUR COMMUNITY */}
           <NetflixShelf
             title="Top 10 Trending This Week"
             subtitle="Most registered hackathons, talks & summits across all clubs"
-            icon={<Flame className="h-5 w-5 text-brand-red" />}
+            icon={<Flame className="h-5 w-5 text-md-primary" />}
             events={top10Events}
             isRanked={true}
             exploreLink="/explore?sort=-registeredCount"
@@ -150,7 +150,7 @@ export const HomePage: React.FC = () => {
           <NetflixShelf
             title="Happening This Weekend"
             subtitle="Live hands-on sessions and meetups ready for booking"
-            icon={<Calendar className="h-5 w-5 text-brand-blue" />}
+            icon={<Calendar className="h-5 w-5 text-md-primary" />}
             events={upcomingEvents}
             exploreLink="/explore?status=PUBLISHED"
           />
@@ -176,25 +176,25 @@ export const HomePage: React.FC = () => {
             exploreLink="/explore?category=WORKSHOP"
           />
 
-          {/* Community Announcement Banner */}
+          {/* M3 Community Announcement Banner */}
           {announcements.length > 0 && (
             <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-8">
-              <div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="rounded-3xl p-6 sm:p-8 bg-md-primary-container border border-[#D3E3FD] shadow-subtle flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-[11px] font-bold uppercase tracking-wider mb-3">
-                    <Sparkles className="h-3.5 w-3.5 text-amber-300" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 text-md-primary border border-[#D3E3FD] text-xs font-semibold mb-3">
+                    <Sparkles className="h-3.5 w-3.5 text-md-primary" />
                     Latest Broadcast
                   </span>
-                  <h3 className="font-display font-extrabold text-xl sm:text-2xl tracking-tight mb-2">
+                  <h3 className="font-display font-bold text-xl sm:text-2xl tracking-tight text-slate-900 mb-2">
                     {announcements[0].title}
                   </h3>
-                  <p className="text-slate-300 text-xs sm:text-sm line-clamp-2 max-w-2xl">
+                  <p className="text-slate-600 text-xs sm:text-sm line-clamp-2 max-w-2xl leading-relaxed">
                     {announcements[0].body}
                   </p>
                 </div>
 
                 <Link to="/announcements" className="flex-shrink-0">
-                  <Button variant="secondary" size="md" arrow>
+                  <Button variant="primary" size="md" arrow>
                     View All Updates
                   </Button>
                 </Link>

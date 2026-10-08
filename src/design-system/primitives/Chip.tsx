@@ -22,17 +22,17 @@ export const Chip: React.FC<ChipProps> = ({
   size = 'md',
   className = '',
 }) => {
-  const sizeClasses = size === 'sm' ? 'px-3 py-1 text-xs' : 'px-4 py-2 text-xs font-semibold'
+  const sizeClasses = size === 'sm' ? 'px-3 py-1 text-xs' : 'px-3.5 py-1.5 text-xs font-semibold'
 
   const activeClasses = active
-    ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10 border-slate-900'
-    : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-subtle'
+    ? 'bg-md-primary-container text-md-on-primary-container border-md-primary-container font-bold shadow-2xs'
+    : 'bg-white text-md-on-surface-variant border-md-outline hover:bg-black/[0.04] shadow-none'
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded-full border transition-all duration-200 select-none whitespace-nowrap active:scale-95 ${sizeClasses} ${activeClasses} ${className}`}
+      className={`inline-flex items-center gap-2 rounded-lg border transition-all duration-150 select-none whitespace-nowrap active:scale-[0.98] ${sizeClasses} ${activeClasses} ${className}`}
     >
       {icon && <span className="flex-shrink-0 text-current">{icon}</span>}
       {color && (
@@ -50,7 +50,7 @@ export const Chip: React.FC<ChipProps> = ({
             e.stopPropagation()
             onRemove()
           }}
-          className="ml-1 text-slate-400 hover:text-slate-600 font-bold"
+          className="ml-1 opacity-60 hover:opacity-100 font-bold"
           aria-label={`Remove ${label}`}
         >
           ×

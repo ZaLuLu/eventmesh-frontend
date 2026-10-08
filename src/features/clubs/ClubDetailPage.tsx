@@ -1,13 +1,10 @@
 import React, { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Users, Calendar, Award, Image as ImageIcon, Heart, ArrowUpRight } from 'lucide-react'
+import { Users, Calendar, Award, Image as ImageIcon, ChevronRight, Check } from 'lucide-react'
 import { useClub, useToggleFollowClub } from '@/hooks/useClubs'
 import { useEvents } from '@/hooks/useEvents'
 import { Button } from '@/design-system/primitives/Button'
-import { Band } from '@/design-system/primitives/Band'
-import { IndexRow } from '@/design-system/primitives/IndexRow'
-import { EventTheme } from '@/design-system/EventTheme'
-import { formatDate } from '@/lib/dates'
+import { EventCardModern } from '@/features/events/components/EventCardModern'
 import { useToast } from '@/design-system/primitives/Toast'
 
 export const ClubDetailPage: React.FC = () => {
@@ -21,10 +18,13 @@ export const ClubDetailPage: React.FC = () => {
 
   if (isLoading || !club) {
     return (
-      <div className="min-h-screen bg-paper flex items-center justify-center p-8">
-        <span className="font-mono text-xs uppercase tracking-widecaps text-ink-60">
-          Loading Club Dossier...
-        </span>
+      <div className="min-h-screen bg-canvas flex items-center justify-center p-8">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 rounded-full border-2 border-md-primary border-t-transparent animate-spin" />
+          <span className="text-xs font-semibold text-slate-500">
+            Loading Club Information...
+          </span>
+        </div>
       </div>
     )
   }
@@ -39,7 +39,7 @@ export const ClubDetailPage: React.FC = () => {
       toast({
         title: isNowFollowed ? `Following ${club.name}` : `Unfollowed ${club.name}`,
         message: isNowFollowed
-          ? 'You will receive priority dispatches for new symposiums and registrations.'
+          ? 'You will receive notifications for newly announced events and workshops.'
           : 'You will no longer receive priority updates from this collective.',
         type: 'info',
       })
@@ -49,244 +49,215 @@ export const ClubDetailPage: React.FC = () => {
   }
 
   return (
-    <EventTheme color={club.color}>
-      <div className="w-full bg-paper text-ink min-h-screen">
-        {/* Header Hero */}
-        <section className="pt-10 sm:pt-14 border-b border-ink-15">
-          <div className="px-[4vw] mb-4 flex items-center justify-between font-mono text-xs uppercase text-ink-60">
-            <Link to="/clubs" className="hover:text-ink">
-              ← Back to All Clubs
+    <div className="w-full bg-canvas text-md-on-surface min-h-screen pb-16">
+      {/* Top Header & Breadcrumb */}
+      <div className="bg-white border-b border-[#DADCE0]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+            <Link to="/" className="hover:text-md-primary">
+              Home
             </Link>
-            <span>FEDERATION MEMBER · {club.slug.toUpperCase()}</span>
+            <ChevronRight className="h-3 w-3" />
+            <Link to="/clubs" className="hover:text-md-primary">
+              Clubs
+            </Link>
+            <ChevronRight className="h-3 w-3" />
+            <span className="text-slate-800 font-semibold">{club.name}</span>
           </div>
+        </div>
+      </div>
 
-          <div className="px-[4vw] pb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+      {/* Hero Section */}
+      <section className="bg-white border-b border-[#DADCE0] py-8 sm:py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="flex items-start gap-4 sm:gap-6">
+            <div
+              className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl flex items-center justify-center text-white font-bold text-xl sm:text-2xl shadow-xs flex-shrink-0"
+              style={{ backgroundColor: club.color || '#1A73E8' }}
+            >
+              {club.name.slice(0, 3).toUpperCase()}
+            </div>
+
             <div>
-              <div className="flex items-center gap-2 mb-2 font-mono text-xs uppercase text-ink-60 font-semibold">
-                <span
-                  className="inline-block h-3 w-3"
-                  style={{ backgroundColor: club.color }}
-                />
-                <span>{club.followersCount} Followers</span>
-                <span>·</span>
-                <span>Join Mode: {club.joinMode}</span>
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-md-primary-container text-md-primary">
+                  {club.followersCount} Community Members
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#F1F3F4] text-slate-600">
+                  Join: {club.joinMode}
+                </span>
               </div>
-              <h1 className="font-display text-5xl sm:text-7xl uppercase text-ink">
+
+              <h1 className="font-display font-bold text-2xl sm:text-4xl text-slate-900 tracking-tight">
                 {club.name}
               </h1>
-            </div>
 
-            <div>
-              <Button
-                variant={club.isFollowed ? 'secondary' : 'primary'}
-                size="md"
-                onClick={handleToggleFollow}
-                loading={toggleFollowMutation.isPending}
-              >
-                {club.isFollowed ? '✓ Following Collective' : '+ Join / Follow Club'}
-              </Button>
+              <p className="text-slate-600 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
+                {club.whatWeDo}
+              </p>
             </div>
           </div>
 
-          {/* Signature Color Band */}
-          <Band
-            color={club.color}
-            chipLabel={`IDENTITY · ${club.name.toUpperCase()}`}
-            tagline={club.whatWeDo}
-            metaRight={`${upcomingEvents.length} UPCOMING SYMPOSIUMS`}
-            height="h-20 sm:h-24"
-          />
-        </section>
+          <div className="flex-shrink-0">
+            <Button
+              variant={club.isFollowed ? 'secondary' : 'primary'}
+              size="md"
+              onClick={handleToggleFollow}
+              loading={toggleFollowMutation.isPending}
+            >
+              {club.isFollowed ? '✓ Following Club' : '+ Follow Club'}
+            </Button>
+          </div>
+        </div>
+      </section>
 
-        {/* Dossier Content Grid */}
-        <section className="px-[4vw] py-12 lg:py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            {/* Left 8 Cols: About, What We Do, Upcoming, Previous, Gallery */}
-            <div className="lg:col-span-8 space-y-14">
-              <div>
-                <span className="font-mono text-[11px] uppercase tracking-widecaps text-ink-60 block mb-2">
-                  Curatorial Statement & Scope
-                </span>
-                <p className="font-body text-xl text-ink leading-relaxed">
-                  {club.about}
-                </p>
+      {/* Main Content Layout */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
+          {/* Left 8 Cols: About, Events, Gallery */}
+          <div className="lg:col-span-8 space-y-8">
+            {/* About Card */}
+            <div className="rounded-2xl border border-[#DADCE0] bg-white p-6 sm:p-8 shadow-subtle space-y-4">
+              <h2 className="font-display font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">
+                About the Collective
+              </h2>
+              <p className="text-slate-700 text-sm sm:text-base leading-relaxed font-body">
+                {club.about}
+              </p>
+            </div>
+
+            {/* Upcoming Events */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="font-display font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">
+                  Upcoming Events ({upcomingEvents.length})
+                </h2>
               </div>
 
-              <div className="border-t border-ink-15 pt-8">
-                <span className="font-mono text-[11px] uppercase tracking-widecaps text-ink-60 block mb-2">
-                  Activities & Directives
-                </span>
-                <p className="font-body text-base text-ink leading-relaxed">
-                  {club.whatWeDo}
-                </p>
-              </div>
-
-              {/* Upcoming Events by this club */}
-              <div className="border-t border-ink-15 pt-8">
-                <div className="flex items-baseline justify-between mb-6">
-                  <div>
-                    <span className="font-mono text-[11px] uppercase tracking-widecaps text-ink-60 block">
-                      Active Programming
-                    </span>
-                    <h3 className="font-display text-3xl uppercase text-ink">
-                      Upcoming Events ({upcomingEvents.length})
-                    </h3>
-                  </div>
+              {upcomingEvents.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {upcomingEvents.map((evt) => (
+                    <EventCardModern key={evt.id} event={evt} />
+                  ))}
                 </div>
+              ) : (
+                <div className="p-8 rounded-2xl border border-[#DADCE0] bg-white text-center text-slate-500 text-xs">
+                  No upcoming events scheduled at this moment. Follow this club to receive announcements!
+                </div>
+              )}
+            </div>
 
-                {upcomingEvents.length === 0 ? (
-                  <p className="font-mono text-xs uppercase text-ink-60 py-4 border-t border-b border-ink-15">
-                    No active upcoming events scheduled currently.
-                  </p>
-                ) : (
-                  <div className="border-t border-ink-15">
-                    {upcomingEvents.map((evt, idx) => (
-                      <IndexRow
-                        key={evt.id}
-                        id={evt.id}
-                        slug={evt.slug}
-                        title={evt.title}
-                        category={evt.category}
-                        organizerName={club.name}
-                        organizerColor={club.color}
-                        dateDisplay={formatDate(evt.startsAt)}
-                        venueName={evt.venue.name}
-                        status={evt.status}
-                        indexNumber={idx + 1}
+            {/* Completed Events */}
+            {completedEvents.length > 0 && (
+              <div className="space-y-4 pt-4">
+                <h2 className="font-display font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">
+                  Past Events & Highlights ({completedEvents.length})
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {completedEvents.map((evt) => (
+                    <EventCardModern key={evt.id} event={evt} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Gallery */}
+            {club.gallery && club.gallery.length > 0 && (
+              <div className="rounded-2xl border border-[#DADCE0] bg-white p-6 sm:p-8 shadow-subtle space-y-4">
+                <h2 className="font-display font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">
+                  Activities Gallery
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {club.gallery.map((g) => (
+                    <div
+                      key={g.id}
+                      onClick={() => setActivePhoto(g.url)}
+                      className="group rounded-xl overflow-hidden cursor-pointer border border-[#DADCE0] bg-slate-100"
+                    >
+                      <img
+                        src={g.url}
+                        alt={g.caption || 'Club photo'}
+                        className="w-full aspect-[4/3] object-cover group-hover:scale-105 transition-transform duration-300"
                       />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right 4 Cols: Leadership, Achievements */}
+          <div className="lg:col-span-4 space-y-6">
+            {/* Leadership Box */}
+            <div className="rounded-2xl border border-[#DADCE0] bg-white p-6 shadow-subtle space-y-4">
+              <h3 className="font-display font-bold text-lg text-slate-900">
+                Organizing Leads & Mentors
+              </h3>
+
+              <div className="space-y-4">
+                {club.coordinators && club.coordinators.length > 0 && (
+                  <div>
+                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-normal block mb-2">
+                      Advisors & Mentors
+                    </span>
+                    {club.coordinators.map((c, i) => (
+                      <div key={i} className="py-2 border-b border-[#DADCE0] last:border-b-0">
+                        <p className="text-sm font-semibold text-slate-900">{c.name}</p>
+                        <p className="text-xs text-slate-500">{c.role}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {club.studentCoordinators && club.studentCoordinators.length > 0 && (
+                  <div>
+                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-normal block mb-2">
+                      Lead Coordinators
+                    </span>
+                    {club.studentCoordinators.map((c, i) => (
+                      <div key={i} className="py-2 border-b border-[#DADCE0] last:border-b-0">
+                        <p className="text-sm font-semibold text-slate-900">{c.name}</p>
+                        <p className="text-xs text-slate-500">{c.role}</p>
+                      </div>
                     ))}
                   </div>
                 )}
               </div>
-
-              {/* Previous Completed Events */}
-              {completedEvents.length > 0 && (
-                <div className="border-t border-ink-15 pt-8">
-                  <span className="font-mono text-[11px] uppercase tracking-widecaps text-ink-60 block mb-2">
-                    Concluded History
-                  </span>
-                  <h3 className="font-display text-3xl uppercase text-ink mb-6">
-                    Previous Exhibitions ({completedEvents.length})
-                  </h3>
-                  <div className="border-t border-ink-15">
-                    {completedEvents.map((evt, idx) => (
-                      <IndexRow
-                        key={evt.id}
-                        id={evt.id}
-                        slug={evt.slug}
-                        title={evt.title}
-                        category={evt.category}
-                        organizerName={club.name}
-                        organizerColor={club.color}
-                        dateDisplay={formatDate(evt.startsAt)}
-                        venueName={evt.venue.name}
-                        status="completed"
-                        indexNumber={idx + 1}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Gallery Section */}
-              {club.gallery.length > 0 && (
-                <div className="border-t border-ink-15 pt-8">
-                  <span className="font-mono text-[11px] uppercase tracking-widecaps text-ink-60 block mb-4">
-                    Documentary Photography Archive
-                  </span>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {club.gallery.map((g) => (
-                      <div
-                        key={g.id}
-                        onClick={() => setActivePhoto(g.url)}
-                        className="group border border-ink-15 overflow-hidden cursor-pointer bg-paper-deep"
-                      >
-                        <img
-                          src={g.url}
-                          alt={g.caption || 'Exhibition photo'}
-                          className="w-full aspect-[4/3] object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        {g.caption && (
-                          <p className="p-3 bg-paper font-mono text-[10px] uppercase text-ink-60 border-t border-ink-15">
-                            {g.caption}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
-            {/* Right 4 Cols: Leadership, Achievements */}
-            <div className="lg:col-span-4 space-y-8">
-              {/* Coordinators Box */}
-              <div className="bg-paper border-2 border-ink p-6 space-y-6">
-                <span className="font-mono text-[10px] uppercase tracking-widecaps text-ink-60 block">
-                  Club Directorate
-                </span>
-
-                <div className="space-y-4">
-                  <div>
-                    <span className="font-mono text-[11px] uppercase text-ink-60 font-semibold block mb-2">
-                      Faculty / Lead Coordinators
-                    </span>
-                    {club.coordinators.map((c, i) => (
-                      <div key={i} className="py-2 border-b border-ink-15">
-                        <p className="font-body text-sm font-bold uppercase text-ink">{c.name}</p>
-                        <p className="font-mono text-[11px] text-ink-60 uppercase">{c.role}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div>
-                    <span className="font-mono text-[11px] uppercase text-ink-60 font-semibold block mb-2">
-                      Student Organizing Leads
-                    </span>
-                    {club.studentCoordinators.map((c, i) => (
-                      <div key={i} className="py-2 border-b border-ink-15 last:border-b-0">
-                        <p className="font-body text-sm font-bold uppercase text-ink">{c.name}</p>
-                        <p className="font-mono text-[11px] text-ink-60 uppercase">{c.role}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+            {/* Achievements Box */}
+            {club.achievements && club.achievements.length > 0 && (
+              <div className="rounded-2xl border border-[#DADCE0] bg-white p-6 shadow-subtle space-y-3">
+                <h3 className="font-display font-bold text-lg text-slate-900">
+                  Key Milestones & Awards
+                </h3>
+                <ul className="space-y-2.5">
+                  {club.achievements.map((ach, idx) => (
+                    <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-700">
+                      <Award className="h-4 w-4 text-md-primary flex-shrink-0 mt-0.5" />
+                      <span>{ach}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-
-              {/* Achievements Box */}
-              {club.achievements.length > 0 && (
-                <div className="bg-paper-deep/30 border border-ink-15 p-6 space-y-4">
-                  <span className="font-mono text-[10px] uppercase tracking-widecaps text-ink-60 block">
-                    Distinctions & Laurels
-                  </span>
-                  <ul className="space-y-3">
-                    {club.achievements.map((ach, idx) => (
-                      <li key={idx} className="flex items-start gap-2.5 font-body text-xs text-ink">
-                        <Award className="h-4 w-4 text-ink flex-shrink-0 mt-0.5" />
-                        <span>{ach}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
+            )}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Photo Lightbox */}
-        {activePhoto && (
-          <div
-            onClick={() => setActivePhoto(null)}
-            className="fixed inset-0 z-50 bg-ink/90 flex items-center justify-center p-4 cursor-pointer"
-          >
-            <img
-              src={activePhoto}
-              alt="Expanded photo"
-              className="max-w-4xl max-h-[85vh] object-contain border-2 border-paper"
-            />
-          </div>
-        )}
-      </div>
-    </EventTheme>
+      {/* Photo Lightbox */}
+      {activePhoto && (
+        <div
+          onClick={() => setActivePhoto(null)}
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 cursor-pointer"
+        >
+          <img
+            src={activePhoto}
+            alt="Expanded photo"
+            className="max-w-4xl max-h-[85vh] object-contain rounded-2xl shadow-2xl"
+          />
+        </div>
+      )}
+    </div>
   )
 }

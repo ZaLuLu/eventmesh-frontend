@@ -40,8 +40,8 @@ export const NetflixShelf: React.FC<NetflixShelfProps> = ({
       <div className="flex items-end justify-between mb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            {icon && <span className="text-brand-red flex-shrink-0">{icon}</span>}
-            <h2 className="font-display font-extrabold text-xl sm:text-2xl text-slate-900 tracking-tight">
+            {icon && <span className="text-md-primary flex-shrink-0">{icon}</span>}
+            <h2 className="font-display font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">
               {title}
             </h2>
           </div>
@@ -53,7 +53,7 @@ export const NetflixShelf: React.FC<NetflixShelfProps> = ({
           {exploreLink && (
             <Link
               to={exploreLink}
-              className="text-xs font-semibold text-brand-red hover:underline inline-flex items-center gap-1 mr-2"
+              className="text-xs font-semibold text-md-primary hover:underline inline-flex items-center gap-1 mr-2"
             >
               <span>See All</span>
               <ArrowRight className="h-3 w-3" />
@@ -64,7 +64,7 @@ export const NetflixShelf: React.FC<NetflixShelfProps> = ({
             <button
               type="button"
               onClick={() => handleScroll('left')}
-              className="h-8 w-8 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 flex items-center justify-center shadow-2xs hover:shadow-sm active:scale-95 transition-all"
+              className="h-8 w-8 rounded-full border border-[#DADCE0] bg-white hover:bg-[#F1F3F4] text-slate-700 flex items-center justify-center shadow-2xs hover:shadow-sm active:scale-95 transition-all"
               aria-label="Scroll left"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -72,7 +72,7 @@ export const NetflixShelf: React.FC<NetflixShelfProps> = ({
             <button
               type="button"
               onClick={() => handleScroll('right')}
-              className="h-8 w-8 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 flex items-center justify-center shadow-2xs hover:shadow-sm active:scale-95 transition-all"
+              className="h-8 w-8 rounded-full border border-[#DADCE0] bg-white hover:bg-[#F1F3F4] text-slate-700 flex items-center justify-center shadow-2xs hover:shadow-sm active:scale-95 transition-all"
               aria-label="Scroll right"
             >
               <ChevronRight className="h-4 w-4" />

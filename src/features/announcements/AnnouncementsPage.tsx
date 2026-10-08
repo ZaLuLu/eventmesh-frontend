@@ -23,73 +23,79 @@ export const AnnouncementsPage: React.FC = () => {
   })
 
   return (
-    <div className="w-full bg-paper text-ink min-h-screen">
-      <div className="px-[4vw] pt-12 pb-8 border-b border-ink-15">
-        <span className="font-mono text-[11px] uppercase tracking-widecaps text-ink-60 block mb-2">
-          Dispatch Log & Announcements
-        </span>
-        <h1 className="font-display text-5xl sm:text-7xl uppercase text-ink">
-          Notices
-        </h1>
-        <p className="font-body text-base text-ink-60 max-w-xl mt-3">
-          Official communications, application deadlines, venue notifications, and results from member clubs.
-        </p>
-      </div>
+    <div className="w-full bg-canvas text-md-on-surface min-h-screen pb-16">
+      {/* Header Banner */}
+      <div className="bg-white border-b border-[#DADCE0]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-8">
+          <span className="text-xs font-semibold text-md-primary block mb-1">
+            Official Broadcasts
+          </span>
+          <h1 className="font-display font-bold text-3xl sm:text-4xl text-slate-900 tracking-tight">
+            Announcements & Notices
+          </h1>
+          <p className="text-sm text-slate-500 mt-1 max-w-xl font-medium">
+            Important communications, application deadlines, room updates, and results from clubs.
+          </p>
+        </div>
 
-      {/* Filter Chips */}
-      <div className="px-[4vw] py-4 border-b border-ink-15 bg-paper-deep/30 flex flex-wrap items-center gap-2">
-        {kinds.map((k) => (
-          <Chip
-            key={k.id}
-            label={k.label}
-            size="sm"
-            active={selectedKind === k.id}
-            onClick={() => setSelectedKind(k.id)}
-          />
-        ))}
+        {/* Filter Chips */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center gap-2 border-t border-[#DADCE0]">
+          {kinds.map((k) => (
+            <Chip
+              key={k.id}
+              label={k.label}
+              size="sm"
+              active={selectedKind === k.id}
+              onClick={() => setSelectedKind(k.id)}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Announcements List */}
-      <div className="px-[4vw] py-8 divide-y divide-ink-15">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-4">
         {isLoading ? (
-          <div className="py-12 text-center font-mono text-xs uppercase text-ink-60">
-            Reading Dispatch Wire...
+          <div className="py-12 text-center text-xs text-slate-500">
+            Loading announcements...
           </div>
         ) : filtered.length === 0 ? (
-          <div className="py-12 text-center font-mono text-xs uppercase text-ink-60">
-            No notices recorded under this filter.
+          <div className="rounded-2xl border border-[#DADCE0] bg-white p-12 text-center text-xs text-slate-500">
+            No notices found under this filter.
           </div>
         ) : (
           filtered.map((item) => (
-            <div key={item.id} className="py-8 space-y-3">
-              <div className="flex flex-wrap items-center gap-3 font-mono text-xs uppercase">
+            <div
+              key={item.id}
+              className="rounded-2xl border border-[#DADCE0] bg-white p-6 sm:p-8 shadow-subtle hover:shadow-card-hover transition-all space-y-3"
+            >
+              <div className="flex flex-wrap items-center gap-2.5 text-xs">
                 {item.pinned && (
-                  <span className="inline-flex items-center gap-1 bg-ink text-paper px-2 py-0.5 font-bold">
+                  <span className="inline-flex items-center gap-1 bg-md-primary-container text-md-primary px-2.5 py-0.5 rounded-full font-bold">
                     <Pin className="h-3 w-3" />
                     <span>PINNED</span>
                   </span>
                 )}
-                <span className="px-2 py-0.5 border border-ink font-semibold">
+                <span className="px-2.5 py-0.5 rounded-full bg-[#F1F3F4] text-slate-700 font-semibold capitalize">
                   {item.kind.replace('_', ' ')}
                 </span>
                 {item.organizerName && (
-                  <span className="text-ink-60 flex items-center gap-1.5 font-medium">
+                  <span className="text-slate-600 flex items-center gap-1.5 font-medium">
                     <span
-                      className="inline-block h-2 w-2"
-                      style={{ backgroundColor: item.organizerColor || '#C66A4A' }}
+                      className="inline-block h-2 w-2 rounded-full"
+                      style={{ backgroundColor: item.organizerColor || '#1A73E8' }}
                     />
                     <span>{item.organizerName}</span>
                   </span>
                 )}
-                <span className="text-ink-60">·</span>
-                <span className="text-ink-60">{formatDate(item.publishedAt)}</span>
+                <span className="text-slate-300">·</span>
+                <span className="text-slate-500">{formatDate(item.publishedAt)}</span>
               </div>
 
-              <h3 className="font-display text-2xl sm:text-3xl uppercase text-ink">
+              <h3 className="font-display font-bold text-xl sm:text-2xl text-slate-900">
                 {item.title}
               </h3>
 
-              <p className="font-body text-base text-ink leading-relaxed max-w-4xl whitespace-pre-line">
+              <p className="text-slate-700 text-sm sm:text-base leading-relaxed whitespace-pre-line max-w-4xl font-body">
                 {item.body}
               </p>
             </div>

@@ -3,60 +3,52 @@
 @tailwind utilities;
 
 /* ==========================================================================
-   EVENTMESH — AMBIENT LIGHT ENTERTAINMENT DESIGN SYSTEM
-   Inspired by BookMyShow, Netflix & District (Luma / Dice)
+   EVENTMESH — GOOGLE MATERIAL DESIGN 3 (M3) SYSTEM
+   Streamlined, Accessible, Unified Tonal Architecture
    ========================================================================== */
 
 :root {
-  /* Universal Ambient Light Foundation */
-  --paper: #FAFAF9;              /* Canvas background: warm bright modern stone */
-  --canvas: #FAFAF9;
-  --surface: #FFFFFF;            /* Pure white card surface */
-  --surface-subtle: #F4F4F5;
-  --ink: #09090B;                /* Primary text: deep obsidian */
-  --ink-60: #64748B;             /* Secondary metadata: slate 500 */
-  --ink-15: rgba(0, 0, 0, 0.08); /* Crisp borders and dividers */
-  --paper-deep: #F1F5F9;
-  --premium: #F59E0B;            /* Vibrant gold badge */
+  /* Google M3 Core Light Scheme */
+  --md-primary: #1A73E8;                  /* Google Blue */
+  --md-on-primary: #FFFFFF;
+  --md-primary-container: #E8F0FE;        /* Soft Blue Tonal Container */
+  --md-on-primary-container: #041E49;
+  
+  --md-surface: #F8F9FA;                  /* Google Surface 0 */
+  --md-surface-card: #FFFFFF;             /* Google Surface 1 (Card) */
+  --md-on-surface: #1F1F1F;               /* Text Primary */
+  --md-on-surface-variant: #5F6368;       /* Text Secondary */
+  --md-outline: #DADCE0;                  /* Hairline Divider */
 
-  /* Entertainment Primary Accent */
-  --primary: #E50914;            /* Netflix vibrant red */
-  --primary-hover: #CC0813;
-  --primary-glow: rgba(229, 9, 20, 0.2);
-
-  /* Organizer Dynamic Tokens (defaults, overridden per event) */
-  --event: #2563EB;              /* Modern vibrant blue default */
-  --on-event: #FFFFFF;           /* Contrast text color */
-  --ambient-color: rgba(37, 99, 235, 0.15);
-
-  /* Admin Console System */
-  --admin-canvas: #0A0F1D;       /* High-density admin console */
-  --admin-sidebar: #0D1527;
-  --admin-accent: #1F5F5B;
-  --admin-on-accent: #FFFFFF;
-  --admin-border: #1E293B;
+  /* Legacy Mapping */
+  --paper: #F8F9FA;
+  --canvas: #F8F9FA;
+  --surface: #FFFFFF;
+  --ink: #1F1F1F;
+  --ink-60: #5F6368;
+  --ink-15: #DADCE0;
+  --paper-deep: #F1F3F4;
+  --premium: #E37400;
+  --event: #1A73E8;
+  --on-event: #FFFFFF;
 
   /* Typography */
-  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Roboto', system-ui, sans-serif;
+  --font-body: 'Plus Jakarta Sans', 'Roboto', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-
-  /* Motion */
-  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Base Reset & Smooth Rendering */
+/* Material Global Surface & Typography Reset */
 html {
-  background-color: var(--paper);
-  color: var(--ink);
+  background-color: var(--md-surface);
+  color: var(--md-on-surface);
   scroll-behavior: smooth;
   font-size: 16px;
 }
 
 body {
-  background-color: var(--paper);
-  color: var(--ink);
+  background-color: var(--md-surface);
+  color: var(--md-on-surface);
   font-family: var(--font-body);
   font-weight: 400;
   line-height: 1.5;
@@ -66,34 +58,31 @@ body {
 }
 
 ::selection {
-  background: rgba(229, 9, 20, 0.15);
-  color: var(--ink);
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
 }
 
-/* Glassmorphism & Ambient Utility Classes */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+/* Material 3 Card Elevation Helpers */
+.m3-card {
+  background: #FFFFFF;
+  border: 1px solid #DADCE0;
+  border-radius: 20px;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.glass-pill {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+.m3-card:hover {
+  box-shadow: 0 4px 12px rgba(60, 64, 67, 0.15);
+  border-color: #BDC1C6;
 }
 
-.ambient-glow {
-  position: absolute;
-  filter: blur(60px);
-  pointer-events: none;
-  border-radius: 9999px;
-  z-index: 0;
+/* Material 3 App Bar */
+.m3-appbar {
+  background: #FFFFFF;
+  border-bottom: 1px solid #DADCE0;
 }
 
-/* Smooth Horizontal Carousel Scrollbar Hiding */
+/* Carousel Scrollbar Hiding */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -102,28 +91,8 @@ body {
   scrollbar-width: none;
 }
 
-/* Custom Clean Scrollbar for Desktops */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--paper);
-}
-
-::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border-radius: 9999px;
-  border: 2px solid var(--paper);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
-}
-
 /* Accessibility Focus States */
 :focus-visible {
-  outline: 2px solid #2563EB;
+  outline: 2px solid #1A73E8;
   outline-offset: 2px;
 }

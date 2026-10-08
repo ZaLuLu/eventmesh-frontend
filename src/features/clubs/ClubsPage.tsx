@@ -9,12 +9,12 @@ export const ClubsPage: React.FC = () => {
   return (
     <div className="w-full bg-canvas text-ink min-h-screen">
       {/* Header Banner */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-6 border-b border-slate-200/80">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-6 border-b border-[#DADCE0]">
         <div>
-          <span className="text-xs font-bold text-brand-red uppercase tracking-wider block mb-1">
+          <span className="text-xs font-semibold text-md-primary tracking-normal block mb-1">
             Autonomous Collectives & Guilds
           </span>
-          <h1 className="font-display font-extrabold text-3xl sm:text-4xl text-slate-900 tracking-tight">
+          <h1 className="font-display font-bold text-3xl sm:text-4xl text-slate-900 tracking-tight">
             The 9 Technical Clubs
           </h1>
           <p className="text-sm text-slate-500 mt-1 max-w-xl font-medium">
@@ -28,21 +28,18 @@ export const ClubsPage: React.FC = () => {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-56 rounded-3xl bg-slate-200/60 animate-pulse" />
+              <div key={i} className="h-56 rounded-2xl bg-slate-200/60 animate-pulse" />
             ))}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {clubs.map((club, index) => {
-              const color = club.color || '#2563EB'
+              const color = club.color || '#1A73E8'
               return (
                 <Link
                   key={club.id}
                   to={`/clubs/${club.slug}`}
-                  className="group relative flex flex-col justify-between p-6 rounded-3xl bg-white border border-slate-200/90 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 overflow-hidden"
-                  style={{
-                    ['--ambient-color' as string]: `${color}20`,
-                  }}
+                  className="group relative flex flex-col justify-between p-6 rounded-2xl bg-white border border-[#DADCE0] shadow-subtle hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 overflow-hidden"
                 >
                   {/* Accent Top Stripe */}
                   <div
@@ -54,7 +51,7 @@ export const ClubsPage: React.FC = () => {
                     {/* Club Header & Avatar */}
                     <div className="flex items-center justify-between mb-4">
                       <div
-                        className="h-12 w-12 rounded-2xl flex items-center justify-center text-white font-extrabold text-sm shadow-md transition-transform group-hover:scale-105"
+                        className="h-12 w-12 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-xs transition-transform group-hover:scale-105"
                         style={{ backgroundColor: color }}
                       >
                         {club.name.slice(0, 3).toUpperCase()}
@@ -65,7 +62,7 @@ export const ClubsPage: React.FC = () => {
                       </span>
                     </div>
 
-                    <h2 className="font-display font-bold text-xl text-slate-900 group-hover:text-brand-red transition-colors mb-2">
+                    <h2 className="font-display font-bold text-xl text-slate-900 group-hover:text-md-primary transition-colors mb-2">
                       {club.name}
                     </h2>
 
@@ -81,7 +78,7 @@ export const ClubsPage: React.FC = () => {
                       <span>{club.followersCount || 40}+ Members</span>
                     </div>
 
-                    <div className="flex items-center gap-1 text-xs font-bold text-brand-red group-hover:translate-x-1 transition-transform">
+                    <div className="flex items-center gap-1 text-xs font-semibold text-md-primary group-hover:translate-x-1 transition-transform">
                       <span>Explore</span>
                       <ArrowRight className="h-3.5 w-3.5" />
                     </div>

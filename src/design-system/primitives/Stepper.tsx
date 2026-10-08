@@ -22,45 +22,50 @@ export const Stepper: React.FC<StepperProps> = ({
 }) => {
   return (
     <nav aria-label="Progress" className={`w-full overflow-x-auto ${className}`}>
-      <ol className="flex items-center gap-2 sm:gap-4 min-w-max pb-2">
+      <ol className="flex items-center gap-3 sm:gap-6 min-w-max pb-2">
         {steps.map((step, idx) => {
           const isCurrent = idx === currentStep
           const isCompleted = idx < currentStep
           const isClickable = Boolean(onStepClick && idx <= currentStep)
 
-          const activeColor =
-            surface === 'admin'
-              ? isCurrent
-                ? 'bg-admin-accent text-white border-admin-accent'
-                : isCompleted
-                ? 'bg-ink text-paper border-ink'
-                : 'bg-paper text-ink-60 border-admin-border'
-              : isCurrent
-              ? 'bg-ink text-paper border-ink'
-              : isCompleted
-              ? 'bg-paper-deep text-ink border-ink-15'
-              : 'bg-paper text-ink-60 border-ink-15'
-
           return (
-            <li key={step.id} className="flex items-center gap-2 sm:gap-3">
+            <li key={step.id} className="flex items-center gap-3 sm:gap-4">
               <button
                 type="button"
                 disabled={!isClickable}
                 onClick={() => onStepClick && onStepClick(idx)}
-                className={`flex items-center gap-2 border px-3 py-1.5 transition-colors ${activeColor} ${
-                  isClickable ? 'cursor-pointer hover:border-ink' : 'cursor-default'
+                className={`flex items-center gap-2.5 transition-all text-left ${
+                  isClickable ? 'cursor-pointer' : 'cursor-default'
                 }`}
               >
-                <span className="font-mono text-[10px] font-bold">
-                  {String(idx + 1).padStart(2, '0')}
-                </span>
-                <span className="font-mono text-[11px] uppercase tracking-widecaps font-medium">
+                {/* M3 Circular Indicator */}
+                <div
+                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                    isCurrent
+                      ? 'bg-md-primary text-white shadow-xs'
+                      : isCompleted
+                      ? 'bg-md-primary-container text-md-primary'
+                      : 'bg-[#F1F3F4] text-slate-500'
+                  }`}
+                >
+                  {isCompleted ? '✓' : idx + 1}
+                </div>
+
+                <span
+                  className={`text-xs font-semibold tracking-normal ${
+                    isCurrent
+                      ? 'text-md-on-surface font-bold'
+                      : isCompleted
+                      ? 'text-md-primary font-medium'
+                      : 'text-slate-500 font-medium'
+                  }`}
+                >
                   {step.label}
                 </span>
               </button>
 
               {idx < steps.length - 1 && (
-                <span className="text-ink-15 font-mono text-xs select-none">→</span>
+                <div className="w-8 sm:w-12 h-0.5 bg-[#DADCE0] select-none" />
               )}
             </li>
           )

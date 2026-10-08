@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShieldCheck, UserCheck, RefreshCw, ArrowRight } from 'lucide-react'
+import { ShieldCheck, UserCheck, RefreshCw, ArrowRight, Check } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { SEED_DEMO_USERS } from '@/api/adapters/mock/seedData'
 import { mockStore } from '@/api/adapters/mock'
@@ -16,16 +16,16 @@ export const DevAccountsPage: React.FC = () => {
     try {
       const user = await switchDemoAccount({ role, clubId })
       toast({
-        title: 'Demo Identity Activated',
+        title: 'Demo Persona Activated',
         message: `Now acting as ${user.name} (${user.role}).`,
         type: 'success',
       })
       if (['platform_admin', 'org_admin', 'club_admin', 'volunteer'].includes(user.role)) {
         navigate('/admin')
       } else {
-        navigate('/me')
+        navigate('/attendee/dashboard')
       }
-    } catch (err) {
+    } catch {
       toast({ title: 'Switch failed', type: 'error' })
     }
   }
@@ -35,7 +35,7 @@ export const DevAccountsPage: React.FC = () => {
       mockStore.reset()
       toast({
         title: 'Mock Database Reset',
-        message: 'All 30 events, clubs, registrations, and certificates restored to seed defaults.',
+        message: 'All events, clubs, registrations, and certificates restored to seed defaults.',
         type: 'info',
       })
       window.location.reload()
@@ -43,18 +43,18 @@ export const DevAccountsPage: React.FC = () => {
   }
 
   return (
-    <div className="w-full bg-paper text-ink min-h-screen py-12 sm:py-20">
-      <div className="px-[4vw] max-w-4xl mx-auto space-y-10">
-        <div className="border-b border-ink-15 pb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+    <div className="w-full bg-canvas text-md-on-surface min-h-screen py-10 sm:py-16">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-8">
+        <div className="border-b border-[#DADCE0] pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <span className="font-mono text-[11px] uppercase tracking-widecaps text-ink-60 block mb-2">
-              Development & Evaluation Environment
+            <span className="text-xs font-semibold text-md-primary block mb-1">
+              Development Environment
             </span>
-            <h1 className="font-display text-4xl sm:text-6xl uppercase text-ink">
-              Dev Accounts Matrix
+            <h1 className="font-display font-bold text-3xl sm:text-4xl text-slate-900 tracking-tight">
+              Demo Personas & Role Switcher
             </h1>
-            <p className="font-body text-sm sm:text-base text-ink-60 mt-2 max-w-xl">
-              Switch instantaneous personas across platform admin, organization president, independent club leads, check-in volunteers, and attendees.
+            <p className="text-sm text-slate-500 mt-1 max-w-xl font-medium">
+              Switch instantaneous personas across platform administrator, organization executive, independent club leads, check-in volunteers, and attendees.
             </p>
           </div>
 
@@ -69,20 +69,20 @@ export const DevAccountsPage: React.FC = () => {
         </div>
 
         {/* Current Active Persona */}
-        <div className="p-6 border-2 border-ink bg-paper-deep/30 flex items-center justify-between">
+        <div className="p-6 rounded-2xl border border-[#D3E3FD] bg-md-primary-container text-md-on-primary-container flex items-center justify-between shadow-subtle">
           <div>
-            <span className="font-mono text-[10px] uppercase text-ink-60 block mb-1">
-              Currently Activated Identity
+            <span className="text-xs font-semibold text-md-primary uppercase tracking-normal block mb-1">
+              Currently Active Persona
             </span>
-            <p className="font-display text-2xl uppercase text-ink">
+            <p className="font-display font-bold text-xl sm:text-2xl text-slate-900">
               {session?.name || 'Anonymous Visitor'}
             </p>
-            <p className="font-mono text-xs uppercase text-ink-60 mt-0.5">
+            <p className="text-xs text-slate-600 mt-0.5 font-medium">
               Role: {session?.role || 'None'} {session?.clubName ? `· Club: ${session.clubName}` : ''}
             </p>
           </div>
 
-          <span className="h-3 w-3 bg-emerald-600 rounded-full" />
+          <span className="h-3 w-3 bg-emerald-500 rounded-full animate-pulse" />
         </div>
 
         {/* Personas Grid */}
@@ -93,54 +93,45 @@ export const DevAccountsPage: React.FC = () => {
             return (
               <div
                 key={user.id}
-                className={`p-6 border-2 transition-all flex flex-col justify-between space-y-6 ${
-                  isCurrent ? 'border-ink bg-paper shadow-none' : 'border-ink-15 hover:border-ink bg-paper'
+                className={`p-6 rounded-2xl border transition-all flex flex-col justify-between space-y-5 ${
+                  isCurrent
+                    ? 'border-md-primary bg-white shadow-card ring-2 ring-md-primary/20'
+                    : 'border-[#DADCE0] hover:border-slate-300 bg-white shadow-subtle hover:shadow-card-hover'
                 }`}
               >
                 <div>
-                  <div className="flex items-center justify-between font-mono text-[10px] uppercase mb-2">
-                    <span className="font-bold text-ink bg-paper-deep px-2 py-0.5 border border-ink-15">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-[#F1F3F4] text-slate-700">
                       {user.role.replace('_', ' ')}
                     </span>
-                    {user.clubName && (
-                      <span className="flex items-center gap-1.5 font-semibold text-ink">
-                        <span
-                          className="h-2 w-2 inline-block"
-                          style={{ backgroundColor: user.clubColor }}
-                        />
-                        {user.clubName}
+                    {isCurrent && (
+                      <span className="text-xs font-bold text-md-primary flex items-center gap-1">
+                        <Check className="h-3.5 w-3.5" /> Active
                       </span>
                     )}
                   </div>
 
-                  <h3 className="font-display text-2xl uppercase text-ink">{user.name}</h3>
-                  <p className="font-mono text-xs text-ink-60 mt-1">{user.email}</p>
+                  <h3 className="font-display font-bold text-lg text-slate-900">
+                    {user.name}
+                  </h3>
 
-                  <p className="font-body text-xs text-ink-60 mt-3">
-                    {user.role === 'platform_admin' &&
-                      'Superuser: complete sovereign control across all clubs, settings, and audits.'}
-                    {user.role === 'org_admin' &&
-                      'President: full organization governance, approvals, analytics, and all clubs.'}
-                    {user.role === 'club_admin' &&
-                      `Scoped Admin: isolated control strictly over ${user.clubName}. Cannot view or edit other clubs.`}
-                    {user.role === 'volunteer' &&
-                      'Mobile scanner desk: fast ticket check-in and attendance counting.'}
-                    {user.role === 'attendee' &&
-                      'Member: browse, register, inspect access passes, and download certificates.'}
+                  <p className="text-xs text-slate-500 mt-1 font-mono">
+                    {user.email}
+                  </p>
+
+                  <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                    {user.clubName ? `Associated with ${user.clubName}` : `Global ${user.role.replace('_', ' ')} permissions`}
                   </p>
                 </div>
 
-                <div>
-                  <Button
-                    variant={isCurrent ? 'secondary' : 'primary'}
-                    size="sm"
-                    fullWidth
-                    disabled={isCurrent}
-                    onClick={() => handleSelectAccount(user.role, user.clubId)}
-                  >
-                    {isCurrent ? 'Active Persona' : 'Switch To This Account'}
-                  </Button>
-                </div>
+                <Button
+                  size="sm"
+                  variant={isCurrent ? 'secondary' : 'primary'}
+                  fullWidth
+                  onClick={() => handleSelectAccount(user.role, user.clubId)}
+                >
+                  {isCurrent ? 'Switch Again' : `Switch to ${user.name.split(' ')[0]}`}
+                </Button>
               </div>
             )
           })}

@@ -51,10 +51,7 @@ export const EventCardModern: React.FC<EventCardModernProps> = ({
     <div
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="group relative flex flex-col rounded-2xl bg-white border border-slate-200/90 shadow-card hover:shadow-card-hover transition-all duration-300 overflow-hidden"
-      style={{
-        ['--ambient-color' as string]: `${accentColor}25`,
-      }}
+      className="group relative flex flex-col rounded-2xl bg-white border border-[#DADCE0] shadow-subtle hover:shadow-card-hover transition-all duration-300 overflow-hidden hover:-translate-y-1"
     >
       {/* Top Media Container */}
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
@@ -66,11 +63,11 @@ export const EventCardModern: React.FC<EventCardModernProps> = ({
         />
 
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-black/10" />
 
-        {/* Date Stamp Ribbon (Top Left) */}
-        <div className="absolute top-3 left-3 rounded-xl bg-white/95 backdrop-blur-md px-2.5 py-1 text-center shadow-md border border-white/20">
-          <span className="block text-[10px] font-black tracking-wider text-brand-red leading-none">
+        {/* M3 Date Stamp Ribbon (Top Left) */}
+        <div className="absolute top-3 left-3 rounded-xl bg-white/95 backdrop-blur-md px-2.5 py-1 text-center shadow-xs border border-[#DADCE0]">
+          <span className="block text-[10px] font-bold tracking-wider text-md-primary leading-none">
             {monthStr}
           </span>
           <span className="block text-base font-extrabold text-slate-900 leading-tight">
@@ -80,7 +77,7 @@ export const EventCardModern: React.FC<EventCardModernProps> = ({
 
         {/* Category Tag (Top Right) */}
         <div className="absolute top-3 right-3">
-          <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md bg-black/50 border border-white/20 shadow-xs">
+          <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-normal text-slate-800 backdrop-blur-md bg-white/90 border border-[#DADCE0] shadow-2xs">
             {event.category}
           </span>
         </div>
@@ -88,15 +85,15 @@ export const EventCardModern: React.FC<EventCardModernProps> = ({
         {/* Fast Filling Badge (Bottom Left of Media) */}
         {isFastFilling && (
           <div className="absolute bottom-2.5 left-3">
-            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold text-white bg-brand-red/90 backdrop-blur-xs shadow-xs animate-pulse-slow">
-              🔥 Fast Filling
+            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold text-[#B06000] bg-[#FEF7E0] border border-[#FEEFC3] shadow-2xs">
+              ⚡ Filling Fast
             </span>
           </div>
         )}
 
         {/* Free Pass Tag (Bottom Right of Media) */}
         <div className="absolute bottom-2.5 right-3">
-          <span className="rounded-md bg-emerald-500 text-white text-[10px] font-extrabold uppercase px-2 py-0.5 shadow-xs">
+          <span className="rounded-md bg-[#E6F4EA] text-[#137333] border border-[#CEEAD6] text-[10px] font-bold uppercase px-2 py-0.5 shadow-2xs">
             Free Pass
           </span>
         </div>
@@ -117,7 +114,7 @@ export const EventCardModern: React.FC<EventCardModernProps> = ({
           </div>
 
           {event.certificateInfo && (
-            <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+            <span className="flex items-center gap-1 text-[11px] font-medium text-[#137333] bg-[#E6F4EA] border border-[#CEEAD6] px-2 py-0.5 rounded-full">
               <Award className="h-3 w-3" />
               Certificate
             </span>
@@ -125,7 +122,7 @@ export const EventCardModern: React.FC<EventCardModernProps> = ({
         </div>
 
         {/* Title */}
-        <Link to={`/events/${event.slug}`} className="group-hover:text-brand-red transition-colors">
+        <Link to={`/events/${event.slug}`} className="group-hover:text-md-primary transition-colors">
           <h3 className="font-display font-bold text-base sm:text-lg text-slate-900 line-clamp-2 leading-snug mb-2">
             {event.title}
           </h3>
@@ -143,14 +140,14 @@ export const EventCardModern: React.FC<EventCardModernProps> = ({
           </div>
         </div>
 
-        {/* Capacity Progress Bar (BookMyShow Urgency) */}
+        {/* Capacity Progress Bar */}
         <div className="mt-auto pt-3 border-t border-slate-100">
-          <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1 font-medium">
+          <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1.5 font-medium">
             <span className="flex items-center gap-1">
               <Users className="h-3 w-3 text-slate-400" />
               <span>{registeredCount} Registered</span>
             </span>
-            <span className={isFastFilling ? 'text-brand-red font-bold' : 'text-slate-600'}>
+            <span className={isFastFilling ? 'text-amber-700 font-bold' : 'text-slate-600'}>
               {spotsPercent}% booked
             </span>
           </div>
@@ -158,7 +155,7 @@ export const EventCardModern: React.FC<EventCardModernProps> = ({
           <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
-                isFastFilling ? 'bg-brand-red' : 'bg-brand-blue'
+                isFastFilling ? 'bg-amber-500' : 'bg-md-primary'
               }`}
               style={{ width: `${spotsPercent}%` }}
             />

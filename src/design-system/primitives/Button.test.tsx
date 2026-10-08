@@ -3,12 +3,12 @@ import { describe, it, expect } from 'vitest'
 import { Button } from './Button'
 
 describe('Button primitive', () => {
-  it('renders children with uppercase font and default classes', () => {
+  it('renders children with clean typography and default classes', () => {
     render(<Button>Register Now</Button>)
     const btn = screen.getByRole('button', { name: /Register Now/i })
     expect(btn).toBeInTheDocument()
     expect(btn).toHaveClass('font-semibold')
-    expect(btn).toHaveClass('uppercase')
+    expect(btn).toHaveClass('tracking-normal')
   })
 
   it('applies disabled state when disabled prop is provided', () => {

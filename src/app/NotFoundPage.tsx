@@ -4,18 +4,18 @@ import { Button } from '@/design-system/primitives/Button'
 
 export const NotFoundPage: React.FC = () => {
   return (
-    <div className="w-full min-h-[70vh] bg-paper flex flex-col items-center justify-center p-8 text-center">
-      <span className="font-mono text-xs uppercase tracking-wide text-ink-60 mb-2">
-        Error 404 · Uncatalogued Entry
+    <div className="w-full min-h-[70vh] bg-canvas flex flex-col items-center justify-center p-8 text-center">
+      <span className="text-xs font-semibold text-md-primary mb-2">
+        Error 404 · Page Not Found
       </span>
-      <h1 className="font-display text-6xl sm:text-8xl uppercase text-ink mb-4">
-        Void Space
+      <h1 className="font-display text-5xl sm:text-7xl font-bold text-slate-900 mb-4 tracking-tight">
+        404
       </h1>
-      <p className="font-body text-base text-ink-60 max-w-md mb-8">
-        The requested archival link does not resolve to an active exhibition, collective dossier, or system route.
+      <p className="font-body text-sm text-slate-500 max-w-md mb-8">
+        The page you are looking for does not exist or may have been moved.
       </p>
       <Link to="/">
-        <Button size="md" arrow>Return to Exhibition Ground</Button>
+        <Button size="md" variant="primary" arrow>Back to Home</Button>
       </Link>
     </div>
   )

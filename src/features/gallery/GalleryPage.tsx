@@ -12,54 +12,57 @@ export const GalleryPage: React.FC = () => {
   )
 
   return (
-    <div className="w-full bg-paper text-ink min-h-screen">
-      <div className="px-[4vw] pt-12 pb-8 border-b border-ink-15">
-        <span className="font-mono text-[11px] uppercase tracking-widecaps text-ink-60 block mb-2">
-          Archival Photography & Artifacts
-        </span>
-        <h1 className="font-display text-5xl sm:text-7xl uppercase text-ink">
-          Exhibition Gallery
-        </h1>
-        <p className="font-body text-base text-ink-60 max-w-xl mt-3">
-          Documentary records from autonomous robot arenas, algorithmic coding sprints, hardware fabrication labs, and symposiums.
-        </p>
+    <div className="w-full bg-canvas text-md-on-surface min-h-screen pb-16">
+      {/* Header Banner */}
+      <div className="bg-white border-b border-[#DADCE0]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-8">
+          <span className="text-xs font-semibold text-md-primary block mb-1">
+            Community Moments
+          </span>
+          <h1 className="font-display font-bold text-3xl sm:text-4xl text-slate-900 tracking-tight">
+            Event Gallery
+          </h1>
+          <p className="text-sm text-slate-500 mt-1 max-w-xl font-medium">
+            Moments captured from hackathons, robotic arenas, build sprints, and tech talks across clubs.
+          </p>
+        </div>
       </div>
 
-      <div className="px-[4vw] py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {isLoading ? (
-          <div className="py-20 text-center font-mono text-xs uppercase text-ink-60">
-            Developing Archival Negatives...
+          <div className="py-20 text-center text-xs text-slate-500">
+            Loading photo gallery...
           </div>
         ) : allPhotos.length === 0 ? (
-          <EmptyState title="No Photography Archived" />
+          <EmptyState title="No Photography Available" />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {allPhotos.map((item, idx) => (
               <div
                 key={item.id}
                 onClick={() => setActivePhoto(item)}
-                className="group border border-ink-15 bg-paper-deep/30 cursor-pointer overflow-hidden flex flex-col justify-between"
+                className="group rounded-2xl border border-[#DADCE0] bg-white shadow-subtle hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden flex flex-col justify-between"
               >
-                <div className="relative aspect-[4/3] overflow-hidden bg-paper-deep">
+                <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
                   <img
                     src={item.url}
-                    alt={item.caption || 'Exhibition documentary image'}
-                    className="w-full h-full object-cover grayscale-[15%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+                    alt={item.caption || 'Event image'}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-ink/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-paper">
+                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
                     <ZoomIn className="h-6 w-6" />
                   </div>
                 </div>
 
-                <div className="p-4 border-t border-ink-15 bg-paper flex items-center justify-between font-mono text-[11px] uppercase">
-                  <span className="font-semibold text-ink truncate max-w-[200px]">
+                <div className="p-4 bg-white flex items-center justify-between text-xs">
+                  <span className="font-semibold text-slate-800 truncate max-w-[200px]">
                     {item.clubName}
                   </span>
-                  <span className="text-ink-60">FIG. 0{idx + 1}</span>
+                  <span className="text-slate-400 font-medium">Photo #{idx + 1}</span>
                 </div>
 
                 {item.caption && (
-                  <p className="px-4 pb-4 font-body text-xs text-ink-60 line-clamp-2">
+                  <p className="px-4 pb-4 text-xs text-slate-500 line-clamp-2">
                     {item.caption}
                   </p>
                 )}
@@ -69,16 +72,16 @@ export const GalleryPage: React.FC = () => {
         )}
       </div>
 
-      {/* Lightbox Dialog with Keyboard Support */}
+      {/* Lightbox Dialog */}
       {activePhoto && (
         <div
           onClick={() => setActivePhoto(null)}
-          className="fixed inset-0 z-50 bg-ink/90 p-4 sm:p-8 flex flex-col items-center justify-center"
+          className="fixed inset-0 z-50 bg-black/80 p-4 sm:p-8 flex flex-col items-center justify-center cursor-pointer"
         >
           <button
             type="button"
             onClick={() => setActivePhoto(null)}
-            className="absolute top-6 right-6 p-2 text-paper hover:text-white"
+            className="absolute top-6 right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
             aria-label="Close photo"
           >
             <X className="h-6 w-6" />
@@ -87,12 +90,12 @@ export const GalleryPage: React.FC = () => {
           <img
             src={activePhoto.url}
             alt={activePhoto.caption || 'Expanded photograph'}
-            className="max-w-5xl max-h-[80vh] object-contain border-2 border-paper"
+            className="max-w-5xl max-h-[80vh] object-contain rounded-2xl shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           />
 
           {activePhoto.caption && (
-            <p className="mt-4 font-mono text-xs uppercase tracking-wide text-paper max-w-xl text-center">
+            <p className="mt-4 text-xs font-medium text-white/90 max-w-xl text-center bg-black/60 px-4 py-2 rounded-full backdrop-blur-sm">
               {activePhoto.clubName} · {activePhoto.caption}
             </p>
           )}

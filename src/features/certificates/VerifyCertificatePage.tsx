@@ -18,102 +18,96 @@ export const VerifyCertificatePage: React.FC = () => {
   }
 
   return (
-    <div className="w-full bg-paper text-ink min-h-screen py-12 sm:py-20">
-      <div className="px-[4vw] max-w-2xl mx-auto space-y-10">
-        <div className="text-center space-y-3">
-          <span className="font-mono text-[11px] uppercase tracking-widecaps text-ink-60 block">
-            Cryptographic Registry
+    <div className="w-full bg-canvas text-md-on-surface min-h-screen py-10 sm:py-16">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 space-y-8">
+        <div className="text-center space-y-2">
+          <span className="text-xs font-semibold text-md-primary block">
+            Digital Credential Verification
           </span>
-          <h1 className="font-display text-4xl sm:text-6xl uppercase text-ink">
-            Certificate Verification
+          <h1 className="font-display font-bold text-3xl sm:text-4xl text-slate-900 tracking-tight">
+            Verify Certificate
           </h1>
-          <p className="font-body text-sm sm:text-base text-ink-60 max-w-lg mx-auto">
-            Public verification portal for authenticating symposium and hackathon distinction credentials issued by the Technical Association.
+          <p className="text-xs sm:text-sm text-slate-500 max-w-lg mx-auto">
+            Public verification portal for authenticating digital credentials and certificates issued across events and hackathons.
           </p>
         </div>
 
         {/* Verification Lookup Input */}
-        <form onSubmit={handleSearch} className="flex items-center gap-2 border-2 border-ink p-1 bg-paper">
+        <form onSubmit={handleSearch} className="flex items-center gap-2 rounded-full border border-[#DADCE0] p-1.5 bg-white shadow-subtle">
+          <Search className="h-4 w-4 text-slate-400 ml-3" />
           <input
             type="text"
             value={searchId}
             onChange={(e) => setSearchId(e.target.value)}
-            placeholder="Enter Certificate Serial (e.g. TA-2026-001245)..."
-            className="w-full bg-transparent font-mono text-sm uppercase px-4 py-3 focus:outline-none"
+            placeholder="Enter Certificate ID (e.g. TA-2026-001245)..."
+            className="w-full bg-transparent font-body text-xs sm:text-sm px-2 py-2 focus:outline-none placeholder:text-slate-400"
           />
-          <Button type="submit" size="sm">
+          <Button type="submit" size="sm" variant="primary">
             Verify
           </Button>
         </form>
 
         {/* Verification Result Card */}
         {isLoading ? (
-          <div className="p-12 text-center font-mono text-xs uppercase text-ink-60 border border-ink-15">
+          <div className="p-12 text-center text-xs text-slate-500 rounded-2xl border border-[#DADCE0] bg-white">
             Querying Authentication Registry...
           </div>
         ) : certificateId ? (
           record && record.isValid ? (
-            <div className="border-2 border-ink bg-paper p-8 space-y-6">
-              <div className="flex items-center gap-3 text-emerald-800 border-b border-ink-15 pb-4">
+            <div className="rounded-3xl border border-[#CEEAD6] bg-white p-6 sm:p-8 shadow-card-hover space-y-6">
+              <div className="flex items-center gap-3 text-[#137333] border-b border-[#CEEAD6] pb-4">
                 <CheckCircle2 className="h-6 w-6 flex-shrink-0" />
                 <div>
-                  <h3 className="font-display text-2xl uppercase text-ink">
-                    Authentic & Valid
+                  <h3 className="font-display font-bold text-xl text-slate-900">
+                    Authentic & Valid Certificate
                   </h3>
-                  <p className="font-mono text-xs uppercase text-ink-60">
-                    Official record found in central ledger
+                  <p className="text-xs text-[#137333]">
+                    Official verified credential record found
                   </p>
                 </div>
               </div>
 
-              <div className="divide-y divide-ink-15 font-body text-sm">
+              <div className="divide-y divide-[#DADCE0] text-xs sm:text-sm font-body">
                 <div className="py-3 flex justify-between">
-                  <span className="font-mono text-xs uppercase text-ink-60">Serial ID</span>
-                  <span className="font-mono font-bold text-ink">{record.certificateId}</span>
+                  <span className="text-slate-500">Certificate ID</span>
+                  <span className="font-mono font-bold text-slate-900">{record.certificateId}</span>
                 </div>
                 <div className="py-3 flex justify-between">
-                  <span className="font-mono text-xs uppercase text-ink-60">Recipient</span>
-                  <span className="font-semibold text-ink">{record.recipientName}</span>
+                  <span className="text-slate-500">Recipient Name</span>
+                  <span className="font-semibold text-slate-900">{record.recipientName}</span>
                 </div>
                 <div className="py-3 flex justify-between">
-                  <span className="font-mono text-xs uppercase text-ink-60">Exhibition / Event</span>
-                  <span className="font-semibold text-ink">{record.eventTitle}</span>
+                  <span className="text-slate-500">Event Title</span>
+                  <span className="font-semibold text-slate-900">{record.eventTitle}</span>
                 </div>
                 <div className="py-3 flex justify-between">
-                  <span className="font-mono text-xs uppercase text-ink-60">Issuing Collective</span>
-                  <span className="font-semibold text-ink">{record.organizerName}</span>
+                  <span className="text-slate-500">Issuing Club</span>
+                  <span className="font-semibold text-slate-900">{record.organizerName}</span>
                 </div>
                 <div className="py-3 flex justify-between">
-                  <span className="font-mono text-xs uppercase text-ink-60">Issue Date</span>
-                  <span className="font-mono text-ink">
+                  <span className="text-slate-500">Issue Date</span>
+                  <span className="text-slate-900">
                     {record.issuedAt ? formatDate(record.issuedAt) : '—'}
                   </span>
                 </div>
               </div>
 
-              <div className="p-3 bg-paper-deep/50 border border-ink-15 font-mono text-[11px] uppercase text-ink-60 text-center">
+              <div className="p-3 bg-[#F8F9FA] rounded-xl border border-[#DADCE0] text-xs text-slate-500 text-center">
                 Verified at {new Date(record.verifiedAt).toLocaleString()}
               </div>
             </div>
           ) : (
-            <div className="border-2 border-[#A32828] bg-[#A32828]/5 p-8 space-y-4 text-center">
-              <XCircle className="h-8 w-8 text-[#A32828] mx-auto" />
-              <h3 className="font-display text-2xl uppercase text-[#A32828]">
-                Invalid or Unrecognized Record
+            <div className="rounded-3xl border border-[#FAD2CF] bg-[#FCE8E6]/40 p-8 space-y-4 text-center">
+              <XCircle className="h-8 w-8 text-[#D93025] mx-auto" />
+              <h3 className="font-display font-bold text-xl text-slate-900">
+                Invalid Certificate
               </h3>
-              <p className="font-body text-sm text-ink max-w-md mx-auto">
-                No certificate could be verified under the serial{' '}
-                <span className="font-mono font-bold">{certificateId}</span>. Please verify the code on your issued document.
+              <p className="text-xs text-slate-600">
+                No matching verified credential was found for ID "{certificateId}". Please verify the serial code and try again.
               </p>
             </div>
           )
         ) : null}
-
-        <div className="text-center pt-4">
-          <Link to="/explore" className="font-mono text-xs uppercase text-ink underline">
-            Return to Public Catalogue
-          </Link>
-        </div>
       </div>
     </div>
   )

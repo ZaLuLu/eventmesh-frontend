@@ -69,13 +69,13 @@ export const ExplorePage: React.FC = () => {
   return (
     <div className="w-full bg-canvas text-ink min-h-screen">
       {/* Header Banner */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-6 border-b border-slate-200/80">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-6 border-b border-[#DADCE0]">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <span className="text-xs font-bold text-brand-red uppercase tracking-wider block mb-1">
+            <span className="text-xs font-semibold text-md-primary tracking-normal block mb-1">
               Discovery & Live Feed
             </span>
-            <h1 className="font-display font-extrabold text-3xl sm:text-4xl text-slate-900 tracking-tight">
+            <h1 className="font-display font-bold text-3xl sm:text-4xl text-slate-900 tracking-tight">
               Explore All Live Events
             </h1>
             <p className="text-sm text-slate-500 mt-1 max-w-xl font-medium">
@@ -84,7 +84,7 @@ export const ExplorePage: React.FC = () => {
           </div>
 
           {/* View Mode Toggle */}
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200 self-start md:self-auto">
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 border border-[#DADCE0] self-start md:self-auto">
             <button
               type="button"
               onClick={() => setViewMode('grid')}
@@ -123,12 +123,12 @@ export const ExplorePage: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setParam('search', e.target.value)}
             placeholder="Search by title, speaker, or keyword..."
-            className="w-full bg-white text-slate-900 font-body text-xs sm:text-sm pl-10 pr-9 py-2.5 rounded-xl border border-slate-200 focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 focus:outline-none shadow-2xs placeholder:text-slate-400"
+            className="w-full bg-white text-slate-900 font-body text-xs sm:text-sm pl-10 pr-9 py-2.5 rounded-full border border-[#DADCE0] focus:border-md-primary focus:ring-2 focus:ring-md-primary/20 focus:outline-none shadow-2xs placeholder:text-slate-400"
           />
           {searchQuery && (
             <button
               onClick={() => setParam('search', '')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
             >
               <X className="h-4 w-4" />
             </button>
@@ -163,7 +163,7 @@ export const ExplorePage: React.FC = () => {
           <select
             value={activeClub}
             onChange={(e) => setParam('club', e.target.value)}
-            className="rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:border-slate-300"
+            className="rounded-full border border-[#DADCE0] bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:border-md-primary"
           >
             <option value="all">All 9 Clubs</option>
             {clubs.map((c) => (
@@ -177,7 +177,7 @@ export const ExplorePage: React.FC = () => {
             <button
               type="button"
               onClick={clearAllFilters}
-              className="text-xs font-semibold text-brand-red hover:underline ml-1"
+              className="text-xs font-semibold text-md-primary hover:underline ml-1"
             >
               Clear All ({activeFiltersCount})
             </button>

@@ -2,7 +2,7 @@ import React from 'react'
 import { ArrowRight, Loader2 } from 'lucide-react'
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'gradient' | 'glass'
+  variant?: 'primary' | 'secondary' | 'tonal' | 'ghost' | 'danger' | 'gradient' | 'glass'
   size?: 'lg' | 'md' | 'sm' | 'dense'
   surface?: 'public' | 'admin'
   rounded?: 'default' | 'full'
@@ -19,7 +19,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       variant = 'primary',
       size = 'md',
       surface = 'public',
-      rounded = 'default',
+      rounded = 'full',
       arrow = false,
       loading = false,
       icon,
@@ -30,43 +30,39 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    // Height & padding styling
+    // M3 Sizing Scale
     const sizeClasses = {
-      lg: 'h-14 px-8 text-sm font-semibold',
-      md: 'h-11 px-5 text-sm font-semibold',
-      sm: 'h-9 px-4 text-xs font-semibold',
+      lg: 'h-12 px-7 text-sm font-semibold',
+      md: 'h-10 px-5 text-sm font-semibold',
+      sm: 'h-8 px-4 text-xs font-semibold',
       dense: 'h-8 px-3 text-xs font-medium',
     }[size]
 
-    const radiusClass = rounded === 'full' ? 'rounded-full' : 'rounded-xl'
+    const radiusClass = rounded === 'default' ? 'rounded-xl' : 'rounded-full'
 
-    // Surface-aware variant styling
+    // Google M3 Variant Styling (Streamlined & Harmonious)
     const getVariantClasses = () => {
-      if (variant === 'primary') {
+      if (variant === 'primary' || variant === 'gradient') {
         if (surface === 'admin') {
-          return 'bg-slate-900 text-white hover:bg-admin-accent hover:text-admin-on-accent shadow-sm active:scale-[0.98]'
+          return 'bg-[#1F1F1F] text-white hover:bg-admin-accent hover:text-admin-on-accent shadow-xs active:scale-[0.98]'
         }
-        return 'bg-brand-red text-white hover:bg-[#CC0813] shadow-md shadow-red-500/20 active:scale-[0.98]'
+        return 'bg-md-primary text-white hover:bg-md-primary-hover shadow-xs active:scale-[0.98]'
       }
 
-      if (variant === 'gradient') {
-        return 'bg-gradient-to-r from-brand-red via-brand-pink to-brand-purple text-white shadow-lg shadow-red-500/25 hover:opacity-95 active:scale-[0.98]'
+      if (variant === 'tonal') {
+        return 'bg-md-primary-container text-md-on-primary-container hover:bg-[#D3E3FD] shadow-none active:scale-[0.98]'
       }
 
-      if (variant === 'secondary') {
-        return 'border border-slate-200 bg-white text-slate-800 hover:bg-slate-50 hover:border-slate-300 shadow-sm active:scale-[0.98]'
-      }
-
-      if (variant === 'glass') {
-        return 'bg-white/80 backdrop-blur-md border border-slate-200/80 text-slate-900 hover:bg-white shadow-sm active:scale-[0.98]'
+      if (variant === 'secondary' || variant === 'glass') {
+        return 'border border-md-outline bg-white text-md-primary hover:bg-md-primary-container/40 active:scale-[0.98]'
       }
 
       if (variant === 'ghost') {
-        return 'bg-transparent text-slate-700 hover:bg-slate-100/80 active:bg-slate-200/60'
+        return 'bg-transparent text-md-on-surface-variant hover:bg-black/[0.04] active:bg-black/[0.08]'
       }
 
       if (variant === 'danger') {
-        return 'bg-rose-600 text-white hover:bg-rose-700 shadow-sm active:scale-[0.98]'
+        return 'bg-[#BA1A1A] text-white hover:bg-[#93000A] shadow-xs active:scale-[0.98]'
       }
 
       return ''
@@ -78,7 +74,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         disabled={disabled || loading}
-        className={`group relative inline-flex items-center justify-center font-body uppercase font-semibold transition-all duration-200 select-none ${radiusClass} ${sizeClasses} ${getVariantClasses()} ${disabledClasses} ${
+        className={`group relative inline-flex items-center justify-center font-body tracking-normal font-semibold transition-all duration-200 select-none ${radiusClass} ${sizeClasses} ${getVariantClasses()} ${disabledClasses} ${
           fullWidth ? 'w-full' : ''
         } ${className}`}
         {...props}

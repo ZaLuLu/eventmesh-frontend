@@ -11,7 +11,6 @@ import {
   ArrowUpRight,
   MapPin,
   ChevronDown,
-  Sparkles,
 } from 'lucide-react'
 import { BRAND_CONFIG } from '@/config/brand'
 import { useAuth } from '@/hooks/useAuth'
@@ -43,47 +42,47 @@ export const PublicShell: React.FC = () => {
     { label: 'Calendar', path: '/calendar', icon: <Calendar className="h-5 w-5" /> },
     { label: 'My Passes', path: '/attendee/dashboard', icon: <Ticket className="h-5 w-5" /> },
     {
-      label: isAuthenticated ? 'Profile' : 'Sign In',
+      label: isAuthenticated ? 'Account' : 'Sign In',
       path: isAuthenticated ? '/attendee/dashboard' : '/login',
       icon: <User className="h-5 w-5" />,
     },
   ]
 
   return (
-    <div className="min-h-screen bg-canvas text-ink flex flex-col font-body selection:bg-brand-red/10 selection:text-brand-red">
+    <div className="min-h-screen bg-canvas text-md-on-surface flex flex-col font-body selection:bg-md-primary-container selection:text-md-on-primary-container">
       {/* ==============================================================
-          AMBIENT LIGHT MASTHEAD (BookMyShow + District Navigation)
+          GOOGLE M3 TOP APP BAR
           ============================================================== */}
-      <header className="sticky top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200/80 transition-all">
+      <header className="sticky top-0 left-0 right-0 z-40 bg-white border-b border-md-outline/60 transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          {/* Left: Brand Logo & City Selector */}
+          {/* Brand Logo & Location */}
           <div className="flex items-center gap-4 sm:gap-6 flex-shrink-0">
-            <Link to="/" className="flex items-center gap-2 group">
-              <span className="h-8 w-8 rounded-lg bg-gradient-to-tr from-brand-red via-brand-pink to-brand-purple flex items-center justify-center text-white font-black text-sm shadow-md shadow-red-500/20 group-hover:scale-105 transition-transform">
+            <Link to="/" className="flex items-center gap-2.5 group">
+              <span className="h-8 w-8 rounded-lg bg-md-primary flex items-center justify-center text-white font-bold text-sm shadow-2xs">
                 EM
               </span>
-              <span className="font-display font-extrabold text-xl sm:text-2xl tracking-tight text-slate-900">
-                EVENT<span className="text-brand-red">MESH</span>
+              <span className="font-display font-bold text-xl tracking-tight text-md-on-surface">
+                Event<span className="text-md-primary">Mesh</span>
               </span>
             </Link>
 
-            {/* City / Campus Selector (BookMyShow style) */}
+            {/* M3 Location Filter Chip */}
             <div className="relative hidden md:block">
               <button
                 type="button"
                 onClick={() => setIsCityDropdownOpen(!isCityDropdownOpen)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200/70 text-slate-700 text-xs font-semibold transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F1F3F4] hover:bg-[#E8EAED] text-md-on-surface-variant text-xs font-semibold transition-colors"
                 aria-label="Select location"
               >
-                <MapPin className="h-3.5 w-3.5 text-brand-red" />
+                <MapPin className="h-3.5 w-3.5 text-md-primary" />
                 <span>{selectedCity}</span>
                 <ChevronDown className="h-3 w-3 text-slate-400" />
               </button>
 
               {isCityDropdownOpen && (
-                <div className="absolute left-0 mt-2 w-44 rounded-xl bg-white border border-slate-200 shadow-xl py-1 z-50">
+                <div className="absolute left-0 mt-2 w-48 rounded-2xl bg-white border border-md-outline shadow-card-hover py-1.5 z-50 animate-in fade-in duration-150">
                   <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Select Location
+                    Select Region
                   </div>
                   {cities.map((city) => (
                     <button
@@ -92,12 +91,14 @@ export const PublicShell: React.FC = () => {
                         setSelectedCity(city)
                         setIsCityDropdownOpen(false)
                       }}
-                      className={`w-full text-left px-3 py-2 text-xs font-medium hover:bg-slate-50 flex items-center justify-between ${
-                        selectedCity === city ? 'text-brand-red font-semibold bg-red-50/50' : 'text-slate-700'
+                      className={`w-full text-left px-3 py-2 text-xs font-medium hover:bg-[#F1F3F4] flex items-center justify-between ${
+                        selectedCity === city
+                          ? 'text-md-primary font-bold bg-md-primary-container/40'
+                          : 'text-md-on-surface'
                       }`}
                     >
                       <span>{city}</span>
-                      {selectedCity === city && <span className="h-1.5 w-1.5 rounded-full bg-brand-red" />}
+                      {selectedCity === city && <span className="h-1.5 w-1.5 rounded-full bg-md-primary" />}
                     </button>
                   ))}
                 </div>
@@ -105,18 +106,18 @@ export const PublicShell: React.FC = () => {
             </div>
           </div>
 
-          {/* Center: Search Trigger (BookMyShow / Netflix search bar) */}
+          {/* M3 Center Search Bar (Google Style) */}
           <div className="flex-1 max-w-md hidden sm:block">
             <button
               type="button"
               onClick={() => setIsSearchOpen(true)}
-              className="w-full flex items-center justify-between px-3.5 py-2 rounded-full bg-slate-100 hover:bg-slate-200/60 border border-transparent hover:border-slate-200 transition-all text-slate-400 text-xs group"
+              className="w-full flex items-center justify-between px-4 py-2 rounded-full bg-[#F1F3F4] hover:bg-[#E8EAED] transition-all text-md-on-surface-variant text-xs group"
             >
               <div className="flex items-center gap-2.5">
-                <Search className="h-3.5 w-3.5 text-slate-500 group-hover:text-brand-red transition-colors" />
-                <span className="text-slate-500">Search hackathons, workshops & clubs...</span>
+                <Search className="h-4 w-4 text-slate-500 group-hover:text-md-primary transition-colors" />
+                <span>Search events, clubs and topics...</span>
               </div>
-              <kbd className="hidden md:inline-flex items-center gap-0.5 rounded bg-white px-1.5 py-0.5 text-[10px] font-mono text-slate-500 border border-slate-200 shadow-2xs">
+              <kbd className="hidden md:inline-flex items-center gap-0.5 rounded-md bg-white px-2 py-0.5 text-[10px] font-mono text-slate-500 border border-slate-200">
                 ⌘K
               </kbd>
             </button>
@@ -125,7 +126,7 @@ export const PublicShell: React.FC = () => {
           {/* Right Action Cluster */}
           <div className="flex items-center gap-3 flex-shrink-0">
             {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-5 mr-2">
+            <nav className="hidden lg:flex items-center gap-1 mr-2">
               {navLinks.map((link) => {
                 const isActive =
                   link.path === '/'
@@ -135,8 +136,10 @@ export const PublicShell: React.FC = () => {
                   <Link
                     key={link.path}
                     to={link.path}
-                    className={`text-xs font-semibold tracking-wide transition-colors py-1 ${
-                      isActive ? 'text-brand-red' : 'text-slate-600 hover:text-slate-900'
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold tracking-normal transition-all ${
+                      isActive
+                        ? 'bg-md-primary-container text-md-on-primary-container font-bold'
+                        : 'text-md-on-surface-variant hover:text-md-on-surface hover:bg-black/[0.04]'
                     }`}
                   >
                     {link.label}
@@ -155,12 +158,12 @@ export const PublicShell: React.FC = () => {
               <Search className="h-5 w-5" />
             </button>
 
-            {/* Dev Switcher Button */}
+            {/* Dev Personas Switcher */}
             <Link
               to="/dev/accounts"
-              className="hidden xl:inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200/70 px-2.5 py-1.5 rounded-lg transition-colors"
+              className="hidden xl:inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 bg-[#F1F3F4] hover:bg-[#E8EAED] px-3 py-1.5 rounded-full transition-colors"
             >
-              <ShieldAlert className="h-3.5 w-3.5 text-amber-500" />
+              <ShieldAlert className="h-3.5 w-3.5 text-amber-600" />
               <span>Personas</span>
             </Link>
 
@@ -168,7 +171,7 @@ export const PublicShell: React.FC = () => {
             {canAccessAdmin() && (
               <Link
                 to="/admin"
-                className="hidden sm:inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-sm"
+                className="hidden sm:inline-flex items-center gap-1.5 bg-[#1F1F1F] hover:bg-slate-800 text-white px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all shadow-xs"
               >
                 <span>Console</span>
                 <ArrowUpRight className="h-3.5 w-3.5 text-slate-400" />
@@ -178,9 +181,9 @@ export const PublicShell: React.FC = () => {
             {/* My Passes Wallet Button */}
             <Link
               to="/attendee/dashboard"
-              className="inline-flex items-center gap-1.5 border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-2xs"
+              className="inline-flex items-center gap-1.5 border border-md-outline bg-white hover:bg-slate-50 text-md-on-surface px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
             >
-              <Ticket className="h-3.5 w-3.5 text-brand-red" />
+              <Ticket className="h-3.5 w-3.5 text-md-primary" />
               <span className="hidden sm:inline">My Passes</span>
             </Link>
 
@@ -188,9 +191,9 @@ export const PublicShell: React.FC = () => {
             {isAuthenticated ? (
               <Link
                 to="/attendee/dashboard"
-                className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200/70 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-800 transition-colors"
+                className="inline-flex items-center gap-2 bg-md-primary-container text-md-on-primary-container px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
               >
-                <div className="h-5 w-5 rounded-full bg-gradient-to-tr from-brand-blue to-brand-purple text-white flex items-center justify-center text-[10px] font-bold">
+                <div className="h-5 w-5 rounded-full bg-md-primary text-white flex items-center justify-center text-[10px] font-bold">
                   {(session?.name || 'U')[0]}
                 </div>
                 <span className="hidden md:inline truncate max-w-[90px]">{session?.name}</span>
@@ -198,7 +201,7 @@ export const PublicShell: React.FC = () => {
             ) : (
               <Link
                 to="/login"
-                className="inline-flex items-center bg-brand-red hover:bg-[#CC0813] text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-all shadow-red-500/20"
+                className="inline-flex items-center bg-md-primary hover:bg-md-primary-hover text-white px-4 py-1.5 rounded-full text-xs font-semibold shadow-xs transition-all"
               >
                 Sign In
               </Link>
@@ -213,9 +216,9 @@ export const PublicShell: React.FC = () => {
       </main>
 
       {/* ==============================================================
-          MOBILE BOTTOM DOCK (BookMyShow / District Bottom Navigation)
+          M3 MOBILE NAVIGATION BAR
           ============================================================== */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-t border-slate-200/80 px-2 py-1.5 flex items-center justify-around shadow-lg">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-md-outline/60 px-2 py-1.5 flex items-center justify-around shadow-card">
         {mobileTabs.map((tab) => {
           const isActive =
             tab.path === '/'
@@ -225,19 +228,20 @@ export const PublicShell: React.FC = () => {
             <Link
               key={tab.path}
               to={tab.path}
-              className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
+              className={`flex flex-col items-center justify-center py-1 px-3 transition-all ${
                 isActive
-                  ? 'text-brand-red font-semibold'
-                  : 'text-slate-500 hover:text-slate-900 font-medium'
+                  ? 'text-md-primary font-bold'
+                  : 'text-md-on-surface-variant hover:text-md-on-surface font-medium'
               }`}
             >
-              <div className="relative">
+              <div
+                className={`flex items-center justify-center px-4 py-1 rounded-full transition-all ${
+                  isActive ? 'bg-md-primary-container text-md-on-primary-container' : ''
+                }`}
+              >
                 {tab.icon}
-                {tab.label === 'My Passes' && (
-                  <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-brand-red" />
-                )}
               </div>
-              <span className="text-[10px] mt-1">{tab.label}</span>
+              <span className="text-[10px] mt-0.5">{tab.label}</span>
             </Link>
           )
         })}

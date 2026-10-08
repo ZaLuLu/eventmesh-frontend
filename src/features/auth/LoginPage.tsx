@@ -25,10 +25,10 @@ export const LoginPage: React.FC = () => {
 
     try {
       const res = await sendOtp(email)
-      toast({ title: 'Access Code Dispatched', message: res.message, type: 'info' })
+      toast({ title: 'Access Code Sent', message: res.message, type: 'info' })
       setStep('otp')
     } catch {
-      setError('Failed to dispatch access code. Please try again.')
+      setError('Failed to send verification code. Please try again.')
     }
   }
 
@@ -43,44 +43,44 @@ export const LoginPage: React.FC = () => {
     try {
       const session = await verifyOtp({ email, otp })
       toast({
-        title: 'Identity Confirmed',
-        message: `Authenticated as ${session.name}.`,
+        title: 'Signed In',
+        message: `Welcome back, ${session.name}!`,
         type: 'success',
       })
       if (['platform_admin', 'org_admin', 'club_admin', 'volunteer'].includes(session.role)) {
         navigate('/admin')
       } else {
-        navigate('/me')
+        navigate('/attendee/dashboard')
       }
     } catch {
-      setError('Invalid or expired access code.')
+      setError('Invalid or expired verification code.')
     }
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <span className="font-mono text-[10px] uppercase tracking-widecaps text-ink-60 block mb-1">
-          Sign In
+        <span className="text-xs font-semibold text-md-primary block mb-1">
+          {step === 'email' ? 'Welcome Back' : 'Verification'}
         </span>
-        <h2 className="font-display text-3xl uppercase text-ink">
-          {step === 'email' ? 'Identification' : 'Verify Code'}
+        <h2 className="font-display font-bold text-2xl text-slate-900 tracking-tight">
+          {step === 'email' ? 'Sign In to EventMesh' : 'Enter 6-Digit Code'}
         </h2>
-        <p className="font-body text-xs text-ink-60 mt-1">
+        <p className="text-xs text-slate-500 mt-1 leading-relaxed">
           {step === 'email'
-            ? 'Enter your registered email address to receive an access code.'
-            : `Enter the 6-digit code dispatched to ${email}.`}
+            ? 'Enter your email address to receive an instant verification code.'
+            : `We sent a 6-digit security code to ${email}.`}
         </p>
       </div>
 
       {error && (
-        <div className="p-3 bg-[#A32828]/10 border border-[#A32828] font-mono text-xs text-[#A32828]">
+        <div className="p-3 bg-[#FCE8E6] border border-[#FAD2CF] rounded-xl text-xs font-medium text-[#D93025]">
           {error}
         </div>
       )}
 
       {step === 'email' ? (
-        <form onSubmit={handleSendOtp} className="space-y-5">
+        <form onSubmit={handleSendOtp} className="space-y-4">
           <Field
             type="email"
             label="Email Address"
@@ -91,21 +91,21 @@ export const LoginPage: React.FC = () => {
             placeholder="e.g. attendee@example.com or lead@cpclub.org"
           />
 
-          <Button type="submit" size="md" fullWidth arrow loading={isSendingOtp}>
-            Dispatch Access Code
+          <Button type="submit" size="md" variant="primary" fullWidth arrow loading={isSendingOtp}>
+            Continue with Email
           </Button>
 
-          <div className="pt-4 border-t border-ink-15 text-center">
+          <div className="pt-4 border-t border-[#DADCE0] text-center">
             <Link
               to="/dev/accounts"
-              className="font-mono text-xs uppercase text-ink-60 hover:text-ink underline"
+              className="text-xs text-md-primary hover:underline font-semibold"
             >
-              Or switch demo identity on Dev Matrix →
+              ⚡ Use Demo Accounts (1-Click Login)
             </Link>
           </div>
         </form>
       ) : (
-        <form onSubmit={handleVerifyOtp} className="space-y-5">
+        <form onSubmit={handleVerifyOtp} className="space-y-4">
           <Field
             type="text"
             label="6-Digit Verification Code"
@@ -113,27 +113,34 @@ export const LoginPage: React.FC = () => {
             autoFocus
             maxLength={6}
             value={otp}
-            onChange={(e) => setOtp(e.target.value)}
+            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
             placeholder="e.g. 123456"
+            helpText="Dev Note: Any 6 digits will work in development mode."
           />
 
-          <div className="flex gap-3">
-            <Button
+          <Button type="submit" size="md" variant="primary" fullWidth loading={isVerifyingOtp}>
+            Verify & Sign In
+          </Button>
+
+          <div className="flex items-center justify-between text-xs text-slate-500 pt-2">
+            <button
               type="button"
-              variant="secondary"
-              size="md"
-              onClick={() => setStep('email')}
+              onClick={() => {
+                setStep('email')
+                setOtp('')
+                setError('')
+              }}
+              className="hover:text-md-primary"
             >
-              Back
-            </Button>
-            <Button
-              type="submit"
-              size="md"
-              fullWidth
-              loading={isVerifyingOtp}
+              ← Use a different email
+            </button>
+            <button
+              type="button"
+              onClick={handleSendOtp}
+              className="text-md-primary hover:underline font-semibold"
             >
-              Confirm Access
-            </Button>
+              Resend Code
+            </button>
           </div>
         </form>
       )}

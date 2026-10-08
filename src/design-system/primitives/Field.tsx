@@ -30,24 +30,24 @@ export const Field = React.forwardRef<
   ) => {
     const inputId = id || (label ? `field-${label.toLowerCase().replace(/\s+/g, '-')}` : undefined)
 
-    const baseInputClasses = `w-full bg-paper text-ink font-body text-sm px-3.5 py-3 border transition-colors duration-150 placeholder:text-ink-60/50 ${
+    const baseInputClasses = `w-full bg-white text-[#1F1F1F] font-body text-sm px-4 py-2.5 rounded-xl border transition-all duration-200 placeholder:text-[#5F6368]/60 focus:outline-none ${
       error
-        ? 'border-[#A32828] focus:border-[#A32828]'
+        ? 'border-[#D93025] focus:border-[#D93025] focus:ring-2 focus:ring-[#D93025]/20'
         : surface === 'admin'
-        ? 'border-admin-border focus:border-admin-accent'
-        : 'border-ink focus:border-ink'
-    } ${props.disabled ? 'opacity-40 cursor-not-allowed bg-paper-deep' : ''}`
+        ? 'border-[#DADCE0] focus:border-[#1A73E8] focus:ring-2 focus:ring-[#1A73E8]/20'
+        : 'border-[#DADCE0] focus:border-[#1A73E8] focus:ring-2 focus:ring-[#1A73E8]/20'
+    } ${props.disabled ? 'opacity-40 cursor-not-allowed bg-[#F1F3F4]' : ''}`
 
     return (
       <div className="w-full flex flex-col gap-1.5">
         {label && (
           <label
             htmlFor={inputId}
-            className="flex items-center justify-between font-mono text-[11px] font-medium uppercase tracking-widecaps text-ink-60"
+            className="flex items-center justify-between font-body text-xs font-semibold text-[#444746]"
           >
             <span>
               {label}
-              {required && <span className="ml-1 text-[#A32828] font-bold">*</span>}
+              {required && <span className="ml-1 text-[#D93025] font-bold">*</span>}
             </span>
           </label>
         )}
@@ -72,11 +72,11 @@ export const Field = React.forwardRef<
         )}
 
         {helpText && !error && (
-          <p className="font-body text-xs text-ink-60">{helpText}</p>
+          <p className="font-body text-xs text-[#5F6368]">{helpText}</p>
         )}
 
         {error && (
-          <p className="font-mono text-[11px] uppercase tracking-wide font-medium text-[#A32828]">
+          <p className="font-body text-xs font-medium text-[#D93025]">
             {error}
           </p>
         )}
