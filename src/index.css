@@ -1,0 +1,182 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   EVENTMESH — EDITORIAL DESIGN SYSTEM TOKENS
+   Visual Identity: Warm Uncoated Paper + Archival Near-Black Ink
+   Admin Identity: Cool Minimalist Slate Canvas + Deep Navy Sidebar
+   ========================================================================== */
+
+:root {
+  /* Universal Editorial Tokens (Public Site: ~85–90% of area) */
+  --paper: #F3EEE9;
+  --ink: #11100F;
+  --ink-60: rgba(17, 16, 15, 0.60);
+  --ink-15: rgba(17, 16, 15, 0.15);
+  --paper-deep: #E9E2DA;
+  --premium: #A88752;
+
+  /* Organizer Dynamic Tokens (defaults, overridden via EventTheme) */
+  --event: #C66A4A;
+  --on-event: #11100F;
+
+  /* Admin Console Fixed Tokens */
+  --admin-canvas: #E6EAEC;
+  --admin-sidebar: #0F1A24;
+  --admin-accent: #1F5F5B;
+  --admin-on-accent: #F3EEE9;
+  --admin-border: #C9D0D4;
+
+  /* Typography */
+  --font-display: 'Anton', 'Bebas Neue', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Instrument Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Editorial Motion */
+  --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Base Reset & Universal Layout Discipline */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border-radius: 0 !important; /* STRICT: Square corners everywhere */
+}
+
+html {
+  background-color: var(--paper);
+  color: var(--ink);
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* Accessibility Focus States */
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Admin specific focus visible */
+.admin-scope :focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 2px;
+}
+
+/* Typography Utility Classes */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+.meta-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-60);
+}
+
+.meta-value {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+}
+
+/* Hairline dividers */
+.hairline-b {
+  border-bottom: 1px solid var(--ink-15);
+}
+
+.hairline-t {
+  border-top: 1px solid var(--ink-15);
+}
+
+.hairline-x {
+  border-left: 1px solid var(--ink-15);
+  border-right: 1px solid var(--ink-15);
+}
+
+.hairline-r {
+  border-right: 1px solid var(--ink-15);
+}
+
+.hairline-l {
+  border-left: 1px solid var(--ink-15);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--paper);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ink-15);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-60);
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s var(--ease-editorial) forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s var(--ease-editorial) forwards;
+}
