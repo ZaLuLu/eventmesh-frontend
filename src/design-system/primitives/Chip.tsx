@@ -6,7 +6,9 @@ export interface ChipProps {
   onClick?: () => void
   onRemove?: () => void
   color?: string
+  icon?: React.ReactNode
   size?: 'sm' | 'md'
+  variant?: 'filter' | 'tag' | 'badge'
   className?: string
 }
 
@@ -16,24 +18,26 @@ export const Chip: React.FC<ChipProps> = ({
   onClick,
   onRemove,
   color,
+  icon,
   size = 'md',
   className = '',
 }) => {
-  const sizeClasses = size === 'sm' ? 'px-2 py-1 text-[10px]' : 'px-3 py-1.5 text-[11px]'
+  const sizeClasses = size === 'sm' ? 'px-3 py-1 text-xs' : 'px-4 py-2 text-xs font-semibold'
 
   const activeClasses = active
-    ? 'bg-ink text-paper border-ink'
-    : 'bg-paper text-ink border-ink-15 hover:border-ink'
+    ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10 border-slate-900'
+    : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-subtle'
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 font-mono font-medium uppercase tracking-widecaps border transition-all duration-150 select-none ${sizeClasses} ${activeClasses} ${className}`}
+      className={`inline-flex items-center gap-2 rounded-full border transition-all duration-200 select-none whitespace-nowrap active:scale-95 ${sizeClasses} ${activeClasses} ${className}`}
     >
+      {icon && <span className="flex-shrink-0 text-current">{icon}</span>}
       {color && (
         <span
-          className="inline-block h-2 w-2 flex-shrink-0"
+          className="inline-block h-2 w-2 rounded-full flex-shrink-0"
           style={{ backgroundColor: color }}
         />
       )}
@@ -46,7 +50,7 @@ export const Chip: React.FC<ChipProps> = ({
             e.stopPropagation()
             onRemove()
           }}
-          className="ml-1 opacity-60 hover:opacity-100"
+          className="ml-1 text-slate-400 hover:text-slate-600 font-bold"
           aria-label={`Remove ${label}`}
         >
           ×

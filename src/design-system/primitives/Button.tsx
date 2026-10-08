@@ -2,9 +2,10 @@ import React from 'react'
 import { ArrowRight, Loader2 } from 'lucide-react'
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'gradient' | 'glass'
   size?: 'lg' | 'md' | 'sm' | 'dense'
   surface?: 'public' | 'admin'
+  rounded?: 'default' | 'full'
   arrow?: boolean
   loading?: boolean
   icon?: React.ReactNode
@@ -18,6 +19,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       variant = 'primary',
       size = 'md',
       surface = 'public',
+      rounded = 'default',
       arrow = false,
       loading = false,
       icon,
@@ -28,45 +30,47 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    // Height styling
+    // Height & padding styling
     const sizeClasses = {
-      lg: 'h-14 px-8 text-[13px]', // 56px
-      md: 'h-12 px-6 text-[13px]', // 48px
-      sm: 'h-10 px-4 text-[12px]', // 40px
-      dense: 'h-9 px-3 text-[12px]', // 36px (admin dense)
+      lg: 'h-14 px-8 text-sm font-semibold',
+      md: 'h-11 px-5 text-sm font-semibold',
+      sm: 'h-9 px-4 text-xs font-semibold',
+      dense: 'h-8 px-3 text-xs font-medium',
     }[size]
+
+    const radiusClass = rounded === 'full' ? 'rounded-full' : 'rounded-xl'
 
     // Surface-aware variant styling
     const getVariantClasses = () => {
       if (variant === 'primary') {
         if (surface === 'admin') {
-          return 'bg-ink text-paper hover:bg-admin-accent hover:text-admin-on-accent active:bg-[#000000]'
+          return 'bg-slate-900 text-white hover:bg-admin-accent hover:text-admin-on-accent shadow-sm active:scale-[0.98]'
         }
-        return 'bg-ink text-paper hover:bg-event hover:text-on-event active:bg-[#000000]'
+        return 'bg-brand-red text-white hover:bg-[#CC0813] shadow-md shadow-red-500/20 active:scale-[0.98]'
+      }
+
+      if (variant === 'gradient') {
+        return 'bg-gradient-to-r from-brand-red via-brand-pink to-brand-purple text-white shadow-lg shadow-red-500/25 hover:opacity-95 active:scale-[0.98]'
       }
 
       if (variant === 'secondary') {
-        if (surface === 'admin') {
-          return 'border-[1.5px] border-ink bg-transparent text-ink hover:bg-ink hover:text-paper active:bg-ink'
-        }
-        return 'border-[1.5px] border-ink bg-transparent text-ink hover:bg-ink hover:text-paper active:bg-ink'
+        return 'border border-slate-200 bg-white text-slate-800 hover:bg-slate-50 hover:border-slate-300 shadow-sm active:scale-[0.98]'
+      }
+
+      if (variant === 'glass') {
+        return 'bg-white/80 backdrop-blur-md border border-slate-200/80 text-slate-900 hover:bg-white shadow-sm active:scale-[0.98]'
       }
 
       if (variant === 'ghost') {
-        return 'bg-transparent text-ink underline decoration-1 hover:decoration-2 underline-offset-4 px-2'
+        return 'bg-transparent text-slate-700 hover:bg-slate-100/80 active:bg-slate-200/60'
       }
 
       if (variant === 'danger') {
-        return 'bg-[#A32828] text-white hover:bg-[#831818] active:bg-[#601010]'
+        return 'bg-rose-600 text-white hover:bg-rose-700 shadow-sm active:scale-[0.98]'
       }
 
       return ''
     }
-
-    const focusClasses =
-      surface === 'admin'
-        ? 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-admin-accent focus-visible:outline-offset-2'
-        : 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-3'
 
     const disabledClasses = disabled || loading ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
 
@@ -74,18 +78,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         disabled={disabled || loading}
-        className={`group relative inline-flex items-center justify-center font-body font-semibold uppercase tracking-caps transition-all duration-200 select-none ${sizeClasses} ${getVariantClasses()} ${focusClasses} ${disabledClasses} ${
+        className={`group relative inline-flex items-center justify-center font-body uppercase font-semibold transition-all duration-200 select-none ${radiusClass} ${sizeClasses} ${getVariantClasses()} ${disabledClasses} ${
           fullWidth ? 'w-full' : ''
         } ${className}`}
         {...props}
       >
-        {/* Inline Loading Progress Bar */}
-        {loading && (
-          <div className="absolute inset-x-0 bottom-0 h-1 overflow-hidden bg-white/20">
-            <div className="h-full w-full animate-pulse bg-current opacity-80" />
-          </div>
-        )}
-
         <span className="inline-flex items-center gap-2">
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />

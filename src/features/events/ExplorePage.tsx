@@ -3,15 +3,25 @@ import { useSearchParams } from 'react-router-dom'
 import { useEvents } from '@/hooks/useEvents'
 import { useClubs } from '@/hooks/useClubs'
 import { CATEGORIES } from '@/config/categories'
+import { EventCardModern } from './components/EventCardModern'
 import { IndexRow } from '@/design-system/primitives/IndexRow'
 import { Chip } from '@/design-system/primitives/Chip'
-import { Tabs } from '@/design-system/primitives/Tabs'
 import { EmptyState } from '@/design-system/primitives/EmptyState'
 import { formatDate } from '@/lib/dates'
-import { Search, X, SlidersHorizontal } from 'lucide-react'
+import {
+  Search,
+  X,
+  SlidersHorizontal,
+  LayoutGrid,
+  List,
+  Award,
+  Sparkles,
+} from 'lucide-react'
 
 export const ExplorePage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+
   const activeTab = searchParams.get('tab') || 'all'
   const activeClub = searchParams.get('club') || 'all'
   const activeDate = searchParams.get('date') || 'all'
@@ -57,155 +67,165 @@ export const ExplorePage: React.FC = () => {
     (searchQuery ? 1 : 0)
 
   return (
-    <div className="w-full bg-paper text-ink min-h-screen">
-      {/* Editorial Page Header */}
-      <div className="px-[4vw] pt-12 pb-8 border-b border-ink-15">
-        <span className="font-mono text-[11px] uppercase tracking-widecaps text-ink-60 block mb-2">
-          Exhibition Index & Archive
-        </span>
-        <h1 className="font-display text-5xl sm:text-7xl uppercase text-ink">
-          Catalogue
-        </h1>
-        <p className="font-body text-base text-ink-60 max-w-xl mt-3">
-          Explore all 30 symposiums, hackathons, and laboratory workshops organized across the 9 member clubs.
-        </p>
-      </div>
+    <div className="w-full bg-canvas text-ink min-h-screen">
+      {/* Header Banner */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-6 border-b border-slate-200/80">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <span className="text-xs font-bold text-brand-red uppercase tracking-wider block mb-1">
+              Discovery & Live Feed
+            </span>
+            <h1 className="font-display font-extrabold text-3xl sm:text-4xl text-slate-900 tracking-tight">
+              Explore All Live Events
+            </h1>
+            <p className="text-sm text-slate-500 mt-1 max-w-xl font-medium">
+              Browse 30 flagship hackathons, certification workshops, and tech talks across 9 clubs
+            </p>
+          </div>
 
-      {/* Primary Category Tabs */}
-      <div className="px-[4vw] bg-paper border-b border-ink-15">
-        <Tabs
-          tabs={CATEGORIES.map((c) => ({ id: c.id, label: c.label }))}
-          activeTab={activeTab}
-          onChange={(id) => setParam('tab', id)}
-        />
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200 self-start md:self-auto">
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              className={`p-1.5 rounded-lg transition-all ${
+                viewMode === 'grid'
+                  ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+              aria-label="Grid view"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              className={`p-1.5 rounded-lg transition-all ${
+                viewMode === 'list'
+                  ? 'bg-white text-slate-900 shadow-2xs font-bold'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+              aria-label="List view"
+            >
+              <List className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="px-[4vw] py-6 border-b border-ink-15 bg-paper-deep/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* Search input */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Search Input */}
         <div className="relative max-w-md w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-60" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setParam('search', e.target.value)}
-            placeholder="Filter by keyword or speaker..."
-            className="w-full bg-paper text-ink font-body text-sm pl-9 pr-4 py-2 border border-ink-15 focus:border-ink focus:outline-none"
+            placeholder="Search by title, speaker, or keyword..."
+            className="w-full bg-white text-slate-900 font-body text-xs sm:text-sm pl-10 pr-9 py-2.5 rounded-xl border border-slate-200 focus:border-brand-red focus:ring-1 focus:ring-brand-red/20 focus:outline-none shadow-2xs placeholder:text-slate-400"
           />
+          {searchQuery && (
+            <button
+              onClick={() => setParam('search', '')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
 
-        {/* Club Dropdown Filter */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-[11px] uppercase text-ink-60">Club:</span>
-            <select
-              value={activeClub}
-              onChange={(e) => setParam('club', e.target.value)}
-              className="bg-paper border border-ink-15 px-3 py-1.5 font-mono text-xs uppercase focus:outline-none"
-            >
-              <option value="all">All Clubs (9)</option>
-              {clubs.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* Category Pills & Club Dropdown */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Category Chips */}
+          <Chip
+            label="All"
+            active={activeTab === 'all'}
+            onClick={() => setParam('tab', 'all')}
+          />
+          <Chip
+            label="Hackathons"
+            active={activeTab === 'HACKATHON'}
+            onClick={() => setParam('tab', 'HACKATHON')}
+          />
+          <Chip
+            label="Workshops"
+            active={activeTab === 'WORKSHOP'}
+            onClick={() => setParam('tab', 'WORKSHOP')}
+          />
+          <Chip
+            label="Tech Talks"
+            active={activeTab === 'TALK'}
+            onClick={() => setParam('tab', 'TALK')}
+          />
 
-          {/* Quick Date Filters */}
-          <div className="flex items-center gap-1.5">
-            <Chip
-              label="All Dates"
-              size="sm"
-              active={activeDate === 'all'}
-              onClick={() => setParam('date', 'all')}
-            />
-            <Chip
-              label="Today"
-              size="sm"
-              active={activeDate === 'today'}
-              onClick={() => setParam('date', 'today')}
-            />
-          </div>
+          {/* Club Dropdown */}
+          <select
+            value={activeClub}
+            onChange={(e) => setParam('club', e.target.value)}
+            className="rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs focus:outline-none focus:border-slate-300"
+          >
+            <option value="all">All 9 Clubs</option>
+            {clubs.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
 
           {activeFiltersCount > 0 && (
             <button
               type="button"
               onClick={clearAllFilters}
-              className="font-mono text-[11px] uppercase tracking-wide text-[#A32828] underline hover:text-black ml-2"
+              className="text-xs font-semibold text-brand-red hover:underline ml-1"
             >
-              Clear all ({activeFiltersCount})
+              Clear All ({activeFiltersCount})
             </button>
           )}
         </div>
       </div>
 
-      {/* Active Filter Chips Row */}
-      {activeFiltersCount > 0 && (
-        <div className="px-[4vw] py-3 border-b border-ink-15 flex flex-wrap items-center gap-2 bg-paper">
-          <span className="font-mono text-[10px] uppercase text-ink-60 mr-2">Active:</span>
-          {activeTab !== 'all' && (
-            <Chip
-              label={`Category: ${activeTab}`}
-              active
-              onRemove={() => setParam('tab', 'all')}
-            />
-          )}
-          {activeClub !== 'all' && (
-            <Chip
-              label={`Club: ${clubs.find((c) => c.id === activeClub)?.name || activeClub}`}
-              active
-              onRemove={() => setParam('club', 'all')}
-            />
-          )}
-          {activeDate !== 'all' && (
-            <Chip
-              label={`Date: ${activeDate}`}
-              active
-              onRemove={() => setParam('date', 'all')}
-            />
-          )}
-          {searchQuery && (
-            <Chip
-              label={`"${searchQuery}"`}
-              active
-              onRemove={() => setParam('search', '')}
-            />
-          )}
-        </div>
-      )}
-
-      {/* Typographic Event Index Results */}
-      <div className="w-full">
+      {/* Main Results Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         {isLoading ? (
-          <div className="py-20 text-center font-mono text-xs uppercase tracking-wide text-ink-60">
-            Scanning Archival Index...
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+              <div
+                key={n}
+                className="h-72 rounded-2xl bg-slate-200/60 animate-pulse border border-slate-200"
+              />
+            ))}
           </div>
         ) : filteredEvents.length === 0 ? (
-          <div className="px-[4vw] py-16">
-            <EmptyState
-              title="No Matching Exhibitions"
-              description="No events match your current filter parameters. Try clearing filters or altering search keywords."
-              actionLabel="Reset Filters"
-              onAction={clearAllFilters}
-            />
+          <EmptyState
+            title="No events found"
+            description="Try modifying your category filters, search terms, or club selection."
+            actionLabel="Reset All Filters"
+            onAction={clearAllFilters}
+          />
+        ) : viewMode === 'grid' ? (
+          /* Modern Card Grid */
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredEvents.map((event) => (
+              <EventCardModern key={event.id} event={event} />
+            ))}
           </div>
         ) : (
-          <div>
-            {filteredEvents.map((evt, index) => (
+          /* Clean Index List View */
+          <div className="divide-y divide-slate-100 rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-card">
+            {filteredEvents.map((event, idx) => (
               <IndexRow
-                key={evt.id}
-                id={evt.id}
-                slug={evt.slug}
-                title={evt.title}
-                category={evt.category}
-                organizerName={evt.organizerName || 'Technical Association'}
-                organizerColor={evt.organizerColor}
-                dateDisplay={formatDate(evt.startsAt)}
-                venueName={evt.venue.name}
-                status={evt.status}
-                indexNumber={index + 1}
-                isSignature={evt.isSignature}
+                key={event.id}
+                id={event.id}
+                slug={event.slug}
+                title={event.title}
+                category={event.category}
+                organizerName={event.organizerName || 'Technical Collective'}
+                organizerColor={event.organizerColor}
+                dateDisplay={formatDate(event.startsAt)}
+                venueName={event.venue.name}
+                status={event.status}
+                indexNumber={idx + 1}
               />
             ))}
           </div>

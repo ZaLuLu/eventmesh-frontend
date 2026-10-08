@@ -346,53 +346,88 @@ export const RegisterPage: React.FC = () => {
           </div>
         )}
 
-        {/* STEP 2: CONFIRMATION WITH QR TICKET */}
+        {/* STEP 2: CONFIRMATION WITH DIGITAL TICKET PASS (District / Apple Wallet) */}
         {step === 2 && createdRegistration && (
-          <div className="bg-paper border-2 border-ink p-6 sm:p-10 space-y-8 text-center">
-            <div className="inline-flex p-3 bg-emerald-600 text-paper mb-2">
-              <Check className="h-6 w-6" />
+          <div className="bg-white rounded-3xl border border-slate-200/90 shadow-2xl p-6 sm:p-10 space-y-8 text-center max-w-lg mx-auto">
+            <div className="inline-flex p-3 rounded-full bg-emerald-50 text-emerald-600 mb-1 shadow-sm">
+              <Check className="h-7 w-7" />
             </div>
 
             <div>
-              <span className="font-mono text-xs uppercase tracking-wide text-emerald-800 font-bold block mb-1">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 block mb-1">
                 Registration Confirmed
               </span>
-              <h2 className="font-display text-3xl sm:text-4xl uppercase text-ink">
-                Access Pass Issued
+              <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-slate-900 tracking-tight">
+                Digital Pass Issued
               </h2>
-              <p className="font-body text-sm text-ink-60 max-w-md mx-auto mt-2">
-                A confirmation dispatch has been logged for {createdRegistration.userEmail}. Present this QR pass at the check-in desk on arrival.
+              <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto mt-2 font-medium">
+                Pass dispatched for {createdRegistration.userEmail}. Present this digital QR code at the gate terminal.
               </p>
             </div>
 
-            {/* Crisp Square QR Pass Card */}
-            <div className="max-w-xs mx-auto border-2 border-ink p-6 bg-paper-deep/20 space-y-4">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-ink-60 block">
-                TICKET IDENTIFIER
-              </span>
-              <p className="font-mono text-2xl font-bold tracking-wider text-ink">
-                {createdRegistration.ticketCode}
-              </p>
-
-              <div className="flex justify-center py-2">
-                <QRCode value={createdRegistration.ticketCode} size={180} />
+            {/* Apple Wallet / District Boarding Pass Container */}
+            <div className="relative rounded-2xl border-2 border-slate-900 bg-gradient-to-b from-white to-slate-50 p-6 shadow-xl text-left overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{ backgroundColor: event.organizerColor || '#2563EB' }}
+                  />
+                  <span className="font-bold text-xs text-slate-900 uppercase tracking-wide">
+                    {event.organizerName}
+                  </span>
+                </div>
+                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full uppercase">
+                  Verified Pass
+                </span>
               </div>
 
-              <div className="border-t border-ink-15 pt-3 font-mono text-[11px] uppercase text-ink">
-                <p className="font-bold">{createdRegistration.userName}</p>
-                <p className="text-ink-60">{event.venue.name}</p>
+              {/* Event Title & Passholder */}
+              <h3 className="font-display font-extrabold text-lg text-slate-900 leading-tight mb-2">
+                {event.title}
+              </h3>
+
+              <div className="flex items-center justify-between text-xs text-slate-600 mb-4">
+                <div>
+                  <span className="text-[10px] uppercase text-slate-400 block font-bold">Attendee</span>
+                  <span className="font-bold text-slate-800">{createdRegistration.userName}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] uppercase text-slate-400 block font-bold">Venue</span>
+                  <span className="font-semibold text-slate-800 truncate max-w-[140px] block">{event.venue.name}</span>
+                </div>
+              </div>
+
+              {/* Tear-line Notches */}
+              <div className="relative border-t-2 border-dashed border-slate-300 my-4 -mx-6 py-1">
+                <div className="absolute -top-3.5 -left-3.5 h-6 w-6 rounded-full bg-white border border-slate-300" />
+                <div className="absolute -top-3.5 -right-3.5 h-6 w-6 rounded-full bg-white border border-slate-300" />
+              </div>
+
+              {/* QR Code Section */}
+              <div className="flex flex-col items-center justify-center py-2">
+                <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
+                  <QRCode value={createdRegistration.ticketCode} size={170} />
+                </div>
+                <p className="font-mono text-sm font-bold tracking-widest text-slate-900 mt-3">
+                  {createdRegistration.ticketCode}
+                </p>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">
+                  Scan at terminal gate
+                </p>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-4 pt-6 border-t border-ink-15">
-              <Link to="/me">
-                <Button size="md" arrow>
-                  View in My Passes
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-slate-100">
+              <Link to="/attendee/dashboard">
+                <Button variant="gradient" size="md" arrow>
+                  View My Wallet
                 </Button>
               </Link>
               <Link to="/explore">
                 <Button variant="secondary" size="md">
-                  Continue Browsing
+                  Explore More Events
                 </Button>
               </Link>
             </div>

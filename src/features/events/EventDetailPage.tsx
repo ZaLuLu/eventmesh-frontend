@@ -22,6 +22,7 @@ import { formatDate, formatTime, formatDateTime } from '@/lib/dates'
 import { downloadICS } from '@/lib/ics'
 import { useToast } from '@/design-system/primitives/Toast'
 import { EventTheme } from '@/design-system/EventTheme'
+import { TicketTierModal } from '@/features/registration/TicketTierModal'
 
 export const EventDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>()
@@ -34,6 +35,7 @@ export const EventDetailPage: React.FC = () => {
   })
 
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false)
+  const [isTierModalOpen, setIsTierModalOpen] = useState(false)
 
   if (isLoading) {
     return (
@@ -339,11 +341,15 @@ export const EventDetailPage: React.FC = () => {
                   {/* Register Call-To-Action */}
                   <div>
                     {isRegistrationOpen ? (
-                      <Link to={`/events/${event.slug}/register`}>
-                        <Button size="lg" fullWidth arrow>
-                          {isWaitlistOnly ? 'Join Waitlist' : 'Register Now'}
-                        </Button>
-                      </Link>
+                      <Button
+                        size="lg"
+                        fullWidth
+                        variant="gradient"
+                        arrow
+                        onClick={() => setIsTierModalOpen(true)}
+                      >
+                        {isWaitlistOnly ? 'Join Waitlist' : 'Select Pass & Register'}
+                      </Button>
                     ) : event.status === 'completed' ? (
                       <div className="space-y-3">
                         <Button size="lg" fullWidth disabled>
@@ -408,22 +414,33 @@ export const EventDetailPage: React.FC = () => {
         </section>
 
         {/* Mobile Sticky Bottom CTA Bar */}
-        <div className="fixed bottom-16 left-0 right-0 z-30 bg-paper border-t border-ink-15 p-4 sm:hidden flex items-center justify-between gap-4">
+        <div className="fixed bottom-16 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-3 sm:hidden flex items-center justify-between gap-4 shadow-xl">
           <div>
-            <span className="font-mono text-[10px] uppercase text-ink-60 block">
-              {event.seatsLeft} SEATS REMAINING
+            <span className="text-[10px] font-bold text-amber-600 block">
+              ⚡ {event.seatsLeft} SEATS REMAINING
             </span>
-            <span className="font-display text-lg uppercase text-ink truncate max-w-[180px] block">
+            <span className="font-display font-bold text-base text-slate-900 truncate max-w-[180px] block">
               {event.title}
             </span>
           </div>
 
-          <Link to={`/events/${event.slug}/register`}>
-            <Button size="sm" arrow disabled={!isRegistrationOpen}>
-              Register
-            </Button>
-          </Link>
+          <Button
+            size="sm"
+            variant="gradient"
+            arrow
+            disabled={!isRegistrationOpen}
+            onClick={() => setIsTierModalOpen(true)}
+          >
+            Book Pass
+          </Button>
         </div>
+
+        {/* BookMyShow Ticket Tier Selector Modal */}
+        <TicketTierModal
+          isOpen={isTierModalOpen}
+          onClose={() => setIsTierModalOpen(false)}
+          event={event}
+        />
       </div>
     </EventTheme>
   )

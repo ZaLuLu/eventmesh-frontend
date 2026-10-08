@@ -9,6 +9,9 @@ import {
   User,
   ShieldAlert,
   ArrowUpRight,
+  MapPin,
+  ChevronDown,
+  Sparkles,
 } from 'lucide-react'
 import { BRAND_CONFIG } from '@/config/brand'
 import { useAuth } from '@/hooks/useAuth'
@@ -18,120 +21,184 @@ import { ToastContainer } from '@/design-system/primitives/Toast'
 
 export const PublicShell: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [selectedCity, setSelectedCity] = useState('Bangalore')
+  const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false)
   const location = useLocation()
   const { session, isAuthenticated } = useAuth()
   const { canAccessAdmin } = usePermission()
+
+  const cities = ['Bangalore', 'Mumbai', 'Delhi NCR', 'Hyderabad', 'Campus Alpha']
 
   const navLinks = [
     { label: 'Explore', path: '/explore' },
     { label: 'Clubs', path: '/clubs' },
     { label: 'Calendar', path: '/calendar' },
     { label: 'Announcements', path: '/announcements' },
-    { label: 'About', path: '/about' },
+    { label: 'Gallery', path: '/gallery' },
   ]
 
   const mobileTabs = [
     { label: 'Home', path: '/', icon: <Home className="h-5 w-5" /> },
     { label: 'Explore', path: '/explore', icon: <Compass className="h-5 w-5" /> },
     { label: 'Calendar', path: '/calendar', icon: <Calendar className="h-5 w-5" /> },
-    { label: 'Passes', path: '/me', icon: <Ticket className="h-5 w-5" /> },
+    { label: 'My Passes', path: '/attendee/dashboard', icon: <Ticket className="h-5 w-5" /> },
     {
       label: isAuthenticated ? 'Profile' : 'Sign In',
-      path: isAuthenticated ? '/me' : '/login',
+      path: isAuthenticated ? '/attendee/dashboard' : '/login',
       icon: <User className="h-5 w-5" />,
     },
   ]
 
   return (
-    <div className="min-h-screen bg-paper text-ink flex flex-col font-body selection:bg-ink selection:text-paper">
-      {/* Editorial Sticky Masthead */}
-      <header className="sticky top-0 left-0 right-0 z-40 bg-paper border-b border-ink-15">
-        <div className="px-[4vw] h-16 flex items-center justify-between gap-4">
-          {/* Brand Wordmark & Volume Tag */}
-          <div className="flex items-baseline gap-3 sm:gap-4 flex-shrink-0">
-            <Link
-              to="/"
-              className="font-display text-2xl sm:text-3xl tracking-editorial text-ink uppercase hover:opacity-80 transition-opacity"
-            >
-              {BRAND_CONFIG.name}
+    <div className="min-h-screen bg-canvas text-ink flex flex-col font-body selection:bg-brand-red/10 selection:text-brand-red">
+      {/* ==============================================================
+          AMBIENT LIGHT MASTHEAD (BookMyShow + District Navigation)
+          ============================================================== */}
+      <header className="sticky top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200/80 transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+          {/* Left: Brand Logo & City Selector */}
+          <div className="flex items-center gap-4 sm:gap-6 flex-shrink-0">
+            <Link to="/" className="flex items-center gap-2 group">
+              <span className="h-8 w-8 rounded-lg bg-gradient-to-tr from-brand-red via-brand-pink to-brand-purple flex items-center justify-center text-white font-black text-sm shadow-md shadow-red-500/20 group-hover:scale-105 transition-transform">
+                EM
+              </span>
+              <span className="font-display font-extrabold text-xl sm:text-2xl tracking-tight text-slate-900">
+                EVENT<span className="text-brand-red">MESH</span>
+              </span>
             </Link>
-            <span className="font-mono text-[10px] sm:text-[11px] font-medium uppercase tracking-widecaps text-ink-60 hidden xs:inline">
-              {BRAND_CONFIG.edition.split('·')[0]}
-            </span>
+
+            {/* City / Campus Selector (BookMyShow style) */}
+            <div className="relative hidden md:block">
+              <button
+                type="button"
+                onClick={() => setIsCityDropdownOpen(!isCityDropdownOpen)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200/70 text-slate-700 text-xs font-semibold transition-colors"
+                aria-label="Select location"
+              >
+                <MapPin className="h-3.5 w-3.5 text-brand-red" />
+                <span>{selectedCity}</span>
+                <ChevronDown className="h-3 w-3 text-slate-400" />
+              </button>
+
+              {isCityDropdownOpen && (
+                <div className="absolute left-0 mt-2 w-44 rounded-xl bg-white border border-slate-200 shadow-xl py-1 z-50">
+                  <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Select Location
+                  </div>
+                  {cities.map((city) => (
+                    <button
+                      key={city}
+                      onClick={() => {
+                        setSelectedCity(city)
+                        setIsCityDropdownOpen(false)
+                      }}
+                      className={`w-full text-left px-3 py-2 text-xs font-medium hover:bg-slate-50 flex items-center justify-between ${
+                        selectedCity === city ? 'text-brand-red font-semibold bg-red-50/50' : 'text-slate-700'
+                      }`}
+                    >
+                      <span>{city}</span>
+                      {selectedCity === city && <span className="h-1.5 w-1.5 rounded-full bg-brand-red" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-7">
-            {navLinks.map((link) => {
-              const isActive =
-                link.path === '/'
-                  ? location.pathname === '/'
-                  : location.pathname.startsWith(link.path)
-              return (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className={`font-body text-[12.5px] font-semibold uppercase tracking-caps transition-all py-1 border-b-2 ${
-                    isActive
-                      ? 'border-ink text-ink'
-                      : 'border-transparent text-ink/75 hover:text-ink hover:border-ink/30'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              )
-            })}
-          </nav>
-
-          {/* Right Action Cluster */}
-          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-            {/* Search Trigger */}
+          {/* Center: Search Trigger (BookMyShow / Netflix search bar) */}
+          <div className="flex-1 max-w-md hidden sm:block">
             <button
               type="button"
               onClick={() => setIsSearchOpen(true)}
-              className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 border border-ink-15 hover:border-ink transition-colors font-mono text-[11px] uppercase tracking-wide text-ink-60 hover:text-ink"
-              aria-label="Search events and clubs"
+              className="w-full flex items-center justify-between px-3.5 py-2 rounded-full bg-slate-100 hover:bg-slate-200/60 border border-transparent hover:border-slate-200 transition-all text-slate-400 text-xs group"
             >
-              <Search className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Search</span>
-              <kbd className="hidden md:inline text-[9px] bg-paper-deep px-1 border border-ink-15">
+              <div className="flex items-center gap-2.5">
+                <Search className="h-3.5 w-3.5 text-slate-500 group-hover:text-brand-red transition-colors" />
+                <span className="text-slate-500">Search hackathons, workshops & clubs...</span>
+              </div>
+              <kbd className="hidden md:inline-flex items-center gap-0.5 rounded bg-white px-1.5 py-0.5 text-[10px] font-mono text-slate-500 border border-slate-200 shadow-2xs">
                 ⌘K
               </kbd>
             </button>
+          </div>
 
-            {/* Dev Switcher Link */}
+          {/* Right Action Cluster */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {/* Desktop Navigation Links */}
+            <nav className="hidden lg:flex items-center gap-5 mr-2">
+              {navLinks.map((link) => {
+                const isActive =
+                  link.path === '/'
+                    ? location.pathname === '/'
+                    : location.pathname.startsWith(link.path)
+                return (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className={`text-xs font-semibold tracking-wide transition-colors py-1 ${
+                      isActive ? 'text-brand-red' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                )
+              })}
+            </nav>
+
+            {/* Mobile Search Button */}
+            <button
+              type="button"
+              onClick={() => setIsSearchOpen(true)}
+              className="sm:hidden p-2 text-slate-600 hover:text-slate-900"
+              aria-label="Search"
+            >
+              <Search className="h-5 w-5" />
+            </button>
+
+            {/* Dev Switcher Button */}
             <Link
               to="/dev/accounts"
-              className="hidden xl:inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wide border border-dashed border-ink-15 px-2 py-1 text-ink-60 hover:text-ink hover:border-ink"
+              className="hidden xl:inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200/70 px-2.5 py-1.5 rounded-lg transition-colors"
             >
-              <ShieldAlert className="h-3 w-3" />
-              <span>Dev Accounts</span>
+              <ShieldAlert className="h-3.5 w-3.5 text-amber-500" />
+              <span>Personas</span>
             </Link>
 
-            {/* Admin Console Shortcut (if authorized) */}
+            {/* Admin Console Shortcut */}
             {canAccessAdmin() && (
               <Link
                 to="/admin"
-                className="hidden sm:inline-flex items-center gap-1 bg-admin-accent text-white px-3 py-1.5 font-mono text-[11px] uppercase tracking-widecaps font-semibold hover:bg-[#154643] transition-colors"
+                className="hidden sm:inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-sm"
               >
                 <span>Console</span>
-                <ArrowUpRight className="h-3 w-3" />
+                <ArrowUpRight className="h-3.5 w-3.5 text-slate-400" />
               </Link>
             )}
 
-            {/* Sign In / Account Dropdown */}
+            {/* My Passes Wallet Button */}
+            <Link
+              to="/attendee/dashboard"
+              className="inline-flex items-center gap-1.5 border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-2xs"
+            >
+              <Ticket className="h-3.5 w-3.5 text-brand-red" />
+              <span className="hidden sm:inline">My Passes</span>
+            </Link>
+
+            {/* Account / Login */}
             {isAuthenticated ? (
               <Link
-                to="/me"
-                className="inline-flex items-center gap-2 border border-ink px-3 py-1.5 font-body text-xs font-semibold uppercase tracking-caps hover:bg-ink hover:text-paper transition-all"
+                to="/attendee/dashboard"
+                className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200/70 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-800 transition-colors"
               >
-                <span className="h-2 w-2 bg-emerald-600 inline-block" />
-                <span className="truncate max-w-[120px]">{session?.name || 'Account'}</span>
+                <div className="h-5 w-5 rounded-full bg-gradient-to-tr from-brand-blue to-brand-purple text-white flex items-center justify-center text-[10px] font-bold">
+                  {(session?.name || 'U')[0]}
+                </div>
+                <span className="hidden md:inline truncate max-w-[90px]">{session?.name}</span>
               </Link>
             ) : (
               <Link
                 to="/login"
-                className="inline-flex items-center border border-ink px-3.5 py-1.5 font-body text-xs font-semibold uppercase tracking-caps hover:bg-ink hover:text-paper transition-all"
+                className="inline-flex items-center bg-brand-red hover:bg-[#CC0813] text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-all shadow-red-500/20"
               >
                 Sign In
               </Link>
@@ -140,109 +207,44 @@ export const PublicShell: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Page Canvas */}
-      <main className="flex-1 pb-20 sm:pb-0">
+      {/* Main Content Area */}
+      <main className="flex-1 pb-16 lg:pb-0">
         <Outlet />
       </main>
 
-      {/* Editorial Footer */}
-      <footer className="border-t border-ink-15 bg-paper pt-16 pb-24 sm:pb-16 overflow-hidden">
-        <div className="px-[4vw]">
-          {/* Top Colophon Row */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-12 border-b border-ink-15">
-            <div className="md:col-span-5 space-y-3">
-              <span className="font-mono text-[11px] uppercase tracking-widecaps text-ink-60 block">
-                {BRAND_CONFIG.manifesto.heading}
-              </span>
-              <p className="font-body text-sm sm:text-base text-ink max-w-md leading-relaxed">
-                {BRAND_CONFIG.manifesto.statement}
-              </p>
-            </div>
-
-            <div className="md:col-span-4 grid grid-cols-2 gap-4">
-              <div>
-                <span className="font-mono text-[11px] uppercase tracking-widecaps text-ink-60 block mb-3">
-                  Index
-                </span>
-                <ul className="space-y-2 font-body text-xs uppercase tracking-caps font-semibold">
-                  <li><Link to="/explore" className="hover:underline">Browse Catalogue</Link></li>
-                  <li><Link to="/clubs" className="hover:underline">Member Clubs</Link></li>
-                  <li><Link to="/calendar" className="hover:underline">Calendar Grid</Link></li>
-                  <li><Link to="/announcements" className="hover:underline">Notices</Link></li>
-                </ul>
-              </div>
-
-              <div>
-                <span className="font-mono text-[11px] uppercase tracking-widecaps text-ink-60 block mb-3">
-                  System
-                </span>
-                <ul className="space-y-2 font-body text-xs uppercase tracking-caps font-semibold">
-                  <li><Link to="/about" className="hover:underline">About TA</Link></li>
-                  <li><Link to="/styleguide" className="hover:underline">Styleguide</Link></li>
-                  <li><Link to="/dev/accounts" className="hover:underline">Dev Matrix</Link></li>
-                  <li><Link to="/admin" className="hover:underline">Admin Console</Link></li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="md:col-span-3 space-y-2 text-left md:text-right">
-              <span className="font-mono text-[11px] uppercase tracking-widecaps text-ink-60 block">
-                Edition & Verification
-              </span>
-              <p className="font-mono text-xs text-ink">{BRAND_CONFIG.edition}</p>
-              <p className="font-body text-xs text-ink-60 max-w-xs md:ml-auto">
-                All certificates carry verifiable digital cryptographic signatures.
-              </p>
-            </div>
-          </div>
-
-          {/* Giant Cropped Typographic Wordmark */}
-          <div className="py-6 sm:py-8 select-none pointer-events-none">
-            <h2 className="font-display text-[15vw] leading-[0.82] tracking-editorial text-ink/90 uppercase text-center sm:text-left overflow-hidden">
-              {BRAND_CONFIG.name}
-            </h2>
-          </div>
-
-          {/* Bottom Copyright Hairline */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-ink-15 font-mono text-[11px] uppercase tracking-widecaps text-ink-60">
-            <span>{BRAND_CONFIG.copyright}</span>
-            <span>No Cookies · Zero Tracking · Pure Archival Paper</span>
-          </div>
-        </div>
-      </footer>
-
-      {/* Mobile Bottom Tab Bar (Touch target min 48px) */}
-      <nav
-        aria-label="Mobile Navigation"
-        className="fixed bottom-0 left-0 right-0 z-40 bg-paper border-t border-ink-15 sm:hidden flex items-center justify-around h-16 px-2"
-      >
+      {/* ==============================================================
+          MOBILE BOTTOM DOCK (BookMyShow / District Bottom Navigation)
+          ============================================================== */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-t border-slate-200/80 px-2 py-1.5 flex items-center justify-around shadow-lg">
         {mobileTabs.map((tab) => {
           const isActive =
             tab.path === '/'
               ? location.pathname === '/'
               : location.pathname.startsWith(tab.path)
-
           return (
             <Link
-              key={tab.label}
+              key={tab.path}
               to={tab.path}
-              className={`flex flex-col items-center justify-center min-w-[56px] min-h-[48px] py-1 transition-colors ${
-                isActive ? 'text-ink font-bold' : 'text-ink-60 hover:text-ink'
+              className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
+                isActive
+                  ? 'text-brand-red font-semibold'
+                  : 'text-slate-500 hover:text-slate-900 font-medium'
               }`}
             >
-              {tab.icon}
-              <span className="font-mono text-[9px] uppercase tracking-wide mt-1">
-                {tab.label}
-              </span>
+              <div className="relative">
+                {tab.icon}
+                {tab.label === 'My Passes' && (
+                  <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-brand-red" />
+                )}
+              </div>
+              <span className="text-[10px] mt-1">{tab.label}</span>
             </Link>
           )
         })}
       </nav>
 
-      {/* Global Search Dialog */}
+      {/* Global Modals & Notifications */}
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
-
-      {/* Notification Toast Container */}
       <ToastContainer />
     </div>
   )
