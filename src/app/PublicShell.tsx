@@ -107,26 +107,89 @@ export const PublicShell: React.FC = () => {
           </div>
 
           {/* M3 Center Search Bar (Google Style) */}
-          <div className="flex-1 max-w-md hidden sm:block">
+          <div className="flex-1 max-w-md min-w-[180px] hidden sm:block">
             <button
               type="button"
               onClick={() => setIsSearchOpen(true)}
               className="w-full flex items-center justify-between px-4 py-2 rounded-full bg-[#F1F3F4] hover:bg-[#E8EAED] transition-all text-md-on-surface-variant text-xs group"
             >
-              <div className="flex items-center gap-2.5">
-                <Search className="h-4 w-4 text-slate-500 group-hover:text-md-primary transition-colors" />
-                <span>Search events, clubs and topics...</span>
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Search className="h-4 w-4 text-slate-500 group-hover:text-md-primary flex-shrink-0 transition-colors" />
+                <span className="truncate whitespace-nowrap text-left">Search events, clubs and topics...</span>
               </div>
-              <kbd className="hidden md:inline-flex items-center gap-0.5 rounded-md bg-white px-2 py-0.5 text-[10px] font-mono text-slate-500 border border-slate-200">
+              <kbd className="hidden lg:inline-flex items-center gap-0.5 rounded-md bg-white px-2 py-0.5 text-[10px] font-mono text-slate-500 border border-slate-200 flex-shrink-0 ml-2">
                 ⌘K
               </kbd>
             </button>
           </div>
 
           {/* Right Action Cluster */}
-          <div className="flex items-center gap-3 flex-shrink-0">
-            {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-1 mr-2">
+          <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
+            {/* Mobile Search Button */}
+            <button
+              type="button"
+              onClick={() => setIsSearchOpen(true)}
+              className="sm:hidden p-2 text-slate-600 hover:text-slate-900 rounded-full hover:bg-[#F1F3F4]"
+              aria-label="Search"
+            >
+              <Search className="h-5 w-5" />
+            </button>
+
+            {/* Dev Personas Switcher */}
+            <Link
+              to="/dev/accounts"
+              className="hidden xl:inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 bg-[#F1F3F4] hover:bg-[#E8EAED] px-3 py-1.5 rounded-full transition-colors whitespace-nowrap"
+            >
+              <ShieldAlert className="h-3.5 w-3.5 text-amber-600" />
+              <span>Personas</span>
+            </Link>
+
+            {/* Admin Console Shortcut */}
+            {canAccessAdmin() && (
+              <Link
+                to="/admin"
+                className="hidden sm:inline-flex items-center gap-1.5 bg-[#1F1F1F] hover:bg-slate-800 text-white px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all shadow-xs whitespace-nowrap"
+              >
+                <span>Console</span>
+                <ArrowUpRight className="h-3.5 w-3.5 text-slate-400" />
+              </Link>
+            )}
+
+            {/* My Passes Wallet Button */}
+            <Link
+              to="/attendee/dashboard"
+              className="inline-flex items-center gap-1.5 border border-md-outline bg-white hover:bg-slate-50 text-md-on-surface px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap"
+            >
+              <Ticket className="h-3.5 w-3.5 text-md-primary" />
+              <span className="hidden sm:inline">My Passes</span>
+            </Link>
+
+            {/* Account / Login */}
+            {isAuthenticated ? (
+              <Link
+                to="/attendee/dashboard"
+                className="inline-flex items-center gap-2 bg-md-primary-container text-md-on-primary-container px-3 py-1.5 rounded-full text-xs font-semibold transition-colors whitespace-nowrap"
+              >
+                <div className="h-5 w-5 rounded-full bg-md-primary text-white flex items-center justify-center text-[10px] font-bold">
+                  {(session?.name || 'U')[0]}
+                </div>
+                <span className="hidden md:inline truncate max-w-[90px]">{session?.name}</span>
+              </Link>
+            ) : (
+              <Link
+                to="/login"
+                className="inline-flex items-center bg-md-primary hover:bg-md-primary-hover text-white px-4 py-1.5 rounded-full text-xs font-semibold shadow-xs transition-all whitespace-nowrap"
+              >
+                Sign In
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* Desktop Category Navigation Sub-bar (BookMyShow / District Pattern) */}
+        <div className="hidden md:block bg-white border-t border-md-outline/40">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-10 flex items-center justify-between">
+            <nav className="flex items-center gap-1 sm:gap-2">
               {navLinks.map((link) => {
                 const isActive =
                   link.path === '/'
@@ -136,7 +199,7 @@ export const PublicShell: React.FC = () => {
                   <Link
                     key={link.path}
                     to={link.path}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold tracking-normal transition-all ${
+                    className={`px-3 py-1 rounded-full text-xs font-semibold tracking-normal transition-all whitespace-nowrap ${
                       isActive
                         ? 'bg-md-primary-container text-md-on-primary-container font-bold'
                         : 'text-md-on-surface-variant hover:text-md-on-surface hover:bg-black/[0.04]'
@@ -148,64 +211,14 @@ export const PublicShell: React.FC = () => {
               })}
             </nav>
 
-            {/* Mobile Search Button */}
-            <button
-              type="button"
-              onClick={() => setIsSearchOpen(true)}
-              className="sm:hidden p-2 text-slate-600 hover:text-slate-900"
-              aria-label="Search"
-            >
-              <Search className="h-5 w-5" />
-            </button>
-
-            {/* Dev Personas Switcher */}
-            <Link
-              to="/dev/accounts"
-              className="hidden xl:inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 bg-[#F1F3F4] hover:bg-[#E8EAED] px-3 py-1.5 rounded-full transition-colors"
-            >
-              <ShieldAlert className="h-3.5 w-3.5 text-amber-600" />
-              <span>Personas</span>
-            </Link>
-
-            {/* Admin Console Shortcut */}
-            {canAccessAdmin() && (
-              <Link
-                to="/admin"
-                className="hidden sm:inline-flex items-center gap-1.5 bg-[#1F1F1F] hover:bg-slate-800 text-white px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all shadow-xs"
-              >
-                <span>Console</span>
-                <ArrowUpRight className="h-3.5 w-3.5 text-slate-400" />
-              </Link>
-            )}
-
-            {/* My Passes Wallet Button */}
-            <Link
-              to="/attendee/dashboard"
-              className="inline-flex items-center gap-1.5 border border-md-outline bg-white hover:bg-slate-50 text-md-on-surface px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
-            >
-              <Ticket className="h-3.5 w-3.5 text-md-primary" />
-              <span className="hidden sm:inline">My Passes</span>
-            </Link>
-
-            {/* Account / Login */}
-            {isAuthenticated ? (
-              <Link
-                to="/attendee/dashboard"
-                className="inline-flex items-center gap-2 bg-md-primary-container text-md-on-primary-container px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
-              >
-                <div className="h-5 w-5 rounded-full bg-md-primary text-white flex items-center justify-center text-[10px] font-bold">
-                  {(session?.name || 'U')[0]}
-                </div>
-                <span className="hidden md:inline truncate max-w-[90px]">{session?.name}</span>
-              </Link>
-            ) : (
-              <Link
-                to="/login"
-                className="inline-flex items-center bg-md-primary hover:bg-md-primary-hover text-white px-4 py-1.5 rounded-full text-xs font-semibold shadow-xs transition-all"
-              >
-                Sign In
-              </Link>
-            )}
+            <div className="hidden lg:flex items-center gap-4 text-[11px] font-medium text-slate-500">
+              <span className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                9 Technical Collectives
+              </span>
+              <span>•</span>
+              <span>Live Ticketing & Instant Passes</span>
+            </div>
           </div>
         </div>
       </header>

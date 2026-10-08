@@ -21,6 +21,7 @@ import { NetflixShelf } from './components/NetflixShelf'
 import { ClubSpotlightRow } from './components/ClubSpotlightRow'
 import { EventCardModern } from './components/EventCardModern'
 import { Button } from '@/design-system/primitives/Button'
+import { AmbientSilkCanvas } from '@/design-system/AmbientSilkCanvas'
 
 export const HomePage: React.FC = () => {
   const { data: eventsData } = useEvents()
@@ -80,7 +81,14 @@ export const HomePage: React.FC = () => {
   }, [allEvents, selectedCategory, onlyWithCertificates])
 
   return (
-    <div className="w-full flex flex-col bg-canvas text-ink min-h-screen">
+    <div className="w-full flex flex-col bg-canvas text-ink min-h-screen relative overflow-hidden">
+      {/* Subtle Living Ambient Silk Shader in Google M3 Tones */}
+      <AmbientSilkCanvas
+        opacity={0.45}
+        speed={0.06}
+        className="h-[520px] sm:h-[620px] pointer-events-none"
+      />
+
       {/* ==============================================================
           1. CINEMATIC AMBIENT LIGHT HERO BILLBOARD (Netflix / BookMyShow)
           ============================================================== */}

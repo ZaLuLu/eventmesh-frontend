@@ -52,11 +52,10 @@ export const HeroBillboard: React.FC<HeroBillboardProps> = ({ events }) => {
     <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-4">
       {/* Subtle Google Blue Ambient Aura */}
       <div
-        className="ambient-glow -top-10 left-1/4 w-3/4 h-72 sm:h-96 pointer-events-none"
+        className="absolute -top-12 left-1/2 -translate-x-1/2 w-full max-w-4xl h-80 sm:h-96 pointer-events-none rounded-full overflow-hidden z-0"
         style={{
-          background: 'radial-gradient(circle, rgba(26, 115, 232, 0.12) 0%, transparent 70%)',
-          opacity: 0.8,
-          filter: 'blur(70px)',
+          background: 'radial-gradient(circle, rgba(26, 115, 232, 0.15) 0%, rgba(232, 240, 254, 0.3) 40%, transparent 70%)',
+          filter: 'blur(60px)',
         }}
       />
 
