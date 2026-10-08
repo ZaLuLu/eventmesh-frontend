@@ -139,8 +139,8 @@ export const AttendeeDashboardPage: React.FC = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-canvas flex items-center justify-center p-8 text-center">
-        <div className="max-w-md space-y-4 rounded-3xl bg-white border border-[#DADCE0] p-8 shadow-card-hover">
+      <div className="min-h-screen bg-[#EEF2F6] flex items-center justify-center p-8 text-center">
+        <div className="max-w-md space-y-4 rounded-3xl bg-[#EEF2F6] border border-white/80 p-8 shadow-neo-card">
           <h2 className="font-display text-2xl font-bold text-slate-900">Sign In Required</h2>
           <p className="font-body text-xs text-slate-500">
             Please sign in to view your verified entry passes, digital credentials, and followed clubs.
@@ -154,9 +154,9 @@ export const AttendeeDashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="w-full bg-canvas text-slate-900 min-h-screen pb-16">
+    <div className="w-full bg-[#EEF2F6] text-slate-900 min-h-screen pb-16">
       {/* Header */}
-      <div className="bg-[#EEF2F6] border-b border-white/70 shadow-neo-sm">
+      <div className="bg-[#EEF2F6] border-b border-slate-200/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="text-xs font-bold text-indigo-600 block mb-1">

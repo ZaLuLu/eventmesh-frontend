@@ -84,12 +84,12 @@ export const TicketTierModal: React.FC<TicketTierModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl rounded-3xl bg-white border border-[#DADCE0] shadow-card-hover p-6 sm:p-8 overflow-hidden">
+      <div className="relative w-full max-w-xl rounded-3xl bg-[#EEF2F6] border border-white/80 shadow-neo-card p-6 sm:p-8 overflow-hidden">
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-[#F1F3F4] transition-colors"
+          className="absolute top-5 right-5 p-2 rounded-full text-slate-500 hover:text-slate-800 bg-[#EEF2F6] shadow-neo-sm hover:shadow-neo-inset border border-white/60 transition-all"
           aria-label="Close dialog"
         >
           <X className="h-5 w-5" />
@@ -97,8 +97,8 @@ export const TicketTierModal: React.FC<TicketTierModalProps> = ({
 
         {/* Modal Header */}
         <div className="mb-6 pr-8">
-          <div className="flex items-center gap-2 text-xs font-semibold text-md-primary uppercase tracking-normal mb-1">
-            <Ticket className="h-4 w-4" />
+          <div className="flex items-center gap-2 text-xs font-bold text-gradient-feral uppercase tracking-wider mb-1">
+            <Ticket className="h-4 w-4 text-indigo-500" />
             <span>Select Ticket Tier</span>
           </div>
           <h2 className="font-display font-bold text-2xl text-slate-900 leading-tight">
@@ -119,10 +119,10 @@ export const TicketTierModal: React.FC<TicketTierModalProps> = ({
                 role="button"
                 tabIndex={0}
                 onClick={() => setSelectedTierId(tier.id)}
-                className={`relative p-4 rounded-2xl border transition-all cursor-pointer ${
+                className={`relative p-4 rounded-2xl border transition-all cursor-pointer bg-[#EEF2F6] ${
                   isSelected
-                    ? 'border-md-primary bg-md-primary-container/40 shadow-xs ring-1 ring-md-primary'
-                    : 'border-[#DADCE0] hover:border-slate-300 hover:bg-[#F8F9FA]'
+                    ? 'border-indigo-500/50 shadow-neo-card ring-2 ring-indigo-500/30'
+                    : 'border-white/80 shadow-neo-sm hover:shadow-neo-card'
                 }`}
               >
                 <div className="flex items-start justify-between gap-4 mb-1">
@@ -131,7 +131,7 @@ export const TicketTierModal: React.FC<TicketTierModalProps> = ({
                       {tier.name}
                     </span>
                     {tier.tag && (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold text-white bg-md-primary shadow-2xs">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold text-white bg-gradient-to-r from-indigo-500 to-pink-500 shadow-neo-sm">
                         {tier.tag}
                       </span>
                     )}
@@ -147,7 +147,7 @@ export const TicketTierModal: React.FC<TicketTierModalProps> = ({
                 </p>
 
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-medium text-[#B06000] bg-[#FEF7E0] border border-[#FEEFC3] px-2 py-0.5 rounded-md">
+                  <span className="font-bold text-amber-700 bg-[#EEF2F6] shadow-neo-inset border border-amber-200/60 px-2.5 py-0.5 rounded-full">
                     ⚡ Only {tier.spotsLeft} passes remaining
                   </span>
 

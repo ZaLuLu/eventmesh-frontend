@@ -12,11 +12,11 @@ export const GalleryPage: React.FC = () => {
   )
 
   return (
-    <div className="w-full bg-canvas text-md-on-surface min-h-screen pb-16">
+    <div className="w-full bg-[#EEF2F6] text-slate-800 min-h-screen pb-16">
       {/* Header Banner */}
-      <div className="bg-white border-b border-[#DADCE0]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-8">
-          <span className="text-xs font-semibold text-md-primary block mb-1">
+      <div className="border-b border-slate-200/60 pb-8 pt-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <span className="text-xs font-bold text-gradient-feral uppercase tracking-wider block mb-1">
             Community Moments
           </span>
           <h1 className="font-display font-bold text-3xl sm:text-4xl text-slate-900 tracking-tight">
@@ -30,7 +30,7 @@ export const GalleryPage: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {isLoading ? (
-          <div className="py-20 text-center text-xs text-slate-500">
+          <div className="py-20 text-center text-xs text-slate-500 animate-pulse">
             Loading photo gallery...
           </div>
         ) : allPhotos.length === 0 ? (
@@ -41,28 +41,30 @@ export const GalleryPage: React.FC = () => {
               <div
                 key={item.id}
                 onClick={() => setActivePhoto(item)}
-                className="group rounded-2xl border border-[#DADCE0] bg-white shadow-subtle hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden flex flex-col justify-between"
+                className="group rounded-3xl border border-white/80 bg-[#EEF2F6] shadow-neo-card hover:shadow-neo-card-hover transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden flex flex-col justify-between"
               >
-                <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                <div className="relative aspect-[4/3] m-3 rounded-2xl overflow-hidden bg-slate-200/60 shadow-neo-inset">
                   <img
                     src={item.url}
                     alt={item.caption || 'Event image'}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                  <div className="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white backdrop-blur-[2px]">
                     <ZoomIn className="h-6 w-6" />
                   </div>
                 </div>
 
-                <div className="p-4 bg-white flex items-center justify-between text-xs">
-                  <span className="font-semibold text-slate-800 truncate max-w-[200px]">
+                <div className="px-5 pb-2 flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-800 truncate max-w-[200px]">
                     {item.clubName}
                   </span>
-                  <span className="text-slate-400 font-medium">Photo #{idx + 1}</span>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 bg-[#EEF2F6] shadow-neo-sm px-2 py-0.5 rounded-full border border-white/60">
+                    #{idx + 1}
+                  </span>
                 </div>
 
                 {item.caption && (
-                  <p className="px-4 pb-4 text-xs text-slate-500 line-clamp-2">
+                  <p className="px-5 pb-5 text-xs text-slate-500 line-clamp-2">
                     {item.caption}
                   </p>
                 )}

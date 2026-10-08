@@ -43,11 +43,11 @@ export const DevAccountsPage: React.FC = () => {
   }
 
   return (
-    <div className="w-full bg-canvas text-md-on-surface min-h-screen py-10 sm:py-16">
+    <div className="w-full bg-[#EEF2F6] text-slate-800 min-h-screen py-10 sm:py-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-8">
-        <div className="border-b border-[#DADCE0] pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="border-b border-slate-200/60 pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <span className="text-xs font-semibold text-md-primary block mb-1">
+            <span className="text-xs font-bold text-gradient-feral uppercase tracking-wider block mb-1">
               Development Environment
             </span>
             <h1 className="font-display font-bold text-3xl sm:text-4xl text-slate-900 tracking-tight">
@@ -69,20 +69,20 @@ export const DevAccountsPage: React.FC = () => {
         </div>
 
         {/* Current Active Persona */}
-        <div className="p-6 rounded-2xl border border-[#D3E3FD] bg-md-primary-container text-md-on-primary-container flex items-center justify-between shadow-subtle">
+        <div className="p-6 rounded-3xl bg-[#EEF2F6] border border-white/80 shadow-neo-card flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-md-primary uppercase tracking-normal block mb-1">
+            <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 block mb-1">
               Currently Active Persona
             </span>
             <p className="font-display font-bold text-xl sm:text-2xl text-slate-900">
               {session?.name || 'Anonymous Visitor'}
             </p>
             <p className="text-xs text-slate-600 mt-0.5 font-medium">
-              Role: {session?.role || 'None'} {session?.clubName ? `· Club: ${session.clubName}` : ''}
+              Role: <span className="font-semibold">{session?.role || 'None'}</span> {session?.clubName ? `· Club: ${session.clubName}` : ''}
             </p>
           </div>
 
-          <span className="h-3 w-3 bg-emerald-500 rounded-full animate-pulse" />
+          <span className="h-3 w-3 bg-emerald-500 rounded-full animate-pulse shadow-sm" />
         </div>
 
         {/* Personas Grid */}
@@ -93,19 +93,19 @@ export const DevAccountsPage: React.FC = () => {
             return (
               <div
                 key={user.id}
-                className={`p-6 rounded-2xl border transition-all flex flex-col justify-between space-y-5 ${
+                className={`p-6 rounded-3xl border transition-all flex flex-col justify-between space-y-5 bg-[#EEF2F6] ${
                   isCurrent
-                    ? 'border-md-primary bg-white shadow-card ring-2 ring-md-primary/20'
-                    : 'border-[#DADCE0] hover:border-slate-300 bg-white shadow-subtle hover:shadow-card-hover'
+                    ? 'border-indigo-500/50 shadow-neo-card ring-2 ring-indigo-500/30'
+                    : 'border-white/80 shadow-neo-card hover:shadow-neo-card-hover'
                 }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-[#F1F3F4] text-slate-700">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-[#EEF2F6] shadow-neo-inset text-slate-700">
                       {user.role.replace('_', ' ')}
                     </span>
                     {isCurrent && (
-                      <span className="text-xs font-bold text-md-primary flex items-center gap-1">
+                      <span className="text-xs font-bold text-indigo-600 flex items-center gap-1">
                         <Check className="h-3.5 w-3.5" /> Active
                       </span>
                     )}

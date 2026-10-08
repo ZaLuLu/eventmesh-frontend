@@ -60,7 +60,7 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <span className="text-xs font-semibold text-md-primary block mb-1">
+        <span className="text-xs font-bold text-gradient-feral uppercase tracking-wider block mb-1">
           {step === 'email' ? 'Welcome Back' : 'Verification'}
         </span>
         <h2 className="font-display font-bold text-2xl text-slate-900 tracking-tight">
@@ -74,7 +74,7 @@ export const LoginPage: React.FC = () => {
       </div>
 
       {error && (
-        <div className="p-3 bg-[#FCE8E6] border border-[#FAD2CF] rounded-xl text-xs font-medium text-[#D93025]">
+        <div className="p-3.5 bg-rose-50 border border-rose-200 shadow-neo-sm rounded-2xl text-xs font-medium text-rose-700">
           {error}
         </div>
       )}
@@ -95,10 +95,10 @@ export const LoginPage: React.FC = () => {
             Continue with Email
           </Button>
 
-          <div className="pt-4 border-t border-[#DADCE0] text-center">
+          <div className="pt-4 border-t border-slate-200/60 text-center">
             <Link
               to="/dev/accounts"
-              className="text-xs text-md-primary hover:underline font-semibold"
+              className="text-xs text-indigo-600 hover:text-indigo-700 hover:underline font-semibold"
             >
               ⚡ Use Demo Accounts (1-Click Login)
             </Link>
@@ -130,14 +130,14 @@ export const LoginPage: React.FC = () => {
                 setOtp('')
                 setError('')
               }}
-              className="hover:text-md-primary"
+              className="hover:text-indigo-600 transition-colors font-medium"
             >
               ← Use a different email
             </button>
             <button
               type="button"
               onClick={handleSendOtp}
-              className="text-md-primary hover:underline font-semibold"
+              className="text-indigo-600 hover:text-indigo-700 hover:underline font-semibold"
             >
               Resend Code
             </button>

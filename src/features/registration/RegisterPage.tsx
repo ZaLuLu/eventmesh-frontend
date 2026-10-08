@@ -133,29 +133,29 @@ export const RegisterPage: React.FC = () => {
   }
 
   return (
-    <div className="w-full bg-canvas text-md-on-surface min-h-screen py-8 sm:py-12">
+    <div className="w-full bg-[#EEF2F6] text-slate-800 min-h-screen py-8 sm:py-12">
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
         {/* Navigation Breadcrumb */}
         <div className="mb-6 flex items-center gap-2 text-xs text-slate-500 font-medium">
-          <Link to="/" className="hover:text-md-primary">
+          <Link to="/" className="hover:text-indigo-600 transition-colors">
             Home
           </Link>
           <ChevronRight className="h-3 w-3" />
-          <Link to={`/events/${event.slug}`} className="hover:text-md-primary">
+          <Link to={`/events/${event.slug}`} className="hover:text-indigo-600 transition-colors">
             {event.title}
           </Link>
           <ChevronRight className="h-3 w-3" />
-          <span className="text-slate-800 font-semibold">Registration</span>
+          <span className="text-slate-800 font-bold">Registration</span>
         </div>
 
         {/* Event Header Banner Card */}
-        <div className="rounded-2xl border border-[#DADCE0] bg-white p-6 mb-8 shadow-subtle">
+        <div className="rounded-3xl border border-white/80 bg-[#EEF2F6] p-6 sm:p-8 mb-8 shadow-neo-card">
           <div className="flex items-center gap-2 mb-2">
             <span
-              className="h-2 w-2 rounded-full"
-              style={{ backgroundColor: event.organizerColor || '#1A73E8' }}
+              className="h-2.5 w-2.5 rounded-full shadow-xs"
+              style={{ backgroundColor: event.organizerColor || '#6366F1' }}
             />
-            <span className="text-xs font-semibold text-slate-600">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
               {event.organizerName}
             </span>
           </div>
@@ -174,9 +174,9 @@ export const RegisterPage: React.FC = () => {
 
         {/* Warning if already registered */}
         {alreadyRegistered && step === 0 && (
-          <div className="p-4 rounded-xl border border-[#FEF7E0] bg-[#FEF7E0]/50 mb-6 flex items-center justify-between gap-4">
+          <div className="p-4 rounded-2xl border border-amber-200 bg-[#EEF2F6] shadow-neo-sm mb-6 flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-bold text-[#B06000]">
+              <p className="text-xs font-bold text-amber-700">
                 Notice: Existing Pass Detected
               </p>
               <p className="text-xs text-slate-600 mt-0.5">
@@ -193,7 +193,7 @@ export const RegisterPage: React.FC = () => {
 
         {/* STEP 0: ATTENDEE DETAILS & DYNAMIC FORM */}
         {step === 0 && (
-          <form onSubmit={handleNextToReview} className="space-y-6 rounded-2xl bg-white border border-[#DADCE0] p-6 sm:p-8 shadow-subtle">
+          <form onSubmit={handleNextToReview} className="space-y-6 rounded-3xl bg-[#EEF2F6] border border-white/80 p-6 sm:p-8 shadow-neo-card">
             <div>
               <h3 className="font-display text-xl font-bold text-slate-900 mb-1">
                 Attendee Details
@@ -230,8 +230,8 @@ export const RegisterPage: React.FC = () => {
 
             {/* Team Registration block if enabled */}
             {event.features.team && (
-              <div className="border-t border-[#DADCE0] pt-6 space-y-4">
-                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-normal">
+              <div className="border-t border-slate-200/60 pt-6 space-y-4">
+                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                   Team Collective Details
                 </h4>
                 <Field
@@ -274,7 +274,7 @@ export const RegisterPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setTeamMembers([...teamMembers, { name: '', email: '' }])}
-                      className="text-xs font-semibold text-md-primary hover:underline"
+                      className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:underline"
                     >
                       + Add another team member
                     </button>
@@ -285,8 +285,8 @@ export const RegisterPage: React.FC = () => {
 
             {/* Event Specific Dynamic Form Questions */}
             {event.formSchema && event.formSchema.length > 0 && (
-              <div className="border-t border-[#DADCE0] pt-6 space-y-4">
-                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-normal">
+              <div className="border-t border-slate-200/60 pt-6 space-y-4">
+                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                   Event Specific Questionnaire
                 </h4>
                 <FormRenderer
@@ -298,7 +298,7 @@ export const RegisterPage: React.FC = () => {
               </div>
             )}
 
-            <div className="pt-6 border-t border-[#DADCE0] flex justify-end">
+            <div className="pt-6 border-t border-slate-200/60 flex justify-end">
               <Button type="submit" size="lg" variant="primary" arrow>
                 Proceed to Review
               </Button>
@@ -308,7 +308,7 @@ export const RegisterPage: React.FC = () => {
 
         {/* STEP 1: REVIEW & CONFIRM */}
         {step === 1 && (
-          <div className="rounded-2xl bg-white border border-[#DADCE0] p-6 sm:p-8 shadow-subtle space-y-6">
+          <div className="rounded-3xl bg-[#EEF2F6] border border-white/80 p-6 sm:p-8 shadow-neo-card space-y-6">
             <div>
               <h3 className="font-display text-xl font-bold text-slate-900 mb-1">
                 Review Registration Details
@@ -318,19 +318,19 @@ export const RegisterPage: React.FC = () => {
               </p>
             </div>
 
-            <div className="border border-[#DADCE0] rounded-xl overflow-hidden divide-y divide-[#DADCE0]">
+            <div className="border border-white/60 bg-[#EEF2F6] shadow-neo-inset rounded-2xl overflow-hidden divide-y divide-slate-200/50">
               <div className="p-4 flex justify-between text-xs sm:text-sm">
                 <span className="text-slate-500">Attendee</span>
-                <span className="font-semibold text-slate-900">{name}</span>
+                <span className="font-bold text-slate-900">{name}</span>
               </div>
               <div className="p-4 flex justify-between text-xs sm:text-sm">
                 <span className="text-slate-500">Email Address</span>
-                <span className="font-semibold text-slate-900">{email}</span>
+                <span className="font-bold text-slate-900">{email}</span>
               </div>
               {event.features.team && (
                 <div className="p-4 flex justify-between text-xs sm:text-sm">
                   <span className="text-slate-500">Team Name</span>
-                  <span className="font-semibold text-slate-900">{teamName}</span>
+                  <span className="font-bold text-slate-900">{teamName}</span>
                 </div>
               )}
               {Object.entries(formAnswers).map(([k, v]) => (
@@ -338,12 +338,12 @@ export const RegisterPage: React.FC = () => {
                   <span className="text-slate-500">
                     {event.formSchema?.find((f) => f.id === k)?.label || k}
                   </span>
-                  <span className="font-semibold text-slate-900">{String(v)}</span>
+                  <span className="font-bold text-slate-900">{String(v)}</span>
                 </div>
               ))}
             </div>
 
-            <div className="flex items-center justify-between pt-6 border-t border-[#DADCE0]">
+            <div className="flex items-center justify-between pt-6 border-t border-slate-200/60">
               <Button variant="secondary" size="md" onClick={() => setStep(0)}>
                 ← Back to Edit
               </Button>
@@ -362,13 +362,13 @@ export const RegisterPage: React.FC = () => {
 
         {/* STEP 2: CONFIRMATION WITH DIGITAL TICKET PASS */}
         {step === 2 && createdRegistration && (
-          <div className="bg-white rounded-3xl border border-[#DADCE0] shadow-card-hover p-6 sm:p-10 space-y-8 text-center max-w-lg mx-auto">
-            <div className="inline-flex p-3 rounded-full bg-[#E6F4EA] text-[#137333] mb-1 shadow-xs">
+          <div className="bg-[#EEF2F6] rounded-3xl border border-white/80 shadow-neo-card p-6 sm:p-10 space-y-8 text-center max-w-lg mx-auto">
+            <div className="inline-flex p-3 rounded-full bg-emerald-50 text-emerald-600 mb-1 shadow-neo-sm border border-emerald-200/60">
               <Check className="h-7 w-7" />
             </div>
 
             <div>
-              <span className="text-xs font-semibold text-[#137333] block mb-1">
+              <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-1">
                 Registration Confirmed
               </span>
               <h2 className="font-display font-bold text-2xl sm:text-3xl text-slate-900 tracking-tight">
@@ -379,20 +379,20 @@ export const RegisterPage: React.FC = () => {
               </p>
             </div>
 
-            {/* Google Wallet Style Pass Container */}
-            <div className="relative rounded-2xl border border-[#DADCE0] bg-white p-6 shadow-subtle text-left overflow-hidden">
+            {/* Tactile Wallet Pass Container */}
+            <div className="relative rounded-3xl border border-white/80 bg-[#EEF2F6] p-6 shadow-neo-card text-left overflow-hidden">
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-[#DADCE0] pb-3 mb-4">
+              <div className="flex items-center justify-between border-b border-slate-200/60 pb-3 mb-4">
                 <div className="flex items-center gap-2">
                   <span
                     className="h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: event.organizerColor || '#1A73E8' }}
+                    style={{ backgroundColor: event.organizerColor || '#6366F1' }}
                   />
                   <span className="font-bold text-xs text-slate-900">
                     {event.organizerName}
                   </span>
                 </div>
-                <span className="text-[10px] font-bold text-[#137333] bg-[#E6F4EA] border border-[#CEEAD6] px-2.5 py-0.5 rounded-full uppercase">
+                <span className="text-[10px] font-bold text-emerald-700 bg-[#EEF2F6] shadow-neo-inset border border-emerald-200/60 px-2.5 py-0.5 rounded-full uppercase">
                   Verified Pass
                 </span>
               </div>
@@ -404,36 +404,36 @@ export const RegisterPage: React.FC = () => {
 
               <div className="flex items-center justify-between text-xs text-slate-600 mb-4">
                 <div>
-                  <span className="text-[10px] uppercase text-slate-400 block font-semibold">Attendee</span>
+                  <span className="text-[10px] uppercase text-slate-400 block font-bold">Attendee</span>
                   <span className="font-bold text-slate-800">{createdRegistration.userName}</span>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] uppercase text-slate-400 block font-semibold">Venue</span>
-                  <span className="font-semibold text-slate-800 truncate max-w-[140px] block">{event.venue.name}</span>
+                  <span className="text-[10px] uppercase text-slate-400 block font-bold">Venue</span>
+                  <span className="font-bold text-slate-800 truncate max-w-[140px] block">{event.venue.name}</span>
                 </div>
               </div>
 
               {/* Tear-line Notches */}
-              <div className="relative border-t border-dashed border-[#DADCE0] my-4 -mx-6 py-1">
-                <div className="absolute -top-3 -left-3 h-5 w-5 rounded-full bg-slate-50 border border-[#DADCE0]" />
-                <div className="absolute -top-3 -right-3 h-5 w-5 rounded-full bg-slate-50 border border-[#DADCE0]" />
+              <div className="relative border-t border-dashed border-slate-300 my-4 -mx-6 py-1">
+                <div className="absolute -top-3 -left-3 h-5 w-5 rounded-full bg-[#EEF2F6] shadow-neo-inset" />
+                <div className="absolute -top-3 -right-3 h-5 w-5 rounded-full bg-[#EEF2F6] shadow-neo-inset" />
               </div>
 
               {/* QR Code Section */}
               <div className="flex flex-col items-center justify-center py-2">
-                <div className="p-3 bg-white rounded-xl border border-[#DADCE0] shadow-xs">
+                <div className="p-4 bg-[#EEF2F6] rounded-2xl shadow-neo-inset border border-white/60">
                   <QRCode value={createdRegistration.ticketCode} size={170} />
                 </div>
                 <p className="font-mono text-sm font-bold tracking-widest text-slate-900 mt-3">
                   {createdRegistration.ticketCode}
                 </p>
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">
+                <p className="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5 font-bold">
                   Scan at terminal gate
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-[#DADCE0]">
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-slate-200/60">
               <Link to="/attendee/dashboard">
                 <Button variant="primary" size="md" arrow>
                   View My Wallet

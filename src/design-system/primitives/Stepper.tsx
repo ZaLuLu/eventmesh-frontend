@@ -38,26 +38,26 @@ export const Stepper: React.FC<StepperProps> = ({
                   isClickable ? 'cursor-pointer' : 'cursor-default'
                 }`}
               >
-                {/* M3 Circular Indicator */}
+                {/* Tactile Circular Indicator */}
                 <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                     isCurrent
-                      ? 'bg-md-primary text-white shadow-xs'
+                      ? 'bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 text-white shadow-neo-sm scale-105'
                       : isCompleted
-                      ? 'bg-md-primary-container text-md-primary'
-                      : 'bg-[#F1F3F4] text-slate-500'
+                      ? 'bg-[#EEF2F6] shadow-neo-inset text-emerald-600 border border-emerald-200/60'
+                      : 'bg-[#EEF2F6] shadow-neo-inset text-slate-400 border border-white/60'
                   }`}
                 >
                   {isCompleted ? '✓' : idx + 1}
                 </div>
 
                 <span
-                  className={`text-xs font-semibold tracking-normal ${
+                  className={`text-xs tracking-normal ${
                     isCurrent
-                      ? 'text-md-on-surface font-bold'
+                      ? 'text-slate-900 font-bold'
                       : isCompleted
-                      ? 'text-md-primary font-medium'
-                      : 'text-slate-500 font-medium'
+                      ? 'text-slate-700 font-semibold'
+                      : 'text-slate-400 font-medium'
                   }`}
                 >
                   {step.label}
@@ -65,7 +65,7 @@ export const Stepper: React.FC<StepperProps> = ({
               </button>
 
               {idx < steps.length - 1 && (
-                <div className="w-8 sm:w-12 h-0.5 bg-[#DADCE0] select-none" />
+                <div className="w-8 sm:w-12 h-0.5 bg-slate-200/80 rounded-full select-none" />
               )}
             </li>
           )

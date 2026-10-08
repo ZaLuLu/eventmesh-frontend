@@ -228,9 +228,9 @@ export const PublicShell: React.FC = () => {
       </main>
 
       {/* ==============================================================
-          M3 MOBILE NAVIGATION BAR
+          NEOMORPHIC MOBILE NAVIGATION BAR
           ============================================================== */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-md-outline/60 px-2 py-1.5 flex items-center justify-around shadow-card">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#EEF2F6]/95 backdrop-blur-md border-t border-white/80 px-2 py-1.5 flex items-center justify-around shadow-neo-card">
         {mobileTabs.map((tab) => {
           const isActive =
             tab.path === '/'
@@ -242,13 +242,13 @@ export const PublicShell: React.FC = () => {
               to={tab.path}
               className={`flex flex-col items-center justify-center py-1 px-3 transition-all ${
                 isActive
-                  ? 'text-md-primary font-bold'
-                  : 'text-md-on-surface-variant hover:text-md-on-surface font-medium'
+                  ? 'text-indigo-600 font-bold'
+                  : 'text-slate-500 hover:text-slate-800 font-medium'
               }`}
             >
               <div
                 className={`flex items-center justify-center px-4 py-1 rounded-full transition-all ${
-                  isActive ? 'bg-md-primary-container text-md-on-primary-container' : ''
+                  isActive ? 'neo-inset text-indigo-600 font-bold' : ''
                 }`}
               >
                 {tab.icon}

@@ -72,48 +72,50 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.98 }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="relative z-10 w-full max-w-2xl bg-white border border-[#DADCE0] rounded-3xl shadow-2xl flex flex-col max-h-[80vh] overflow-hidden"
+            className="relative z-10 w-full max-w-2xl bg-[#EEF2F6] border border-white/80 rounded-3xl shadow-neo-card flex flex-col max-h-[80vh] overflow-hidden"
           >
-            {/* Search Input Bar */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-[#DADCE0]">
-              <Search className="h-5 w-5 text-md-primary flex-shrink-0" />
-              <input
-                autoFocus
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search events, clubs, hackathons, notices..."
-                className="w-full bg-transparent font-body text-base text-slate-900 placeholder:text-slate-400 focus:outline-none"
-              />
-              {query && (
-                <button
-                  type="button"
-                  onClick={() => setQuery('')}
-                  className="p-1 text-slate-400 hover:text-slate-700"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-              <span className="text-[10px] uppercase font-mono font-bold text-slate-400 border border-slate-200 bg-slate-50 px-2 py-0.5 rounded-md hidden sm:inline">
-                ESC
-              </span>
+            {/* Search Input Bar (Debossed Capsule) */}
+            <div className="p-4 sm:p-5 border-b border-slate-200/60">
+              <div className="flex items-center gap-3 px-4 py-3 bg-[#EEF2F6] shadow-neo-inset rounded-2xl border border-white/50">
+                <Search className="h-5 w-5 text-indigo-500 flex-shrink-0" />
+                <input
+                  autoFocus
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search events, collectives, masterclasses, notices..."
+                  className="w-full bg-transparent font-body text-base text-slate-800 placeholder:text-slate-400 focus:outline-none"
+                />
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => setQuery('')}
+                    className="p-1 text-slate-400 hover:text-slate-700 transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+                <span className="text-[10px] uppercase font-mono font-bold text-slate-500 bg-[#EEF2F6] shadow-neo-sm px-2.5 py-1 rounded-lg border border-white/60 hidden sm:inline">
+                  ESC
+                </span>
+              </div>
             </div>
 
             {/* Search Results */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
               {isSearching && (
-                <p className="text-xs text-slate-500 py-4 text-center">
+                <p className="text-xs text-slate-500 py-4 text-center animate-pulse">
                   Searching index...
                 </p>
               )}
 
               {!query.trim() && (
                 <div className="py-8 text-center">
-                  <p className="text-xs font-semibold text-md-primary mb-1">
+                  <p className="text-xs font-bold text-gradient-feral uppercase tracking-wider mb-1">
                     Instant Search
                   </p>
                   <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                    Type keywords to locate specific events, participating clubs, or official announcements.
+                    Type keywords to locate live happenings, community collectives, or official announcements.
                   </p>
                 </div>
               )}
@@ -121,20 +123,20 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
               {/* Events Section */}
               {results.events.length > 0 && (
                 <div>
-                  <h4 className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-2">
-                    <Calendar className="h-3.5 w-3.5 text-md-primary" />
+                  <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5 px-1">
+                    <Calendar className="h-3.5 w-3.5 text-indigo-500" />
                     <span>Events & Masterclasses ({results.events.length})</span>
                   </h4>
-                  <div className="divide-y divide-[#DADCE0] rounded-xl border border-[#DADCE0] overflow-hidden">
+                  <div className="divide-y divide-slate-200/50 rounded-2xl border border-white/80 bg-[#EEF2F6] shadow-neo-sm overflow-hidden">
                     {results.events.map((item) => (
                       <button
                         key={item.id}
                         type="button"
                         onClick={() => handleSelect(item.url)}
-                        className="w-full text-left py-3 px-3.5 flex items-center justify-between hover:bg-[#F8F9FA] transition-colors group"
+                        className="w-full text-left py-3.5 px-4 flex items-center justify-between hover:bg-white/40 transition-colors group"
                       >
                         <div>
-                          <p className="font-bold text-sm text-slate-900 group-hover:text-md-primary transition-colors">
+                          <p className="font-bold text-sm text-slate-800 group-hover:text-indigo-600 transition-colors">
                             {item.title}
                           </p>
                           {item.subtitle && (
@@ -143,7 +145,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
                             </p>
                           )}
                         </div>
-                        <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-md-primary flex-shrink-0" />
+                        <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all flex-shrink-0" />
                       </button>
                     ))}
                   </div>
@@ -153,20 +155,20 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
               {/* Clubs Section */}
               {results.clubs.length > 0 && (
                 <div>
-                  <h4 className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-2">
-                    <Users className="h-3.5 w-3.5 text-md-primary" />
-                    <span>Clubs & Collectives ({results.clubs.length})</span>
+                  <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5 px-1">
+                    <Users className="h-3.5 w-3.5 text-purple-500" />
+                    <span>Collectives & Studios ({results.clubs.length})</span>
                   </h4>
-                  <div className="divide-y divide-[#DADCE0] rounded-xl border border-[#DADCE0] overflow-hidden">
+                  <div className="divide-y divide-slate-200/50 rounded-2xl border border-white/80 bg-[#EEF2F6] shadow-neo-sm overflow-hidden">
                     {results.clubs.map((item) => (
                       <button
                         key={item.id}
                         type="button"
                         onClick={() => handleSelect(item.url)}
-                        className="w-full text-left py-3 px-3.5 flex items-center justify-between hover:bg-[#F8F9FA] transition-colors group"
+                        className="w-full text-left py-3.5 px-4 flex items-center justify-between hover:bg-white/40 transition-colors group"
                       >
                         <div>
-                          <p className="font-bold text-sm text-slate-900 group-hover:text-md-primary transition-colors">
+                          <p className="font-bold text-sm text-slate-800 group-hover:text-purple-600 transition-colors">
                             {item.title}
                           </p>
                           {item.subtitle && (
@@ -175,7 +177,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
                             </p>
                           )}
                         </div>
-                        <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-md-primary flex-shrink-0" />
+                        <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all flex-shrink-0" />
                       </button>
                     ))}
                   </div>
@@ -185,27 +187,27 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
               {/* Announcements Section */}
               {results.announcements.length > 0 && (
                 <div>
-                  <h4 className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-2">
-                    <Megaphone className="h-3.5 w-3.5 text-md-primary" />
-                    <span>Announcements ({results.announcements.length})</span>
+                  <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5 px-1">
+                    <Megaphone className="h-3.5 w-3.5 text-pink-500" />
+                    <span>Bulletins & Notices ({results.announcements.length})</span>
                   </h4>
-                  <div className="divide-y divide-[#DADCE0] rounded-xl border border-[#DADCE0] overflow-hidden">
+                  <div className="divide-y divide-slate-200/50 rounded-2xl border border-white/80 bg-[#EEF2F6] shadow-neo-sm overflow-hidden">
                     {results.announcements.map((item) => (
                       <button
                         key={item.id}
                         type="button"
                         onClick={() => handleSelect(item.url)}
-                        className="w-full text-left py-3 px-3.5 flex items-center justify-between hover:bg-[#F8F9FA] transition-colors group"
+                        className="w-full text-left py-3.5 px-4 flex items-center justify-between hover:bg-white/40 transition-colors group"
                       >
                         <div>
-                          <p className="font-semibold text-sm text-slate-900 group-hover:text-md-primary transition-colors">
+                          <p className="font-bold text-sm text-slate-800 group-hover:text-pink-600 transition-colors">
                             {item.title}
                           </p>
-                          <span className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#F1F3F4] text-slate-600 mt-1">
+                          <span className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#EEF2F6] shadow-neo-inset text-slate-600 mt-1">
                             {item.subtitle}
                           </span>
                         </div>
-                        <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-md-primary flex-shrink-0" />
+                        <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-pink-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all flex-shrink-0" />
                       </button>
                     ))}
                   </div>

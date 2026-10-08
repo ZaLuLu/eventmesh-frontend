@@ -18,10 +18,10 @@ export const VerifyCertificatePage: React.FC = () => {
   }
 
   return (
-    <div className="w-full bg-canvas text-md-on-surface min-h-screen py-10 sm:py-16">
+    <div className="w-full bg-[#EEF2F6] text-slate-800 min-h-screen py-10 sm:py-16">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 space-y-8">
         <div className="text-center space-y-2">
-          <span className="text-xs font-semibold text-md-primary block">
+          <span className="text-xs font-bold text-gradient-feral uppercase tracking-wider block">
             Digital Credential Verification
           </span>
           <h1 className="font-display font-bold text-3xl sm:text-4xl text-slate-900 tracking-tight">
@@ -33,14 +33,14 @@ export const VerifyCertificatePage: React.FC = () => {
         </div>
 
         {/* Verification Lookup Input */}
-        <form onSubmit={handleSearch} className="flex items-center gap-2 rounded-full border border-[#DADCE0] p-1.5 bg-white shadow-subtle">
-          <Search className="h-4 w-4 text-slate-400 ml-3" />
+        <form onSubmit={handleSearch} className="flex items-center gap-2 rounded-full border border-white/80 p-2 bg-[#EEF2F6] shadow-neo-inset">
+          <Search className="h-4 w-4 text-indigo-500 ml-3" />
           <input
             type="text"
             value={searchId}
             onChange={(e) => setSearchId(e.target.value)}
             placeholder="Enter Certificate ID (e.g. TA-2026-001245)..."
-            className="w-full bg-transparent font-body text-xs sm:text-sm px-2 py-2 focus:outline-none placeholder:text-slate-400"
+            className="w-full bg-transparent font-body text-xs sm:text-sm px-2 py-2 focus:outline-none placeholder:text-slate-400 text-slate-800"
           />
           <Button type="submit" size="sm" variant="primary">
             Verify
@@ -49,25 +49,25 @@ export const VerifyCertificatePage: React.FC = () => {
 
         {/* Verification Result Card */}
         {isLoading ? (
-          <div className="p-12 text-center text-xs text-slate-500 rounded-2xl border border-[#DADCE0] bg-white">
+          <div className="p-12 text-center text-xs text-slate-500 rounded-3xl border border-white/80 bg-[#EEF2F6] shadow-neo-card animate-pulse">
             Querying Authentication Registry...
           </div>
         ) : certificateId ? (
           record && record.isValid ? (
-            <div className="rounded-3xl border border-[#CEEAD6] bg-white p-6 sm:p-8 shadow-card-hover space-y-6">
-              <div className="flex items-center gap-3 text-[#137333] border-b border-[#CEEAD6] pb-4">
+            <div className="rounded-3xl border border-white/80 bg-[#EEF2F6] p-6 sm:p-8 shadow-neo-card space-y-6">
+              <div className="flex items-center gap-3 text-emerald-600 border-b border-slate-200/60 pb-4">
                 <CheckCircle2 className="h-6 w-6 flex-shrink-0" />
                 <div>
                   <h3 className="font-display font-bold text-xl text-slate-900">
                     Authentic & Valid Certificate
                   </h3>
-                  <p className="text-xs text-[#137333]">
+                  <p className="text-xs text-emerald-600 font-medium">
                     Official verified credential record found
                   </p>
                 </div>
               </div>
 
-              <div className="divide-y divide-[#DADCE0] text-xs sm:text-sm font-body">
+              <div className="divide-y divide-slate-200/60 text-xs sm:text-sm font-body">
                 <div className="py-3 flex justify-between">
                   <span className="text-slate-500">Certificate ID</span>
                   <span className="font-mono font-bold text-slate-900">{record.certificateId}</span>
@@ -92,18 +92,18 @@ export const VerifyCertificatePage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="p-3 bg-[#F8F9FA] rounded-xl border border-[#DADCE0] text-xs text-slate-500 text-center">
+              <div className="p-3.5 bg-[#EEF2F6] shadow-neo-inset rounded-2xl border border-white/60 text-xs text-slate-500 text-center font-mono">
                 Verified at {new Date(record.verifiedAt).toLocaleString()}
               </div>
             </div>
           ) : (
-            <div className="rounded-3xl border border-[#FAD2CF] bg-[#FCE8E6]/40 p-8 space-y-4 text-center">
-              <XCircle className="h-8 w-8 text-[#D93025] mx-auto" />
+            <div className="rounded-3xl border border-rose-200 bg-[#EEF2F6] shadow-neo-card p-8 space-y-4 text-center">
+              <XCircle className="h-8 w-8 text-rose-500 mx-auto" />
               <h3 className="font-display font-bold text-xl text-slate-900">
                 Invalid Certificate
               </h3>
               <p className="text-xs text-slate-600">
-                No matching verified credential was found for ID "{certificateId}". Please verify the serial code and try again.
+                No matching verified credential was found for ID &quot;{certificateId}&quot;. Please verify the serial code and try again.
               </p>
             </div>
           )
