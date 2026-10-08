@@ -14,6 +14,19 @@ import {
   FormField,
   OrganizerGalleryItem,
   PaginatedResult,
+  VisibleEventRead,
+  EventBrowseParams,
+  EventBrowseResponse,
+  EventRead,
+  OrganizationRead,
+  MemberRead,
+  CreateOrgPayload,
+  CreateSubOrgPayload,
+  CreateClubPayload,
+  RegistrationRead,
+  AttendeeRead,
+  ProfileRead,
+  ProfileUpdatePayload,
 } from '../contracts'
 
 export interface EventsFilter {
@@ -29,6 +42,7 @@ export interface EventsFilter {
 
 export interface EventsApi {
   getEvents(filter?: EventsFilter): Promise<PaginatedResult<Event>>
+  getBrowseEvents?(params?: EventBrowseParams): Promise<EventBrowseResponse>
   getEventBySlug(slug: string): Promise<Event | null>
   getEventById(id: string): Promise<Event | null>
   getUpcomingRail(): Promise<Event[]>
@@ -38,6 +52,11 @@ export interface EventsApi {
 
 export interface EventsAdminApi {
   getAdminEvents(scope: { orgId: string; clubId?: string }): Promise<Event[]>
+  getOrganizationEvents?(slug: string): Promise<EventRead[]>
+  createOrgEvent?(slug: string, event: any): Promise<EventRead>
+  updateOrgEvent?(slug: string, eventId: string, updates: any): Promise<EventRead>
+  deleteOrgEvent?(slug: string, eventId: string): Promise<void>
+  eventLifecycleAction?(slug: string, eventId: string, action: string): Promise<EventRead>
   createEvent(event: Partial<Event>): Promise<Event>
   updateEvent(id: string, updates: Partial<Event>): Promise<Event>
   deleteEvent(id: string): Promise<void>
@@ -45,6 +64,7 @@ export interface EventsAdminApi {
   submitForApproval(id: string): Promise<Event>
   approveEvent(id: string): Promise<Event>
 }
+
 
 export interface FormsApi {
   getFormSchema(eventId: string): Promise<FormField[]>
@@ -64,6 +84,9 @@ export interface RegisterPayload {
 
 export interface RegistrationsApi {
   register(payload: RegisterPayload): Promise<Registration>
+  registerPass?(eventSlug: string): Promise<RegistrationRead>
+  cancelRegistration?(eventSlug: string): Promise<void>
+  getEventAttendees?(eventSlug: string): Promise<AttendeeRead[]>
   getRegistrations(filter: {
     eventId?: string
     clubId?: string
@@ -171,6 +194,9 @@ export interface AuthApi {
   getSession(): Promise<UserSession | null>
   logout(): Promise<void>
   switchDemoAccount(role: string, clubId?: string): Promise<UserSession>
+  getProfile?(): Promise<ProfileRead | null>
+  updateProfile?(payload: ProfileUpdatePayload): Promise<ProfileRead>
+  becomeOrganizer?(): Promise<ProfileRead>
 }
 
 export interface SearchResultItem {
@@ -194,5 +220,17 @@ export interface SearchApi {
 
 export interface OrganizationsApi {
   getOrganization(idOrSlug?: string): Promise<Organization>
+  getOrganizationBySlug?(slug: string): Promise<OrganizationRead | null>
+  getOrganizations?(): Promise<OrganizationRead[]>
+  getInstitutions?(): Promise<OrganizationRead[]>
+  createOrganization?(payload: CreateOrgPayload): Promise<OrganizationRead>
+  getSubOrganizations?(slug: string): Promise<OrganizationRead[]>
+  createSubOrganization?(slug: string, payload: CreateSubOrgPayload): Promise<OrganizationRead>
+  getClubs?(slug: string): Promise<OrganizationRead[]>
+  createClub?(slug: string, payload: CreateClubPayload): Promise<OrganizationRead>
+  getMembers?(slug: string): Promise<MemberRead[]>
+  addMember?(slug: string, payload: { user_id: string; role: 'member' | 'manager' }): Promise<MemberRead>
+  removeMember?(slug: string, userId: string): Promise<void>
   updateOrganization(id: string, updates: Partial<Organization>): Promise<Organization>
 }
+

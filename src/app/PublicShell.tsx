@@ -30,10 +30,9 @@ export const PublicShell: React.FC = () => {
 
   const navLinks = [
     { label: 'Explore', path: '/explore' },
-    { label: 'Clubs', path: '/clubs' },
+    { label: 'Clubs & Collectives', path: '/clubs' },
     { label: 'Calendar', path: '/calendar' },
-    { label: 'Announcements', path: '/announcements' },
-    { label: 'Gallery', path: '/gallery' },
+    { label: 'My Passes', path: '/attendee/dashboard' },
   ]
 
   const mobileTabs = [

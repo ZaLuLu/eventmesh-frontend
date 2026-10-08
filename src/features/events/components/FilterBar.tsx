@@ -14,8 +14,12 @@ export interface FilterBarProps {
   onSelectCategory: (cat: string) => void
   selectedDateFilter: string
   onSelectDateFilter: (dateFilter: string) => void
-  onlyWithCertificates: boolean
-  onToggleCertificates: () => void
+  freeOnly?: boolean
+  onToggleFree?: () => void
+  onlineOnly?: boolean
+  onToggleOnline?: () => void
+  onlyWithCertificates?: boolean
+  onToggleCertificates?: () => void
   activeClubId?: string
   onSelectClub?: (clubId: string) => void
 }
@@ -25,7 +29,11 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   onSelectCategory,
   selectedDateFilter,
   onSelectDateFilter,
-  onlyWithCertificates,
+  freeOnly = false,
+  onToggleFree,
+  onlineOnly = false,
+  onToggleOnline,
+  onlyWithCertificates = false,
   onToggleCertificates,
 }) => {
   const categories = [
@@ -39,8 +47,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   const dateFilters = [
     { id: 'ALL', label: 'Any Date' },
     { id: 'TODAY', label: 'Today' },
-    { id: 'TOMORROW', label: 'Tomorrow' },
     { id: 'WEEKEND', label: 'This Weekend' },
+    { id: 'MONTH', label: 'This Month' },
   ]
 
   return (
@@ -91,23 +99,37 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             )
           })}
 
-          {/* Certificate Toggle Chip */}
-          <button
-            type="button"
-            onClick={onToggleCertificates}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border transition-all whitespace-nowrap ${
-              onlyWithCertificates
-                ? 'bg-[#E6F4EA] text-[#137333] border-[#CEEAD6] font-semibold'
-                : 'text-md-on-surface-variant border-md-outline hover:bg-black/[0.04]'
-            }`}
-          >
-            {onlyWithCertificates ? (
-              <Check className="h-3.5 w-3.5 text-[#137333]" />
-            ) : (
-              <Award className="h-3.5 w-3.5" />
-            )}
-            <span>Certified Only</span>
-          </button>
+          {/* Free Only Toggle Chip */}
+          {onToggleFree && (
+            <button
+              type="button"
+              onClick={onToggleFree}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border transition-all whitespace-nowrap ${
+                freeOnly
+                  ? 'bg-[#E6F4EA] text-[#137333] border-[#CEEAD6] font-semibold'
+                  : 'text-md-on-surface-variant border-md-outline hover:bg-black/[0.04]'
+              }`}
+            >
+              {freeOnly && <Check className="h-3.5 w-3.5 text-[#137333]" />}
+              <span>Free Pass</span>
+            </button>
+          )}
+
+          {/* Online Only Toggle Chip */}
+          {onToggleOnline && (
+            <button
+              type="button"
+              onClick={onToggleOnline}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border transition-all whitespace-nowrap ${
+                onlineOnly
+                  ? 'bg-md-primary-container text-md-on-primary-container border-[#D3E3FD] font-semibold'
+                  : 'text-md-on-surface-variant border-md-outline hover:bg-black/[0.04]'
+              }`}
+            >
+              {onlineOnly && <Check className="h-3.5 w-3.5 text-md-primary" />}
+              <span>Online</span>
+            </button>
+          )}
         </div>
       </div>
     </section>

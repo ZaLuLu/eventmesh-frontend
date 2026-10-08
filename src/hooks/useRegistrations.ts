@@ -13,6 +13,40 @@ export function useRegister() {
   })
 }
 
+export function useRegisterPass() {
+  const queryClient = useQueryClient()
+  return useMutation<any, Error, string>({
+    mutationFn: (eventSlug: string) => {
+      if (api.registrations.registerPass) {
+        return api.registrations.registerPass(eventSlug)
+      }
+      return api.registrations.register({ eventId: eventSlug, answers: {} })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['registrations'] })
+      queryClient.invalidateQueries({ queryKey: ['my-registrations'] })
+      queryClient.invalidateQueries({ queryKey: ['events'] })
+    },
+  })
+}
+
+export function useCancelRegistration() {
+  const queryClient = useQueryClient()
+  return useMutation<void, Error, string>({
+    mutationFn: async (eventSlug: string) => {
+      if (api.registrations.cancelRegistration) {
+        return api.registrations.cancelRegistration(eventSlug)
+      }
+      return Promise.resolve()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['registrations'] })
+      queryClient.invalidateQueries({ queryKey: ['my-registrations'] })
+      queryClient.invalidateQueries({ queryKey: ['events'] })
+    },
+  })
+}
+
 export function useRegistrations(filter: {
   eventId?: string
   clubId?: string

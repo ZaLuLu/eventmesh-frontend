@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { jsPDF } from 'jspdf'
 import { Ticket, Award, Calendar, CheckCircle2, Download, ExternalLink, QrCode } from 'lucide-react'
-import { useMyRegistrations } from '@/hooks/useRegistrations'
+import { useMyRegistrations, useCancelRegistration } from '@/hooks/useRegistrations'
 import { useMyCertificates } from '@/hooks/useCertificates'
 import { useClubs } from '@/hooks/useClubs'
 import { useAuth } from '@/hooks/useAuth'
@@ -19,9 +19,30 @@ export const AttendeeDashboardPage: React.FC = () => {
   const { data: registrations = [], isLoading: regsLoading } = useMyRegistrations()
   const { data: certificates = [], isLoading: certsLoading } = useMyCertificates()
   const { data: clubs = [] } = useClubs()
+  const cancelMutation = useCancelRegistration()
 
   const [selectedTicket, setSelectedTicket] = useState<Registration | null>(null)
   const [activeTab, setActiveTab] = useState<'passes' | 'certificates' | 'clubs'>('passes')
+
+  const handleCancelPass = async (reg: Registration) => {
+    if (window.confirm('Are you sure you want to cancel this entry pass reservation?')) {
+      try {
+        await cancelMutation.mutateAsync(reg.eventSlug || reg.eventId)
+        setSelectedTicket(null)
+        toast({
+          title: 'Pass Cancelled',
+          message: 'Your registration was cancelled and the spot has been returned to the pool.',
+          type: 'info',
+        })
+      } catch (err: any) {
+        toast({
+          title: 'Cancellation Failed',
+          message: err?.message || 'Could not cancel pass.',
+          type: 'error',
+        })
+      }
+    }
+  }
 
   const followedClubs = clubs.filter((c) => c.isFollowed)
 
@@ -403,14 +424,26 @@ export const AttendeeDashboardPage: React.FC = () => {
               </p>
             </div>
 
-            <Button
-              variant="secondary"
-              size="md"
-              fullWidth
-              onClick={() => setSelectedTicket(null)}
-            >
-              Close Pass
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="secondary"
+                size="md"
+                fullWidth
+                onClick={() => setSelectedTicket(null)}
+              >
+                Close Pass
+              </Button>
+              {selectedTicket.status !== 'cancelled' && (
+                <Button
+                  variant="danger"
+                  size="md"
+                  loading={cancelMutation.isPending}
+                  onClick={() => handleCancelPass(selectedTicket)}
+                >
+                  Cancel Pass
+                </Button>
+              )}
+            </div>
           </div>
         </Modal>
       )}

@@ -199,6 +199,14 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: 'attendee/dashboard',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <AttendeeDashboardPage />
+          </Suspense>
+        ),
+      },
+      {
         path: 'me',
         element: (
           <Suspense fallback={<LoadingFallback />}>

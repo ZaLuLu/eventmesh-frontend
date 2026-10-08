@@ -37,3 +37,42 @@ export const VerifyOtpRequestSchema = z.object({
 })
 
 export type VerifyOtpRequest = z.infer<typeof VerifyOtpRequestSchema>
+
+/**
+ * Official FastAPI backend profile schema:
+ * GET /api/v1/users/me & PATCH /api/v1/users/me
+ */
+export interface ProfileRead {
+  id: string
+  email: string
+  handle: string
+  display_name: string
+  avatar_url: string | null
+  student_id: string | null
+  institution_name: string | null
+  college_email: string | null
+  is_organizer: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface ProfileUpdatePayload {
+  handle?: string
+  display_name?: string
+  avatar_url?: string | null
+  student_id?: string | null
+  institution_name?: string | null
+  college_email?: string | null
+}
+
+export function profileToSession(profile: ProfileRead): UserSession {
+  return {
+    id: profile.id,
+    name: profile.display_name || profile.handle || profile.email,
+    email: profile.email,
+    role: profile.is_organizer ? 'org_admin' : 'attendee',
+    orgId: profile.institution_name || 'campus',
+    avatar: profile.avatar_url || undefined,
+  }
+}
+

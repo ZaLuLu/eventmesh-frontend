@@ -34,7 +34,8 @@ export const HomePage: React.FC = () => {
   // Filter state for BookMyShow quick filters
   const [selectedCategory, setSelectedCategory] = useState('ALL')
   const [selectedDateFilter, setSelectedDateFilter] = useState('ALL')
-  const [onlyWithCertificates, setOnlyWithCertificates] = useState(false)
+  const [freeOnly, setFreeOnly] = useState(false)
+  const [onlineOnly, setOnlineOnly] = useState(false)
 
   // Top 10 ranked events for Netflix Top 10 shelf
   const top10Events = useMemo(() => {
@@ -66,19 +67,27 @@ export const HomePage: React.FC = () => {
   const isFilteringActive =
     selectedCategory !== 'ALL' ||
     selectedDateFilter !== 'ALL' ||
-    onlyWithCertificates
+    freeOnly ||
+    onlineOnly
 
   const filteredEvents = useMemo(() => {
     return allEvents.filter((evt: Event) => {
       if (selectedCategory !== 'ALL' && evt.category !== selectedCategory) {
         return false
       }
-      if (onlyWithCertificates && !evt.certificateInfo) {
+      if (freeOnly && (evt.features.paid || (evt.isFree === false))) {
         return false
+      }
+      if (onlineOnly && !evt.isOnline && !evt.venue?.name?.toLowerCase().includes('online')) {
+        return false
+      }
+      if (selectedDateFilter === 'TODAY') {
+        const todayStr = new Date().toISOString().slice(0, 10)
+        if (!evt.startsAt.startsWith(todayStr)) return false
       }
       return true
     })
-  }, [allEvents, selectedCategory, onlyWithCertificates])
+  }, [allEvents, selectedCategory, freeOnly, onlineOnly, selectedDateFilter])
 
   return (
     <div className="w-full flex flex-col bg-canvas text-ink min-h-screen relative overflow-hidden">
@@ -102,8 +111,10 @@ export const HomePage: React.FC = () => {
         onSelectCategory={setSelectedCategory}
         selectedDateFilter={selectedDateFilter}
         onSelectDateFilter={setSelectedDateFilter}
-        onlyWithCertificates={onlyWithCertificates}
-        onToggleCertificates={() => setOnlyWithCertificates(!onlyWithCertificates)}
+        freeOnly={freeOnly}
+        onToggleFree={() => setFreeOnly(!freeOnly)}
+        onlineOnly={onlineOnly}
+        onToggleOnline={() => setOnlineOnly(!onlineOnly)}
       />
 
       {/* ==============================================================
@@ -127,7 +138,8 @@ export const HomePage: React.FC = () => {
               onClick={() => {
                 setSelectedCategory('ALL')
                 setSelectedDateFilter('ALL')
-                setOnlyWithCertificates(false)
+                setFreeOnly(false)
+                setOnlineOnly(false)
               }}
               className="text-xs font-semibold text-md-primary hover:underline"
             >

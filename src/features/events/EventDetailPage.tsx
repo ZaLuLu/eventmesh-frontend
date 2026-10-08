@@ -20,7 +20,7 @@ import { Button } from '@/design-system/primitives/Button'
 import { formatDate, formatTime, formatDateTime } from '@/lib/dates'
 import { downloadICS } from '@/lib/ics'
 import { useToast } from '@/design-system/primitives/Toast'
-import { TicketTierModal } from '@/features/registration/TicketTierModal'
+import { PassBookingModal } from '@/features/registration/PassBookingModal'
 
 export const EventDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>()
@@ -28,7 +28,7 @@ export const EventDetailPage: React.FC = () => {
   const { toast } = useToast()
   const { data: event, isLoading, error } = useEvent(slug || '')
 
-  const [isTierModalOpen, setIsTierModalOpen] = useState(false)
+  const [isPassModalOpen, setIsPassModalOpen] = useState(false)
 
   if (isLoading) {
     return (
@@ -384,9 +384,9 @@ export const EventDetailPage: React.FC = () => {
                       fullWidth
                       variant="primary"
                       arrow
-                      onClick={() => setIsTierModalOpen(true)}
+                      onClick={() => setIsPassModalOpen(true)}
                     >
-                      {isWaitlistOnly ? 'Join Waitlist' : 'Select Pass & Register'}
+                      {isWaitlistOnly ? 'Join Waitlist' : 'Claim Entry Pass'}
                     </Button>
                   ) : event.status === 'completed' ? (
                     <div className="space-y-3">
@@ -481,16 +481,16 @@ export const EventDetailPage: React.FC = () => {
           variant="primary"
           arrow
           disabled={!isRegistrationOpen}
-          onClick={() => setIsTierModalOpen(true)}
+          onClick={() => setIsPassModalOpen(true)}
         >
           Book Pass
         </Button>
       </div>
 
-      {/* Ticket Tier Selector Modal */}
-      <TicketTierModal
-        isOpen={isTierModalOpen}
-        onClose={() => setIsTierModalOpen(false)}
+      {/* 1-Tap Pass Booking Modal */}
+      <PassBookingModal
+        isOpen={isPassModalOpen}
+        onClose={() => setIsPassModalOpen(false)}
         event={event}
       />
     </div>
