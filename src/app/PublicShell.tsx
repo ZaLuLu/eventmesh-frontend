@@ -7,12 +7,11 @@ import {
   Home,
   Ticket,
   User,
-  ShieldAlert,
-  ArrowUpRight,
   MapPin,
   ChevronDown,
+  LayoutDashboard,
+  LogOut,
 } from 'lucide-react'
-import { BRAND_CONFIG } from '@/config/brand'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { SearchModal } from './SearchModal'
@@ -22,66 +21,73 @@ export const PublicShell: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [selectedCity, setSelectedCity] = useState('Bangalore')
   const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false)
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false)
+
   const location = useLocation()
-  const { session, isAuthenticated } = useAuth()
+  const { session, isAuthenticated, logout } = useAuth()
   const { canAccessAdmin } = usePermission()
 
   const cities = ['Bangalore', 'Mumbai', 'Delhi NCR', 'Hyderabad', 'Campus Alpha']
 
   const navLinks = [
     { label: 'Explore', path: '/explore' },
-    { label: 'Clubs & Collectives', path: '/clubs' },
+    { label: 'Clubs', path: '/clubs' },
     { label: 'Calendar', path: '/calendar' },
-    { label: 'My Passes', path: '/attendee/dashboard' },
+    { label: 'My tickets', path: '/attendee/dashboard' },
   ]
 
   const mobileTabs = [
     { label: 'Home', path: '/', icon: <Home className="h-5 w-5" /> },
     { label: 'Explore', path: '/explore', icon: <Compass className="h-5 w-5" /> },
-    { label: 'Calendar', path: '/calendar', icon: <Calendar className="h-5 w-5" /> },
-    { label: 'My Passes', path: '/attendee/dashboard', icon: <Ticket className="h-5 w-5" /> },
+    { label: 'Clubs', path: '/clubs', icon: <Calendar className="h-5 w-5" /> },
+    { label: 'My tickets', path: '/attendee/dashboard', icon: <Ticket className="h-5 w-5" /> },
     {
-      label: isAuthenticated ? 'Account' : 'Sign In',
+      label: isAuthenticated ? 'Account' : 'Sign in',
       path: isAuthenticated ? '/attendee/dashboard' : '/login',
       icon: <User className="h-5 w-5" />,
     },
   ]
 
   return (
-    <div className="min-h-screen bg-canvas text-md-on-surface flex flex-col font-body selection:bg-md-primary-container selection:text-md-on-primary-container">
+    <div className="min-h-screen bg-bg text-text flex flex-col font-sans">
       {/* ==============================================================
-          MODERN NEOMORPHIC & FERAL GRADIENT TOP APP BAR
+          CALM CORAL HEADER
+          Row 1 (64px): Wordmark, City, Centred Search (44px), Account Menu
+          Row 2 (44px): Primary Nav Links with 2px accent underline on active
+          Sticky elements <= 120px total on mobile
           ============================================================== */}
-      <header className="sticky top-0 left-0 right-0 z-40 bg-[#EEF2F6]/90 backdrop-blur-md border-b border-white/70 shadow-[0_4px_16px_rgba(163,177,198,0.2)] transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          {/* Brand Logo & Location */}
-          <div className="flex items-center gap-4 sm:gap-6 flex-shrink-0">
-            <Link to="/" className="flex items-center gap-2.5 group">
-              <span className="h-9 w-9 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white font-black text-sm shadow-[3px_3px_8px_rgba(99,102,241,0.35),-2px_-2px_6px_rgba(255,255,255,0.85)]">
+      <header className="sticky top-0 z-40 bg-surface border-b border-line">
+        {/* Row 1: 64px Main Bar */}
+        <div className="app-container h-16 flex items-center justify-between gap-2 sm:gap-4">
+          {/* Plain Wordmark + City Selector */}
+          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+            <Link to="/" className="flex items-center gap-2 group">
+              <span className="h-8 w-8 rounded-[8px] bg-accent flex items-center justify-center text-on-accent font-semibold text-small">
                 EM
               </span>
-              <span className="font-display font-extrabold text-xl tracking-tight text-slate-900">
-                Event<span className="text-gradient-feral">Mesh</span>
+              <span className="font-semibold text-xl tracking-tight text-text">
+                EventMesh
               </span>
             </Link>
 
-            {/* Tactile Location Filter Chip */}
-            <div className="relative hidden md:block">
+            {/* City Selector */}
+            <div className="relative">
               <button
                 type="button"
                 onClick={() => setIsCityDropdownOpen(!isCityDropdownOpen)}
-                className="neo-pill flex items-center gap-1.5 px-3.5 py-1.5 text-slate-700 text-xs font-semibold transition-all select-none"
-                aria-label="Select location"
+                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-[8px] text-small font-medium text-text-2 hover:text-text hover:bg-subtle transition-colors"
+                aria-label="Select city"
+                aria-expanded={isCityDropdownOpen}
               >
-                <MapPin className="h-3.5 w-3.5 text-indigo-600" />
-                <span>{selectedCity}</span>
-                <ChevronDown className="h-3 w-3 text-slate-400" />
+                <MapPin className="h-3.5 w-3.5 text-accent" />
+                <span className="hidden sm:inline">{selectedCity}</span>
+                <ChevronDown className="h-3.5 w-3.5 text-text-3" />
               </button>
 
               {isCityDropdownOpen && (
-                <div className="absolute left-0 mt-2 w-48 rounded-2xl bg-[#EEF2F6] border border-white/80 shadow-neo-card py-2 z-50 animate-in fade-in duration-150">
-                  <div className="px-3.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Select Region
+                <div className="absolute left-0 mt-1 w-44 rounded-[10px] bg-surface border border-line shadow-floating py-1 z-50">
+                  <div className="px-3 py-1 text-caption font-semibold text-text-3">
+                    Select city
                   </div>
                   {cities.map((city) => (
                     <button
@@ -90,14 +96,14 @@ export const PublicShell: React.FC = () => {
                         setSelectedCity(city)
                         setIsCityDropdownOpen(false)
                       }}
-                      className={`w-full text-left px-3.5 py-2 text-xs font-medium flex items-center justify-between transition-colors ${
+                      className={`w-full text-left px-3 py-2 text-small flex items-center justify-between transition-colors ${
                         selectedCity === city
-                          ? 'text-indigo-600 font-bold bg-white/70'
-                          : 'text-slate-700 hover:bg-white/40'
+                          ? 'text-accent font-semibold bg-accent-soft'
+                          : 'text-text hover:bg-subtle'
                       }`}
                     >
                       <span>{city}</span>
-                      {selectedCity === city && <span className="h-1.5 w-1.5 rounded-full bg-indigo-600" />}
+                      {selectedCity === city && <span className="h-1.5 w-1.5 rounded-full bg-accent" />}
                     </button>
                   ))}
                 </div>
@@ -105,119 +111,150 @@ export const PublicShell: React.FC = () => {
             </div>
           </div>
 
-          {/* Inset Tactile Center Search Bar */}
-          <div className="flex-1 max-w-md min-w-[180px] hidden sm:block">
+          {/* Centred Search (44px height) - Shown on desktop (lg:block) */}
+          <div className="flex-1 max-w-md mx-auto hidden lg:block">
             <button
               type="button"
               onClick={() => setIsSearchOpen(true)}
-              className="neo-inset w-full flex items-center justify-between px-4 py-2 rounded-full text-slate-600 text-xs group transition-all"
+              className="w-full h-11 flex items-center justify-between px-3.5 bg-subtle border border-line rounded-[10px] text-text-2 text-small hover:border-text-3 transition-colors text-left"
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <Search className="h-4 w-4 text-slate-400 group-hover:text-indigo-600 flex-shrink-0 transition-colors" />
-                <span className="truncate whitespace-nowrap text-left font-medium">Search events, clubs and topics...</span>
+                <Search className="h-4 w-4 text-text-3 flex-shrink-0" />
+                <span className="truncate">Search events, clubs, or topics...</span>
               </div>
-              <kbd className="hidden lg:inline-flex items-center gap-0.5 rounded-md bg-white/80 px-2 py-0.5 text-[10px] font-mono text-slate-500 shadow-neo-sm flex-shrink-0 ml-2">
+              <kbd className="hidden lg:inline-block px-1.5 py-0.5 rounded-[6px] bg-surface border border-line text-caption text-text-3 font-mono">
                 ⌘K
               </kbd>
             </button>
           </div>
 
-          {/* Right Action Cluster */}
-          <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
-            {/* Mobile Search Button */}
+          {/* Right: Account Menu / Actions */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+            {/* Mobile & Tablet Search Icon Trigger */}
             <button
               type="button"
               onClick={() => setIsSearchOpen(true)}
-              className="neo-pill sm:hidden p-2 text-slate-600 hover:text-slate-900 rounded-full"
+              className="lg:hidden p-2 text-text-2 hover:text-text rounded-[8px]"
               aria-label="Search"
             >
-              <Search className="h-4 w-4" />
+              <Search className="h-5 w-5" />
             </button>
 
-            {/* Dev Personas Switcher */}
-            <Link
-              to="/dev/accounts"
-              className="neo-pill hidden xl:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 px-3 py-1.5 whitespace-nowrap"
-            >
-              <ShieldAlert className="h-3.5 w-3.5 text-amber-600" />
-              <span>Personas</span>
-            </Link>
-
-            {/* Admin Console Shortcut */}
+            {/* Dashboard Shortcut (Only for roles with admin access) */}
             {canAccessAdmin() && (
               <Link
                 to="/admin"
-                className="neo-pill hidden sm:inline-flex items-center gap-1.5 bg-[#E2E8F0] px-3.5 py-1.5 text-xs font-bold text-slate-800 transition-all whitespace-nowrap"
+                className="hidden md:inline-flex items-center gap-1.5 h-10 px-3.5 rounded-[10px] bg-subtle hover:bg-line text-text text-small font-semibold transition-colors"
               >
-                <span>Console</span>
-                <ArrowUpRight className="h-3.5 w-3.5 text-slate-500" />
+                <LayoutDashboard className="h-4 w-4 text-accent" />
+                <span>Dashboard</span>
               </Link>
             )}
 
-            {/* My Passes Wallet Button */}
-            <Link
-              to="/attendee/dashboard"
-              className="neo-pill inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-indigo-600 hover:text-purple-600 transition-all whitespace-nowrap"
-            >
-              <Ticket className="h-3.5 w-3.5 text-indigo-600" />
-              <span className="hidden sm:inline">My Passes</span>
-            </Link>
-
-            {/* Account / Login */}
+            {/* One Account Menu */}
             {isAuthenticated ? (
-              <Link
-                to="/attendee/dashboard"
-                className="neo-pill inline-flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-800 transition-colors whitespace-nowrap"
-              >
-                <div className="h-5 w-5 rounded-full bg-gradient-to-tr from-indigo-500 to-pink-500 text-white flex items-center justify-center text-[10px] font-bold">
-                  {(session?.name || 'U')[0]}
-                </div>
-                <span className="hidden md:inline truncate max-w-[90px]">{session?.name}</span>
-              </Link>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
+                  className="flex items-center gap-2 h-10 px-2.5 rounded-[10px] hover:bg-subtle border border-line transition-colors text-small"
+                  aria-label="Account menu"
+                  aria-expanded={isAccountMenuOpen}
+                >
+                  <div className="h-6 w-6 rounded-full bg-accent text-on-accent flex items-center justify-center font-semibold text-caption">
+                    {(session?.name || 'U')[0].toUpperCase()}
+                  </div>
+                  <span className="hidden md:inline font-medium text-text max-w-[100px] truncate">
+                    {session?.name}
+                  </span>
+                  <ChevronDown className="h-3.5 w-3.5 text-text-3" />
+                </button>
+
+                {isAccountMenuOpen && (
+                  <div className="absolute right-0 mt-1 w-52 rounded-[10px] bg-surface border border-line shadow-floating py-1.5 z-50">
+                    <div className="px-3 py-2 border-b border-line">
+                      <p className="text-small font-semibold text-text truncate">{session?.name}</p>
+                      <p className="text-caption text-text-2 truncate">{session?.email}</p>
+                    </div>
+
+                    <Link
+                      to="/attendee/dashboard"
+                      onClick={() => setIsAccountMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-small text-text hover:bg-subtle transition-colors"
+                    >
+                      <Ticket className="h-4 w-4 text-text-2" />
+                      <span>My tickets & passes</span>
+                    </Link>
+
+                    {canAccessAdmin() && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setIsAccountMenuOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 text-small text-text hover:bg-subtle transition-colors"
+                      >
+                        <LayoutDashboard className="h-4 w-4 text-accent" />
+                        <span>Admin dashboard</span>
+                      </Link>
+                    )}
+
+                    <div className="border-t border-line my-1" />
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAccountMenuOpen(false)
+                        logout()
+                      }}
+                      className="w-full text-left flex items-center gap-2 px-3 py-2 text-small text-danger hover:bg-danger/10 transition-colors"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Sign out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <Link
                 to="/login"
-                className="neo-gradient-btn inline-flex items-center px-4 py-1.5 text-xs font-bold shadow-neo-sm transition-all whitespace-nowrap"
+                className="h-10 px-3 sm:px-4 rounded-[10px] bg-accent text-on-accent hover:bg-accent-hover font-semibold text-small inline-flex items-center justify-center transition-colors"
               >
-                Sign In
+                Sign in
               </Link>
             )}
           </div>
         </div>
 
-        {/* Desktop Category Navigation Sub-bar (Neomorphic Pill Strip) */}
-        <div className="hidden md:block bg-[#EEF2F6]/80 border-t border-white/60">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-11 flex items-center justify-between">
-            <nav className="flex items-center gap-1.5 sm:gap-2">
+        {/* Row 2: 44px Primary Nav Links (2px accent underline on active) */}
+        <div className="border-t border-line bg-surface">
+          <div className="app-container h-11 flex items-center justify-between">
+            <nav className="flex items-center gap-1 sm:gap-2">
               {navLinks.map((link) => {
                 const isActive =
                   link.path === '/'
                     ? location.pathname === '/'
                     : location.pathname.startsWith(link.path)
+
                 return (
                   <Link
                     key={link.path}
                     to={link.path}
-                    className={`px-3.5 py-1 rounded-full text-xs font-semibold tracking-normal transition-all whitespace-nowrap select-none ${
+                    className={`relative h-11 px-3.5 inline-flex items-center text-small font-medium transition-colors ${
                       isActive
-                        ? 'neo-inset text-indigo-600 font-bold'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
+                        ? 'text-accent font-semibold'
+                        : 'text-text-2 hover:text-text'
                     }`}
                   >
-                    {link.label}
+                    <span>{link.label}</span>
+                    {isActive && (
+                      <span
+                        className="absolute bottom-0 left-0 right-0 h-[2px] bg-accent"
+                        aria-hidden="true"
+                      />
+                    )}
                   </Link>
                 )
               })}
             </nav>
-
-            <div className="hidden lg:flex items-center gap-3 text-[11px] font-semibold text-slate-500">
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                9 Collectives Active
-              </span>
-              <span>•</span>
-              <span className="text-gradient-feral font-bold">Instant 1-Tap Passes</span>
-            </div>
           </div>
         </div>
       </header>
@@ -228,9 +265,58 @@ export const PublicShell: React.FC = () => {
       </main>
 
       {/* ==============================================================
-          NEOMORPHIC MOBILE NAVIGATION BAR
+          COMPACT FOOTER (Max ~200px desktop, four columns + copyright)
           ============================================================== */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#EEF2F6]/95 backdrop-blur-md border-t border-white/80 px-2 py-1.5 flex items-center justify-around shadow-neo-card">
+      <footer className="border-t border-line bg-surface py-8 select-none">
+        <div className="app-container">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+            <div>
+              <h4 className="text-caption font-semibold text-text-2 mb-2">Explore</h4>
+              <ul className="space-y-1.5 text-small">
+                <li><Link to="/explore" className="text-text-2 hover:text-text">All events</Link></li>
+                <li><Link to="/clubs" className="text-text-2 hover:text-text">Clubs & collectives</Link></li>
+                <li><Link to="/calendar" className="text-text-2 hover:text-text">Schedule calendar</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-caption font-semibold text-text-2 mb-2">Organizers</h4>
+              <ul className="space-y-1.5 text-small">
+                <li><Link to="/admin" className="text-text-2 hover:text-text">Admin dashboard</Link></li>
+                <li><Link to="/admin/events/new" className="text-text-2 hover:text-text">Create an event</Link></li>
+                <li><Link to="/admin/checkin" className="text-text-2 hover:text-text">Gate check-in</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-caption font-semibold text-text-2 mb-2">Resources</h4>
+              <ul className="space-y-1.5 text-small">
+                <li><Link to="/about" className="text-text-2 hover:text-text">About EventMesh</Link></li>
+                <li><Link to="/gallery" className="text-text-2 hover:text-text">Photo gallery</Link></li>
+                <li><Link to="/styleguide" className="text-text-2 hover:text-text">Design styleguide</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-caption font-semibold text-text-2 mb-2">Verification</h4>
+              <ul className="space-y-1.5 text-small">
+                <li><Link to="/verify/TA-2026-001245" className="text-text-2 hover:text-text">Verify credential</Link></li>
+                <li><Link to="/dev/accounts" className="text-text-2 hover:text-text">Developer accounts</Link></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-2 text-caption text-text-3">
+            <p>© 2026 EventMesh. Curated multi-club event platform.</p>
+            <p>Clean, flat Calm Coral interface.</p>
+          </div>
+        </div>
+      </footer>
+
+      {/* ==============================================================
+          MOBILE BOTTOM NAVIGATION (Flat solid surface)
+          ============================================================== */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-line px-2 py-1 flex items-center justify-around shadow-floating">
         {mobileTabs.map((tab) => {
           const isActive =
             tab.path === '/'
@@ -240,20 +326,12 @@ export const PublicShell: React.FC = () => {
             <Link
               key={tab.path}
               to={tab.path}
-              className={`flex flex-col items-center justify-center py-1 px-3 transition-all ${
-                isActive
-                  ? 'text-indigo-600 font-bold'
-                  : 'text-slate-500 hover:text-slate-800 font-medium'
+              className={`flex flex-col items-center justify-center py-1 px-3 transition-colors ${
+                isActive ? 'text-accent font-semibold' : 'text-text-2 hover:text-text'
               }`}
             >
-              <div
-                className={`flex items-center justify-center px-4 py-1 rounded-full transition-all ${
-                  isActive ? 'neo-inset text-indigo-600 font-bold' : ''
-                }`}
-              >
-                {tab.icon}
-              </div>
-              <span className="text-[10px] mt-0.5">{tab.label}</span>
+              {tab.icon}
+              <span className="text-caption mt-0.5">{tab.label}</span>
             </Link>
           )
         })}

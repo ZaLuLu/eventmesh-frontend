@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Settings, Save, Check } from 'lucide-react'
+import { Save } from 'lucide-react'
 import { useOrg } from '@/hooks/useOrg'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api'
@@ -8,7 +8,7 @@ import { Field } from '@/design-system/primitives/Field'
 import { useToast } from '@/design-system/primitives/Toast'
 
 export const AdminSettingsPage: React.FC = () => {
-  const { organization, isLoading } = useOrg()
+  const { organization } = useOrg()
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
@@ -61,23 +61,23 @@ export const AdminSettingsPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl space-y-8">
-      <div className="pb-6 border-b border-[#C9D0D4]">
-        <span className="font-mono text-[10px] uppercase tracking-wide text-ink-60 block mb-1">
+    <div className="max-w-4xl space-y-6">
+      <div className="pb-4 border-b border-line">
+        <span className="text-caption font-semibold text-accent block mb-0.5">
           System Customization & Terminology
         </span>
-        <h1 className="font-display text-3xl sm:text-4xl uppercase text-ink">
+        <h1 className="text-h2 font-semibold text-text">
           Federation Configuration
         </h1>
-        <p className="font-body text-xs text-ink-60 mt-0.5">
+        <p className="text-small text-text-2 mt-0.5">
           Configure organization identity, configurable labels (Clubs/Chapters, Students/Fellows), and approval pipelines.
         </p>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-8">
+      <form onSubmit={handleSave} className="space-y-6">
         {/* Core Identity */}
-        <div className="p-6 bg-paper border border-[#C9D0D4] space-y-4">
-          <h3 className="font-display text-xl uppercase text-ink border-b border-[#C9D0D4] pb-2">
+        <div className="p-5 bg-surface border border-line rounded-panel space-y-4">
+          <h3 className="text-h3 font-semibold text-text border-b border-line pb-2">
             Institutional Identity
           </h3>
 
@@ -99,11 +99,11 @@ export const AdminSettingsPage: React.FC = () => {
         </div>
 
         {/* Configurable Terminology Labels */}
-        <div className="p-6 bg-paper border border-[#C9D0D4] space-y-4">
-          <h3 className="font-display text-xl uppercase text-ink border-b border-[#C9D0D4] pb-2">
+        <div className="p-5 bg-surface border border-line rounded-panel space-y-4">
+          <h3 className="text-h3 font-semibold text-text border-b border-line pb-2">
             Configurable Labels (Backend Agnostic)
           </h3>
-          <p className="font-body text-xs text-ink-60">
+          <p className="text-caption text-text-2">
             EventMesh adapts to any collective (colleges, corporations, or open communities).
           </p>
 
@@ -126,19 +126,19 @@ export const AdminSettingsPage: React.FC = () => {
         </div>
 
         {/* Governance Settings */}
-        <div className="p-6 bg-paper border border-[#C9D0D4] space-y-4">
-          <h3 className="font-display text-xl uppercase text-ink border-b border-[#C9D0D4] pb-2">
+        <div className="p-5 bg-surface border border-line rounded-panel space-y-4">
+          <h3 className="text-h3 font-semibold text-text border-b border-line pb-2">
             Governance & Approval Pipeline
           </h3>
 
-          <label className="flex items-center gap-2 cursor-pointer font-mono text-xs uppercase text-ink">
+          <label className="flex items-center gap-2 cursor-pointer text-small text-text">
             <input
               type="checkbox"
               checked={requireApproval}
               onChange={(e) => setRequireApproval(e.target.checked)}
-              className="h-4 w-4 rounded-none border border-ink text-admin-accent"
+              className="h-4 w-4 rounded text-accent"
             />
-            <span>Require President Approval for All Club Event Publishes</span>
+            <span>Require President approval for all club event publishes</span>
           </label>
         </div>
 
@@ -146,7 +146,7 @@ export const AdminSettingsPage: React.FC = () => {
           <Button
             type="submit"
             surface="admin"
-            size="lg"
+            size="sm"
             loading={updateMutation.isPending}
             icon={<Save className="h-4 w-4" />}
           >

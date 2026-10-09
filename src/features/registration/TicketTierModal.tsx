@@ -1,15 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  X,
-  Ticket,
-  Check,
-  Zap,
-  Users,
-  ShieldCheck,
-  Sparkles,
-  ArrowRight,
-} from 'lucide-react'
+import { X, Ticket, Check } from 'lucide-react'
 import { Event } from '@/api'
 import { Button } from '@/design-system/primitives/Button'
 
@@ -83,28 +74,32 @@ export const TicketTierModal: React.FC<TicketTierModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl rounded-3xl bg-[#EEF2F6] border border-white/80 shadow-neo-card p-6 sm:p-8 overflow-hidden">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-text/40"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="relative w-full max-w-xl rounded-panel bg-surface border border-line shadow-floating p-6 sm:p-8 overflow-hidden">
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full text-slate-500 hover:text-slate-800 bg-[#EEF2F6] shadow-neo-sm hover:shadow-neo-inset border border-white/60 transition-all"
+          className="absolute top-5 right-5 p-2 rounded-btn text-text-3 hover:text-text bg-surface hover:bg-subtle border border-line transition-colors"
           aria-label="Close dialog"
         >
-          <X className="h-5 w-5" />
+          <X className="h-4 w-4" />
         </button>
 
         {/* Modal Header */}
         <div className="mb-6 pr-8">
-          <div className="flex items-center gap-2 text-xs font-bold text-gradient-feral uppercase tracking-wider mb-1">
-            <Ticket className="h-4 w-4 text-indigo-500" />
+          <div className="flex items-center gap-1.5 text-caption font-semibold text-accent mb-1">
+            <Ticket className="h-4 w-4" />
             <span>Select Ticket Tier</span>
           </div>
-          <h2 className="font-display font-bold text-2xl text-slate-900 leading-tight">
+          <h2 className="text-h2 font-semibold text-text leading-tight">
             {event.title}
           </h2>
-          <p className="text-xs text-slate-500 mt-1 font-medium">
+          <p className="text-small text-text-2 mt-1">
             Choose your registration category to receive your instant digital QR pass
           </p>
         </div>
@@ -119,55 +114,59 @@ export const TicketTierModal: React.FC<TicketTierModalProps> = ({
                 role="button"
                 tabIndex={0}
                 onClick={() => setSelectedTierId(tier.id)}
-                className={`relative p-4 rounded-2xl border transition-all cursor-pointer bg-[#EEF2F6] ${
+                onKeyDown={(e) => e.key === 'Enter' && setSelectedTierId(tier.id)}
+                className={`p-4 rounded-panel border transition-colors cursor-pointer ${
                   isSelected
-                    ? 'border-indigo-500/50 shadow-neo-card ring-2 ring-indigo-500/30'
-                    : 'border-white/80 shadow-neo-sm hover:shadow-neo-card'
+                    ? 'border-accent bg-accent-soft/30'
+                    : 'border-line bg-surface hover:border-text-3'
                 }`}
               >
-                <div className="flex items-start justify-between gap-4 mb-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-display font-bold text-base text-slate-900">
-                      {tier.name}
-                    </span>
-                    {tier.tag && (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold text-white bg-gradient-to-r from-indigo-500 to-pink-500 shadow-neo-sm">
-                        {tier.tag}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-text text-small">
+                        {tier.name}
                       </span>
-                    )}
+                      {tier.tag && (
+                        <span className="text-caption bg-accent-soft text-accent px-2 py-0.5 rounded-full font-medium">
+                          {tier.tag}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-caption text-text-2 mt-1">
+                      {tier.description}
+                    </p>
                   </div>
-
-                  <span className="font-bold text-sm text-slate-900">
-                    {tier.price}
-                  </span>
+                  <div className="text-right">
+                    <span className="text-small font-semibold text-text">
+                      {tier.price}
+                    </span>
+                    <span className="block text-caption text-text-3">
+                      {tier.spotsLeft} spots left
+                    </span>
+                  </div>
                 </div>
 
-                <p className="text-xs text-slate-600 mb-2 leading-relaxed">
-                  {tier.description}
-                </p>
-
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-bold text-amber-700 bg-[#EEF2F6] shadow-neo-inset border border-amber-200/60 px-2.5 py-0.5 rounded-full">
-                    ⚡ Only {tier.spotsLeft} passes remaining
-                  </span>
-
-                  <span className="text-slate-500 font-medium">
-                    {tier.features.length} perks included
-                  </span>
+                <div className="mt-3 pt-3 border-t border-line flex flex-wrap gap-x-4 gap-y-1 text-caption text-text-2">
+                  {tier.features.map((feat, idx) => (
+                    <span key={idx} className="flex items-center gap-1">
+                      <Check className="h-3 w-3 text-success" />
+                      {feat}
+                    </span>
+                  ))}
                 </div>
               </div>
             )
           })}
         </div>
 
-        {/* Modal Actions */}
-        <div className="flex items-center gap-3">
-          <Button variant="secondary" size="md" onClick={onClose} fullWidth>
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-line">
+          <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-
-          <Button variant="primary" size="md" onClick={handleProceed} fullWidth arrow>
-            Continue to Registration
+          <Button variant="primary" onClick={handleProceed}>
+            Proceed to Registration
           </Button>
         </div>
       </div>

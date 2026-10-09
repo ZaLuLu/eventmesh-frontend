@@ -3,14 +3,14 @@
  * Timezone: Asia/Kolkata / en-IN standard
  */
 
-export function formatDate(isoString: string): string {
+export function formatDate(isoString: string, _format?: string): string {
   try {
     const d = new Date(isoString)
     return new Intl.DateTimeFormat('en-IN', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
-    }).format(d).toUpperCase()
+    }).format(d)
   } catch {
     return isoString
   }
@@ -26,7 +26,7 @@ export function formatDateTime(isoString: string): string {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
-    }).format(d).toUpperCase()
+    }).format(d)
   } catch {
     return isoString
   }
@@ -39,7 +39,7 @@ export function formatTime(isoString: string): string {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
-    }).format(d).toUpperCase()
+    }).format(d)
   } catch {
     return isoString
   }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Download, Search, CheckCircle, ArrowUpRight, UserCheck } from 'lucide-react'
+import { Download, Search } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { useRegistrations, useUpdateRegistrationStatus } from '@/hooks/useRegistrations'
@@ -17,7 +17,7 @@ export const AdminRegistrationsPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<RegistrationStatus | 'all'>('all')
   const [search, setSearch] = useState('')
 
-  const { data: registrations = [], isLoading, refetch } = useRegistrations({
+  const { data: registrations = [], isLoading } = useRegistrations({
     clubId: clubId || undefined,
     status: statusFilter !== 'all' ? statusFilter : undefined,
     search: search || undefined,
@@ -68,17 +68,17 @@ export const AdminRegistrationsPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#C9D0D4]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-line">
         <div>
-          <span className="font-mono text-[10px] uppercase tracking-wide text-ink-60 block mb-1">
+          <span className="text-caption font-semibold text-accent block mb-0.5">
             Attendee Registrations
           </span>
-          <h1 className="font-display text-3xl sm:text-4xl uppercase text-ink">
+          <h1 className="text-h2 font-semibold text-text">
             Registration Management
           </h1>
-          <p className="font-body text-xs text-ink-60 mt-0.5">
+          <p className="text-small text-text-2 mt-0.5">
             Audit attendee quotas, manage entry credentials, promote waitlists, and export CSV rosters.
           </p>
         </div>
@@ -95,18 +95,18 @@ export const AdminRegistrationsPage: React.FC = () => {
       </div>
 
       {/* Filter / Search Bar */}
-      <div className="p-4 bg-paper border border-[#C9D0D4] flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-2 font-mono text-xs uppercase overflow-x-auto no-scrollbar">
+      <div className="p-3 bg-surface border border-line rounded-panel flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 text-small overflow-x-auto no-scrollbar">
           {(['all', 'registered', 'checked_in', 'waitlisted', 'cancelled'] as (RegistrationStatus | 'all')[]).map(
             (st) => (
               <button
                 key={st}
                 type="button"
                 onClick={() => setStatusFilter(st)}
-                className={`px-3 py-1.5 transition-colors ${
+                className={`px-3 py-1.5 rounded-btn font-medium transition-colors capitalize ${
                   statusFilter === st
-                    ? 'bg-admin-accent text-white font-bold'
-                    : 'text-ink-60 hover:text-ink hover:bg-black/5'
+                    ? 'bg-accent text-on-accent'
+                    : 'text-text-2 hover:text-text hover:bg-subtle'
                 }`}
               >
                 {st.replace('_', ' ')}
@@ -116,90 +116,90 @@ export const AdminRegistrationsPage: React.FC = () => {
         </div>
 
         <div className="relative max-w-xs w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-60" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-3" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search attendee or ticket..."
-            className="w-full bg-paper text-ink font-body text-xs pl-9 pr-3 py-1.5 border border-[#C9D0D4] focus:outline-none focus:border-admin-accent"
+            className="w-full bg-surface text-text text-small pl-9 pr-3 py-1.5 border border-line rounded-btn focus:outline-none focus:border-accent"
           />
         </div>
       </div>
 
       {/* Registrations Table */}
-      <div className="bg-paper border border-[#C9D0D4] overflow-x-auto">
+      <div className="bg-surface border border-line rounded-panel overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[750px]">
           <thead>
-            <tr className="border-b border-[#C9D0D4] bg-[#E6EAEC]/60 font-mono text-[10px] uppercase text-ink-60 tracking-wider">
-              <th className="py-3 px-4">Pass & Attendee</th>
-              <th className="py-3 px-4">Event Dossier</th>
-              <th className="py-3 px-4">Status</th>
-              <th className="py-3 px-4">Registration Date</th>
-              <th className="py-3 px-4 text-right">Actions</th>
+            <tr className="border-b border-line bg-subtle text-caption font-medium text-text-2 sticky top-0">
+              <th className="py-3 px-4 font-semibold">Pass & Attendee</th>
+              <th className="py-3 px-4 font-semibold">Event Dossier</th>
+              <th className="py-3 px-4 font-semibold">Status</th>
+              <th className="py-3 px-4 font-semibold">Registration Date</th>
+              <th className="py-3 px-4 text-right font-semibold">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#C9D0D4] font-body text-xs">
+          <tbody className="divide-y divide-line text-small">
             {isLoading ? (
               <tr>
-                <td colSpan={5} className="py-12 text-center font-mono text-ink-60 uppercase">
+                <td colSpan={5} className="py-12 text-center text-small text-text-3">
                   Loading registration roster...
                 </td>
               </tr>
             ) : registrations.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-12 text-center font-mono text-ink-60 uppercase">
+                <td colSpan={5} className="py-12 text-center text-small text-text-3">
                   No registrations found matching this query.
                 </td>
               </tr>
             ) : (
               registrations.map((reg) => (
-                <tr key={reg.id} className="hover:bg-black/5 transition-colors">
-                  <td className="py-3.5 px-4">
-                    <p className="font-mono font-bold text-ink text-[11px]">{reg.ticketCode}</p>
-                    <p className="font-semibold text-ink text-sm mt-0.5">{reg.userName}</p>
-                    <p className="font-mono text-ink-60 text-[10px]">{reg.userEmail}</p>
+                <tr key={reg.id} className="h-[52px] hover:bg-subtle/50 transition-colors">
+                  <td className="py-2.5 px-4">
+                    <p className="font-mono font-semibold text-text text-small">{reg.ticketCode}</p>
+                    <p className="font-medium text-text text-small">{reg.userName}</p>
+                    <p className="text-caption text-text-3 font-mono">{reg.userEmail}</p>
                     {reg.team && (
-                      <span className="font-mono text-[9px] bg-[#E6EAEC] text-ink px-1.5 py-0.5 mt-1 inline-block">
+                      <span className="text-caption bg-subtle text-text px-1.5 py-0.5 rounded mt-0.5 inline-block">
                         Team: {reg.team.teamName}
                       </span>
                     )}
                   </td>
 
-                  <td className="py-3.5 px-4">
-                    <p className="font-display text-sm uppercase text-ink">{reg.eventTitle}</p>
-                    <p className="font-mono text-[10px] text-ink-60 uppercase">
+                  <td className="py-2.5 px-4">
+                    <p className="font-medium text-text line-clamp-1">{reg.eventTitle}</p>
+                    <p className="text-caption text-text-3">
                       {reg.organizerName}
                     </p>
                   </td>
 
-                  <td className="py-3.5 px-4">
+                  <td className="py-2.5 px-4">
                     <span
-                      className={`inline-block font-mono text-[10px] uppercase px-2 py-0.5 border ${
+                      className={`inline-block text-caption px-2 py-0.5 rounded-full border capitalize font-medium ${
                         reg.status === 'checked_in'
-                          ? 'bg-emerald-100 text-emerald-900 border-emerald-400'
+                          ? 'bg-success/10 text-success border-success/30'
                           : reg.status === 'registered'
-                          ? 'bg-blue-100 text-blue-900 border-blue-300'
+                          ? 'bg-accent-soft text-accent border-accent/30'
                           : reg.status === 'waitlisted'
-                          ? 'bg-amber-100 text-amber-900 border-amber-300'
-                          : 'bg-[#E6EAEC] text-ink border-[#C9D0D4]'
+                          ? 'bg-warning/10 text-warning border-warning/30'
+                          : 'bg-subtle text-text border-line'
                       }`}
                     >
                       {reg.status.replace('_', ' ')}
                     </span>
                   </td>
 
-                  <td className="py-3.5 px-4 font-mono text-[11px] text-ink-60">
+                  <td className="py-2.5 px-4 text-caption text-text-3 tabular-nums">
                     {formatDate(reg.createdAt)}
                   </td>
 
-                  <td className="py-3.5 px-4 text-right">
-                    <div className="flex items-center justify-end gap-2 font-mono text-[10px] uppercase">
+                  <td className="py-2.5 px-4 text-right">
+                    <div className="flex items-center justify-end gap-1.5">
                       {reg.status === 'waitlisted' && (
                         <button
                           type="button"
                           onClick={() => handlePromoteWaitlist(reg.id, reg.userName)}
-                          className="px-2 py-1 bg-emerald-700 text-white font-bold hover:bg-emerald-800"
+                          className="px-2.5 py-1 bg-success text-on-accent font-semibold rounded-btn text-caption hover:opacity-90"
                         >
                           Promote
                         </button>
@@ -209,7 +209,7 @@ export const AdminRegistrationsPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleStatusChange(reg.id, 'checked_in')}
-                          className="px-2 py-1 bg-admin-accent text-white font-semibold"
+                          className="px-2.5 py-1 bg-accent text-on-accent font-semibold rounded-btn text-caption hover:opacity-90"
                         >
                           Check In
                         </button>
@@ -218,7 +218,7 @@ export const AdminRegistrationsPage: React.FC = () => {
                       <select
                         value={reg.status}
                         onChange={(e) => handleStatusChange(reg.id, e.target.value as any)}
-                        className="p-1 border border-[#C9D0D4] bg-paper text-[10px] font-mono focus:outline-none"
+                        className="p-1 border border-line bg-surface rounded-btn text-caption text-text focus:outline-none"
                       >
                         <option value="registered">Registered</option>
                         <option value="checked_in">Checked In</option>

@@ -6,10 +6,11 @@ import { AuthShell } from './AuthShell'
 import { NotFoundPage } from './NotFoundPage'
 
 const LoadingFallback = () => (
-  <div className="w-full min-h-[60vh] flex items-center justify-center p-8 bg-paper">
-    <span className="font-mono text-xs uppercase tracking-widecaps text-ink-60 animate-pulse">
-      Rendering Archival Space...
-    </span>
+  <div className="w-full py-16 flex items-center justify-center p-8 bg-bg">
+    <div className="flex flex-col items-center gap-3">
+      <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      <span className="text-small text-text-2">Loading...</span>
+    </div>
   </div>
 )
 

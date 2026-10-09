@@ -16,11 +16,9 @@ import {
   useSortable,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Plus, Trash2, Settings2, Eye } from 'lucide-react'
+import { GripVertical, Trash2, Settings2, Eye } from 'lucide-react'
 import { FormField, FormFieldType } from '@/api'
-import { Button } from '@/design-system/primitives/Button'
 import { Field } from '@/design-system/primitives/Field'
-import { Select } from '@/design-system/primitives/Select'
 import { FormRenderer } from '../registration/FormRenderer'
 
 interface SortableFieldItemProps {
@@ -49,7 +47,7 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className="p-4 bg-paper border border-[#C9D0D4] space-y-3"
+      className="p-3.5 bg-surface border border-line rounded-panel space-y-3"
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -57,32 +55,32 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({
             type="button"
             {...attributes}
             {...listeners}
-            className="cursor-grab active:cursor-grabbing p-1 text-ink-60 hover:text-ink"
+            className="cursor-grab active:cursor-grabbing p-1 text-text-3 hover:text-text"
             aria-label="Drag to reorder field"
           >
             <GripVertical className="h-4 w-4" />
           </button>
 
           <div className="flex items-baseline gap-2 truncate">
-            <span className="font-body text-sm font-bold uppercase text-ink truncate">
+            <span className="text-small font-medium text-text truncate">
               {field.label || 'Untitled Field'}
             </span>
-            <span className="font-mono text-[10px] uppercase text-ink-60 bg-[#E6EAEC] px-1.5 py-0.5">
+            <span className="text-caption bg-subtle text-text-2 px-1.5 py-0.5 rounded capitalize">
               {field.type}
             </span>
             {field.required && (
-              <span className="font-mono text-[10px] uppercase text-[#A32828] font-bold">
+              <span className="text-caption text-danger font-semibold">
                 *Required
               </span>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-1.5 flex-shrink-0">
           <button
             type="button"
             onClick={() => setExpanded(!expanded)}
-            className="p-1 text-ink-60 hover:text-ink"
+            className="p-1.5 text-text-3 hover:text-text rounded-btn transition-colors"
             title="Configure Field"
           >
             <Settings2 className="h-4 w-4" />
@@ -90,7 +88,7 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({
           <button
             type="button"
             onClick={() => onDelete(field.id)}
-            className="p-1 text-ink-60 hover:text-[#A32828]"
+            className="p-1.5 text-text-3 hover:text-danger rounded-btn transition-colors"
             title="Delete Field"
           >
             <Trash2 className="h-4 w-4" />
@@ -99,17 +97,17 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({
       </div>
 
       {expanded && (
-        <div className="pt-3 border-t border-[#C9D0D4] space-y-3 font-body text-xs">
+        <div className="pt-3 border-t border-line space-y-3 text-small">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field
               surface="admin"
-              label="Field Label"
+              label="Field label"
               value={field.label}
               onChange={(e) => onUpdate({ ...field, label: e.target.value })}
             />
             <Field
               surface="admin"
-              label="Placeholder (Optional)"
+              label="Placeholder (optional)"
               value={field.placeholder || ''}
               onChange={(e) => onUpdate({ ...field, placeholder: e.target.value })}
             />
@@ -117,27 +115,27 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({
 
           <Field
             surface="admin"
-            label="Help Text (Optional)"
+            label="Help text (optional)"
             value={field.helpText || ''}
             onChange={(e) => onUpdate({ ...field, helpText: e.target.value })}
           />
 
-          <div className="flex items-center justify-between pt-2">
-            <label className="flex items-center gap-2 cursor-pointer font-mono text-xs uppercase text-ink">
+          <div className="flex items-center justify-between pt-1">
+            <label className="flex items-center gap-2 cursor-pointer text-small text-text">
               <input
                 type="checkbox"
                 checked={field.required}
                 onChange={(e) => onUpdate({ ...field, required: e.target.checked })}
-                className="h-4 w-4 rounded-none border border-ink text-admin-accent focus:ring-0"
+                className="h-4 w-4 rounded text-accent"
               />
-              <span>Mandatory / Required Field</span>
+              <span>Mandatory / required field</span>
             </label>
 
             {field.type === 'select' && (
               <div className="flex-1 max-w-xs ml-4">
                 <Field
                   surface="admin"
-                  label="Options (Comma-separated)"
+                  label="Options (comma-separated)"
                   value={(field.options || []).join(', ')}
                   onChange={(e) =>
                     onUpdate({
@@ -190,7 +188,7 @@ export const AdminFormBuilder: React.FC<AdminFormBuilderProps> = ({
     const newField: FormField = {
       id: `field_${Date.now()}`,
       type,
-      label: `New ${type.toUpperCase()} Field`,
+      label: `New ${type.charAt(0).toUpperCase() + type.slice(1)} Field`,
       required: false,
       options: type === 'select' ? ['Option A', 'Option B'] : undefined,
     }
@@ -206,13 +204,13 @@ export const AdminFormBuilder: React.FC<AdminFormBuilderProps> = ({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#C9D0D4]">
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-line">
         <div>
-          <h3 className="font-display text-xl uppercase text-ink">
+          <h3 className="text-h3 font-semibold text-text">
             Registration Form Schema Builder
           </h3>
-          <p className="font-body text-xs text-ink-60">
+          <p className="text-caption text-text-2">
             Drag to reorder questions. Fields automatically validate and render in the public registration flow.
           </p>
         </div>
@@ -220,19 +218,19 @@ export const AdminFormBuilder: React.FC<AdminFormBuilderProps> = ({
         <button
           type="button"
           onClick={() => setShowPreview(!showPreview)}
-          className="flex items-center gap-1.5 px-3 py-1.5 border border-[#C9D0D4] font-mono text-xs uppercase hover:bg-black/5"
+          className="flex items-center gap-1.5 px-3 py-1.5 border border-line rounded-btn text-small font-medium hover:bg-subtle text-text transition-colors"
         >
-          <Eye className="h-3.5 w-3.5" />
+          <Eye className="h-4 w-4" />
           <span>{showPreview ? 'Hide Preview' : 'Live Preview'}</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Builder Pane */}
-        <div className={showPreview ? 'lg:col-span-7 space-y-4' : 'lg:col-span-12 space-y-4'}>
+        <div className={showPreview ? 'lg:col-span-7 space-y-3' : 'lg:col-span-12 space-y-3'}>
           {/* Quick Add Buttons */}
-          <div className="flex flex-wrap items-center gap-2 p-3 bg-paper border border-[#C9D0D4]">
-            <span className="font-mono text-[10px] uppercase text-ink-60 mr-2 font-bold">
+          <div className="flex flex-wrap items-center gap-1.5 p-3 bg-surface border border-line rounded-panel">
+            <span className="text-caption font-semibold text-text mr-1">
               + Add Field:
             </span>
             {(['text', 'select', 'checkbox', 'longtext', 'email', 'phone', 'number'] as FormFieldType[]).map(
@@ -241,7 +239,7 @@ export const AdminFormBuilder: React.FC<AdminFormBuilderProps> = ({
                   key={type}
                   type="button"
                   onClick={() => handleAddField(type)}
-                  className="px-2 py-1 bg-[#E6EAEC] hover:bg-admin-accent hover:text-white font-mono text-[10px] uppercase transition-colors"
+                  className="px-2.5 py-1 bg-subtle hover:bg-accent hover:text-on-accent text-caption rounded-btn font-medium transition-colors capitalize"
                 >
                   +{type}
                 </button>
@@ -251,7 +249,7 @@ export const AdminFormBuilder: React.FC<AdminFormBuilderProps> = ({
 
           {/* Sortable List */}
           {fields.length === 0 ? (
-            <div className="p-8 border-2 border-dashed border-[#C9D0D4] text-center font-mono text-xs uppercase text-ink-60">
+            <div className="p-8 border border-dashed border-line rounded-panel text-center text-small text-text-3">
               No custom questionnaire fields defined. Click a button above to append fields.
             </div>
           ) : (
@@ -264,7 +262,7 @@ export const AdminFormBuilder: React.FC<AdminFormBuilderProps> = ({
                 items={fields.map((f) => f.id)}
                 strategy={verticalListSortingStrategy}
               >
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {fields.map((f) => (
                     <SortableFieldItem
                       key={f.id}
@@ -281,9 +279,9 @@ export const AdminFormBuilder: React.FC<AdminFormBuilderProps> = ({
 
         {/* Right Live Preview Pane */}
         {showPreview && (
-          <div className="lg:col-span-5 border-2 border-ink p-6 bg-paper space-y-4">
-            <span className="font-mono text-[10px] uppercase tracking-wide text-ink-60 block border-b border-ink-15 pb-2">
-              Attendee Perspective (Live Preview)
+          <div className="lg:col-span-5 border border-line rounded-panel p-5 bg-surface space-y-3">
+            <span className="text-caption font-semibold text-accent block border-b border-line pb-2">
+              Attendee perspective (live preview)
             </span>
             <FormRenderer
               fields={fields}

@@ -7,11 +7,7 @@ import {
   Calendar,
   MapPin,
   CheckCircle2,
-  Sparkles,
-  ArrowRight,
   ShieldCheck,
-  User,
-  ExternalLink,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useRegisterPass, useMyRegistrations } from '@/hooks/useRegistrations'
@@ -64,138 +60,138 @@ export const PassBookingModal: React.FC<PassBookingModalProps> = ({
       : `PASS-${(event.id || 'EM').slice(0, 6).toUpperCase()}`
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg rounded-3xl bg-[#EEF2F6] neo-card border border-white/80 shadow-2xl p-6 sm:p-8 overflow-hidden">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="pass-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-text/40 animate-fade"
+    >
+      <div className="relative w-full max-w-lg rounded-panel bg-surface border border-line shadow-floating p-6 sm:p-8">
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full neo-pill hover:shadow-neo-sm text-slate-500 hover:text-slate-800 transition-colors"
+          className="absolute top-4 right-4 p-2 rounded-button text-text-2 hover:text-text hover:bg-subtle transition-colors"
           aria-label="Close dialog"
         >
           <X className="h-5 w-5" />
         </button>
 
         {!isAlreadyRegistered && !successRegistration ? (
-          /* ==============================================================
-             STEP 1: PASS CONFIRMATION & 1-TAP CLAIM
-             ============================================================== */
-          <div className="space-y-6">
-            <div className="pr-6">
-              <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 uppercase tracking-normal mb-1">
+          /* Step 1: Pass Confirmation & 1-Tap Claim */
+          <div className="space-y-5">
+            <div className="pr-8">
+              <div className="inline-flex items-center gap-1.5 text-caption font-semibold text-accent mb-1">
                 <Ticket className="h-4 w-4" />
-                <span>Instant Pass Reservation</span>
+                <span>Instant pass reservation</span>
               </div>
-              <h2 className="font-display font-extrabold text-2xl text-slate-900 leading-snug">
+              <h2 id="pass-modal-title" className="font-semibold text-h2 text-text leading-tight">
                 {event.title}
               </h2>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-small text-text-2 mt-1">
                 1-tap confirmation backed by official EventMesh verification.
               </p>
             </div>
 
             {/* Event Summary Box */}
-            <div className="rounded-2xl neo-inset p-4 space-y-3 text-xs">
-              <div className="flex items-center justify-between text-slate-700">
+            <div className="rounded-input bg-subtle border border-line p-4 space-y-2.5 text-small">
+              <div className="flex items-center justify-between text-text">
                 <span className="flex items-center gap-2 font-medium">
-                  <Calendar className="h-3.5 w-3.5 text-indigo-600" />
+                  <Calendar className="h-4 w-4 text-accent shrink-0" />
                   <span>{formatDate(event.startsAt)} · {formatTime(event.startsAt)}</span>
                 </span>
-                <span className="font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 text-[11px] shadow-2xs">
+                <span className="font-semibold text-caption px-2.5 py-0.5 rounded-chip bg-surface border border-line text-text">
                   {event.features.paid ? (event.price ? `₹${event.price}` : 'Paid Pass') : 'Free Pass'}
                 </span>
               </div>
 
-              <div className="flex items-center gap-2 text-slate-600 font-medium">
-                <MapPin className="h-3.5 w-3.5 text-indigo-600 flex-shrink-0" />
+              <div className="flex items-center gap-2 text-text-2">
+                <MapPin className="h-4 w-4 text-accent shrink-0" />
                 <span className="truncate">{event.venue?.name || 'Main Campus Venue'}</span>
               </div>
             </div>
 
             {/* Attendee Profile Info */}
-            <div className="rounded-2xl neo-card p-4 flex items-center justify-between border border-white/70">
+            <div className="rounded-input bg-surface border border-line p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white font-bold flex items-center justify-center text-sm shadow-neo-sm">
+                <div className="h-10 w-10 rounded-input bg-accent-soft text-accent font-semibold flex items-center justify-center text-body">
                   {passholderName[0]}
                 </div>
                 <div>
-                  <h4 className="font-bold text-xs text-slate-900">{passholderName}</h4>
-                  <p className="text-[11px] text-slate-500 font-medium">{passholderEmail}</p>
+                  <h4 className="font-semibold text-small text-text">{passholderName}</h4>
+                  <p className="text-caption text-text-2">{passholderEmail}</p>
                 </div>
               </div>
 
-              <span className="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full font-bold flex items-center gap-1 shadow-2xs">
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+              <span className="text-caption text-success bg-surface border border-line px-2.5 py-1 rounded-chip font-semibold flex items-center gap-1">
+                <ShieldCheck className="h-4 w-4 text-success" />
                 Verified
               </span>
             </div>
 
             {/* Action Cluster */}
-            <div className="space-y-3 pt-2">
+            <div className="space-y-3 pt-1">
               {isAuthenticated ? (
                 <Button
-                  size="lg"
+                  size="default"
                   fullWidth
-                  variant="gradient"
+                  variant="primary"
                   loading={registerMutation.isPending}
                   onClick={handleClaimPass}
-                  arrow
                 >
                   Confirm & Claim Pass
                 </Button>
               ) : (
                 <Link to="/login" className="block w-full">
-                  <Button size="lg" fullWidth variant="gradient" arrow>
-                    Sign In to Claim Pass
+                  <Button size="default" fullWidth variant="primary">
+                    Sign in to claim pass
                   </Button>
                 </Link>
               )}
 
-              <p className="text-[11px] text-center text-slate-500 font-medium">
+              <p className="text-caption text-center text-text-3">
                 Free cancellation anytime from your Passes Wallet.
               </p>
             </div>
           </div>
         ) : (
-          /* ==============================================================
-             STEP 2: CELEBRATION & LIVE QR PASS
-             ============================================================== */
-          <div className="space-y-6 text-center pt-2">
-            <div className="mx-auto w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center shadow-neo-sm">
-              <CheckCircle2 className="h-8 w-8" />
+          /* Step 2: Celebration & Live QR Pass */
+          <div className="space-y-5 text-center pt-1">
+            <div className="mx-auto w-12 h-12 rounded-full bg-accent-soft text-accent flex items-center justify-center">
+              <CheckCircle2 className="h-6 w-6" />
             </div>
 
             <div>
-              <span className="px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold uppercase tracking-wider inline-block mb-2 shadow-2xs">
-                Pass Confirmed
+              <span className="px-3 py-0.5 rounded-chip bg-accent-soft text-accent text-caption font-semibold inline-block mb-1.5">
+                Pass confirmed
               </span>
-              <h2 className="font-display font-extrabold text-2xl text-slate-900">
-                You're In!
+              <h2 id="pass-modal-title" className="font-semibold text-h2 text-text">
+                You're in!
               </h2>
-              <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto font-medium">
+              <p className="text-small text-text-2 mt-1 max-w-sm mx-auto">
                 Your entry credential has been verified. Present this pass at the gate terminal.
               </p>
             </div>
 
             {/* Ticket Graphic */}
-            <div className="rounded-3xl neo-card p-5 max-w-xs mx-auto shadow-neo-card space-y-4 border border-white/80">
-              <div className="flex items-center justify-between text-xs pb-3 border-b border-slate-200/80">
-                <span className="font-mono font-bold text-slate-900">{ticketCode}</span>
-                <span className="text-[10px] font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-600 px-2.5 py-0.5 rounded-full shadow-2xs">
+            <div className="rounded-panel bg-subtle border border-line p-5 max-w-xs mx-auto space-y-4">
+              <div className="flex items-center justify-between text-caption pb-3 border-b border-line">
+                <span className="font-mono font-semibold text-text">{ticketCode}</span>
+                <span className="font-semibold text-on-accent bg-success px-2.5 py-0.5 rounded-chip">
                   ACTIVE
                 </span>
               </div>
 
-              <div className="flex justify-center py-2 bg-white rounded-2xl p-4 border border-slate-200/60 shadow-neo-inset">
+              <div className="flex justify-center py-2 bg-surface rounded-input p-4 border border-line">
                 <QRCode
                   value={`EVENTMESH:${ticketCode}:${event.slug}`}
                   size={140}
                 />
               </div>
 
-              <div className="text-left text-xs space-y-1">
-                <h4 className="font-bold text-slate-900 truncate">{event.title}</h4>
-                <p className="text-slate-500 text-[11px] font-medium">
+              <div className="text-left text-small space-y-0.5">
+                <h4 className="font-semibold text-text truncate">{event.title}</h4>
+                <p className="text-text-2 text-caption">
                   {formatDate(event.startsAt)} · {event.venue?.name}
                 </p>
               </div>
@@ -203,11 +199,11 @@ export const PassBookingModal: React.FC<PassBookingModalProps> = ({
 
             <div className="flex items-center gap-3 pt-2">
               <Link to="/attendee/dashboard" className="flex-1">
-                <Button size="md" variant="gradient" fullWidth icon={<Ticket className="h-4 w-4" />}>
-                  Go to My Passes
+                <Button size="default" variant="primary" fullWidth icon={<Ticket className="h-4 w-4" />}>
+                  Go to my passes
                 </Button>
               </Link>
-              <Button size="md" variant="secondary" onClick={onClose}>
+              <Button size="default" variant="secondary" onClick={onClose}>
                 Done
               </Button>
             </div>
@@ -217,3 +213,4 @@ export const PassBookingModal: React.FC<PassBookingModalProps> = ({
     </div>
   )
 }
+

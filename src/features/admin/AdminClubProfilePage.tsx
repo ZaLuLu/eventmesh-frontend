@@ -14,11 +14,11 @@ export const AdminClubProfilePage: React.FC = () => {
   const { clubId } = usePermission()
   const { toast } = useToast()
 
-  const targetClubId = clubId || 'club-cp'
-  const { data: club, isLoading } = useClub(targetClubId)
+  const targetClubId = clubId || session?.clubId || 'club-devcraft'
+  const { data: club } = useClub(targetClubId)
   const updateMutation = useUpdateClub()
 
-  const [color, setColor] = useState('#2F4BD6')
+  const [color, setColor] = useState('#C66A4A')
   const [about, setAbout] = useState('')
   const [whatWeDo, setWhatWeDo] = useState('')
   const [achievements, setAchievements] = useState<string[]>([])
@@ -65,52 +65,52 @@ export const AdminClubProfilePage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl space-y-8">
+    <div className="max-w-4xl space-y-6">
       {/* Header */}
-      <div className="pb-6 border-b border-[#C9D0D4]">
-        <span className="font-mono text-[10px] uppercase tracking-wide text-ink-60 block mb-1">
+      <div className="pb-4 border-b border-line">
+        <span className="text-caption font-semibold text-accent block mb-0.5">
           Collective Identity Management
         </span>
-        <h1 className="font-display text-3xl sm:text-4xl uppercase text-ink">
+        <h1 className="text-h2 font-semibold text-text">
           Club Profile & Identity Editor
         </h1>
-        <p className="font-body text-xs text-ink-60 mt-0.5">
+        <p className="text-small text-text-2 mt-0.5">
           Configure signature identity color, contrast calculation, curatorial narrative, and laureate achievements.
         </p>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-8">
+      <form onSubmit={handleSave} className="space-y-6">
         {/* Color Picker & Live Contrast Preview */}
-        <div className="p-6 bg-paper border border-[#C9D0D4] space-y-6">
-          <div className="flex items-center gap-2 border-b border-[#C9D0D4] pb-3">
-            <Palette className="h-5 w-5 text-ink-60" />
-            <h3 className="font-display text-xl uppercase text-ink">
+        <div className="p-5 bg-surface border border-line rounded-panel space-y-4">
+          <div className="flex items-center gap-2 border-b border-line pb-3">
+            <Palette className="h-4 w-4 text-accent" />
+            <h3 className="text-h3 font-semibold text-text">
               Signature Identity Token
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-            <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <div className="space-y-3">
               <Field
                 surface="admin"
-                label="Hex Value (e.g. #2F4BD6)"
+                label="Hex Value (e.g. #C66A4A)"
                 value={color}
                 onChange={(e) => setColor(e.target.value)}
               />
 
-              <div className="space-y-2">
-                <span className="font-mono text-[10px] uppercase text-ink-60 block">
+              <div className="space-y-1.5">
+                <span className="text-caption font-medium text-text-3 block">
                   Curated Architectural Palette:
                 </span>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {TOKENS.curatedPalettes.map((p) => (
                     <button
                       key={p.name}
                       type="button"
                       onClick={() => setColor(p.hex)}
-                      className="px-2.5 py-1 border border-[#C9D0D4] font-mono text-[11px] uppercase flex items-center gap-1.5 hover:bg-black/5"
+                      className="px-2.5 py-1 border border-line rounded-btn text-caption flex items-center gap-1.5 hover:bg-subtle transition-colors"
                     >
-                      <span className="h-2.5 w-2.5 inline-block" style={{ backgroundColor: p.hex }} />
+                      <span className="h-2.5 w-2.5 rounded-full inline-block" style={{ backgroundColor: p.hex }} />
                       <span>{p.name}</span>
                     </button>
                   ))}
@@ -118,39 +118,38 @@ export const AdminClubProfilePage: React.FC = () => {
               </div>
             </div>
 
-            {/* Live Contrast Preview Box */}
-            <div
-              className="p-6 border-2 border-ink flex flex-col justify-between min-h-[180px]"
-              style={{
-                backgroundColor: contrast.eventColor,
-                color: contrast.onEventColor,
-              }}
-            >
-              <div>
-                <span className="font-mono text-[10px] uppercase tracking-wide opacity-80 block mb-1">
-                  Live Visual Subtree Preview
+            {/* Live Contrast Preview Box (Small chip / preview tile) */}
+            <div className="p-4 border border-line rounded-panel bg-subtle space-y-3">
+              <span className="text-caption font-medium text-text-3 block">
+                Contrast Calculation & Token Preview
+              </span>
+
+              <div className="flex items-center gap-3">
+                <span
+                  className="px-3 py-1.5 rounded-btn font-semibold text-small"
+                  style={{
+                    backgroundColor: contrast.eventColor,
+                    color: contrast.onEventColor,
+                  }}
+                >
+                  {club?.name || 'Club Preview'}
                 </span>
-                <p className="font-display text-3xl uppercase">
-                  {club?.name || 'Club Identity'}
-                </p>
-                <p className="font-mono text-xs opacity-90 uppercase mt-1">
-                  Computed --on-event: {contrast.onEventColor}
-                </p>
+                <span className="text-caption text-text-2">
+                  Computed text: {contrast.onEventColor}
+                </span>
               </div>
 
-              <div className="pt-4 border-t border-current/20 font-mono text-[11px] uppercase flex items-center justify-between">
-                <span>Ratio: {contrast.contrastRatio}:1</span>
-                <span className="flex items-center gap-1 font-bold">
+              <div className="pt-2 border-t border-line text-caption flex items-center justify-between">
+                <span className="text-text-2">Contrast ratio: {contrast.contrastRatio}:1</span>
+                <span className="flex items-center gap-1 font-semibold">
                   {contrast.isAANormal ? (
-                    <>
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                      <span>WCAG AA PASS</span>
-                    </>
+                    <span className="text-success flex items-center gap-1">
+                      <CheckCircle2 className="h-3.5 w-3.5" /> WCAG AA Pass
+                    </span>
                   ) : (
-                    <>
-                      <AlertTriangle className="h-3.5 w-3.5" />
-                      <span>FAIL (&lt; 4.5:1)</span>
-                    </>
+                    <span className="text-danger flex items-center gap-1">
+                      <AlertTriangle className="h-3.5 w-3.5" /> Fail (&lt; 4.5:1)
+                    </span>
                   )}
                 </span>
               </div>
@@ -159,8 +158,8 @@ export const AdminClubProfilePage: React.FC = () => {
         </div>
 
         {/* Narrative & Activities */}
-        <div className="p-6 bg-paper border border-[#C9D0D4] space-y-6">
-          <h3 className="font-display text-xl uppercase text-ink border-b border-[#C9D0D4] pb-3">
+        <div className="p-5 bg-surface border border-line rounded-panel space-y-4">
+          <h3 className="text-h3 font-semibold text-text border-b border-line pb-2">
             Narrative & Directives
           </h3>
 
@@ -184,8 +183,8 @@ export const AdminClubProfilePage: React.FC = () => {
         </div>
 
         {/* Laurels & Achievements */}
-        <div className="p-6 bg-paper border border-[#C9D0D4] space-y-4">
-          <h3 className="font-display text-xl uppercase text-ink border-b border-[#C9D0D4] pb-3">
+        <div className="p-5 bg-surface border border-line rounded-panel space-y-3">
+          <h3 className="text-h3 font-semibold text-text border-b border-line pb-2">
             Club Distinctions & Laurels
           </h3>
 
@@ -195,8 +194,9 @@ export const AdminClubProfilePage: React.FC = () => {
               value={newAchievement}
               onChange={(e) => setNewAchievement(e.target.value)}
               placeholder="Add distinction statement..."
-              className="flex-1 bg-paper border border-[#C9D0D4] px-3 py-2 font-body text-xs focus:outline-none"
-            />
+              className="flex-1 bg-surface border border-line rounded-btn px-3 py-2 text-small text-text focus:outline-none focus:border-accent"
+            >
+            </input>
             <Button
               type="button"
               surface="admin"
@@ -208,17 +208,17 @@ export const AdminClubProfilePage: React.FC = () => {
             </Button>
           </div>
 
-          <ul className="space-y-2 pt-2">
+          <ul className="space-y-1.5 pt-1">
             {achievements.map((ach, idx) => (
               <li
                 key={idx}
-                className="p-3 border border-[#C9D0D4] flex items-center justify-between gap-3 font-body text-xs"
+                className="p-2.5 border border-line rounded-btn bg-subtle flex items-center justify-between gap-3 text-small"
               >
-                <span>{ach}</span>
+                <span className="text-text">{ach}</span>
                 <button
                   type="button"
                   onClick={() => setAchievements(achievements.filter((_, i) => i !== idx))}
-                  className="font-mono text-xs text-[#A32828] hover:underline"
+                  className="text-caption text-danger hover:underline"
                 >
                   Remove
                 </button>
@@ -231,7 +231,7 @@ export const AdminClubProfilePage: React.FC = () => {
           <Button
             type="submit"
             surface="admin"
-            size="lg"
+            size="sm"
             loading={updateMutation.isPending}
             icon={<Save className="h-4 w-4" />}
           >

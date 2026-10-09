@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { CheckCircle2, XCircle, ShieldCheck, Search, Award } from 'lucide-react'
+import { CheckCircle2, XCircle, Search, ShieldCheck } from 'lucide-react'
 import { useVerifyCertificate } from '@/hooks/useCertificates'
 import { Button } from '@/design-system/primitives/Button'
 import { formatDate } from '@/lib/dates'
@@ -18,92 +18,90 @@ export const VerifyCertificatePage: React.FC = () => {
   }
 
   return (
-    <div className="w-full bg-[#EEF2F6] text-slate-800 min-h-screen py-10 sm:py-16">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 space-y-8">
+    <div className="w-full bg-bg text-text min-h-screen py-8 sm:py-12">
+      <div className="app-container max-w-2xl space-y-6">
         <div className="text-center space-y-2">
-          <span className="text-xs font-bold text-gradient-feral uppercase tracking-wider block">
-            Digital Credential Verification
+          <span className="text-caption font-semibold text-accent block">
+            Digital Credential Registry
           </span>
-          <h1 className="font-display font-bold text-3xl sm:text-4xl text-slate-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-text tracking-tight">
             Verify Certificate
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 max-w-lg mx-auto">
-            Public verification portal for authenticating digital credentials and certificates issued across events and hackathons.
+          <p className="text-small text-text-2 max-w-lg mx-auto">
+            Public verification portal for authenticating digital credentials and certificates issued across technical events.
           </p>
         </div>
 
         {/* Verification Lookup Input */}
-        <form onSubmit={handleSearch} className="flex items-center gap-2 rounded-full border border-white/80 p-2 bg-[#EEF2F6] shadow-neo-inset">
-          <Search className="h-4 w-4 text-indigo-500 ml-3" />
+        <form onSubmit={handleSearch} className="flex items-center gap-2 rounded-[10px] border border-line p-1.5 bg-surface">
+          <Search className="h-4 w-4 text-text-3 ml-2.5" />
           <input
             type="text"
             value={searchId}
             onChange={(e) => setSearchId(e.target.value)}
-            placeholder="Enter Certificate ID (e.g. TA-2026-001245)..."
-            className="w-full bg-transparent font-body text-xs sm:text-sm px-2 py-2 focus:outline-none placeholder:text-slate-400 text-slate-800"
+            placeholder="Enter certificate ID (e.g. TA-2026-001245)..."
+            className="w-full bg-transparent text-small px-2 py-1.5 focus:outline-none placeholder:text-text-3 text-text"
           />
-          <Button type="submit" size="sm" variant="primary">
+          <Button type="submit" size="compact" variant="primary">
             Verify
           </Button>
         </form>
 
         {/* Verification Result Card */}
         {isLoading ? (
-          <div className="p-12 text-center text-xs text-slate-500 rounded-3xl border border-white/80 bg-[#EEF2F6] shadow-neo-card animate-pulse">
-            Querying Authentication Registry...
+          <div className="p-8 text-center text-small text-text-2 rounded-panel border border-line bg-surface">
+            Querying authentication registry...
           </div>
         ) : certificateId ? (
           record && record.isValid ? (
-            <div className="rounded-3xl border border-white/80 bg-[#EEF2F6] p-6 sm:p-8 shadow-neo-card space-y-6">
-              <div className="flex items-center gap-3 text-emerald-600 border-b border-slate-200/60 pb-4">
+            <div className="rounded-panel border border-line bg-surface p-6 sm:p-8 space-y-6">
+              <div className="flex items-center gap-3 text-success border-b border-line pb-4">
                 <CheckCircle2 className="h-6 w-6 flex-shrink-0" />
                 <div>
-                  <h3 className="font-display font-bold text-xl text-slate-900">
-                    Authentic & Valid Certificate
+                  <h3 className="font-semibold text-lg text-text">
+                    Official Verification Record
                   </h3>
-                  <p className="text-xs text-emerald-600 font-medium">
-                    Official verified credential record found
+                  <p className="text-caption font-medium text-success">
+                    Status: Validated & Cryptographically Signed
                   </p>
                 </div>
               </div>
 
-              <div className="divide-y divide-slate-200/60 text-xs sm:text-sm font-body">
-                <div className="py-3 flex justify-between">
-                  <span className="text-slate-500">Certificate ID</span>
-                  <span className="font-mono font-bold text-slate-900">{record.certificateId}</span>
+              <div className="divide-y divide-line text-small">
+                <div className="py-2.5 flex justify-between">
+                  <span className="text-text-2">Certificate ID</span>
+                  <span className="font-mono font-semibold text-text">{record.certificateId}</span>
                 </div>
-                <div className="py-3 flex justify-between">
-                  <span className="text-slate-500">Recipient Name</span>
-                  <span className="font-semibold text-slate-900">{record.recipientName}</span>
+                <div className="py-2.5 flex justify-between">
+                  <span className="text-text-2">Recipient name</span>
+                  <span className="font-semibold text-text">{record.recipientName}</span>
                 </div>
-                <div className="py-3 flex justify-between">
-                  <span className="text-slate-500">Event Title</span>
-                  <span className="font-semibold text-slate-900">{record.eventTitle}</span>
+                <div className="py-2.5 flex justify-between">
+                  <span className="text-text-2">Event title</span>
+                  <span className="font-semibold text-text">{record.eventTitle}</span>
                 </div>
-                <div className="py-3 flex justify-between">
-                  <span className="text-slate-500">Issuing Club</span>
-                  <span className="font-semibold text-slate-900">{record.organizerName}</span>
+                <div className="py-2.5 flex justify-between">
+                  <span className="text-text-2">Issuing club</span>
+                  <span className="font-semibold text-text">{record.organizerName}</span>
                 </div>
-                <div className="py-3 flex justify-between">
-                  <span className="text-slate-500">Issue Date</span>
-                  <span className="text-slate-900">
+                <div className="py-2.5 flex justify-between">
+                  <span className="text-text-2">Issue date</span>
+                  <span className="text-text">
                     {record.issuedAt ? formatDate(record.issuedAt) : '—'}
                   </span>
                 </div>
               </div>
 
-              <div className="p-3.5 bg-[#EEF2F6] shadow-neo-inset rounded-2xl border border-white/60 text-xs text-slate-500 text-center font-mono">
+              <div className="p-3 bg-subtle rounded-[8px] border border-line text-caption text-text-2 text-center font-mono">
                 Verified at {new Date(record.verifiedAt).toLocaleString()}
               </div>
             </div>
           ) : (
-            <div className="rounded-3xl border border-rose-200 bg-[#EEF2F6] shadow-neo-card p-8 space-y-4 text-center">
-              <XCircle className="h-8 w-8 text-rose-500 mx-auto" />
-              <h3 className="font-display font-bold text-xl text-slate-900">
-                Invalid Certificate
-              </h3>
-              <p className="text-xs text-slate-600">
-                No matching verified credential was found for ID &quot;{certificateId}&quot;. Please verify the serial code and try again.
+            <div className="rounded-panel border border-danger/30 bg-danger/5 p-6 space-y-3 text-center">
+              <XCircle className="h-8 w-8 text-danger mx-auto" />
+              <h3 className="text-lg font-semibold text-danger">Invalid Credential</h3>
+              <p className="text-small text-text-2">
+                No verified certificate record was located for "{certificateId}".
               </p>
             </div>
           )

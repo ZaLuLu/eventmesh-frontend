@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { jsPDF } from 'jspdf'
-import { Ticket, Award, Calendar, CheckCircle2, Download, ExternalLink, QrCode } from 'lucide-react'
+import { Ticket, Award, Download, QrCode } from 'lucide-react'
 import { useMyRegistrations, useCancelRegistration } from '@/hooks/useRegistrations'
 import { useMyCertificates } from '@/hooks/useCertificates'
 import { useClubs } from '@/hooks/useClubs'
@@ -9,9 +9,11 @@ import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/design-system/primitives/Button'
 import { QRCode } from '@/design-system/primitives/QRCode'
 import { Modal } from '@/design-system/primitives/Modal'
+import { Tabs } from '@/design-system/primitives/Tabs'
 import { formatDate, formatTime } from '@/lib/dates'
 import { Registration, Certificate } from '@/api'
 import { useToast } from '@/design-system/primitives/Toast'
+import { EmptyState } from '@/design-system/primitives/EmptyState'
 
 export const AttendeeDashboardPage: React.FC = () => {
   const { session, isAuthenticated } = useAuth()
@@ -22,21 +24,21 @@ export const AttendeeDashboardPage: React.FC = () => {
   const cancelMutation = useCancelRegistration()
 
   const [selectedTicket, setSelectedTicket] = useState<Registration | null>(null)
-  const [activeTab, setActiveTab] = useState<'passes' | 'certificates' | 'clubs'>('passes')
+  const [activeTab, setActiveTab] = useState('passes')
 
   const handleCancelPass = async (reg: Registration) => {
-    if (window.confirm('Are you sure you want to cancel this entry pass reservation?')) {
+    if (window.confirm('Are you sure you want to cancel this ticket pass?')) {
       try {
         await cancelMutation.mutateAsync(reg.eventSlug || reg.eventId)
         setSelectedTicket(null)
         toast({
-          title: 'Pass Cancelled',
-          message: 'Your registration was cancelled and the spot has been returned to the pool.',
+          title: 'Pass cancelled',
+          message: 'Your registration was cancelled and the seat returned to the pool.',
           type: 'info',
         })
       } catch (err: any) {
         toast({
-          title: 'Cancellation Failed',
+          title: 'Cancellation failed',
           message: err?.message || 'Could not cancel pass.',
           type: 'error',
         })
@@ -54,398 +56,310 @@ export const AttendeeDashboardPage: React.FC = () => {
         format: 'a4',
       })
 
-      // Paper background
-      doc.setFillColor(248, 249, 250) // #F8F9FA
+      doc.setFillColor(251, 250, 248)
       doc.rect(0, 0, 297, 210, 'F')
 
-      // Google Blue border
-      doc.setDrawColor(26, 115, 232) // #1A73E8
+      doc.setDrawColor(201, 62, 39)
       doc.setLineWidth(1.5)
       doc.rect(12, 12, 273, 186)
 
-      // Inner thin rule
-      doc.setDrawColor(218, 220, 224) // #DADCE0
+      doc.setDrawColor(231, 228, 222)
       doc.setLineWidth(0.5)
       doc.rect(15, 15, 267, 180)
 
-      // Header
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(11)
-      doc.setTextColor(95, 99, 104)
+      doc.setTextColor(94, 90, 85)
       doc.text('EVENTMESH · VERIFIABLE DIGITAL CREDENTIAL', 148.5, 36, { align: 'center' })
 
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(26)
-      doc.setTextColor(31, 31, 31)
+      doc.setTextColor(27, 26, 25)
       doc.text('CERTIFICATE OF PARTICIPATION', 148.5, 52, { align: 'center' })
 
-      // Body text
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(13)
-      doc.setTextColor(95, 99, 104)
+      doc.setTextColor(94, 90, 85)
       doc.text('This document certifies that', 148.5, 75, { align: 'center' })
 
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(22)
-      doc.setTextColor(26, 115, 232)
+      doc.setTextColor(201, 62, 39)
       doc.text(cert.recipientName.toUpperCase(), 148.5, 92, { align: 'center' })
 
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(13)
-      doc.setTextColor(95, 99, 104)
-      doc.text(
-        `has successfully participated and completed`,
-        148.5,
-        108,
-        { align: 'center' }
-      )
+      doc.setTextColor(94, 90, 85)
+      doc.text('has successfully completed', 148.5, 108, { align: 'center' })
 
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(18)
-      doc.setTextColor(31, 31, 31)
+      doc.setTextColor(27, 26, 25)
       doc.text(cert.eventTitle.toUpperCase(), 148.5, 122, { align: 'center' })
 
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(11)
-      doc.text(
-        `Organized by ${cert.organizerName}`,
-        148.5,
-        134,
-        { align: 'center' }
-      )
-
-      // Metadata footer
-      doc.setDrawColor(218, 220, 224)
-      doc.setLineWidth(0.5)
-      doc.line(30, 155, 267, 155)
-
-      doc.setFontSize(9)
-      doc.text(`CERTIFICATE ID: ${cert.certificateId}`, 30, 166)
-      doc.text(`ISSUED AT: ${formatDate(cert.issuedAt)}`, 30, 174)
-      doc.text(`VERIFY URL: ${cert.verifyUrl}`, 30, 182)
+      doc.text(`Organized by ${cert.organizerName}`, 148.5, 134, { align: 'center' })
 
       doc.save(`${cert.certificateId}.pdf`)
 
       toast({
-        title: 'PDF Certificate Downloaded',
-        message: `Saved ${cert.certificateId} to local drive.`,
+        title: 'Certificate downloaded',
+        message: `Saved ${cert.certificateId}.pdf`,
         type: 'success',
       })
     } catch (err) {
-      console.error('PDF generation error:', err)
       toast({ title: 'Download failed', type: 'error' })
     }
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#EEF2F6] flex items-center justify-center p-8 text-center">
-        <div className="max-w-md space-y-4 rounded-3xl bg-[#EEF2F6] border border-white/80 p-8 shadow-neo-card">
-          <h2 className="font-display text-2xl font-bold text-slate-900">Sign In Required</h2>
-          <p className="font-body text-xs text-slate-500">
-            Please sign in to view your verified entry passes, digital credentials, and followed clubs.
+      <div className="app-container py-16 flex items-center justify-center">
+        <div className="max-w-md w-full bg-surface border border-line rounded-panel p-8 text-center space-y-4">
+          <h2 className="text-xl font-semibold text-text">Sign in required</h2>
+          <p className="text-small text-text-2">
+            Sign in to access your digital entry passes, credentials, and followed clubs.
           </p>
           <Link to="/login">
-            <Button size="md" variant="primary" arrow>Sign In</Button>
+            <Button variant="primary" size="default">Sign in</Button>
           </Link>
         </div>
       </div>
     )
   }
 
+  const tabs = [
+    { id: 'passes', label: 'My tickets', count: registrations.length },
+    { id: 'certificates', label: 'Certificates', count: certificates.length },
+    { id: 'clubs', label: 'Followed clubs', count: followedClubs.length },
+  ]
+
   return (
-    <div className="w-full bg-[#EEF2F6] text-slate-900 min-h-screen pb-16">
-      {/* Header */}
-      <div className="bg-[#EEF2F6] border-b border-slate-200/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div className="w-full bg-bg text-text pb-16">
+      {/* Header Strip */}
+      <div className="border-b border-line bg-surface">
+        <div className="app-container py-6 sm:py-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <span className="text-xs font-bold text-indigo-600 block mb-1">
-              Attendee Account
-            </span>
-            <h1 className="font-display font-extrabold text-2xl sm:text-4xl text-slate-900 tracking-tight">
-              {session?.name || 'My Profile'}
+            <h1 className="text-2xl sm:text-3xl font-semibold text-text tracking-tight">
+              My tickets & account
             </h1>
-            <p className="text-xs text-slate-500 mt-1 font-medium">
-              {session?.email} · {session?.role.replace('_', ' ').toUpperCase()}
+            <p className="text-small text-text-2 mt-1">
+              {session?.name} · {session?.email}
             </p>
           </div>
 
-          {/* Quick summary stats */}
           <div className="flex items-center gap-3">
-            <div className="px-5 py-3 rounded-2xl neo-card border border-white/80 text-center min-w-[100px]">
-              <p className="font-extrabold text-xl text-indigo-600">{registrations.length}</p>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Passes</p>
+            <div className="px-4 py-2.5 rounded-[10px] bg-subtle border border-line text-center min-w-[90px]">
+              <p className="font-semibold text-lg text-text">{registrations.length}</p>
+              <p className="text-caption text-text-2">Passes</p>
             </div>
-            <div className="px-5 py-3 rounded-2xl neo-card border border-white/80 text-center min-w-[100px]">
-              <p className="font-extrabold text-xl text-emerald-600">
+            <div className="px-4 py-2.5 rounded-[10px] bg-subtle border border-line text-center min-w-[90px]">
+              <p className="font-semibold text-lg text-text">
                 {registrations.filter((r) => r.status === 'checked_in').length}
               </p>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Attended</p>
+              <p className="text-caption text-text-2">Attended</p>
             </div>
-            <div className="px-5 py-3 rounded-2xl neo-card border border-white/80 text-center min-w-[100px]">
-              <p className="font-extrabold text-xl text-amber-600">{certificates.length}</p>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Credentials</p>
+            <div className="px-4 py-2.5 rounded-[10px] bg-subtle border border-line text-center min-w-[90px]">
+              <p className="font-semibold text-lg text-text">{certificates.length}</p>
+              <p className="text-caption text-text-2">Credentials</p>
             </div>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-2.5 pb-4 overflow-x-auto">
-          <button
-            type="button"
-            onClick={() => setActiveTab('passes')}
-            className={`py-2 px-4 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${
-              activeTab === 'passes'
-                ? 'bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 text-white shadow-neo-sm'
-                : 'neo-pill text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Ticket className="h-4 w-4" />
-            <span>Entry Passes ({registrations.length})</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('certificates')}
-            className={`py-2 px-4 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${
-              activeTab === 'certificates'
-                ? 'bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 text-white shadow-neo-sm'
-                : 'neo-pill text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Award className="h-4 w-4" />
-            <span>Certificates ({certificates.length})</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('clubs')}
-            className={`py-2 px-4 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${
-              activeTab === 'clubs'
-                ? 'bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 text-white shadow-neo-sm'
-                : 'neo-pill text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <span>Followed Clubs ({followedClubs.length})</span>
-          </button>
+        <div className="app-container">
+          <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
         </div>
       </div>
 
-      {/* TAB CONTENT: PASSES */}
-      {activeTab === 'passes' && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-          {regsLoading ? (
-            <p className="text-xs text-slate-500">Loading entry passes...</p>
-          ) : registrations.length === 0 ? (
-            <div className="rounded-3xl neo-card p-12 text-center max-w-md mx-auto space-y-4 border border-white/80">
-              <Ticket className="h-10 w-10 text-indigo-500 mx-auto" />
-              <p className="text-base font-bold text-slate-800">No active passes found</p>
-              <p className="text-xs text-slate-500 font-medium">
-                Explore our upcoming events to reserve your free pass.
-              </p>
-              <Link to="/explore">
-                <Button size="sm" variant="gradient">Explore Events</Button>
-              </Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {registrations.map((reg) => (
-                <div
-                  key={reg.id}
-                  className="rounded-3xl neo-card p-6 shadow-neo-card hover:shadow-neo-card-hover transition-all flex flex-col justify-between space-y-5 border border-white/80"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-3 text-xs">
-                      <span className="font-mono font-bold text-slate-800">{reg.ticketCode}</span>
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-2xs ${
-                          reg.status === 'checked_in'
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                            : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                        }`}
+      <div className="app-container py-8">
+        {/* TAB 1: PASSES */}
+        {activeTab === 'passes' && (
+          <div>
+            {regsLoading ? (
+              <p className="text-small text-text-2">Loading passes...</p>
+            ) : registrations.length === 0 ? (
+              <EmptyState
+                title="No active passes"
+                description="You have not registered for any upcoming events yet."
+                actionLabel="Explore events"
+                onAction={() => window.location.assign('/explore')}
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {registrations.map((reg) => (
+                  <div
+                    key={reg.id}
+                    className="bg-surface border border-line rounded-panel p-5 flex flex-col justify-between gap-4"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between border-b border-line pb-3 mb-3">
+                        <span className="font-mono text-caption font-semibold px-2 py-0.5 rounded-[6px] bg-subtle text-text">
+                          PASS-{reg.id.slice(0, 8).toUpperCase()}
+                        </span>
+                        <span className="text-caption font-semibold px-2 py-0.5 rounded-full bg-accent-soft text-accent">
+                          {reg.status.replace('_', ' ')}
+                        </span>
+                      </div>
+
+                      <h3 className="font-semibold text-small sm:text-base text-text mb-1">
+                        {reg.eventTitle}
+                      </h3>
+                      <p className="text-caption text-text-2">
+                        {formatDate(reg.eventStartsAt || reg.createdAt, 'MMM d, yyyy')} · {reg.venueName || 'Campus Venue'}
+                      </p>
+                      <p className="text-caption text-text-3 mt-1">
+                        Attendee: {reg.userName}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-3 border-t border-line">
+                      <Button
+                        variant="secondary"
+                        size="compact"
+                        fullWidth
+                        icon={<QrCode className="h-4 w-4" />}
+                        onClick={() => setSelectedTicket(reg)}
                       >
-                        {reg.status.replace('_', ' ').toUpperCase()}
+                        Show QR
+                      </Button>
+                      <Button
+                        variant="tertiary"
+                        size="compact"
+                        onClick={() => handleCancelPass(reg)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 2: CERTIFICATES */}
+        {activeTab === 'certificates' && (
+          <div>
+            {certsLoading ? (
+              <p className="text-small text-text-2">Loading certificates...</p>
+            ) : certificates.length === 0 ? (
+              <EmptyState
+                title="No certificates issued"
+                description="Certificates are granted upon verified completion of workshops and hackathons."
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {certificates.map((cert) => (
+                  <div
+                    key={cert.id}
+                    className="bg-surface border border-line rounded-panel p-5 space-y-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Award className="h-5 w-5 text-accent" />
+                        <span className="font-semibold text-small text-text">Certificate</span>
+                      </div>
+                      <span className="font-mono text-caption text-text-3">
+                        {cert.certificateId}
                       </span>
                     </div>
 
-                    <h3 className="font-display font-bold text-lg text-slate-900 line-clamp-2">
-                      {reg.eventTitle}
-                    </h3>
-
-                    {reg.eventStartsAt && (
-                      <p className="text-xs text-slate-500 mt-2 flex items-center gap-1.5 font-medium">
-                        <Calendar className="h-3.5 w-3.5 text-indigo-600" />
-                        <span>{formatDate(reg.eventStartsAt)}</span>
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="pt-4 border-t border-slate-200/80 flex items-center justify-between">
-                    <Button
-                      size="sm"
-                      variant="primary"
-                      icon={<QrCode className="h-3.5 w-3.5" />}
-                      onClick={() => setSelectedTicket(reg)}
-                    >
-                      Show QR Pass
-                    </Button>
-                    <Link
-                      to={`/events/${reg.eventSlug}`}
-                      className="text-xs font-bold text-indigo-600 hover:underline"
-                    >
-                      Event Details
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* TAB CONTENT: CERTIFICATES */}
-      {activeTab === 'certificates' && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-          {certsLoading ? (
-            <p className="text-xs text-slate-500">Loading certificates...</p>
-          ) : certificates.length === 0 ? (
-            <div className="rounded-3xl neo-card p-12 text-center max-w-md mx-auto space-y-4 border border-white/80">
-              <Award className="h-10 w-10 text-emerald-500 mx-auto" />
-              <p className="text-base font-bold text-slate-800">No certificates issued yet</p>
-              <p className="text-xs text-slate-500 font-medium">
-                Certificates are issued following verified event check-in and completion.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {certificates.map((cert) => (
-                <div
-                  key={cert.id}
-                  className="rounded-3xl neo-card p-6 shadow-neo-card hover:shadow-neo-card-hover transition-all flex flex-col justify-between space-y-4 border border-white/80"
-                >
-                  <div>
-                    <div className="flex items-center justify-between text-xs mb-2">
-                      <span className="font-bold text-indigo-600">{cert.certificateId}</span>
-                      <span className="text-slate-400 font-medium">{formatDate(cert.issuedAt)}</span>
-                    </div>
-
-                    <h3 className="font-display font-bold text-base text-slate-900 line-clamp-2">
-                      {cert.eventTitle}
-                    </h3>
-                    <p className="text-xs text-slate-500 mt-1 font-medium">
-                      Issued to {cert.recipientName}
-                    </p>
-                  </div>
-
-                  <div className="pt-3 border-t border-slate-200/80 flex items-center justify-between">
-                    <Button
-                      size="sm"
-                      variant="primary"
-                      icon={<Download className="h-3.5 w-3.5" />}
-                      onClick={() => downloadCertificatePDF(cert)}
-                    >
-                      Download PDF
-                    </Button>
-                    <Link
-                      to={`/verify/${cert.certificateId}`}
-                      className="text-xs font-bold text-indigo-600 hover:underline inline-flex items-center gap-1"
-                    >
-                      <span>Verify</span>
-                      <ExternalLink className="h-3 w-3" />
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* TAB CONTENT: CLUBS */}
-      {activeTab === 'clubs' && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-          {followedClubs.length === 0 ? (
-            <div className="rounded-3xl neo-card p-12 text-center max-w-md mx-auto space-y-4 border border-white/80">
-              <p className="text-base font-bold text-slate-800">Not following any clubs yet</p>
-              <p className="text-xs text-slate-500 font-medium">
-                Follow clubs to receive notifications whenever they host workshops or hackathons.
-              </p>
-              <Link to="/clubs">
-                <Button size="sm" variant="gradient">Browse Clubs</Button>
-              </Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {followedClubs.map((club) => (
-                <Link
-                  key={club.id}
-                  to={`/clubs/${club.slug}`}
-                  className="rounded-3xl neo-card p-6 shadow-neo-card hover:shadow-neo-card-hover transition-all flex items-center justify-between border border-white/80"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-sm shadow-neo-sm"
-                      style={{ backgroundColor: club.color || '#6366F1' }}
-                    >
-                      {club.name.slice(0, 3).toUpperCase()}
-                    </div>
                     <div>
-                      <h4 className="font-bold text-sm text-slate-900">{club.name}</h4>
-                      <p className="text-xs text-slate-500 font-medium">{club.followersCount} members</p>
+                      <h4 className="font-semibold text-small text-text">{cert.eventTitle}</h4>
+                      <p className="text-caption text-text-2 mt-0.5">
+                        Issued {formatDate(cert.issuedAt)} by {cert.organizerName}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-2 border-t border-line">
+                      <Button
+                        variant="secondary"
+                        size="compact"
+                        fullWidth
+                        icon={<Download className="h-4 w-4" />}
+                        onClick={() => downloadCertificatePDF(cert)}
+                      >
+                        Download PDF
+                      </Button>
+                      <Link to={`/verify/${cert.certificateId}`}>
+                        <Button variant="tertiary" size="compact">
+                          Verify
+                        </Button>
+                      </Link>
                     </div>
                   </div>
-                  <span className="text-xs font-bold text-indigo-600">View →</span>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
-      {/* QR Ticket Pass Modal */}
+        {/* TAB 3: FOLLOWED CLUBS */}
+        {activeTab === 'clubs' && (
+          <div>
+            {followedClubs.length === 0 ? (
+              <EmptyState
+                title="No followed clubs"
+                description="Follow clubs to receive immediate updates about their new events."
+                actionLabel="Explore clubs"
+                onAction={() => window.location.assign('/clubs')}
+              />
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {followedClubs.map((club) => (
+                  <Link
+                    key={club.id}
+                    to={`/clubs/${club.slug}`}
+                    className="flex items-center gap-3 p-4 rounded-[10px] bg-surface border border-line hover:border-text-3 transition-colors"
+                  >
+                    <span
+                      className="h-3 w-3 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: club.color || '#C93E27' }}
+                      aria-hidden="true"
+                    />
+                    <div className="min-w-0">
+                      <h4 className="font-semibold text-small text-text truncate">{club.name}</h4>
+                      <p className="text-caption text-text-2 truncate">{club.joinMode ? club.joinMode.replace('_', ' ') : 'Collective'}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* QR Pass Inspection Modal */}
       {selectedTicket && (
         <Modal
           isOpen={Boolean(selectedTicket)}
           onClose={() => setSelectedTicket(null)}
-          title="Digital Entry Pass"
+          title="Digital entry pass"
+          subtitle={`PASS-${selectedTicket.id.slice(0, 8).toUpperCase()}`}
         >
-          <div className="space-y-6 text-center">
-            <div className="p-4 rounded-3xl neo-inset inline-block">
-              <div className="p-3 bg-white rounded-2xl border border-slate-200/60 shadow-neo-sm">
-                <QRCode value={selectedTicket.ticketCode} size={180} />
-              </div>
+          <div className="text-center space-y-4">
+            <h3 className="font-semibold text-lg text-text">{selectedTicket.eventTitle}</h3>
+            <p className="text-small text-text-2">
+              {formatDate(selectedTicket.eventStartsAt || selectedTicket.createdAt, 'EEE, MMM d')} · {selectedTicket.venueName}
+            </p>
+
+            <div className="flex justify-center py-2">
+              <QRCode value={`PASS-${selectedTicket.id}`} size={200} />
             </div>
 
-            <div>
-              <p className="font-mono text-base font-bold text-slate-900 tracking-wider">
-                {selectedTicket.ticketCode}
-              </p>
-              <h3 className="font-display font-bold text-lg text-slate-900 mt-2">
-                {selectedTicket.eventTitle}
-              </h3>
-              <p className="text-xs text-slate-500 mt-1 font-medium">
-                Passholder: {selectedTicket.userName} ({selectedTicket.userEmail})
-              </p>
-            </div>
+            <p className="text-caption text-text-3">
+              Present this barcode at the registration gate terminal for admission scan.
+            </p>
 
-            <div className="flex items-center gap-3">
-              <Button
-                variant="secondary"
-                size="md"
-                fullWidth
-                onClick={() => setSelectedTicket(null)}
-              >
-                Close Pass
-              </Button>
-              {selectedTicket.status !== 'cancelled' && (
-                <Button
-                  variant="danger"
-                  size="md"
-                  loading={cancelMutation.isPending}
-                  onClick={() => handleCancelPass(selectedTicket)}
-                >
-                  Cancel Pass
-                </Button>
-              )}
-            </div>
+            <Button
+              variant="secondary"
+              size="default"
+              fullWidth
+              onClick={() => setSelectedTicket(null)}
+            >
+              Done
+            </Button>
           </div>
         </Modal>
       )}

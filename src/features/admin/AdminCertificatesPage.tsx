@@ -1,13 +1,12 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Award, Plus, CheckCircle2, Download, Eye, ExternalLink } from 'lucide-react'
+import { Eye, ExternalLink } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { useAdminEvents } from '@/hooks/useEvents'
 import { useCertificates, useGenerateCertificates } from '@/hooks/useCertificates'
 import { useRegistrations } from '@/hooks/useRegistrations'
 import { Button } from '@/design-system/primitives/Button'
-import { Select } from '@/design-system/primitives/Select'
 import { Modal } from '@/design-system/primitives/Modal'
 import { formatDate } from '@/lib/dates'
 import { useToast } from '@/design-system/primitives/Toast'
@@ -71,32 +70,32 @@ export const AdminCertificatesPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#C9D0D4]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-line">
         <div>
-          <span className="font-mono text-[10px] uppercase tracking-wide text-ink-60 block mb-1">
+          <span className="text-caption font-semibold text-accent block mb-0.5">
             Credential Authority
           </span>
-          <h1 className="font-display text-3xl sm:text-4xl uppercase text-ink">
+          <h1 className="text-h2 font-semibold text-text">
             Certificate Generation
           </h1>
-          <p className="font-body text-xs text-ink-60 mt-0.5">
+          <p className="text-small text-text-2 mt-0.5">
             Mint verifiable distinction certificates with standardized serial numbers (e.g. TA-2026-001245).
           </p>
         </div>
       </div>
 
       {/* Select Event & Template */}
-      <div className="p-6 bg-paper border border-[#C9D0D4] grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="p-4 bg-surface border border-line rounded-panel grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="font-mono text-[10px] uppercase text-ink-60 block mb-1">
-            Target Exhibition:
+          <label className="text-caption font-medium text-text-2 block mb-1">
+            Target event:
           </label>
           <select
             value={activeEventId}
             onChange={(e) => setSelectedEventId(e.target.value)}
-            className="w-full bg-paper border border-[#C9D0D4] p-2 font-mono text-xs uppercase focus:outline-none"
+            className="w-full bg-surface border border-line rounded-btn p-2 text-small text-text focus:outline-none focus:border-accent"
           >
             {events.map((e) => (
               <option key={e.id} value={e.id}>
@@ -107,13 +106,13 @@ export const AdminCertificatesPage: React.FC = () => {
         </div>
 
         <div>
-          <label className="font-mono text-[10px] uppercase text-ink-60 block mb-1">
-            Editorial Certificate Template:
+          <label className="text-caption font-medium text-text-2 block mb-1">
+            Certificate template:
           </label>
           <select
             value={templateId}
             onChange={(e) => setTemplateId(e.target.value)}
-            className="w-full bg-paper border border-[#C9D0D4] p-2 font-mono text-xs uppercase focus:outline-none"
+            className="w-full bg-surface border border-line rounded-btn p-2 text-small text-text focus:outline-none focus:border-accent"
           >
             <option value="standard_editorial">Standard Editorial Distinction</option>
             <option value="merit_distinction">Merit & Honor Distinction</option>
@@ -123,13 +122,13 @@ export const AdminCertificatesPage: React.FC = () => {
       </div>
 
       {/* Checked In Candidates Section */}
-      <div className="p-6 bg-paper border border-[#C9D0D4] space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#C9D0D4]">
+      <div className="p-4 bg-surface border border-line rounded-panel space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-line">
           <div>
-            <h3 className="font-display text-xl uppercase text-ink">
-              Checked-In Attendees ({checkedInAttendees.length})
+            <h3 className="text-h3 font-semibold text-text">
+              Checked-in attendees ({checkedInAttendees.length})
             </h3>
-            <p className="font-body text-xs text-ink-60">
+            <p className="text-caption text-text-2">
               Only verified attendees who completed check-in are eligible for automated credential minting.
             </p>
           </div>
@@ -138,7 +137,7 @@ export const AdminCertificatesPage: React.FC = () => {
             <button
               type="button"
               onClick={handleSelectAllCheckedIn}
-              className="font-mono text-xs uppercase text-ink underline"
+              className="text-caption font-medium text-accent hover:underline"
             >
               Select All Verified
             </button>
@@ -155,11 +154,11 @@ export const AdminCertificatesPage: React.FC = () => {
         </div>
 
         {checkedInAttendees.length === 0 ? (
-          <p className="font-mono text-xs uppercase text-ink-60 py-4">
-            No attendees checked in yet for this exhibition. Complete check-in first.
+          <p className="text-small text-text-3 py-4 text-center">
+            No attendees checked in yet for this event. Complete check-in first.
           </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
             {checkedInAttendees.map((att) => {
               const isSelected = selectedAttendeeIds.includes(att.id)
               return (
@@ -172,19 +171,19 @@ export const AdminCertificatesPage: React.FC = () => {
                         : [...selectedAttendeeIds, att.id]
                     )
                   }}
-                  className={`p-3 border cursor-pointer font-body text-xs flex items-center gap-3 transition-colors ${
-                    isSelected ? 'border-admin-accent bg-admin-accent/5' : 'border-[#C9D0D4] hover:bg-black/5'
+                  className={`p-2.5 border rounded-btn cursor-pointer text-small flex items-center gap-2.5 transition-colors ${
+                    isSelected ? 'border-accent bg-accent-soft/30' : 'border-line hover:bg-subtle'
                   }`}
                 >
                   <input
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => {}}
-                    className="h-4 w-4 rounded-none border border-ink text-admin-accent"
+                    className="h-4 w-4 rounded text-accent"
                   />
                   <div className="truncate">
-                    <p className="font-semibold text-ink uppercase truncate">{att.userName}</p>
-                    <p className="font-mono text-[10px] text-ink-60 truncate">{att.ticketCode}</p>
+                    <p className="font-medium text-text truncate">{att.userName}</p>
+                    <p className="text-caption text-text-3 font-mono truncate">{att.ticketCode}</p>
                   </div>
                 </div>
               )
@@ -194,39 +193,39 @@ export const AdminCertificatesPage: React.FC = () => {
       </div>
 
       {/* Issued Certificates Ledger */}
-      <div className="p-6 bg-paper border border-[#C9D0D4] space-y-4">
-        <h3 className="font-display text-xl uppercase text-ink pb-3 border-b border-[#C9D0D4]">
-          Issued Certificates Archive ({certificates.length})
+      <div className="p-4 bg-surface border border-line rounded-panel space-y-3">
+        <h3 className="text-h3 font-semibold text-text pb-2 border-b border-line">
+          Issued certificates archive ({certificates.length})
         </h3>
 
         {certsLoading ? (
-          <p className="font-mono text-xs uppercase text-ink-60 py-4">Reading certificate registry...</p>
+          <p className="text-small text-text-3 py-4 text-center">Reading certificate registry...</p>
         ) : certificates.length === 0 ? (
-          <p className="font-mono text-xs uppercase text-ink-60 py-4">
-            No certificates minted yet for this exhibition.
+          <p className="text-small text-text-3 py-4 text-center">
+            No certificates minted yet for this event.
           </p>
         ) : (
-          <div className="divide-y divide-[#C9D0D4]">
+          <div className="divide-y divide-line">
             {certificates.map((cert) => (
-              <div key={cert.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div key={cert.id} className="py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-ink">{cert.certificateId}</span>
-                    <span className="font-mono text-[10px] uppercase text-emerald-800 bg-emerald-100 px-1.5 py-0.5">
+                    <span className="font-mono text-small font-semibold text-text">{cert.certificateId}</span>
+                    <span className="text-caption capitalize text-success bg-success/10 px-2 py-0.5 rounded-full">
                       {cert.status}
                     </span>
                   </div>
-                  <p className="font-body text-sm font-semibold text-ink mt-0.5">{cert.recipientName}</p>
-                  <p className="font-mono text-[10px] text-ink-60 uppercase">
+                  <p className="text-small font-medium text-text mt-0.5">{cert.recipientName}</p>
+                  <p className="text-caption text-text-3">
                     Issued {formatDate(cert.issuedAt)} · {cert.templateId}
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3 font-mono text-xs">
+                <div className="flex items-center gap-2 text-small">
                   <Button
                     surface="admin"
                     variant="secondary"
-                    size="dense"
+                    size="sm"
                     icon={<Eye className="h-3.5 w-3.5" />}
                     onClick={() => setPreviewCert(cert)}
                   >
@@ -235,7 +234,7 @@ export const AdminCertificatesPage: React.FC = () => {
                   <Link
                     to={`/verify/${cert.certificateId}`}
                     target="_blank"
-                    className="p-1 text-ink-60 hover:text-ink"
+                    className="p-2 border border-line rounded-btn text-text hover:bg-subtle transition-colors"
                     title="Verify Record"
                   >
                     <ExternalLink className="h-4 w-4" />
@@ -255,18 +254,18 @@ export const AdminCertificatesPage: React.FC = () => {
           title="Certificate Preview"
           subtitle={previewCert.certificateId}
         >
-          <div className="border-2 border-ink p-8 bg-paper text-center space-y-4">
-            <span className="font-mono text-xs uppercase text-ink-60 block">
-              {previewCert.organizerName} · OFFICIAL DOCUMENT
+          <div className="border border-line rounded-panel p-6 bg-surface text-center space-y-3">
+            <span className="text-caption font-semibold text-accent block">
+              {previewCert.organizerName} · Official Document
             </span>
-            <h2 className="font-display text-3xl uppercase text-ink">
+            <h2 className="text-h2 font-semibold text-text">
               Certificate of Distinction
             </h2>
-            <p className="font-body text-sm text-ink-60">Presented with cryptographic validity to</p>
-            <p className="font-display text-2xl uppercase text-ink">{previewCert.recipientName}</p>
-            <p className="font-body text-xs text-ink-60">for successful completion of</p>
-            <p className="font-body text-sm font-bold uppercase text-ink">{previewCert.eventTitle}</p>
-            <div className="pt-4 border-t border-ink-15 font-mono text-[10px] uppercase text-ink-60">
+            <p className="text-small text-text-2">Presented with cryptographic validity to</p>
+            <p className="text-h3 font-semibold text-text">{previewCert.recipientName}</p>
+            <p className="text-caption text-text-2">for successful completion of</p>
+            <p className="text-small font-semibold text-text">{previewCert.eventTitle}</p>
+            <div className="pt-3 border-t border-line text-caption text-text-3 font-mono">
               Serial: {previewCert.certificateId} · Issued {formatDate(previewCert.issuedAt)}
             </div>
           </div>

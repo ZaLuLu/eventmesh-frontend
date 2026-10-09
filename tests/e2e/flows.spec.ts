@@ -32,6 +32,18 @@ test.describe('EventMesh Core E2E Smoke Flows', () => {
     await page.fill('input#email, input[name="email"]', 'arun@example.com')
     await page.fill('input#phone, input[name="phone"]', '+91 9876543210')
 
+    // Handle any event custom questionnaire fields if present
+    const extraInputs = page.locator('input[type="text"]:not(#name):not(#email):not(#phone):not([name="name"]):not([name="email"]):not([name="phone"])')
+    const count = await extraInputs.count()
+    for (let i = 0; i < count; i++) {
+      await extraInputs.nth(i).fill('Engineering Department')
+    }
+    const selectInputs = page.locator('select')
+    const selectCount = await selectInputs.count()
+    for (let i = 0; i < selectCount; i++) {
+      await selectInputs.nth(i).selectOption({ index: 1 })
+    }
+
     // 6. Submit registration
     const submitBtn = page.getByRole('button', { name: /Complete Registration/i })
     await submitBtn.click()
@@ -39,7 +51,7 @@ test.describe('EventMesh Core E2E Smoke Flows', () => {
     // 7. Verify ticket pass confirmation & QR display
     await expect(page.getByText(/Registration Confirmed/i)).toBeVisible({ timeout: 10000 })
     await expect(page.getByText(/PASS-/i)).toBeVisible()
-    await expect(page.locator('svg, canvas')).toBeVisible() // QR element
+    await expect(page.locator('canvas').first()).toBeVisible() // QR element
   })
 
   test('Flow B: Club admin creates and publishes event -> verified on public listing', async ({ page }) => {
@@ -52,7 +64,7 @@ test.describe('EventMesh Core E2E Smoke Flows', () => {
 
     // 2. Navigated to Admin Console
     await expect(page).toHaveURL('/admin')
-    await expect(page.getByText(/DEVCRAFT/i)).toBeVisible()
+    await expect(page.getByText(/DEVCRAFT/i).first()).toBeVisible()
 
     // 3. Navigate to Event Wizard
     await page.goto('/admin/events/new')
@@ -77,6 +89,7 @@ test.describe('EventMesh Core E2E Smoke Flows', () => {
     // Publish
     const publishBtn = page.getByRole('button', { name: /Publish Exhibition/i })
     await publishBtn.click()
+    await page.waitForURL('/admin/events')
 
     // 5. Verify published event appears in public explore listings
     await page.goto('/explore')
@@ -103,6 +116,7 @@ test.describe('EventMesh Core E2E Smoke Flows', () => {
     // 1. Login as DevCraft Admin (Club A)
     await page.goto('/dev/accounts')
     await page.getByRole('button', { name: /DevCraft Lead/i }).click()
+    await expect(page).toHaveURL('/admin')
 
     // 2. Go to admin events list
     await page.goto('/admin/events')

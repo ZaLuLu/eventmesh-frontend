@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Search, ExternalLink, Edit, Trash2, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Plus, Search, ExternalLink, Edit, Trash2 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { useAdminEvents, usePublishEvent } from '@/hooks/useEvents'
@@ -11,7 +11,7 @@ import { api } from '@/api'
 
 export const AdminEventsListPage: React.FC = () => {
   const { session } = useAuth()
-  const { role, clubId } = usePermission()
+  const { clubId } = usePermission()
   const { toast } = useToast()
 
   const [statusFilter, setStatusFilter] = useState('all')
@@ -64,40 +64,40 @@ export const AdminEventsListPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#C9D0D4]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-line">
         <div>
-          <span className="font-mono text-[10px] uppercase tracking-wide text-ink-60 block mb-1">
+          <span className="text-caption font-semibold text-accent block mb-0.5">
             Event Management Directorate
           </span>
-          <h1 className="font-display text-3xl sm:text-4xl uppercase text-ink">
-            Events & Programming
+          <h1 className="text-h2 font-semibold text-text">
+            Events Directory
           </h1>
-          <p className="font-body text-xs text-ink-60 mt-0.5">
+          <p className="text-small text-text-2 mt-0.5">
             Create, configure forms, publish to public catalogue, and manage attendee quotas.
           </p>
         </div>
 
         <Link to="/admin/events/new">
-          <Button surface="admin" size="md" icon={<Plus className="h-4 w-4" />}>
+          <Button surface="admin" size="sm" icon={<Plus className="h-4 w-4" />}>
             Create Event Wizard
           </Button>
         </Link>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="p-4 bg-paper border border-[#C9D0D4] flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar font-mono text-xs uppercase">
+      {/* Filter and Search Bar (Inline above the table) */}
+      <div className="p-3 bg-surface border border-line rounded-panel flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar text-small">
           {['all', 'published', 'draft', 'in_review', 'live', 'completed'].map((st) => (
             <button
               key={st}
               type="button"
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 transition-colors ${
+              className={`px-3 py-1.5 rounded-btn font-medium transition-colors capitalize ${
                 statusFilter === st
-                  ? 'bg-admin-accent text-white font-bold'
-                  : 'text-ink-60 hover:text-ink hover:bg-black/5'
+                  ? 'bg-accent text-on-accent'
+                  : 'text-text-2 hover:text-text hover:bg-subtle'
               }`}
             >
               {st.replace('_', ' ')}
@@ -106,94 +106,94 @@ export const AdminEventsListPage: React.FC = () => {
         </div>
 
         <div className="relative max-w-xs w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-60" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-3" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search events..."
-            className="w-full bg-paper text-ink font-body text-xs pl-9 pr-3 py-1.5 border border-[#C9D0D4] focus:outline-none focus:border-admin-accent"
+            className="w-full bg-surface text-text text-small pl-9 pr-3 py-1.5 border border-line rounded-btn focus:outline-none focus:border-accent"
           />
         </div>
       </div>
 
       {/* Events Table */}
-      <div className="bg-paper border border-[#C9D0D4] overflow-x-auto">
+      <div className="bg-surface border border-line rounded-panel overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[700px]">
           <thead>
-            <tr className="border-b border-[#C9D0D4] bg-[#E6EAEC]/60 font-mono text-[10px] uppercase text-ink-60 tracking-wider">
-              <th className="py-3 px-4">Event & Category</th>
-              <th className="py-3 px-4">Date & Venue</th>
-              <th className="py-3 px-4">Capacity / Seats</th>
-              <th className="py-3 px-4">Status</th>
-              <th className="py-3 px-4 text-right">Actions</th>
+            <tr className="border-b border-line bg-subtle text-caption font-medium text-text-2 sticky top-0">
+              <th className="py-3 px-4 font-semibold">Event & Category</th>
+              <th className="py-3 px-4 font-semibold">Date & Venue</th>
+              <th className="py-3 px-4 font-semibold">Capacity / Seats</th>
+              <th className="py-3 px-4 font-semibold">Status</th>
+              <th className="py-3 px-4 text-right font-semibold">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#C9D0D4] font-body text-xs">
+          <tbody className="divide-y divide-line text-small">
             {isLoading ? (
               <tr>
-                <td colSpan={5} className="py-12 text-center font-mono text-ink-60 uppercase">
+                <td colSpan={5} className="py-12 text-center text-small text-text-3">
                   Loading records...
                 </td>
               </tr>
             ) : filtered.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-12 text-center font-mono text-ink-60 uppercase">
+                <td colSpan={5} className="py-12 text-center text-small text-text-3">
                   No events found matching this criteria.
                 </td>
               </tr>
             ) : (
               filtered.map((evt) => (
-                <tr key={evt.id} className="hover:bg-black/5 transition-colors">
-                  <td className="py-3.5 px-4">
-                    <div className="flex items-center gap-2 mb-1">
+                <tr key={evt.id} className="h-[52px] hover:bg-subtle/50 transition-colors">
+                  <td className="py-2.5 px-4">
+                    <div className="flex items-center gap-2 mb-0.5">
                       <span
-                        className="h-2 w-2 inline-block flex-shrink-0"
+                        className="h-2 w-2 rounded-full inline-block flex-shrink-0"
                         style={{ backgroundColor: evt.organizerColor }}
                       />
-                      <span className="font-mono text-[10px] uppercase font-semibold text-ink-60">
+                      <span className="text-caption text-text-3 font-medium">
                         {evt.organizerName} · {evt.category}
                       </span>
                     </div>
                     <Link
                       to={`/admin/events/${evt.id}/edit`}
-                      className="font-display text-base uppercase text-ink hover:text-admin-accent"
+                      className="font-medium text-text hover:text-accent hover:underline line-clamp-1"
                     >
                       {evt.title}
                     </Link>
                   </td>
 
-                  <td className="py-3.5 px-4 font-mono">
-                    <p className="font-semibold text-ink">{formatDate(evt.startsAt)}</p>
-                    <p className="text-ink-60 text-[11px] truncate max-w-[160px]">{evt.venue.name}</p>
+                  <td className="py-2.5 px-4 tabular-nums">
+                    <p className="font-medium text-text">{formatDate(evt.startsAt)}</p>
+                    <p className="text-caption text-text-3 truncate max-w-[160px]">{evt.venue.name}</p>
                   </td>
 
-                  <td className="py-3.5 px-4 font-mono">
-                    <span className="font-bold text-ink">{evt.seatsLeft}</span>
-                    <span className="text-ink-60"> / {evt.capacity}</span>
+                  <td className="py-2.5 px-4 tabular-nums">
+                    <span className="font-semibold text-text">{evt.seatsLeft}</span>
+                    <span className="text-text-3"> / {evt.capacity}</span>
                   </td>
 
-                  <td className="py-3.5 px-4">
+                  <td className="py-2.5 px-4">
                     <span
-                      className={`inline-block font-mono text-[10px] uppercase px-2 py-0.5 border ${
+                      className={`inline-block text-caption px-2 py-0.5 rounded-full border capitalize font-medium ${
                         evt.status === 'published'
-                          ? 'bg-emerald-100 text-emerald-900 border-emerald-400'
+                          ? 'bg-success/10 text-success border-success/30'
                           : evt.status === 'draft'
-                          ? 'bg-amber-100 text-amber-900 border-amber-300'
-                          : 'bg-[#E6EAEC] text-ink border-[#C9D0D4]'
+                          ? 'bg-warning/10 text-warning border-warning/30'
+                          : 'bg-subtle text-text border-line'
                       }`}
                     >
                       {evt.status.replace('_', ' ')}
                     </span>
                   </td>
 
-                  <td className="py-3.5 px-4 text-right">
-                    <div className="flex items-center justify-end gap-2 font-mono text-[11px]">
+                  <td className="py-2.5 px-4 text-right">
+                    <div className="flex items-center justify-end gap-1.5">
                       {evt.status === 'draft' && (
                         <button
                           type="button"
                           onClick={() => handlePublish(evt.id, evt.title)}
-                          className="px-2 py-1 bg-ink text-paper hover:bg-admin-accent transition-colors uppercase font-semibold"
+                          className="px-2.5 py-1 bg-accent text-on-accent hover:bg-accent-hover transition-colors rounded-btn text-caption font-semibold"
                         >
                           Publish
                         </button>
@@ -201,7 +201,7 @@ export const AdminEventsListPage: React.FC = () => {
 
                       <Link
                         to={`/admin/events/${evt.id}/edit`}
-                        className="p-1.5 border border-ink/20 hover:border-ink text-ink"
+                        className="p-1.5 border border-line rounded-btn hover:bg-subtle text-text transition-colors"
                         title="Edit Event & Form"
                       >
                         <Edit className="h-3.5 w-3.5" />
@@ -211,7 +211,7 @@ export const AdminEventsListPage: React.FC = () => {
                         <Link
                           to={`/events/${evt.slug}`}
                           target="_blank"
-                          className="p-1.5 border border-ink/20 hover:border-ink text-ink"
+                          className="p-1.5 border border-line rounded-btn hover:bg-subtle text-text transition-colors"
                           title="View Live Public Page"
                         >
                           <ExternalLink className="h-3.5 w-3.5" />
@@ -221,7 +221,7 @@ export const AdminEventsListPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleDelete(evt.id, evt.title)}
-                        className="p-1.5 border border-ink/20 hover:border-[#A32828] text-ink hover:text-[#A32828]"
+                        className="p-1.5 border border-line rounded-btn hover:bg-danger/10 text-text hover:text-danger hover:border-danger/40 transition-colors"
                         title="Delete Event"
                       >
                         <Trash2 className="h-3.5 w-3.5" />

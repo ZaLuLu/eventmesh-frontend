@@ -1,151 +1,188 @@
+@import '@fontsource-variable/inter';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ==========================================================================
-   EVENTMESH — MODERN NEOMORPHIC & FERAL GRADIENT DESIGN SYSTEM
-   Soft tactile dimensional surfaces, crisp bevels, and vibrant energetic chromas
+   EVENTMESH — CALM CORAL DESIGN SYSTEM
+   Clean, minimal, flat aesthetic. Solid surfaces, 1px hairlines, zero blur.
    ========================================================================== */
 
 :root {
-  /* Neomorphic Base Canvas & Surfaces */
-  --canvas: #EEF2F6;
-  --surface: #EEF2F6;
-  --surface-card: #EEF2F6;
-  --neo-bg: #EEF2F6;
-  --neo-inset-bg: #E4EBF3;
+  /* Public Canvas & Core Tokens */
+  --bg: #FBFAF8;
+  --surface: #FFFFFF;
+  --subtle: #F3F1ED;
+  --line: #E7E4DE;
 
-  /* Typography & High-Contrast Ink */
-  --ink: #1E293B;
-  --ink-secondary: #64748B;
-  --ink-muted: #94A3B8;
+  /* Typography / Text Tokens */
+  --text: #1B1A19;
+  --text-2: #5E5A55;
+  --text-3: #8A857E;
 
-  /* Feral Energy Accents */
-  --feral-indigo: #6366F1;
-  --feral-violet: #8B5CF6;
-  --feral-pink: #EC4899;
-  --feral-amber: #F59E0B;
-  --feral-cyan: #06B6D4;
-  --feral-emerald: #10B981;
+  /* Accent Tokens (Coral) */
+  --accent: #C93E27;
+  --accent-hover: #B33620;
+  --accent-soft: #FDEBE6;
+  --on-accent: #FFFFFF;
 
-  /* Fonts */
-  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  /* Status Colors */
+  --success: #1E7A4C;
+  --warning: #A85F00;
+  --danger: #B42318;
+
+  /* Admin Scope Defaults (Overridden in .admin-scope) */
+  --sidebar: #0F1A24;
+  --admin-accent: #17645F;
+  --admin-accent-hover: #0F4F4B;
+
+  /* Club Dot/Edge Dynamic Variable */
+  --club: #C93E27;
 }
 
+/* Admin Scope: Applied on /admin routes */
+.admin-scope,
+[data-theme="admin"] {
+  --bg: #F3F5F6;
+  --surface: #FFFFFF;
+  --sidebar: #0F1A24;
+  --accent: #17645F;
+  --accent-hover: #0F4F4B;
+  --admin-accent: #17645F;
+  --admin-accent-hover: #0F4F4B;
+  --line: #E0E3E6;
+  --subtle: #E8ECEE;
+}
+
+/* Document Base */
 html {
-  background-color: var(--canvas);
-  color: var(--ink);
+  background-color: var(--bg);
+  color: var(--text);
   scroll-behavior: smooth;
+  font-family: 'Inter Variable', Inter, system-ui, -apple-system, sans-serif;
   font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background-color: var(--canvas);
-  color: var(--ink);
-  font-family: var(--font-body);
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: inherit;
   font-weight: 400;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.55;
   overflow-x: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 ::selection {
-  background: rgba(99, 102, 241, 0.2);
-  color: #4338CA;
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
-/* ==========================================================================
-   NEOMORPHIC TACTILE UTILITY CLASSES
-   ========================================================================== */
-
-/* Raised Extruded Card Surface */
-.neo-card {
-  background: #EEF2F6;
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  border-radius: 24px;
-  box-shadow: 7px 7px 16px rgba(163, 177, 198, 0.4), -7px -7px 16px rgba(255, 255, 255, 0.9);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.neo-card:hover {
-  box-shadow: 11px 11px 24px rgba(163, 177, 198, 0.5), -11px -11px 24px rgba(255, 255, 255, 1);
-  transform: translateY(-2px);
-}
-
-/* Tactile Soft Pill / Button */
-.neo-pill {
-  background: #EEF2F6;
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  border-radius: 9999px;
-  box-shadow: 4px 4px 10px rgba(163, 177, 198, 0.38), -4px -4px 10px rgba(255, 255, 255, 0.85);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.neo-pill:hover {
-  box-shadow: 6px 6px 14px rgba(163, 177, 198, 0.48), -6px -6px 14px rgba(255, 255, 255, 1);
-  transform: translateY(-1px);
-}
-
-.neo-pill:active {
-  box-shadow: inset 3px 3px 6px rgba(163, 177, 198, 0.45), inset -3px -3px 6px rgba(255, 255, 255, 0.85);
-  transform: translateY(0);
-}
-
-/* Debossed / Inset Pill or Input */
-.neo-inset {
-  background: #E4EBF3;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: inset 3px 3px 6px rgba(163, 177, 198, 0.45), inset -3px -3px 6px rgba(255, 255, 255, 0.85);
-}
-
-/* Primary Vibrant Feral Gradient Pill */
-.neo-gradient-btn {
-  background: linear-gradient(135deg, #6366F1 0%, #A855F7 50%, #EC4899 100%);
-  color: #FFFFFF;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 9999px;
-  box-shadow: 5px 5px 16px rgba(168, 85, 247, 0.38), -3px -3px 10px rgba(255, 255, 255, 0.7);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.neo-gradient-btn:hover {
-  box-shadow: 7px 7px 22px rgba(168, 85, 247, 0.5), -4px -4px 12px rgba(255, 255, 255, 0.9);
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-}
-
-.neo-gradient-btn:active {
-  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3);
-  transform: translateY(0);
-}
-
-/* Feral Rainbow Gradient Text */
-.text-gradient-feral {
-  background: linear-gradient(135deg, #6366F1 0%, #A855F7 50%, #EC4899 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.text-gradient-amber {
-  background: linear-gradient(135deg, #F59E0B 0%, #EF4444 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Hide Scrollbar */
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* Accessibility Focus States */
-:focus-visible {
-  outline: 2px solid #6366F1;
+/* Focus Visible: 2px --text outline, 2px offset */
+*:focus-visible {
+  outline: 2px solid var(--text);
   outline-offset: 2px;
+}
+
+/* Typography Hierarchy */
+h1, .text-h1 {
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+h2, .text-h2 {
+  font-size: clamp(1.375rem, 2.5vw, 1.75rem);
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+h3, .text-h3 {
+  font-size: 1.125rem;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+p, .text-body {
+  font-size: 1rem;
+  line-height: 1.55;
+  max-width: 65ch;
+}
+
+.text-small {
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.4;
+}
+
+.text-caption {
+  font-size: 0.8125rem; /* 13px */
+  line-height: 1.4;
+}
+
+/* Numbers: Tabular numbers by default */
+.tabular-nums,
+table,
+.stat-number {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Container standard */
+.app-container {
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+@media (min-width: 768px) {
+  .app-container {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-container {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+/* Floating Shadows (allowed ONLY for floating dropdowns, popovers, bottom sheets, toasts) */
+.shadow-floating {
+  box-shadow: 0 4px 16px rgba(27, 26, 25, 0.08);
+}
+
+/* Flat Card Surface */
+.flat-card {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+/* Flat Panel Surface */
+.flat-panel {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

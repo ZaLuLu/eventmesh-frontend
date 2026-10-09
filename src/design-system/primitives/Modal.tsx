@@ -37,40 +37,40 @@ export const Modal: React.FC<ModalProps> = ({
     }
   }, [isOpen, onClose])
 
-  const bgColor = surface === 'admin' ? 'bg-[#EEF2F6]' : 'bg-[#EEF2F6]'
-
   return (
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Flat semi-transparent backdrop without blur */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
+            className="fixed inset-0 bg-text/40"
             aria-hidden="true"
           />
 
+          {/* Modal surface: solid --surface, 1px hairline --line, 14px radius, floating shadow */}
           <motion.div
             role="dialog"
             aria-modal="true"
-            initial={{ scale: 0.96, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.96, opacity: 0 }}
-            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className={`relative z-10 w-full ${maxWidth} max-h-[90vh] overflow-y-auto ${bgColor} text-slate-900 rounded-3xl neo-card border border-white/80 shadow-2xl p-6 sm:p-8 flex flex-col gap-6`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className={`relative z-10 w-full ${maxWidth} max-h-[90vh] overflow-y-auto bg-surface text-text rounded-panel border border-line shadow-floating p-6 sm:p-8 flex flex-col gap-6`}
           >
-            <div className="flex items-start justify-between gap-4 border-b border-slate-200/80 pb-4">
+            <div className="flex items-start justify-between gap-4 border-b border-line pb-4">
               <div>
                 {subtitle && (
-                  <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-indigo-600 block mb-1">
+                  <span className="text-caption font-medium text-text-2 block mb-1">
                     {subtitle}
                   </span>
                 )}
                 {title && (
-                  <h3 className="font-display font-bold text-2xl sm:text-3xl text-slate-900 tracking-tight">
+                  <h3 className="font-semibold text-xl sm:text-2xl text-text tracking-tight">
                     {title}
                   </h3>
                 )}
@@ -79,7 +79,7 @@ export const Modal: React.FC<ModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="p-2 rounded-full neo-pill hover:shadow-neo-sm text-slate-500 hover:text-slate-800 transition-colors"
+                className="p-2 rounded-[8px] border border-line hover:bg-subtle text-text-2 hover:text-text transition-colors duration-150"
                 aria-label="Close modal"
               >
                 <X className="h-5 w-5" />

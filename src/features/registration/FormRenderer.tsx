@@ -20,14 +20,14 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
 }) => {
   if (!fields || fields.length === 0) {
     return (
-      <p className="font-mono text-xs uppercase tracking-wide text-ink-60 py-2">
+      <p className="text-small text-text-2 py-2">
         Standard registration particulars apply.
       </p>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {fields.map((field) => {
         const value = values[field.id] ?? ''
         const error = errors[field.id]
@@ -54,28 +54,28 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
 
         if (field.type === 'checkbox') {
           return (
-            <div key={field.id} className="flex items-start gap-3 pt-2">
+            <div key={field.id} className="flex items-start gap-3 pt-1">
               <input
                 type="checkbox"
                 id={`chk-${field.id}`}
                 checked={Boolean(value)}
                 onChange={(e) => onChange(field.id, e.target.checked)}
                 disabled={disabled}
-                className="mt-1 h-4 w-4 rounded-none border border-ink text-ink focus:ring-0 focus:outline-none cursor-pointer"
+                className="mt-1 h-4 w-4 rounded-[4px] border border-line text-accent focus:ring-accent cursor-pointer"
               />
               <div>
                 <label
                   htmlFor={`chk-${field.id}`}
-                  className="font-body text-sm font-medium text-ink cursor-pointer"
+                  className="text-small font-medium text-text cursor-pointer select-none"
                 >
                   {field.label}
-                  {field.required && <span className="ml-1 text-[#A32828] font-bold">*</span>}
+                  {field.required && <span className="ml-1 text-danger font-bold">*</span>}
                 </label>
                 {field.helpText && (
-                  <p className="font-body text-xs text-ink-60">{field.helpText}</p>
+                  <p className="text-caption text-text-2 mt-0.5">{field.helpText}</p>
                 )}
                 {error && (
-                  <p className="font-mono text-[11px] uppercase text-[#A32828] mt-1">{error}</p>
+                  <p className="text-caption text-danger font-medium mt-0.5">{error}</p>
                 )}
               </div>
             </div>

@@ -1,18 +1,20 @@
 import React, { useState } from 'react'
-import { Pin, Filter, Megaphone } from 'lucide-react'
+import { Pin } from 'lucide-react'
 import { useAnnouncements } from '@/hooks/useAnnouncements'
 import { Chip } from '@/design-system/primitives/Chip'
 import { formatDate } from '@/lib/dates'
+import { Skeleton } from '@/design-system/primitives/Skeleton'
+import { EmptyState } from '@/design-system/primitives/EmptyState'
 
 export const AnnouncementsPage: React.FC = () => {
   const [selectedKind, setSelectedKind] = useState('all')
   const { data: announcements = [], isLoading } = useAnnouncements()
 
   const kinds = [
-    { id: 'all', label: 'All Notices' },
+    { id: 'all', label: 'All notices' },
     { id: 'notice', label: 'Notices' },
     { id: 'deadline', label: 'Deadlines' },
-    { id: 'event_change', label: 'Schedule Changes' },
+    { id: 'event_change', label: 'Schedule changes' },
     { id: 'result', label: 'Results' },
     { id: 'general', label: 'General' },
   ]
@@ -23,79 +25,85 @@ export const AnnouncementsPage: React.FC = () => {
   })
 
   return (
-    <div className="w-full bg-[#EEF2F6] text-slate-800 min-h-screen pb-16">
+    <div className="w-full bg-bg text-text pb-16">
       {/* Header Banner */}
-      <div className="border-b border-slate-200/60 pb-6 pt-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-6">
-          <span className="text-xs font-bold text-gradient-feral uppercase tracking-wider block mb-1">
-            Official Broadcasts
-          </span>
-          <h1 className="font-display font-bold text-3xl sm:text-4xl text-slate-900 tracking-tight">
-            Announcements & Notices
-          </h1>
-          <p className="text-sm text-slate-500 mt-1 max-w-xl font-medium">
-            Important communications, application deadlines, room updates, and results from clubs.
-          </p>
-        </div>
+      <div className="border-b border-line bg-surface">
+        <div className="app-container py-6 sm:py-8 space-y-4">
+          <div>
+            <span className="text-caption font-semibold text-accent block mb-1">
+              Official broadcasts
+            </span>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-text tracking-tight">
+              Announcements & Notices
+            </h1>
+            <p className="text-small text-text-2 mt-0.5 max-w-xl">
+              Communications, application deadlines, room updates, and results from campus collectives.
+            </p>
+          </div>
 
-        {/* Filter Chips */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap items-center gap-2">
-          {kinds.map((k) => (
-            <Chip
-              key={k.id}
-              label={k.label}
-              size="sm"
-              active={selectedKind === k.id}
-              onClick={() => setSelectedKind(k.id)}
-            />
-          ))}
+          {/* Filter Chips */}
+          <div className="flex flex-wrap items-center gap-2 pt-2">
+            {kinds.map((k) => (
+              <Chip
+                key={k.id}
+                label={k.label}
+                size="sm"
+                active={selectedKind === k.id}
+                onClick={() => setSelectedKind(k.id)}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Announcements List */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-4">
+      <div className="app-container py-8 space-y-4">
         {isLoading ? (
-          <div className="py-12 text-center text-xs text-slate-500 animate-pulse">
-            Loading announcements...
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} height="h-32" rounded="rounded-panel" />
+            ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="rounded-3xl border border-white/80 bg-[#EEF2F6] shadow-neo-card p-12 text-center text-xs text-slate-500">
-            No notices found under this filter.
-          </div>
+          <EmptyState
+            title="No notices found"
+            description="There are currently no active announcements matching this filter."
+          />
         ) : (
           filtered.map((item) => (
             <div
               key={item.id}
-              className="rounded-3xl border border-white/80 bg-[#EEF2F6] p-6 sm:p-8 shadow-neo-card hover:shadow-neo-card-hover transition-all space-y-3"
+              className="rounded-panel border border-line bg-surface p-6 space-y-2.5"
             >
-              <div className="flex flex-wrap items-center gap-2.5 text-xs">
+              <div className="flex flex-wrap items-center gap-2.5 text-small">
                 {item.pinned && (
-                  <span className="inline-flex items-center gap-1 bg-gradient-to-r from-amber-500 to-pink-500 text-white px-2.5 py-0.5 rounded-full font-bold text-[10px] shadow-neo-sm">
-                    <Pin className="h-3 w-3" />
-                    <span>PINNED</span>
+                  <span className="inline-flex items-center gap-1 bg-accent-soft text-accent px-2.5 py-0.5 rounded-full font-semibold text-caption">
+                    <Pin className="h-3.5 w-3.5" />
+                    <span>Pinned</span>
                   </span>
                 )}
-                <span className="px-2.5 py-0.5 rounded-full bg-[#EEF2F6] shadow-neo-inset text-slate-700 font-bold uppercase text-[10px] border border-white/60">
+                <span className="px-2.5 py-0.5 rounded-full bg-subtle text-text-2 font-medium text-caption border border-line">
                   {item.kind.replace('_', ' ')}
                 </span>
                 {item.organizerName && (
-                  <span className="text-slate-600 flex items-center gap-1.5 font-bold">
+                  <span className="text-text-2 flex items-center gap-1.5 font-medium">
                     <span
-                      className="inline-block h-2 w-2 rounded-full"
-                      style={{ backgroundColor: item.organizerColor || '#6366F1' }}
+                      className="inline-block h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: item.organizerColor || '#C93E27' }}
+                      aria-hidden="true"
                     />
                     <span>{item.organizerName}</span>
                   </span>
                 )}
-                <span className="text-slate-300">·</span>
-                <span className="text-slate-500 font-medium">{formatDate(item.publishedAt)}</span>
+                <span className="text-line">·</span>
+                <span className="text-text-3 text-caption">{formatDate(item.publishedAt, 'MMM d, yyyy')}</span>
               </div>
 
-              <h3 className="font-display font-bold text-xl sm:text-2xl text-slate-900">
+              <h3 className="font-semibold text-lg text-text">
                 {item.title}
               </h3>
 
-              <p className="text-slate-700 text-sm sm:text-base leading-relaxed whitespace-pre-line max-w-4xl font-body">
+              <p className="text-small text-text-2 leading-relaxed whitespace-pre-line max-w-4xl">
                 {item.body}
               </p>
             </div>

@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
-import { Image as ImageIcon, Plus, Trash2 } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { Plus, Trash2 } from 'lucide-react'
 import { usePermission } from '@/hooks/usePermission'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api, OrganizerGalleryItem } from '@/api'
@@ -9,7 +8,6 @@ import { Field } from '@/design-system/primitives/Field'
 import { useToast } from '@/design-system/primitives/Toast'
 
 export const AdminGalleryPage: React.FC = () => {
-  const { session } = useAuth()
   const { clubId } = usePermission()
   const { toast } = useToast()
   const queryClient = useQueryClient()
@@ -65,23 +63,23 @@ export const AdminGalleryPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="pb-6 border-b border-[#C9D0D4]">
-        <span className="font-mono text-[10px] uppercase tracking-wide text-ink-60 block mb-1">
+    <div className="space-y-4">
+      <div className="pb-4 border-b border-line">
+        <span className="text-caption font-semibold text-accent block mb-0.5">
           Visual Archive Management
         </span>
-        <h1 className="font-display text-3xl sm:text-4xl uppercase text-ink">
+        <h1 className="text-h2 font-semibold text-text">
           Exhibition Gallery Archive
         </h1>
-        <p className="font-body text-xs text-ink-60 mt-0.5">
+        <p className="text-small text-text-2 mt-0.5">
           Curate documentary photography, showcase laureate winners, and manage exhibition media.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Upload Form */}
-        <form onSubmit={handleAddPhoto} className="lg:col-span-5 p-6 bg-paper border border-[#C9D0D4] space-y-4">
-          <h3 className="font-display text-xl uppercase text-ink">
+        <form onSubmit={handleAddPhoto} className="lg:col-span-5 p-5 bg-surface border border-line rounded-panel space-y-4">
+          <h3 className="text-h3 font-semibold text-text">
             Archive New Photograph
           </h3>
 
@@ -103,16 +101,16 @@ export const AdminGalleryPage: React.FC = () => {
           />
 
           {url && (
-            <div className="pt-2">
-              <span className="font-mono text-[10px] uppercase text-ink-60 block mb-1">Preview</span>
-              <img src={url} alt="Preview" className="max-h-40 object-cover border border-[#C9D0D4]" />
+            <div className="pt-1">
+              <span className="text-caption text-text-3 block mb-1">Preview</span>
+              <img src={url} alt="Preview" className="max-h-40 rounded-btn object-cover border border-line" />
             </div>
           )}
 
           <Button
             type="submit"
             surface="admin"
-            size="md"
+            size="sm"
             fullWidth
             loading={addMutation.isPending}
             icon={<Plus className="h-4 w-4" />}
@@ -122,28 +120,28 @@ export const AdminGalleryPage: React.FC = () => {
         </form>
 
         {/* Gallery Grid */}
-        <div className="lg:col-span-7 p-6 bg-paper border border-[#C9D0D4] space-y-4">
-          <h3 className="font-display text-xl uppercase text-ink pb-3 border-b border-[#C9D0D4]">
+        <div className="lg:col-span-7 p-5 bg-surface border border-line rounded-panel space-y-3">
+          <h3 className="text-h3 font-semibold text-text pb-2 border-b border-line">
             Archived Photographs ({gallery.length})
           </h3>
 
           {isLoading ? (
-            <p className="font-mono text-xs uppercase text-ink-60 py-4">Reading gallery...</p>
+            <p className="text-small text-text-3 py-4 text-center">Reading gallery...</p>
           ) : gallery.length === 0 ? (
-            <p className="font-mono text-xs uppercase text-ink-60 py-4">No photography records found.</p>
+            <p className="text-small text-text-3 py-4 text-center">No photography records found.</p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[550px] overflow-y-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto">
               {gallery.map((g) => (
-                <div key={g.id} className="border border-[#C9D0D4] bg-[#E6EAEC]/20 overflow-hidden group">
-                  <img src={g.url} alt={g.caption || 'Photo'} className="w-full aspect-[4/3] object-cover" />
-                  <div className="p-3 bg-paper flex items-center justify-between text-xs">
-                    <p className="truncate max-w-[180px] font-mono text-[11px] uppercase text-ink-60">
-                      {g.caption || 'Untitled figure'}
+                <div key={g.id} className="border border-line rounded-panel bg-subtle overflow-hidden">
+                  <img src={g.url} alt={g.caption || 'Photo'} className="w-full aspect-[4/3] object-cover" loading="lazy" />
+                  <div className="p-2.5 bg-surface flex items-center justify-between text-small border-t border-line">
+                    <p className="truncate max-w-[180px] text-caption text-text-2">
+                      {g.caption || 'Untitled photograph'}
                     </p>
                     <button
                       type="button"
                       onClick={() => handleDelete(g.id)}
-                      className="text-ink-60 hover:text-[#A32828] p-1"
+                      className="text-text-3 hover:text-danger p-1 rounded-btn transition-colors"
                       title="Delete"
                     >
                       <Trash2 className="h-3.5 w-3.5" />

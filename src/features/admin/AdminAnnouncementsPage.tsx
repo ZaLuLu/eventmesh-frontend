@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Pin, Send, Trash2, Megaphone } from 'lucide-react'
+import { Send, Trash2 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { useAnnouncements, useCreateAnnouncement, useDeleteAnnouncement } from '@/hooks/useAnnouncements'
@@ -62,24 +62,24 @@ export const AdminAnnouncementsPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="pb-6 border-b border-[#C9D0D4]">
-        <span className="font-mono text-[10px] uppercase tracking-wide text-ink-60 block mb-1">
+      <div className="pb-4 border-b border-line">
+        <span className="text-caption font-semibold text-accent block mb-0.5">
           Public Wire Dispatch
         </span>
-        <h1 className="font-display text-3xl sm:text-4xl uppercase text-ink">
+        <h1 className="text-h2 font-semibold text-text">
           Announcements & Bulletins
         </h1>
-        <p className="font-body text-xs text-ink-60 mt-0.5">
+        <p className="text-small text-text-2 mt-0.5">
           Publish official notices, schedule modifications, and results to the federation feed.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left 6 cols: Compose Form */}
-        <form onSubmit={handlePublish} className="lg:col-span-6 p-6 bg-paper border border-[#C9D0D4] space-y-5">
-          <h3 className="font-display text-xl uppercase text-ink">
+        <form onSubmit={handlePublish} className="lg:col-span-6 p-5 bg-surface border border-line rounded-panel space-y-4">
+          <h3 className="text-h3 font-semibold text-text">
             Compose New Notice
           </h3>
 
@@ -110,7 +110,7 @@ export const AdminAnnouncementsPage: React.FC = () => {
           <Field
             surface="admin"
             multiline
-            rows={5}
+            rows={4}
             label="Body Text"
             required
             value={body}
@@ -118,12 +118,12 @@ export const AdminAnnouncementsPage: React.FC = () => {
             placeholder="Detailed statement..."
           />
 
-          <label className="flex items-center gap-2 cursor-pointer font-mono text-xs uppercase text-ink">
+          <label className="flex items-center gap-2 cursor-pointer text-small text-text">
             <input
               type="checkbox"
               checked={pinned}
               onChange={(e) => setPinned(e.target.checked)}
-              className="h-4 w-4 rounded-none border border-ink text-admin-accent"
+              className="h-4 w-4 rounded text-accent"
             />
             <span>Pin this notice to top of public board</span>
           </label>
@@ -131,7 +131,7 @@ export const AdminAnnouncementsPage: React.FC = () => {
           <Button
             type="submit"
             surface="admin"
-            size="md"
+            size="sm"
             fullWidth
             loading={createMutation.isPending}
             icon={<Send className="h-4 w-4" />}
@@ -141,39 +141,41 @@ export const AdminAnnouncementsPage: React.FC = () => {
         </form>
 
         {/* Right 6 cols: History Log */}
-        <div className="lg:col-span-6 p-6 bg-paper border border-[#C9D0D4] space-y-4">
-          <h3 className="font-display text-xl uppercase text-ink pb-3 border-b border-[#C9D0D4]">
+        <div className="lg:col-span-6 p-5 bg-surface border border-line rounded-panel space-y-3">
+          <h3 className="text-h3 font-semibold text-text pb-2 border-b border-line">
             Past Dispatches ({announcements.length})
           </h3>
 
           {isLoading ? (
-            <p className="font-mono text-xs uppercase text-ink-60 py-4">Reading feed...</p>
+            <p className="text-small text-text-3 py-4 text-center">Reading feed...</p>
           ) : announcements.length === 0 ? (
-            <p className="font-mono text-xs uppercase text-ink-60 py-4">No past notices posted.</p>
+            <p className="text-small text-text-3 py-4 text-center">No past notices posted.</p>
           ) : (
-            <div className="divide-y divide-[#C9D0D4] max-h-[500px] overflow-y-auto">
+            <div className="divide-y divide-line max-h-[460px] overflow-y-auto">
               {announcements.map((item) => (
-                <div key={item.id} className="py-4 space-y-2">
-                  <div className="flex items-center justify-between font-mono text-[10px] uppercase">
-                    <div className="flex items-center gap-2">
+                <div key={item.id} className="py-3 space-y-1.5">
+                  <div className="flex items-center justify-between text-caption">
+                    <div className="flex items-center gap-1.5">
                       {item.pinned && (
-                        <span className="bg-ink text-paper px-1.5 py-0.2 font-bold">PINNED</span>
+                        <span className="bg-accent text-on-accent px-1.5 py-0.5 rounded text-caption font-semibold">
+                          Pinned
+                        </span>
                       )}
-                      <span className="border border-ink px-1.5 py-0.2 font-semibold">
-                        {item.kind}
+                      <span className="border border-line bg-subtle px-1.5 py-0.5 rounded capitalize text-text">
+                        {item.kind.replace('_', ' ')}
                       </span>
                     </div>
-                    <span className="text-ink-60">{formatDate(item.publishedAt)}</span>
+                    <span className="text-text-3">{formatDate(item.publishedAt)}</span>
                   </div>
 
-                  <h4 className="font-display text-lg uppercase text-ink">{item.title}</h4>
-                  <p className="font-body text-xs text-ink-60 line-clamp-2">{item.body}</p>
+                  <h4 className="text-small font-semibold text-text">{item.title}</h4>
+                  <p className="text-small text-text-2 line-clamp-2">{item.body}</p>
 
-                  <div className="flex justify-end pt-1">
+                  <div className="flex justify-end pt-0.5">
                     <button
                       type="button"
                       onClick={() => handleDelete(item.id)}
-                      className="text-ink-60 hover:text-[#A32828] p-1"
+                      className="text-text-3 hover:text-danger p-1 transition-colors"
                       title="Delete notice"
                     >
                       <Trash2 className="h-4 w-4" />

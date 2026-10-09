@@ -60,13 +60,13 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <span className="text-xs font-bold text-gradient-feral uppercase tracking-wider block mb-1">
-          {step === 'email' ? 'Welcome Back' : 'Verification'}
+        <span className="text-caption font-semibold text-accent block mb-1">
+          {step === 'email' ? 'Welcome back' : 'Verification'}
         </span>
-        <h2 className="font-display font-bold text-2xl text-slate-900 tracking-tight">
-          {step === 'email' ? 'Sign In to EventMesh' : 'Enter 6-Digit Code'}
+        <h2 className="text-h2 font-semibold text-text">
+          {step === 'email' ? 'Sign in to EventMesh' : 'Enter 6-digit code'}
         </h2>
-        <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+        <p className="text-small text-text-2 mt-1 leading-relaxed">
           {step === 'email'
             ? 'Enter your email address to receive an instant verification code.'
             : `We sent a 6-digit security code to ${email}.`}
@@ -74,7 +74,7 @@ export const LoginPage: React.FC = () => {
       </div>
 
       {error && (
-        <div className="p-3.5 bg-rose-50 border border-rose-200 shadow-neo-sm rounded-2xl text-xs font-medium text-rose-700">
+        <div className="p-3 bg-danger/10 border border-danger/30 rounded-btn text-small text-danger">
           {error}
         </div>
       )}
@@ -83,22 +83,22 @@ export const LoginPage: React.FC = () => {
         <form onSubmit={handleSendOtp} className="space-y-4">
           <Field
             type="email"
-            label="Email Address"
+            label="Email address"
             required
             autoFocus
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="e.g. attendee@example.com or lead@cpclub.org"
+            placeholder="e.g. attendee@example.com or lead@devcraft.org"
           />
 
-          <Button type="submit" size="md" variant="primary" fullWidth arrow loading={isSendingOtp}>
+          <Button type="submit" size="md" variant="primary" fullWidth loading={isSendingOtp}>
             Continue with Email
           </Button>
 
-          <div className="pt-4 border-t border-slate-200/60 text-center">
+          <div className="pt-4 border-t border-line text-center">
             <Link
               to="/dev/accounts"
-              className="text-xs text-indigo-600 hover:text-indigo-700 hover:underline font-semibold"
+              className="text-small text-accent hover:underline font-medium"
             >
               ⚡ Use Demo Accounts (1-Click Login)
             </Link>
@@ -108,7 +108,7 @@ export const LoginPage: React.FC = () => {
         <form onSubmit={handleVerifyOtp} className="space-y-4">
           <Field
             type="text"
-            label="6-Digit Verification Code"
+            label="6-Digit verification code"
             required
             autoFocus
             maxLength={6}
@@ -122,7 +122,7 @@ export const LoginPage: React.FC = () => {
             Verify & Sign In
           </Button>
 
-          <div className="flex items-center justify-between text-xs text-slate-500 pt-2">
+          <div className="flex items-center justify-between text-caption text-text-2 pt-2">
             <button
               type="button"
               onClick={() => {
@@ -130,14 +130,14 @@ export const LoginPage: React.FC = () => {
                 setOtp('')
                 setError('')
               }}
-              className="hover:text-indigo-600 transition-colors font-medium"
+              className="hover:text-text transition-colors font-medium"
             >
               ← Use a different email
             </button>
             <button
               type="button"
               onClick={handleSendOtp}
-              className="text-indigo-600 hover:text-indigo-700 hover:underline font-semibold"
+              className="text-accent hover:underline font-medium"
             >
               Resend Code
             </button>

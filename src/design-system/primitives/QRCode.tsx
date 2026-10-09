@@ -13,8 +13,8 @@ export const QRCode: React.FC<QRCodeProps> = ({
   value,
   size = 180,
   className = '',
-  colorDark = '#11100F',
-  colorLight = '#F3EEE9',
+  colorDark = '#1B1A19',
+  colorLight = '#FFFFFF',
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
@@ -42,7 +42,7 @@ export const QRCode: React.FC<QRCodeProps> = ({
 
   return (
     <div
-      className={`inline-flex items-center justify-center p-2 border border-ink-15 bg-paper ${className}`}
+      className={`inline-flex items-center justify-center p-3 border border-line rounded-[10px] bg-surface ${className}`}
     >
       <canvas ref={canvasRef} className="block" />
     </div>

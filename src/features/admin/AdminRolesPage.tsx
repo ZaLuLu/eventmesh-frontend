@@ -1,9 +1,7 @@
-import React, { useState } from 'react'
-import { ShieldCheck, UserCheck } from 'lucide-react'
+import React from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api, UserRoleRecord } from '@/api'
+import { api } from '@/api'
 import { useClubs } from '@/hooks/useClubs'
-import { Button } from '@/design-system/primitives/Button'
 import { useToast } from '@/design-system/primitives/Toast'
 
 export const AdminRolesPage: React.FC = () => {
@@ -38,49 +36,49 @@ export const AdminRolesPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="pb-6 border-b border-[#C9D0D4]">
-        <span className="font-mono text-[10px] uppercase tracking-wide text-ink-60 block mb-1">
+    <div className="space-y-4">
+      <div className="pb-4 border-b border-line">
+        <span className="text-caption font-semibold text-accent block mb-0.5">
           Governance & Permissions Access
         </span>
-        <h1 className="font-display text-3xl sm:text-4xl uppercase text-ink">
+        <h1 className="text-h2 font-semibold text-text">
           Roles & Staff Privileges
         </h1>
-        <p className="font-body text-xs text-ink-60 mt-0.5">
+        <p className="text-small text-text-2 mt-0.5">
           Assign platform administrators, organization chairs, club leads, and check-in volunteers.
         </p>
       </div>
 
-      <div className="bg-paper border border-[#C9D0D4] overflow-x-auto">
+      <div className="bg-surface border border-line rounded-panel overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[700px]">
           <thead>
-            <tr className="border-b border-[#C9D0D4] bg-[#E6EAEC]/60 font-mono text-[10px] uppercase text-ink-60 tracking-wider">
-              <th className="py-3 px-4">Staff Member</th>
-              <th className="py-3 px-4">Assigned Role</th>
-              <th className="py-3 px-4">Club Scope</th>
-              <th className="py-3 px-4 text-right">Scope Description</th>
+            <tr className="border-b border-line bg-subtle text-caption font-medium text-text-2 sticky top-0">
+              <th className="py-3 px-4 font-semibold">Staff Member</th>
+              <th className="py-3 px-4 font-semibold">Assigned Role</th>
+              <th className="py-3 px-4 font-semibold">Club Scope</th>
+              <th className="py-3 px-4 text-right font-semibold">Scope Description</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#C9D0D4] font-body text-xs">
+          <tbody className="divide-y divide-line text-small">
             {isLoading ? (
               <tr>
-                <td colSpan={4} className="py-12 text-center font-mono text-ink-60 uppercase">
+                <td colSpan={4} className="py-12 text-center text-small text-text-3">
                   Reading staff directory...
                 </td>
               </tr>
             ) : (
               users.map((u) => (
-                <tr key={u.id} className="hover:bg-black/5 transition-colors">
-                  <td className="py-3.5 px-4">
-                    <p className="font-semibold text-ink text-sm">{u.name}</p>
-                    <p className="font-mono text-[11px] text-ink-60">{u.email}</p>
+                <tr key={u.id} className="h-[52px] hover:bg-subtle/50 transition-colors">
+                  <td className="py-2.5 px-4">
+                    <p className="font-medium text-text text-small">{u.name}</p>
+                    <p className="text-caption text-text-3 font-mono">{u.email}</p>
                   </td>
 
-                  <td className="py-3.5 px-4">
+                  <td className="py-2.5 px-4">
                     <select
                       value={u.role}
                       onChange={(e) => handleRoleChange(u.id, e.target.value, u.clubId)}
-                      className="bg-paper border border-[#C9D0D4] p-1.5 font-mono text-xs uppercase focus:outline-none"
+                      className="bg-surface border border-line rounded-btn p-1.5 text-small text-text focus:outline-none focus:border-accent"
                     >
                       <option value="platform_admin">Platform Admin</option>
                       <option value="org_admin">Org Admin</option>
@@ -90,12 +88,12 @@ export const AdminRolesPage: React.FC = () => {
                     </select>
                   </td>
 
-                  <td className="py-3.5 px-4">
+                  <td className="py-2.5 px-4">
                     {u.role === 'club_admin' ? (
                       <select
                         value={u.clubId || ''}
                         onChange={(e) => handleClubChange(u.id, u.role, e.target.value)}
-                        className="bg-paper border border-[#C9D0D4] p-1.5 font-mono text-xs uppercase focus:outline-none"
+                        className="bg-surface border border-line rounded-btn p-1.5 text-small text-text focus:outline-none focus:border-accent"
                       >
                         <option value="">Select Club...</option>
                         {clubs.map((c) => (
@@ -105,7 +103,7 @@ export const AdminRolesPage: React.FC = () => {
                         ))}
                       </select>
                     ) : (
-                      <span className="font-mono text-ink-60 text-[11px]">
+                      <span className="text-caption text-text-3">
                         {u.role === 'platform_admin' || u.role === 'org_admin'
                           ? 'Global (All Clubs)'
                           : 'None'}
@@ -113,7 +111,7 @@ export const AdminRolesPage: React.FC = () => {
                     )}
                   </td>
 
-                  <td className="py-3.5 px-4 text-right font-mono text-[11px] text-ink-60">
+                  <td className="py-2.5 px-4 text-right text-caption text-text-3">
                     {u.role === 'platform_admin' && 'Sovereign universal privileges'}
                     {u.role === 'org_admin' && 'Full organization governance'}
                     {u.role === 'club_admin' && `Scoped strictly to ${u.clubName || 'club'}`}

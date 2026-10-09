@@ -16,13 +16,13 @@ export const MetaRow: React.FC<MetaRowProps> = ({
   return (
     <div
       className={`py-2.5 flex items-baseline justify-between gap-4 ${
-        hairline ? 'border-b border-ink-15' : ''
+        hairline ? 'border-b border-line' : ''
       } ${className}`}
     >
-      <span className="font-mono text-[11px] font-medium uppercase tracking-widecaps text-ink-60 flex-shrink-0">
+      <span className="text-small text-text-2 flex-shrink-0">
         {label}
       </span>
-      <span className="font-body text-sm font-semibold uppercase tracking-caps text-ink text-right break-words">
+      <span className="text-small font-semibold text-text text-right break-words">
         {value}
       </span>
     </div>

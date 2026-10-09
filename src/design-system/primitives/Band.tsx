@@ -1,6 +1,4 @@
 import React from 'react'
-import { motion } from 'framer-motion'
-import { computeOnEventColor } from '@/lib/contrast'
 
 export interface BandProps {
   color?: string
@@ -13,64 +11,60 @@ export interface BandProps {
   animate?: boolean
 }
 
+/**
+ * Band primitive: In Calm Coral, club color is strictly restricted to:
+ * - a 10px dot
+ * - a small solid chip (computed contrast)
+ * - a 4px solid top edge
+ * Never rendered as huge page backgrounds or heavy decorative blocks.
+ */
 export const Band: React.FC<BandProps> = ({
-  color = '#C66A4A',
-  height = 'h-32 sm:h-40',
+  color = '#C93E27',
   chipLabel,
   tagline,
   metaRight,
   className = '',
   children,
-  animate = true,
 }) => {
-  const onEventColor = computeOnEventColor(color)
+  return (
+    <div className={`w-full bg-surface border-y border-line py-3 px-4 sm:px-6 relative ${className}`}>
+      {/* 4px solid accent top edge */}
+      <div
+        className="absolute top-0 left-0 right-0 h-1"
+        style={{ backgroundColor: color }}
+        aria-hidden="true"
+      />
 
-  const content = (
-    <div
-      className={`relative w-full overflow-hidden flex items-center ${height} ${className}`}
-      style={{
-        backgroundColor: color,
-        color: onEventColor,
-      }}
-    >
-      <div className="w-full px-[4vw] flex flex-wrap items-center justify-between gap-4">
-        {chipLabel && (
-          <div className="flex items-center gap-3">
-            <span className="inline-block bg-paper text-ink font-mono text-[10px] sm:text-[11px] font-semibold uppercase tracking-widecaps px-2.5 py-1">
+      <div className="flex flex-wrap items-center justify-between gap-3 text-small">
+        <div className="flex items-center gap-2.5">
+          {/* 10px club dot */}
+          <span
+            className="h-2.5 w-2.5 rounded-full flex-shrink-0"
+            style={{ backgroundColor: color }}
+            aria-hidden="true"
+          />
+
+          {chipLabel && (
+            <span className="font-semibold text-text text-small">
               {chipLabel}
             </span>
-            {tagline && (
-              <span className="font-body text-xs sm:text-sm font-medium tracking-wide uppercase opacity-90 truncate max-w-xs sm:max-w-md">
-                {tagline}
-              </span>
-            )}
-          </div>
-        )}
+          )}
+
+          {tagline && (
+            <span className="text-text-2 text-small">
+              {tagline}
+            </span>
+          )}
+        </div>
 
         {children}
 
         {metaRight && (
-          <div className="font-mono text-[11px] uppercase tracking-widecaps font-medium opacity-80">
+          <div className="text-caption text-text-3 font-medium">
             {metaRight}
           </div>
         )}
       </div>
     </div>
-  )
-
-  if (!animate) {
-    return content
-  }
-
-  return (
-    <motion.div
-      initial={{ scaleX: 0, originX: 0 }}
-      whileInView={{ scaleX: 1 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-      className="w-full"
-    >
-      {content}
-    </motion.div>
   )
 }

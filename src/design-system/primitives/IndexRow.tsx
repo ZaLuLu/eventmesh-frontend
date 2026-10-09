@@ -1,6 +1,5 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { computeOnEventColor } from '@/lib/contrast'
 import { ArrowUpRight } from 'lucide-react'
 
 export interface IndexRowProps {
@@ -24,7 +23,7 @@ export const IndexRow: React.FC<IndexRowProps> = ({
   title,
   category,
   organizerName,
-  organizerColor = '#C66A4A',
+  organizerColor = '#C93E27',
   dateDisplay,
   venueName,
   status,
@@ -33,33 +32,18 @@ export const IndexRow: React.FC<IndexRowProps> = ({
   actionLabel = 'Explore',
   isSignature = false,
 }) => {
-  const onEventColor = computeOnEventColor(organizerColor)
   const linkTo = to || `/events/${slug}`
 
   return (
     <Link
       to={linkTo}
-      className="group relative block w-full border-b border-ink-15 overflow-hidden transition-colors duration-200"
-      style={{
-        // Define CSS variable for hover effect
-        ['--row-color' as string]: organizerColor,
-        ['--on-row-color' as string]: onEventColor,
-      }}
+      className="group block w-full border-b border-line bg-surface hover:bg-subtle transition-colors duration-150"
     >
-      {/* Background Color Wipe on Hover */}
-      <div
-        className="absolute inset-0 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 pointer-events-none"
-        style={{
-          backgroundColor: organizerColor,
-          transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
-        }}
-      />
-
-      <div className="relative z-10 px-4 sm:px-6 py-5 sm:py-6 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors duration-200 group-hover:text-[var(--on-row-color)]">
+      <div className="px-4 sm:px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
         {/* Left: Index Number & Main Info */}
-        <div className="flex items-start md:items-center gap-4 sm:gap-6 flex-1 min-w-0">
+        <div className="flex items-start md:items-center gap-4 flex-1 min-w-0">
           {indexNumber && (
-            <span className="font-mono text-xs sm:text-sm font-semibold opacity-60 flex-shrink-0 pt-1 md:pt-0 group-hover:opacity-100">
+            <span className="font-mono text-small text-text-3 flex-shrink-0 pt-0.5 md:pt-0">
               {typeof indexNumber === 'number'
                 ? String(indexNumber).padStart(2, '0')
                 : indexNumber}
@@ -68,52 +52,54 @@ export const IndexRow: React.FC<IndexRowProps> = ({
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
+              {/* 10px Club Dot */}
               <span
-                className="inline-block h-2 w-2 flex-shrink-0"
+                className="inline-block h-2.5 w-2.5 rounded-full flex-shrink-0"
                 style={{ backgroundColor: organizerColor }}
+                aria-hidden="true"
               />
-              <span className="font-mono text-[10px] sm:text-[11px] font-semibold uppercase tracking-widecaps opacity-75 group-hover:opacity-100">
+              <span className="text-caption font-medium text-text-2">
                 {organizerName}
               </span>
-              <span className="opacity-40">·</span>
-              <span className="font-mono text-[10px] sm:text-[11px] font-medium uppercase tracking-widecaps opacity-75 group-hover:opacity-100">
+              <span className="text-line">·</span>
+              <span className="text-caption text-text-2">
                 {category}
               </span>
               {isSignature && (
-                <span className="ml-1 bg-premium text-paper font-mono text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5">
+                <span className="ml-1 bg-accent-soft text-accent text-caption font-semibold px-2 py-0.5 rounded-full">
                   Signature
                 </span>
               )}
             </div>
 
-            <h3 className="font-display text-2xl sm:text-3xl md:text-4xl text-ink uppercase tracking-tight group-hover:text-[var(--on-row-color)] transition-all duration-200 group-hover:translate-x-2 truncate">
+            <h3 className="font-semibold text-lg text-text group-hover:underline truncate">
               {title}
             </h3>
           </div>
         </div>
 
         {/* Right: Date, Venue, Status, Arrow */}
-        <div className="flex items-center justify-between md:justify-end gap-6 sm:gap-8 flex-shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-ink-15/40">
+        <div className="flex items-center justify-between md:justify-end gap-6 flex-shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-line">
           <div className="text-left md:text-right">
-            <p className="font-mono text-xs sm:text-sm font-semibold uppercase tracking-wide">
+            <p className="text-small font-semibold text-text">
               {dateDisplay}
             </p>
             {venueName && (
-              <p className="font-body text-xs opacity-75 truncate max-w-[180px]">
+              <p className="text-caption text-text-2 truncate max-w-[180px]">
                 {venueName}
               </p>
             )}
           </div>
 
           {status && (
-            <span className="font-mono text-[10px] uppercase tracking-wide border px-2 py-0.5 border-current opacity-80">
+            <span className="text-caption font-medium rounded-full bg-subtle text-text-2 px-2.5 py-0.5 border border-line">
               {status.replace(/_/g, ' ')}
             </span>
           )}
 
-          <div className="flex items-center gap-1 font-mono text-xs uppercase tracking-wide font-semibold">
+          <div className="flex items-center gap-1 text-small font-semibold text-accent">
             <span className="hidden sm:inline">{actionLabel}</span>
-            <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+            <ArrowUpRight className="h-4 w-4" />
           </div>
         </div>
       </div>

@@ -40,12 +40,12 @@ export const NetflixShelf: React.FC<NetflixShelfProps> = ({
       <div className="flex items-end justify-between mb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            {icon && <span className="text-md-primary flex-shrink-0">{icon}</span>}
-            <h2 className="font-display font-bold text-xl sm:text-2xl text-slate-900 tracking-tight">
+            {icon && <span className="text-accent flex-shrink-0">{icon}</span>}
+            <h2 className="font-semibold text-xl sm:text-2xl text-text tracking-tight">
               {title}
             </h2>
           </div>
-          {subtitle && <p className="text-xs sm:text-sm text-slate-500 font-medium">{subtitle}</p>}
+          {subtitle && <p className="text-caption sm:text-small text-text-2 font-medium">{subtitle}</p>}
         </div>
 
         {/* Carousel Arrow Controls & View All */}
@@ -53,18 +53,18 @@ export const NetflixShelf: React.FC<NetflixShelfProps> = ({
           {exploreLink && (
             <Link
               to={exploreLink}
-              className="neo-pill px-3.5 py-1 text-xs font-bold text-indigo-600 hover:text-purple-600 inline-flex items-center gap-1 transition-all mr-1"
+              className="px-3 py-1 text-caption font-semibold text-accent hover:text-accent-hover inline-flex items-center gap-1 transition-colors mr-1"
             >
-              <span>See All</span>
-              <ArrowRight className="h-3 w-3" />
+              <span>See all</span>
+              <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           )}
 
-          <div className="hidden sm:flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => handleScroll('left')}
-              className="neo-pill h-8 w-8 text-slate-700 hover:text-indigo-600 flex items-center justify-center transition-all select-none"
+              className="h-8 w-8 rounded-button border border-line bg-surface text-text-2 hover:text-text hover:bg-subtle flex items-center justify-center transition-colors select-none"
               aria-label="Scroll left"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -72,7 +72,7 @@ export const NetflixShelf: React.FC<NetflixShelfProps> = ({
             <button
               type="button"
               onClick={() => handleScroll('right')}
-              className="neo-pill h-8 w-8 text-slate-700 hover:text-indigo-600 flex items-center justify-center transition-all select-none"
+              className="h-8 w-8 rounded-button border border-line bg-surface text-text-2 hover:text-text hover:bg-subtle flex items-center justify-center transition-colors select-none"
               aria-label="Scroll right"
             >
               <ChevronRight className="h-4 w-4" />

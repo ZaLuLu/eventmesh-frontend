@@ -406,6 +406,16 @@ export const SEED_DEMO_USERS: UserSession[] = [
   },
   {
     id: 'usr-cluba',
+    name: 'Priya Ramanathan (DevCraft Lead)',
+    email: 'lead@devcraft.org',
+    role: 'club_admin',
+    orgId: 'org-1',
+    clubId: 'club-devcraft',
+    clubName: 'DevCraft',
+    clubColor: '#C66A4A',
+  },
+  {
+    id: 'usr-club-cp',
     name: 'Sameer Kulkarni (CP Club Admin)',
     email: 'lead@cpclub.org',
     role: 'club_admin',

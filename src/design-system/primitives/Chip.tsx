@@ -1,8 +1,10 @@
 import React from 'react'
 
 export interface ChipProps {
-  label: string
+  label?: string
+  children?: React.ReactNode
   active?: boolean
+  selected?: boolean
   onClick?: () => void
   onRemove?: () => void
   color?: string
@@ -14,7 +16,9 @@ export interface ChipProps {
 
 export const Chip: React.FC<ChipProps> = ({
   label,
+  children,
   active = false,
+  selected,
   onClick,
   onRemove,
   color,
@@ -22,26 +26,33 @@ export const Chip: React.FC<ChipProps> = ({
   size = 'md',
   className = '',
 }) => {
-  const sizeClasses = size === 'sm' ? 'px-3 py-1 text-xs' : 'px-4 py-1.5 text-xs font-semibold'
+  const isSelected = selected !== undefined ? selected : active
+  const chipLabel = children || label
+  // Min height 40px on desktop, 44px on mobile for filters/chips; 14px font (or 13px for sm)
+  const sizeClasses =
+    size === 'sm'
+      ? 'min-h-[36px] sm:min-h-[32px] px-3 py-1 text-caption'
+      : 'min-h-[44px] sm:min-h-[40px] px-4 py-2 text-small'
 
-  const activeClasses = active
-    ? 'bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 text-white shadow-neo-sm font-bold border-transparent'
-    : 'bg-[#EEF2F6] text-slate-700 shadow-neo-sm hover:shadow-neo-card hover:text-slate-900 border border-white/60 active:shadow-neo-inset'
+  const activeClasses = isSelected
+    ? 'bg-accent-soft text-accent font-semibold border-transparent'
+    : 'bg-subtle text-text hover:text-text-2 border border-transparent hover:border-line'
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded-full transition-all duration-200 select-none whitespace-nowrap active:scale-[0.98] ${sizeClasses} ${activeClasses} ${className}`}
+      className={`inline-flex items-center gap-2 rounded-full transition-colors duration-150 select-none whitespace-nowrap focus-visible:outline-2 focus-visible:outline-text focus-visible:outline-offset-2 ${sizeClasses} ${activeClasses} ${className}`}
     >
       {icon && <span className="flex-shrink-0 text-current">{icon}</span>}
       {color && (
         <span
-          className="inline-block h-2 w-2 rounded-full flex-shrink-0"
+          className="inline-block h-2.5 w-2.5 rounded-full flex-shrink-0"
           style={{ backgroundColor: color }}
+          aria-hidden="true"
         />
       )}
-      <span>{label}</span>
+      <span>{chipLabel}</span>
       {onRemove && (
         <span
           role="button"
@@ -50,7 +61,7 @@ export const Chip: React.FC<ChipProps> = ({
             e.stopPropagation()
             onRemove()
           }}
-          className="ml-1 opacity-60 hover:opacity-100 font-bold"
+          className="ml-1 opacity-70 hover:opacity-100 font-bold text-caption cursor-pointer"
           aria-label={`Remove ${label}`}
         >
           ×

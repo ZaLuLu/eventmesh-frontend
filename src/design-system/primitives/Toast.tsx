@@ -65,30 +65,30 @@ export const ToastContainer: React.FC = () => {
       <AnimatePresence>
         {toasts.map((t) => {
           const typeIcons = {
-            success: <Check className="h-4 w-4 text-emerald-700" />,
-            error: <AlertCircle className="h-4 w-4 text-[#A32828]" />,
-            info: <Info className="h-4 w-4 text-ink" />,
+            success: <Check className="h-4 w-4 text-[#8FE3C6] flex-shrink-0" />,
+            error: <AlertCircle className="h-4 w-4 text-[#FFA69E] flex-shrink-0" />,
+            info: <Info className="h-4 w-4 text-[#E7E4DE] flex-shrink-0" />,
           }
 
           return (
             <motion.div
               key={t.id}
-              initial={{ opacity: 0, y: 16, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-              className="pointer-events-auto bg-paper text-ink border-2 border-ink p-4 flex items-start gap-3"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 12 }}
+              transition={{ duration: 0.2 }}
+              className="pointer-events-auto bg-text text-white rounded-[10px] shadow-floating p-4 flex items-start gap-3 border border-text/10"
             >
-              <div className="mt-0.5 flex-shrink-0">
+              <div className="mt-0.5">
                 {typeIcons[t.type || 'info']}
               </div>
 
-              <div className="flex-1">
-                <p className="font-body text-xs font-bold uppercase tracking-caps text-ink">
+              <div className="flex-1 text-small">
+                <p className="font-semibold text-white leading-tight">
                   {t.title}
                 </p>
                 {t.message && (
-                  <p className="font-body text-xs text-ink-60 mt-0.5">
+                  <p className="text-caption text-[#D0CCC6] mt-1">
                     {t.message}
                   </p>
                 )}
@@ -99,7 +99,7 @@ export const ToastContainer: React.FC = () => {
                       t.onUndo?.()
                       removeToast(t.id)
                     }}
-                    className="mt-2 font-mono text-[11px] font-semibold uppercase tracking-widecaps underline hover:text-[#A32828]"
+                    className="mt-2 text-caption font-semibold text-accent-soft hover:underline block"
                   >
                     Undo action
                   </button>
@@ -109,7 +109,7 @@ export const ToastContainer: React.FC = () => {
               <button
                 type="button"
                 onClick={() => removeToast(t.id)}
-                className="text-ink-60 hover:text-ink p-1"
+                className="text-[#AFAFB0] hover:text-white p-1 rounded transition-colors"
                 aria-label="Dismiss toast"
               >
                 <X className="h-4 w-4" />

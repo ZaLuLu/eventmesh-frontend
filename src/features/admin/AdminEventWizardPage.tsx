@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { Plus, Trash2, ArrowRight, ArrowLeft, Save, Check } from 'lucide-react'
+import { Trash2, Save } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useClubs } from '@/hooks/useClubs'
 import { useEvent, useCreateEvent, useUpdateEvent, usePublishEvent } from '@/hooks/useEvents'
@@ -19,7 +19,7 @@ export const AdminEventWizardPage: React.FC = () => {
   const { session } = useAuth()
   const { toast } = useToast()
   const { data: clubs = [] } = useClubs()
-  const { data: existingEvent, isLoading: eventLoading } = useEvent(id || '')
+  const { data: existingEvent } = useEvent(id || '')
 
   const createMutation = useCreateEvent()
   const updateMutation = useUpdateEvent()
@@ -36,12 +36,12 @@ export const AdminEventWizardPage: React.FC = () => {
   ]
 
   // Form State
-  const [organizerId, setOrganizerId] = useState(session?.clubId || clubs[0]?.id || 'club-cp')
+  const [organizerId, setOrganizerId] = useState(session?.clubId || clubs[0]?.id || 'club-devcraft')
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
-  const [category, setCategory] = useState('workshop')
-  const [type, setType] = useState('workshop')
-  const [description, setDescription] = useState('')
+  const [category, setCategory] = useState('hackathon')
+  const [type, setType] = useState('hackathon')
+  const [description, setDescription] = useState('Automated event description for community builders.')
   const [venueName, setVenueName] = useState('Campus Main Auditorium')
   const [venueAddress, setVenueAddress] = useState('Engineering Block')
   const [startsAt, setStartsAt] = useState('2026-11-20T10:00')
@@ -75,8 +75,15 @@ export const AdminEventWizardPage: React.FC = () => {
   const [maxTeamSize, setMaxTeamSize] = useState(4)
   const [isCertificateEnabled, setIsCertificateEnabled] = useState(true)
   const [isCheckinEnabled, setIsCheckinEnabled] = useState(true)
-  const [contactName, setContactName] = useState(session?.name || 'Sameer Kulkarni')
-  const [contactEmail, setContactEmail] = useState(session?.email || 'lead@cpclub.org')
+  const [contactName, setContactName] = useState(session?.name || 'Priya Ramanathan')
+  const [contactEmail, setContactEmail] = useState(session?.email || 'lead@devcraft.org')
+
+  // Update organizerId when session becomes available
+  useEffect(() => {
+    if (session?.clubId && !isEditing) {
+      setOrganizerId(session.clubId)
+    }
+  }, [session, isEditing])
 
   // Populate if editing
   useEffect(() => {
@@ -110,7 +117,7 @@ export const AdminEventWizardPage: React.FC = () => {
   const handleSaveDraft = async () => {
     try {
       const payload = {
-        organizerId,
+        organizerId: session?.clubId || organizerId,
         title,
         subtitle,
         category,
@@ -153,8 +160,12 @@ export const AdminEventWizardPage: React.FC = () => {
 
   const handleFinalPublish = async () => {
     try {
+      const activeOrgId = session?.clubId || organizerId
+      const orgMatch = clubs.find((c) => c.id === activeOrgId)
       const payload = {
-        organizerId,
+        organizerId: activeOrgId,
+        organizerName: orgMatch?.name || session?.clubName || 'DevCraft',
+        organizerColor: orgMatch?.color || session?.clubColor || '#C66A4A',
         title,
         subtitle,
         category,
@@ -203,19 +214,19 @@ export const AdminEventWizardPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Wizard Header */}
-      <div className="pb-6 border-b border-[#C9D0D4] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="pb-4 border-b border-line flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="font-mono text-[10px] uppercase tracking-wide text-ink-60 block mb-1">
-            {isEditing ? 'Editing Event Dossier' : 'New Exhibition Wizard'}
+          <span className="text-caption font-semibold text-accent block mb-0.5">
+            Exhibition Master · {isEditing ? 'Editing Event Dossier' : 'New Exhibition Wizard'}
           </span>
-          <h1 className="font-display text-3xl sm:text-4xl uppercase text-ink">
-            {title || 'Untitled Event'}
+          <h1 className="text-h2 font-semibold text-text">
+            {title || 'Create Exhibition'}
           </h1>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Button
             surface="admin"
             variant="secondary"
@@ -226,7 +237,7 @@ export const AdminEventWizardPage: React.FC = () => {
             Save Draft
           </Button>
           <Link to="/admin/events">
-            <Button surface="admin" variant="ghost" size="sm">
+            <Button surface="admin" variant="tertiary" size="sm">
               Cancel
             </Button>
           </Link>
@@ -243,10 +254,10 @@ export const AdminEventWizardPage: React.FC = () => {
 
       {/* STEP 0: DETAILS */}
       {step === 0 && (
-        <div className="p-6 sm:p-8 bg-paper border border-[#C9D0D4] space-y-6">
-          <h3 className="font-display text-2xl uppercase text-ink">1. Core Particulars</h3>
+        <div className="p-5 sm:p-6 bg-surface border border-line rounded-panel space-y-4">
+          <h3 className="text-h3 font-semibold text-text">1. Core Particulars</h3>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Select
               surface="admin"
               label="Organizing Club"
@@ -265,8 +276,8 @@ export const AdminEventWizardPage: React.FC = () => {
                 setType(e.target.value)
               }}
               options={[
-                { value: 'workshop', label: 'Workshop' },
                 { value: 'hackathon', label: 'Hackathon' },
+                { value: 'workshop', label: 'Workshop' },
                 { value: 'competition', label: 'Competition' },
                 { value: 'talk', label: 'Talk / Keynote' },
                 { value: 'other', label: 'Other' },
@@ -280,7 +291,7 @@ export const AdminEventWizardPage: React.FC = () => {
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. THE AUTONOMOUS SWARM FLIGHT HACKATHON"
+            placeholder="e.g. Grand Turing Hackathon 2026"
           />
 
           <Field
@@ -288,20 +299,20 @@ export const AdminEventWizardPage: React.FC = () => {
             label="Editorial Subtitle"
             value={subtitle}
             onChange={(e) => setSubtitle(e.target.value)}
-            placeholder="e.g. 48-Hour Systems & Kinetic Control Sprint"
+            placeholder="e.g. 36-hour competitive systems marathon"
           />
 
           <Field
             surface="admin"
             multiline
-            rows={5}
+            rows={4}
             label="Curatorial Description & Statement"
             required
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field
               surface="admin"
               label="Venue Name"
@@ -317,7 +328,7 @@ export const AdminEventWizardPage: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field
               surface="admin"
               type="datetime-local"
@@ -336,9 +347,9 @@ export const AdminEventWizardPage: React.FC = () => {
             />
           </div>
 
-          <div className="pt-6 border-t border-[#C9D0D4] flex justify-end">
-            <Button surface="admin" size="md" arrow onClick={() => setStep(1)}>
-              Proceed to Media
+          <div className="pt-4 border-t border-line flex justify-end">
+            <Button surface="admin" size="sm" arrow onClick={() => setStep(1)}>
+              Next Step
             </Button>
           </div>
         </div>
@@ -346,8 +357,8 @@ export const AdminEventWizardPage: React.FC = () => {
 
       {/* STEP 1: MEDIA */}
       {step === 1 && (
-        <div className="p-6 sm:p-8 bg-paper border border-[#C9D0D4] space-y-6">
-          <h3 className="font-display text-2xl uppercase text-ink">2. Documentary & Poster Media</h3>
+        <div className="p-5 sm:p-6 bg-surface border border-line rounded-panel space-y-4">
+          <h3 className="text-h3 font-semibold text-text">2. Documentary & Poster Media</h3>
 
           <Field
             surface="admin"
@@ -365,24 +376,24 @@ export const AdminEventWizardPage: React.FC = () => {
           />
 
           {poster && (
-            <div className="pt-4">
-              <span className="font-mono text-xs uppercase text-ink-60 block mb-2">
+            <div className="pt-2">
+              <span className="text-caption text-text-3 block mb-1.5 font-medium">
                 Poster Preview Frame
               </span>
               <img
                 src={poster}
                 alt="Poster preview"
-                className="max-w-xs h-auto border border-[#C9D0D4] object-cover"
+                className="max-w-xs h-auto rounded-panel border border-line object-cover"
               />
             </div>
           )}
 
-          <div className="pt-6 border-t border-[#C9D0D4] flex justify-between">
-            <Button surface="admin" variant="secondary" onClick={() => setStep(0)}>
+          <div className="pt-4 border-t border-line flex justify-between">
+            <Button surface="admin" variant="secondary" size="sm" onClick={() => setStep(0)}>
               ← Back
             </Button>
-            <Button surface="admin" size="md" arrow onClick={() => setStep(2)}>
-              Proceed to Schedule
+            <Button surface="admin" size="sm" arrow onClick={() => setStep(2)}>
+              Next Step
             </Button>
           </div>
         </div>
@@ -390,23 +401,23 @@ export const AdminEventWizardPage: React.FC = () => {
 
       {/* STEP 2: SCHEDULE & PEOPLE */}
       {step === 2 && (
-        <div className="p-6 sm:p-8 bg-paper border border-[#C9D0D4] space-y-8">
+        <div className="p-5 sm:p-6 bg-surface border border-line rounded-panel space-y-6">
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display text-2xl uppercase text-ink">3. Schedule Timeline</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-h3 font-semibold text-text">3. Schedule Timeline</h3>
               <Button
                 surface="admin"
                 variant="secondary"
-                size="dense"
+                size="sm"
                 onClick={() => setSchedule([...schedule, { time: '12:00 PM', title: 'New Item' }])}
               >
                 + Add Session
               </Button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               {schedule.map((item, idx) => (
-                <div key={idx} className="p-3 border border-[#C9D0D4] flex items-center gap-3">
+                <div key={idx} className="p-2.5 border border-line rounded-btn bg-subtle flex items-center gap-2">
                   <input
                     type="text"
                     value={item.time}
@@ -415,7 +426,7 @@ export const AdminEventWizardPage: React.FC = () => {
                       copy[idx].time = e.target.value
                       setSchedule(copy)
                     }}
-                    className="w-32 font-mono text-xs p-1.5 border border-[#C9D0D4]"
+                    className="w-28 text-small p-1.5 border border-line rounded-btn bg-surface"
                   />
                   <input
                     type="text"
@@ -425,12 +436,12 @@ export const AdminEventWizardPage: React.FC = () => {
                       copy[idx].title = e.target.value
                       setSchedule(copy)
                     }}
-                    className="flex-1 font-body text-xs p-1.5 border border-[#C9D0D4]"
+                    className="flex-1 text-small p-1.5 border border-line rounded-btn bg-surface"
                   />
                   <button
                     type="button"
                     onClick={() => setSchedule(schedule.filter((_, i) => i !== idx))}
-                    className="text-ink-60 hover:text-[#A32828]"
+                    className="text-text-3 hover:text-danger p-1"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -439,13 +450,13 @@ export const AdminEventWizardPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="border-t border-[#C9D0D4] pt-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display text-2xl uppercase text-ink">Keynote Speakers & Judges</h3>
+          <div className="border-t border-line pt-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-h3 font-semibold text-text">Keynote Speakers & Judges</h3>
               <Button
                 surface="admin"
                 variant="secondary"
-                size="dense"
+                size="sm"
                 onClick={() =>
                   setPeople([...people, { name: 'New Speaker', role: 'speaker', bio: 'Fellow' }])
                 }
@@ -454,9 +465,9 @@ export const AdminEventWizardPage: React.FC = () => {
               </Button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               {people.map((person, idx) => (
-                <div key={idx} className="p-3 border border-[#C9D0D4] flex items-center gap-3">
+                <div key={idx} className="p-2.5 border border-line rounded-btn bg-subtle flex items-center gap-2">
                   <input
                     type="text"
                     value={person.name}
@@ -466,7 +477,7 @@ export const AdminEventWizardPage: React.FC = () => {
                       copy[idx].name = e.target.value
                       setPeople(copy)
                     }}
-                    className="w-48 font-body text-xs p-1.5 border border-[#C9D0D4]"
+                    className="w-40 text-small p-1.5 border border-line rounded-btn bg-surface"
                   />
                   <select
                     value={person.role}
@@ -475,7 +486,7 @@ export const AdminEventWizardPage: React.FC = () => {
                       copy[idx].role = e.target.value as any
                       setPeople(copy)
                     }}
-                    className="w-32 font-mono text-xs p-1.5 border border-[#C9D0D4]"
+                    className="w-32 text-small p-1.5 border border-line rounded-btn bg-surface"
                   >
                     <option value="speaker">Speaker</option>
                     <option value="judge">Judge</option>
@@ -490,12 +501,12 @@ export const AdminEventWizardPage: React.FC = () => {
                       copy[idx].bio = e.target.value
                       setPeople(copy)
                     }}
-                    className="flex-1 font-body text-xs p-1.5 border border-[#C9D0D4]"
+                    className="flex-1 text-small p-1.5 border border-line rounded-btn bg-surface"
                   />
                   <button
                     type="button"
                     onClick={() => setPeople(people.filter((_, i) => i !== idx))}
-                    className="text-ink-60 hover:text-[#A32828]"
+                    className="text-text-3 hover:text-danger p-1"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -504,12 +515,12 @@ export const AdminEventWizardPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="pt-6 border-t border-[#C9D0D4] flex justify-between">
-            <Button surface="admin" variant="secondary" onClick={() => setStep(1)}>
+          <div className="pt-4 border-t border-line flex justify-between">
+            <Button surface="admin" variant="secondary" size="sm" onClick={() => setStep(1)}>
               ← Back
             </Button>
-            <Button surface="admin" size="md" arrow onClick={() => setStep(3)}>
-              Proceed to Form Builder
+            <Button surface="admin" size="sm" arrow onClick={() => setStep(3)}>
+              Next Step
             </Button>
           </div>
         </div>
@@ -517,15 +528,15 @@ export const AdminEventWizardPage: React.FC = () => {
 
       {/* STEP 3: REGISTRATION FORM BUILDER */}
       {step === 3 && (
-        <div className="p-6 sm:p-8 bg-paper border border-[#C9D0D4] space-y-6">
+        <div className="p-5 sm:p-6 bg-surface border border-line rounded-panel space-y-4">
           <AdminFormBuilder fields={formSchema} onChange={(newFields) => setFormSchema(newFields)} />
 
-          <div className="pt-6 border-t border-[#C9D0D4] flex justify-between">
-            <Button surface="admin" variant="secondary" onClick={() => setStep(2)}>
+          <div className="pt-4 border-t border-line flex justify-between">
+            <Button surface="admin" variant="secondary" size="sm" onClick={() => setStep(2)}>
               ← Back
             </Button>
-            <Button surface="admin" size="md" arrow onClick={() => setStep(4)}>
-              Proceed to Settings
+            <Button surface="admin" size="sm" arrow onClick={() => setStep(4)}>
+              Next Step
             </Button>
           </div>
         </div>
@@ -533,10 +544,10 @@ export const AdminEventWizardPage: React.FC = () => {
 
       {/* STEP 4: QUOTAS & SETTINGS */}
       {step === 4 && (
-        <div className="p-6 sm:p-8 bg-paper border border-[#C9D0D4] space-y-6">
-          <h3 className="font-display text-2xl uppercase text-ink">5. Quotas & Capabilities</h3>
+        <div className="p-5 sm:p-6 bg-surface border border-line rounded-panel space-y-4">
+          <h3 className="text-h3 font-semibold text-text">5. Quotas & Capabilities</h3>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field
               surface="admin"
               type="number"
@@ -553,29 +564,29 @@ export const AdminEventWizardPage: React.FC = () => {
             />
           </div>
 
-          <div className="space-y-3 pt-2">
-            <label className="flex items-center gap-2 cursor-pointer font-mono text-xs uppercase text-ink">
+          <div className="space-y-2.5 pt-2">
+            <label className="flex items-center gap-2 cursor-pointer text-small text-text">
               <input
                 type="checkbox"
                 checked={waitlistEnabled}
                 onChange={(e) => setWaitlistEnabled(e.target.checked)}
-                className="h-4 w-4 rounded-none border border-ink text-admin-accent"
+                className="h-4 w-4 rounded text-accent"
               />
-              <span>Enable Automatic Waitlist When Capacity Reached</span>
+              <span>Enable automatic waitlist when capacity reached</span>
             </label>
 
-            <label className="flex items-center gap-2 cursor-pointer font-mono text-xs uppercase text-ink">
+            <label className="flex items-center gap-2 cursor-pointer text-small text-text">
               <input
                 type="checkbox"
                 checked={isTeamEnabled}
                 onChange={(e) => setIsTeamEnabled(e.target.checked)}
-                className="h-4 w-4 rounded-none border border-ink text-admin-accent"
+                className="h-4 w-4 rounded text-accent"
               />
-              <span>Enable Team Registration Mode</span>
+              <span>Enable team registration mode</span>
             </label>
 
             {isTeamEnabled && (
-              <div className="pl-6 pt-2 flex items-center gap-4">
+              <div className="pl-6 pt-1 flex items-center gap-4">
                 <Field
                   surface="admin"
                   type="number"
@@ -593,33 +604,33 @@ export const AdminEventWizardPage: React.FC = () => {
               </div>
             )}
 
-            <label className="flex items-center gap-2 cursor-pointer font-mono text-xs uppercase text-ink">
+            <label className="flex items-center gap-2 cursor-pointer text-small text-text">
               <input
                 type="checkbox"
                 checked={isCertificateEnabled}
                 onChange={(e) => setIsCertificateEnabled(e.target.checked)}
-                className="h-4 w-4 rounded-none border border-ink text-admin-accent"
+                className="h-4 w-4 rounded text-accent"
               />
-              <span>Generate Cryptographic Certificates on Event Completion</span>
+              <span>Generate cryptographic certificates on event completion</span>
             </label>
 
-            <label className="flex items-center gap-2 cursor-pointer font-mono text-xs uppercase text-ink">
+            <label className="flex items-center gap-2 cursor-pointer text-small text-text">
               <input
                 type="checkbox"
                 checked={isCheckinEnabled}
                 onChange={(e) => setIsCheckinEnabled(e.target.checked)}
-                className="h-4 w-4 rounded-none border border-ink text-admin-accent"
+                className="h-4 w-4 rounded text-accent"
               />
-              <span>Enable Mobile Ticket QR Check-in Desk</span>
+              <span>Enable mobile ticket QR check-in desk</span>
             </label>
           </div>
 
-          <div className="pt-6 border-t border-[#C9D0D4] flex justify-between">
-            <Button surface="admin" variant="secondary" onClick={() => setStep(3)}>
+          <div className="pt-4 border-t border-line flex justify-between">
+            <Button surface="admin" variant="secondary" size="sm" onClick={() => setStep(3)}>
               ← Back
             </Button>
-            <Button surface="admin" size="md" arrow onClick={() => setStep(5)}>
-              Proceed to Review
+            <Button surface="admin" size="sm" arrow onClick={() => setStep(5)}>
+              Next Step
             </Button>
           </div>
         </div>
@@ -627,12 +638,12 @@ export const AdminEventWizardPage: React.FC = () => {
 
       {/* STEP 5: REVIEW & PUBLISH */}
       {step === 5 && (
-        <div className="p-6 sm:p-8 bg-paper border border-[#C9D0D4] space-y-6">
-          <h3 className="font-display text-2xl uppercase text-ink">6. Review & Final Publication</h3>
+        <div className="p-5 sm:p-6 bg-surface border border-line rounded-panel space-y-4">
+          <h3 className="text-h3 font-semibold text-text">6. Review & Final Publication</h3>
 
-          <div className="border border-[#C9D0D4] p-6 space-y-3 font-body text-sm bg-[#E6EAEC]/30">
+          <div className="border border-line rounded-panel p-4 space-y-2 text-small bg-subtle">
             <p><strong>Title:</strong> {title}</p>
-            <p><strong>Organizing Club:</strong> {clubs.find((c) => c.id === organizerId)?.name}</p>
+            <p><strong>Organizing Club:</strong> {clubs.find((c) => c.id === organizerId)?.name || 'DevCraft'}</p>
             <p><strong>Format:</strong> {category}</p>
             <p><strong>Venue:</strong> {venueName}</p>
             <p><strong>Dates:</strong> {startsAt} to {endsAt}</p>
@@ -640,30 +651,31 @@ export const AdminEventWizardPage: React.FC = () => {
             <p><strong>Form Questions:</strong> {formSchema.length} custom fields configured</p>
           </div>
 
-          <div className="p-4 bg-emerald-50 border border-emerald-400 font-mono text-xs text-emerald-900">
+          <div className="p-3 bg-success/10 border border-success/30 rounded-btn text-caption text-success">
             Publishing will automatically synchronize this event to the public website, calendar, and club page without requiring a page reload.
           </div>
 
-          <div className="pt-6 border-t border-[#C9D0D4] flex justify-between">
-            <Button surface="admin" variant="secondary" onClick={() => setStep(4)}>
+          <div className="pt-4 border-t border-line flex justify-between">
+            <Button surface="admin" variant="secondary" size="sm" onClick={() => setStep(4)}>
               ← Back
             </Button>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Button
                 surface="admin"
                 variant="secondary"
+                size="sm"
                 onClick={handleSaveDraft}
               >
                 Save as Draft Only
               </Button>
               <Button
                 surface="admin"
-                size="lg"
+                size="sm"
                 loading={publishMutation.isPending || createMutation.isPending}
                 onClick={handleFinalPublish}
               >
-                Publish & Push Live
+                Publish Exhibition
               </Button>
             </div>
           </div>

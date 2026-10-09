@@ -81,6 +81,7 @@ export const RegistrationSchema = z.object({
   organizerName: z.string().optional(),
   organizerColor: z.string().optional(),
   eventStartsAt: z.string().optional(),
+  venueName: z.string().optional(),
 })
 
 export type Registration = z.infer<typeof RegistrationSchema>
@@ -105,6 +106,7 @@ export function normalizeBackendRegistration(raw: RegistrationRead | any): Regis
     organizerName: raw.event?.organization?.name || raw.organizerName || 'Event Host',
     organizerColor: raw.organizerColor || '#1A73E8',
     eventStartsAt: raw.event?.start_time || raw.eventStartsAt,
+    venueName: raw.event?.venue_name || raw.venueName || 'Main Campus Venue',
   }
 }
 

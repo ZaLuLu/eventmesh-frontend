@@ -54,6 +54,11 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
     navigate(url)
   }
 
+  const hasResults =
+    results.events.length > 0 ||
+    results.clubs.length > 0 ||
+    results.announcements.length > 0
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -63,89 +68,91 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
+            className="fixed inset-0 bg-text/40"
             aria-hidden="true"
           />
 
           <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.98 }}
-            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="relative z-10 w-full max-w-2xl bg-[#EEF2F6] border border-white/80 rounded-3xl shadow-neo-card flex flex-col max-h-[80vh] overflow-hidden"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="relative z-10 w-full max-w-2xl bg-surface border border-line rounded-panel shadow-floating flex flex-col max-h-[80vh] overflow-hidden"
           >
-            {/* Search Input Bar (Debossed Capsule) */}
-            <div className="p-4 sm:p-5 border-b border-slate-200/60">
-              <div className="flex items-center gap-3 px-4 py-3 bg-[#EEF2F6] shadow-neo-inset rounded-2xl border border-white/50">
-                <Search className="h-5 w-5 text-indigo-500 flex-shrink-0" />
+            {/* Search Input Bar (48px input, 10px radius) */}
+            <div className="p-4 border-b border-line">
+              <div className="flex items-center gap-3 px-3.5 h-12 bg-subtle rounded-[10px] border border-line">
+                <Search className="h-5 w-5 text-accent flex-shrink-0" />
                 <input
                   autoFocus
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search events, collectives, masterclasses, notices..."
-                  className="w-full bg-transparent font-body text-base text-slate-800 placeholder:text-slate-400 focus:outline-none"
+                  placeholder="Search events, clubs, announcements..."
+                  className="w-full bg-transparent text-small text-text placeholder:text-text-3 focus:outline-none"
                 />
                 {query && (
                   <button
                     type="button"
                     onClick={() => setQuery('')}
-                    className="p-1 text-slate-400 hover:text-slate-700 transition-colors"
+                    className="p-1 text-text-3 hover:text-text transition-colors"
                   >
                     <X className="h-4 w-4" />
                   </button>
                 )}
-                <span className="text-[10px] uppercase font-mono font-bold text-slate-500 bg-[#EEF2F6] shadow-neo-sm px-2.5 py-1 rounded-lg border border-white/60 hidden sm:inline">
+                <span className="text-caption font-mono text-text-3 px-2 py-0.5 rounded-[6px] bg-surface border border-line hidden sm:inline">
                   ESC
                 </span>
               </div>
             </div>
 
-            {/* Search Results */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+            {/* Results Area */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {isSearching && (
-                <p className="text-xs text-slate-500 py-4 text-center animate-pulse">
-                  Searching index...
-                </p>
+                <div className="py-8 text-center text-small text-text-3">
+                  Searching catalog...
+                </div>
               )}
 
-              {!query.trim() && (
-                <div className="py-8 text-center">
-                  <p className="text-xs font-bold text-gradient-feral uppercase tracking-wider mb-1">
-                    Instant Search
-                  </p>
-                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                    Type keywords to locate live happenings, community collectives, or official announcements.
-                  </p>
+              {!isSearching && query && !hasResults && (
+                <div className="py-8 text-center text-small text-text-2">
+                  No matching results for "{query}". Try a different keyword.
+                </div>
+              )}
+
+              {!isSearching && !query && (
+                <div className="py-6 text-center text-small text-text-3">
+                  Type a keyword to discover events, technical clubs, or announcements.
                 </div>
               )}
 
               {/* Events Section */}
+              {/* Events Section */}
               {results.events.length > 0 && (
                 <div>
-                  <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5 px-1">
-                    <Calendar className="h-3.5 w-3.5 text-indigo-500" />
-                    <span>Events & Masterclasses ({results.events.length})</span>
-                  </h4>
-                  <div className="divide-y divide-slate-200/50 rounded-2xl border border-white/80 bg-[#EEF2F6] shadow-neo-sm overflow-hidden">
-                    {results.events.map((item) => (
+                  <div className="flex items-center gap-2 mb-2 text-caption font-semibold text-text-2">
+                    <Calendar className="h-4 w-4 text-accent" />
+                    <span>Events ({results.events.length})</span>
+                  </div>
+                  <div className="space-y-1">
+                    {results.events.map((evt) => (
                       <button
-                        key={item.id}
+                        key={evt.id}
                         type="button"
-                        onClick={() => handleSelect(item.url)}
-                        className="w-full text-left py-3.5 px-4 flex items-center justify-between hover:bg-white/40 transition-colors group"
+                        onClick={() => handleSelect(evt.url)}
+                        className="w-full text-left p-3 rounded-[8px] hover:bg-subtle transition-colors flex items-center justify-between group"
                       >
-                        <div>
-                          <p className="font-bold text-sm text-slate-800 group-hover:text-indigo-600 transition-colors">
-                            {item.title}
+                        <div className="min-w-0 pr-4">
+                          <p className="text-small font-semibold text-text group-hover:text-accent truncate">
+                            {evt.title}
                           </p>
-                          {item.subtitle && (
-                            <p className="text-xs text-slate-500 mt-0.5">
-                              {item.subtitle}
+                          {evt.subtitle && (
+                            <p className="text-caption text-text-2 truncate">
+                              {evt.subtitle}
                             </p>
                           )}
                         </div>
-                        <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all flex-shrink-0" />
+                        <ArrowUpRight className="h-4 w-4 text-text-3 group-hover:text-accent flex-shrink-0" />
                       </button>
                     ))}
                   </div>
@@ -155,29 +162,35 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
               {/* Clubs Section */}
               {results.clubs.length > 0 && (
                 <div>
-                  <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5 px-1">
-                    <Users className="h-3.5 w-3.5 text-purple-500" />
-                    <span>Collectives & Studios ({results.clubs.length})</span>
-                  </h4>
-                  <div className="divide-y divide-slate-200/50 rounded-2xl border border-white/80 bg-[#EEF2F6] shadow-neo-sm overflow-hidden">
-                    {results.clubs.map((item) => (
+                  <div className="flex items-center gap-2 mb-2 text-caption font-semibold text-text-2">
+                    <Users className="h-4 w-4 text-accent" />
+                    <span>Clubs & Collectives ({results.clubs.length})</span>
+                  </div>
+                  <div className="space-y-1">
+                    {results.clubs.map((club) => (
                       <button
-                        key={item.id}
+                        key={club.id}
                         type="button"
-                        onClick={() => handleSelect(item.url)}
-                        className="w-full text-left py-3.5 px-4 flex items-center justify-between hover:bg-white/40 transition-colors group"
+                        onClick={() => handleSelect(club.url)}
+                        className="w-full text-left p-3 rounded-[8px] hover:bg-subtle transition-colors flex items-center justify-between group"
                       >
-                        <div>
-                          <p className="font-bold text-sm text-slate-800 group-hover:text-purple-600 transition-colors">
-                            {item.title}
-                          </p>
-                          {item.subtitle && (
-                            <p className="text-xs text-slate-500 mt-0.5">
-                              {item.subtitle}
+                        <div className="flex items-center gap-2.5 min-w-0 pr-4">
+                          <span
+                            className="h-2.5 w-2.5 rounded-full flex-shrink-0 bg-accent"
+                            aria-hidden="true"
+                          />
+                          <div className="truncate">
+                            <p className="text-small font-semibold text-text group-hover:text-accent truncate">
+                              {club.title}
                             </p>
-                          )}
+                            {club.subtitle && (
+                              <p className="text-caption text-text-2 truncate">
+                                {club.subtitle}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all flex-shrink-0" />
+                        <ArrowUpRight className="h-4 w-4 text-text-3 group-hover:text-accent flex-shrink-0" />
                       </button>
                     ))}
                   </div>
@@ -187,42 +200,34 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
               {/* Announcements Section */}
               {results.announcements.length > 0 && (
                 <div>
-                  <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5 px-1">
-                    <Megaphone className="h-3.5 w-3.5 text-pink-500" />
-                    <span>Bulletins & Notices ({results.announcements.length})</span>
-                  </h4>
-                  <div className="divide-y divide-slate-200/50 rounded-2xl border border-white/80 bg-[#EEF2F6] shadow-neo-sm overflow-hidden">
-                    {results.announcements.map((item) => (
+                  <div className="flex items-center gap-2 mb-2 text-caption font-semibold text-text-2">
+                    <Megaphone className="h-4 w-4 text-accent" />
+                    <span>Announcements ({results.announcements.length})</span>
+                  </div>
+                  <div className="space-y-1">
+                    {results.announcements.map((ann) => (
                       <button
-                        key={item.id}
+                        key={ann.id}
                         type="button"
-                        onClick={() => handleSelect(item.url)}
-                        className="w-full text-left py-3.5 px-4 flex items-center justify-between hover:bg-white/40 transition-colors group"
+                        onClick={() => handleSelect(ann.url || '/announcements')}
+                        className="w-full text-left p-3 rounded-[8px] hover:bg-subtle transition-colors flex items-center justify-between group"
                       >
-                        <div>
-                          <p className="font-bold text-sm text-slate-800 group-hover:text-pink-600 transition-colors">
-                            {item.title}
+                        <div className="min-w-0 pr-4">
+                          <p className="text-small font-semibold text-text group-hover:text-accent truncate">
+                            {ann.title}
                           </p>
-                          <span className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#EEF2F6] shadow-neo-inset text-slate-600 mt-1">
-                            {item.subtitle}
-                          </span>
+                          {ann.subtitle && (
+                            <p className="text-caption text-text-2 truncate">
+                              {ann.subtitle}
+                            </p>
+                          )}
                         </div>
-                        <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-pink-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all flex-shrink-0" />
+                        <ArrowUpRight className="h-4 w-4 text-text-3 group-hover:text-accent flex-shrink-0" />
                       </button>
                     ))}
                   </div>
                 </div>
               )}
-
-              {query.trim() &&
-                !isSearching &&
-                results.events.length === 0 &&
-                results.clubs.length === 0 &&
-                results.announcements.length === 0 && (
-                  <div className="py-8 text-center text-xs text-slate-500">
-                    No results found for "{query}".
-                  </div>
-                )}
             </div>
           </motion.div>
         </div>

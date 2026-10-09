@@ -1,88 +1,83 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Users, ArrowRight } from 'lucide-react'
+import { ArrowRight, Users } from 'lucide-react'
 import { useClubs } from '@/hooks/useClubs'
+import { Skeleton } from '@/design-system/primitives/Skeleton'
 
 export const ClubsPage: React.FC = () => {
   const { data: clubs = [], isLoading } = useClubs()
 
   return (
-    <div className="w-full bg-canvas text-slate-900 min-h-screen">
-      {/* Header Banner */}
-      <div className="bg-[#EEF2F6] border-b border-white/70 shadow-neo-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-6">
-          <div>
-            <span className="text-xs font-bold text-indigo-600 tracking-normal block mb-1">
-              Autonomous Collectives & Guilds
-            </span>
-            <h1 className="font-display font-extrabold text-3xl sm:text-4xl text-slate-900 tracking-tight">
-              The 9 Technical Clubs
-            </h1>
-            <p className="text-sm text-slate-500 mt-1 max-w-xl font-medium">
-              Specialized engineering collectives dedicated to software, AI research, robotics, embedded hardware, and cybersecurity.
-            </p>
-          </div>
+    <div className="w-full bg-bg text-text pb-16">
+      {/* Header Block */}
+      <div className="border-b border-line bg-surface">
+        <div className="app-container py-6 sm:py-8">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-text tracking-tight">
+            Clubs & Collectives
+          </h1>
+          <p className="text-small text-text-2 mt-0.5 max-w-xl">
+            Autonomous engineering guilds, technical societies, and creative collectives across campus
+          </p>
         </div>
       </div>
 
-      {/* Modern 3-Column Cards Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      {/* Grid of Flat Club Cards */}
+      <div className="app-container py-8">
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-56 rounded-3xl neo-card animate-pulse border border-white/60" />
+              <Skeleton key={i} height="h-52" rounded="rounded-panel" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {clubs.map((club, index) => {
-              const color = club.color || '#6366F1'
+              const color = club.color || '#C93E27'
               return (
                 <Link
                   key={club.id}
                   to={`/clubs/${club.slug}`}
-                  className="group relative flex flex-col justify-between p-7 rounded-3xl neo-card border border-white/80 shadow-neo-card hover:shadow-neo-card-hover transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                  className="group flex flex-col justify-between p-6 rounded-panel bg-surface border border-line hover:border-text-3 transition-colors select-none"
                 >
-                  {/* Accent Top Stripe */}
-                  <div
-                    className="absolute top-0 left-0 right-0 h-1.5"
-                    style={{ backgroundColor: color }}
-                  />
-
                   <div>
-                    {/* Club Header & Avatar */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div
-                        className="h-12 w-12 rounded-2xl flex items-center justify-center text-white font-bold text-sm shadow-neo-sm transition-transform group-hover:scale-105"
-                        style={{ backgroundColor: color }}
-                      >
-                        {club.name.slice(0, 3).toUpperCase()}
+                    {/* Club Header & 10px Dot */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2.5">
+                        {/* 10px Club Dot */}
+                        <span
+                          className="h-2.5 w-2.5 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: color }}
+                          aria-hidden="true"
+                        />
+                        <span className="text-caption font-semibold text-text-2">
+                          {club.joinMode ? club.joinMode.replace('_', ' ') : 'Collective'}
+                        </span>
                       </div>
 
-                      <span className="text-[11px] font-mono font-bold text-slate-400">
+                      <span className="text-caption font-mono text-text-3">
                         #{String(index + 1).padStart(2, '0')}
                       </span>
                     </div>
 
-                    <h2 className="font-display font-extrabold text-xl text-slate-900 group-hover:text-indigo-600 transition-colors mb-2">
+                    <h2 className="text-lg font-semibold text-text group-hover:underline mb-2">
                       {club.name}
                     </h2>
 
-                    <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed mb-6 font-medium">
-                      {club.about || club.whatWeDo}
+                    <p className="text-small text-text-2 line-clamp-3 leading-relaxed mb-6">
+                      {club.about || club.whatWeDo || 'Specialized collegiate engineering collective focused on collaborative projects and workshops.'}
                     </p>
                   </div>
 
                   {/* Footer Meta */}
-                  <div className="pt-4 border-t border-slate-200/80 flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium">
-                      <Users className="h-3.5 w-3.5 text-slate-400" />
-                      <span>{club.followersCount || 40}+ Members</span>
+                  <div className="pt-3 border-t border-line flex items-center justify-between text-small">
+                    <div className="flex items-center gap-1.5 text-text-2">
+                      <Users className="h-4 w-4 text-text-3" />
+                      <span>{club.followersCount || 40}+ members</span>
                     </div>
 
-                    <div className="flex items-center gap-1 text-xs font-bold text-indigo-600 group-hover:translate-x-1 transition-transform">
-                      <span>Explore</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
+                    <div className="flex items-center gap-1 font-semibold text-accent">
+                      <span>View club</span>
+                      <ArrowRight className="h-4 w-4" />
                     </div>
                   </div>
                 </Link>

@@ -11,7 +11,7 @@ export interface Column<T> {
 export interface TableProps<T> {
   columns: Column<T>[]
   data: T[]
-  keyExtractor: (item: T) => string
+  keyExtractor?: (item: T, index?: number) => string
   emptyMessage?: string
   surface?: 'public' | 'admin'
   onRowClick?: (item: T) => void
@@ -27,18 +27,17 @@ export function Table<T>({
   onRowClick,
   className = '',
 }: TableProps<T>) {
-  const borderColor = surface === 'admin' ? 'border-admin-border' : 'border-ink-15'
-  const hoverColor = surface === 'admin' ? 'hover:bg-black/5' : 'hover:bg-paper-deep'
+  const getKey = keyExtractor || ((item: any, i: number) => item.id || item.key || String(i))
 
   return (
-    <div className={`w-full overflow-x-auto border ${borderColor} ${className}`}>
-      <table className="w-full text-left border-collapse min-w-[600px]">
-        <thead>
-          <tr className={`border-b ${borderColor} bg-paper-deep/60`}>
+    <div className={`w-full overflow-x-auto border border-line rounded-[10px] bg-surface ${className}`}>
+      <table className="w-full text-left border-collapse min-w-[640px]">
+        <thead className="sticky top-0 z-10 bg-subtle border-b border-line">
+          <tr className="h-[44px]">
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={`py-3 px-4 font-mono text-[11px] font-medium uppercase tracking-widecaps text-ink-60 ${
+                className={`py-2 px-4 text-small font-semibold text-text-2 ${
                   col.className || ''
                 }`}
                 style={col.width ? { width: col.width } : undefined}
@@ -48,29 +47,29 @@ export function Table<T>({
             ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-line">
           {data.length === 0 ? (
             <tr>
               <td
                 colSpan={columns.length}
-                className="py-12 px-4 text-center font-mono text-xs text-ink-60 uppercase tracking-wide"
+                className="h-[120px] px-4 text-center text-small text-text-3"
               >
                 {emptyMessage}
               </td>
             </tr>
           ) : (
-            data.map((item) => (
+            data.map((item, idx) => (
               <tr
-                key={keyExtractor(item)}
+                key={getKey(item, idx)}
                 onClick={onRowClick ? () => onRowClick(item) : undefined}
-                className={`border-b ${borderColor} transition-colors duration-150 ${
-                  onRowClick ? `cursor-pointer ${hoverColor}` : ''
+                className={`h-[52px] transition-colors duration-150 hover:bg-subtle ${
+                  onRowClick ? 'cursor-pointer' : ''
                 }`}
               >
                 {columns.map((col) => (
                   <td
                     key={col.key}
-                    className={`py-3.5 px-4 font-body text-sm text-ink ${
+                    className={`py-2.5 px-4 text-small text-text ${
                       col.className || ''
                     }`}
                   >

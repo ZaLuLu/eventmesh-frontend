@@ -1,16 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import {
-  CalendarDays,
-  Users,
-  QrCode,
-  Award,
-  BellRing,
-  Plus,
-  Send,
-  ArrowUpRight,
-  Clock,
-} from 'lucide-react'
+import { Plus, Send } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { useQuery } from '@tanstack/react-query'
@@ -22,7 +12,7 @@ export const AdminDashboardPage: React.FC = () => {
   const { session } = useAuth()
   const { role, clubId } = usePermission()
 
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats } = useQuery({
     queryKey: ['admin-stats', { orgId: session?.orgId || 'org-1', clubId: clubId || undefined }],
     queryFn: () =>
       api.analytics.getStats({
@@ -43,17 +33,17 @@ export const AdminDashboardPage: React.FC = () => {
   const recentEvents = events.slice(0, 5)
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Welcome Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#C9D0D4]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-line">
         <div>
-          <span className="font-mono text-[10px] uppercase tracking-wide text-ink-60 block mb-1">
-            Overview Dashboard
+          <span className="text-caption font-semibold text-accent block mb-1">
+            Overview dashboard
           </span>
-          <h1 className="font-display text-3xl sm:text-4xl uppercase text-ink">
+          <h1 className="text-h2 font-semibold text-text">
             {session?.clubName || 'Federation Control'}
           </h1>
-          <p className="font-body text-xs text-ink-60 mt-0.5">
+          <p className="text-small text-text-2 mt-0.5">
             Signed in as {session?.name} ({role?.replace('_', ' ')})
           </p>
         </div>
@@ -73,68 +63,68 @@ export const AdminDashboardPage: React.FC = () => {
       </div>
 
       {/* Flat Square Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div className="p-5 bg-paper border border-[#C9D0D4] space-y-1">
-          <p className="font-mono text-[10px] uppercase text-ink-60">Total Events</p>
-          <p className="font-display text-3xl text-ink">{stats?.eventsCount || 0}</p>
-          <p className="font-mono text-[10px] text-ink-60">Active in system</p>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="p-4 bg-surface border border-line rounded-panel space-y-1">
+          <p className="text-caption text-text-3 font-medium">Total Events</p>
+          <p className="text-2xl font-semibold text-text tabular-nums">{stats?.eventsCount || 0}</p>
+          <p className="text-caption text-text-2">Active in system</p>
         </div>
 
-        <div className="p-5 bg-paper border border-[#C9D0D4] space-y-1">
-          <p className="font-mono text-[10px] uppercase text-ink-60">Upcoming</p>
-          <p className="font-display text-3xl text-ink">{stats?.upcomingCount || 0}</p>
-          <p className="font-mono text-[10px] text-ink-60">Published horizon</p>
+        <div className="p-4 bg-surface border border-line rounded-panel space-y-1">
+          <p className="text-caption text-text-3 font-medium">Upcoming</p>
+          <p className="text-2xl font-semibold text-text tabular-nums">{stats?.upcomingCount || 0}</p>
+          <p className="text-caption text-text-2">Published horizon</p>
         </div>
 
-        <div className="p-5 bg-paper border border-[#C9D0D4] space-y-1">
-          <p className="font-mono text-[10px] uppercase text-ink-60">Registrations</p>
-          <p className="font-display text-3xl text-ink">{stats?.registrationsCount || 0}</p>
-          <p className="font-mono text-[10px] text-ink-60">Passes issued</p>
+        <div className="p-4 bg-surface border border-line rounded-panel space-y-1">
+          <p className="text-caption text-text-3 font-medium">Registrations</p>
+          <p className="text-2xl font-semibold text-text tabular-nums">{stats?.registrationsCount || 0}</p>
+          <p className="text-caption text-text-2">Passes issued</p>
         </div>
 
-        <div className="p-5 bg-paper border border-[#C9D0D4] space-y-1">
-          <p className="font-mono text-[10px] uppercase text-ink-60">Check-ins</p>
-          <p className="font-display text-3xl text-ink">{stats?.checkinsCount || 0}</p>
-          <p className="font-mono text-[10px] text-emerald-800 font-semibold">Verified entries</p>
+        <div className="p-4 bg-surface border border-line rounded-panel space-y-1">
+          <p className="text-caption text-text-3 font-medium">Check-ins</p>
+          <p className="text-2xl font-semibold text-text tabular-nums">{stats?.checkinsCount || 0}</p>
+          <p className="text-caption text-success font-medium">Verified entries</p>
         </div>
 
-        <div className="p-5 bg-paper border border-[#C9D0D4] space-y-1">
-          <p className="font-mono text-[10px] uppercase text-ink-60">Certificates</p>
-          <p className="font-display text-3xl text-ink">{stats?.certificatesCount || 0}</p>
-          <p className="font-mono text-[10px] text-ink-60">Authenticated</p>
+        <div className="p-4 bg-surface border border-line rounded-panel space-y-1">
+          <p className="text-caption text-text-3 font-medium">Certificates</p>
+          <p className="text-2xl font-semibold text-text tabular-nums">{stats?.certificatesCount || 0}</p>
+          <p className="text-caption text-text-2">Authenticated</p>
         </div>
 
-        <div className="p-5 bg-paper border border-[#C9D0D4] space-y-1">
-          <p className="font-mono text-[10px] uppercase text-ink-60">Dispatches</p>
-          <p className="font-display text-3xl text-ink">{stats?.notificationsCount || 0}</p>
-          <p className="font-mono text-[10px] text-ink-60">Audience notices</p>
+        <div className="p-4 bg-surface border border-line rounded-panel space-y-1">
+          <p className="text-caption text-text-3 font-medium">Dispatches</p>
+          <p className="text-2xl font-semibold text-text tabular-nums">{stats?.notificationsCount || 0}</p>
+          <p className="text-caption text-text-2">Audience notices</p>
         </div>
       </div>
 
       {/* Registrations Cadence Flat Chart */}
-      <div className="p-6 bg-paper border border-[#C9D0D4] space-y-4">
+      <div className="p-5 bg-surface border border-line rounded-panel space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-xl uppercase text-ink">
-            Registrations Over Time (Past 7 Days)
+          <h2 className="text-h3 font-semibold text-text">
+            Registrations over time (past 7 days)
           </h2>
-          <span className="font-mono text-xs uppercase text-ink-60">
-            Total Velocity
+          <span className="text-caption text-text-3">
+            Total velocity
           </span>
         </div>
 
-        <div className="h-44 pt-6 flex items-end gap-4 sm:gap-8 border-b border-[#C9D0D4]">
+        <div className="h-40 pt-4 flex items-end gap-3 sm:gap-6 border-b border-line">
           {stats?.registrationsTimeline.map((item) => {
             const heightPct = Math.min(100, Math.round((item.count / 500) * 100))
             return (
-              <div key={item.date} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-                <span className="font-mono text-[10px] font-bold text-ink opacity-0 group-hover:opacity-100 transition-opacity">
+              <div key={item.date} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
+                <span className="text-caption font-semibold text-text opacity-0 group-hover:opacity-100 transition-opacity tabular-nums">
                   {item.count}
                 </span>
                 <div
-                  className="w-full bg-[#1F5F5B] hover:bg-[#14423F] transition-colors"
+                  className="w-full bg-accent rounded-t-btn transition-opacity hover:opacity-90"
                   style={{ height: `${heightPct}%` }}
                 />
-                <span className="font-mono text-[10px] uppercase text-ink-60">
+                <span className="text-caption text-text-3 font-medium">
                   {item.date}
                 </span>
               </div>
@@ -144,42 +134,42 @@ export const AdminDashboardPage: React.FC = () => {
       </div>
 
       {/* Recent Activity / Events Table */}
-      <div className="p-6 bg-paper border border-[#C9D0D4] space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-[#C9D0D4]">
-          <h2 className="font-display text-xl uppercase text-ink">
-            Recent Programming Activity
+      <div className="p-5 bg-surface border border-line rounded-panel space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-line">
+          <h2 className="text-h3 font-semibold text-text">
+            Recent programming activity
           </h2>
-          <Link to="/admin/events" className="font-mono text-xs uppercase text-admin-accent hover:underline">
+          <Link to="/admin/events" className="text-small text-accent hover:underline font-medium">
             View All Events →
           </Link>
         </div>
 
-        <div className="divide-y divide-[#C9D0D4]">
+        <div className="divide-y divide-line">
           {recentEvents.map((evt) => (
-            <div key={evt.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div key={evt.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <span
-                    className="inline-block h-2 w-2"
+                    className="inline-block h-2 w-2 rounded-full"
                     style={{ backgroundColor: evt.organizerColor }}
                   />
-                  <span className="font-mono text-[10px] uppercase text-ink-60 font-semibold">
+                  <span className="text-caption text-text-3 font-medium">
                     {evt.organizerName} · {evt.category}
                   </span>
-                  <span className="font-mono text-[10px] uppercase px-1.5 py-0.2 bg-[#E6EAEC] text-ink">
+                  <span className="text-caption px-2 py-0.5 rounded-full bg-subtle text-text capitalize">
                     {evt.status}
                   </span>
                 </div>
-                <h4 className="font-display text-lg uppercase text-ink">
+                <h4 className="text-small font-semibold text-text">
                   {evt.title}
                 </h4>
               </div>
 
-              <div className="flex items-center gap-4 text-xs font-mono">
-                <span className="text-ink-60">{formatDate(evt.startsAt)}</span>
+              <div className="flex items-center gap-4 text-small">
+                <span className="text-text-3">{formatDate(evt.startsAt)}</span>
                 <Link
                   to={`/admin/events/${evt.id}/edit`}
-                  className="px-2.5 py-1 border border-ink font-semibold hover:bg-ink hover:text-white uppercase transition-colors"
+                  className="px-3 py-1 border border-line rounded-btn font-medium hover:bg-subtle text-text transition-colors text-small"
                 >
                   Manage
                 </Link>
