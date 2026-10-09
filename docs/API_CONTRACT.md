@@ -74,16 +74,28 @@ Paginated response envelope:
 
 #### `GET /api/v1/events`
 - **Role**: `ANONYMOUS` (Public)
-- **Description**: Search and list published events with faceted filtering.
+- **Description**: Search and list published events with faceted filtering, text search, date filtering, and cursor pagination.
 - **Query Parameters**:
-  - `orgId` (string, required)
-  - `clubId` (string, optional)
-  - `category` (string, optional: `HACKATHON` | `WORKSHOP` | `TALK` | `EXHIBITION` | `COMPETITION` | `SOCIAL`)
-  - `status` (string, optional: `PUBLISHED` | `ONGOING` | `COMPLETED`)
-  - `query` (string, optional)
-  - `from` (ISO8601, optional)
-  - `to` (ISO8601, optional)
-  - `page`, `limit`
+  - `category` (string, optional: `all` | `hackathon` | `workshop` | `talk` | `competition`)
+  - `date` (string, optional: `today` | `weekend` | `month` | ISO8601)
+  - `free` (boolean, optional)
+  - `q` (string, optional: title or description search)
+  - `sort` (string, optional: `soonest` | `newest` | `popular`)
+  - `cursor` (string, optional: opaque cursor for infinite scroll)
+  - `limit` (integer, optional, default: 12)
+- **Response**: `200 OK` → `{ "data": Event[], "pagination": PaginationMeta, "nextCursor": string | null }`
+
+#### `GET /api/v1/events/promoted`
+- **Role**: `ANONYMOUS` (Public)
+- **Description**: Fetch high-priority promoted events for the hero carousel.
+- **Response**: `200 OK` → `Event[]` (filtered by active promotion window and sorted by priority)
+
+#### `GET /api/v1/events/newest`
+- **Role**: `ANONYMOUS` (Public)
+- **Description**: Fetch the most recently published events for the "New events" horizontal rail.
+- **Query Parameters**:
+  - `limit` (integer, optional, default: 8)
+  - `cursor` (string, optional)
 - **Response**: `200 OK` → `{ "data": Event[], "pagination": PaginationMeta }`
 
 #### `GET /api/v1/events/:slugOrId`
