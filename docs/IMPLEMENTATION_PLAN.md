@@ -234,42 +234,42 @@ export interface EventsApi {
   - Build/restyle `Button`, `Badge`, `ToggleGroup`, `Tabs`, `Select`, `Skeleton`, `Sheet`, `Popover`, `Command`.
   - *Acceptance*: All primitives strictly follow pill/flat rules and 44px tap targets. (COMPLETED)
 
-- [ ] **M3: EventCard Variants & /styleguide Page**
+- [x] **M3: EventCard Variants & /styleguide Page**
   - Build `EventCard` with variants A (stacked), B (overlay), C (list-row), fallback poster, and skeleton.
   - Update `/styleguide` with live previews of all 3 variants and primitives.
-  - *Acceptance*: Card title is stretched link; action button sits on top; image scales 1.03 on hover; seal icon displays for verified clubs.
+  - *Acceptance*: Card title is stretched link; action button sits on top; image scales 1.03 on hover; seal icon displays for verified clubs. (COMPLETED)
 
-- [ ] **M4: Header/Footer & Hero Promo Carousel (Top Half)**
+- [x] **M4: Header/Footer & Hero Promo Carousel (Top Half)**
   - Implement dynamic scroll header (on-dark transparent $\to$ solid white on scroll).
   - Implement top-half 2-column promo carousel with Embla (height $\ge 50\text{svh}$, desktop cap 520px).
   - Controls: prev/next arrows & dots below content, optional 8s autoplay with visible pause button.
-  - *Acceptance*: Promoted slides render accurately; keyboard navigable with ArrowLeft/Right; pause button works.
+  - *Acceptance*: Promoted slides render accurately; keyboard navigable with ArrowLeft/Right; pause button works. (COMPLETED)
 
-- [ ] **M5: "New Events" Rail (Bottom Half)**
+- [x] **M5: "New Events" Rail (Bottom Half)**
   - Implement bottom half on `--lavender` background with serif title and "See all" link.
   - Horizontally scrolling snap rail of compact 5:4 EventCards (4 visible at 1440px, 1.2 on mobile).
   - Verify horizontal seam between top and bottom halves fills first viewport on desktop ($\ge 1024\text{px}$).
-  - *Acceptance*: Touch swipeable on mobile, hover arrows on desktop, seamless meeting at 50/50 seam.
+  - *Acceptance*: Touch swipeable on mobile, hover arrows on desktop, seamless meeting at 50/50 seam. (COMPLETED)
 
-- [ ] **M6: All-Events Section (Toolbar, Grid/List Views, URL Sync, Pagination)**
+- [x] **M6: All-Events Section (Toolbar, Grid/List Views, URL Sync, Pagination)**
   - Implement sticky toolbar with search, category tabs, date popover, Free toggle, sort dropdown, and Grid/List toggle.
   - URL query synchronization (`?view=grid|list`, `?q=`, `?category=`, etc.) and `localStorage` view persistence.
   - Animated view switching with Motion (`layout` transitions) and animated text/counter morphing with Torph (`<TextMorph>`).
   - Cursor-based "Load more" button with skeletons and zero layout shift.
-  - *Acceptance*: View switching animates smoothly; reloading browser preserves filter and view state; result counts morph smoothly.
+  - *Acceptance*: View switching animates smoothly; reloading browser preserves filter and view state; result counts morph smoothly. (COMPLETED)
 
-- [ ] **M7: Motion, Responsive Pass, & Accessibility (WCAG AA)**
+- [x] **M7: Motion, Responsive Pass, & Accessibility (WCAG AA)**
   - Subtle text rise on hero (400–600ms stagger); Motion transitions; Torph place-value numeric rolling; `prefers-reduced-motion` compliance.
   - Responsive audit across 360, 390, phone-landscape, 768, 1024, 1280, 1440, 1920px.
   - WCAG AA contrast check: `--text-2` on `--lavender` and `--on-dark` on `--champion`.
-  - *Acceptance*: 0 horizontal page overflow; all touch targets $\ge 44\text{px}$; Lighthouse A11y 95+.
+  - *Acceptance*: 0 horizontal page overflow; all touch targets $\ge 44\text{px}$; Lighthouse A11y 95+. (COMPLETED)
 
-- [ ] **M8: Tests, Layout Audit, Screenshots, & Polish**
+- [x] **M8: Tests, Layout Audit, Screenshots, & Polish**
   - Unit tests for URL state parsing and card status logic.
   - Component tests for EventCard variants and ToggleGroup.
   - Playwright E2E tests for carousel keyboarding, grid/list reload persistence, URL sync filters, and load-more.
   - Capture automated visual snapshots across all viewports.
-  - *Acceptance*: `npm test` and `npm run test:e2e` pass with 0 errors.
+  - *Acceptance*: `npm test` and `npm run test:e2e` pass with 0 errors. (COMPLETED)
 
 ---
 
