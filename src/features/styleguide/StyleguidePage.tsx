@@ -10,11 +10,15 @@ import { Skeleton } from '@/design-system/primitives/Skeleton'
 import { EmptyState } from '@/design-system/primitives/EmptyState'
 import { ErrorState } from '@/design-system/primitives/ErrorState'
 import { Tabs } from '@/design-system/primitives/Tabs'
+import { Badge } from '@/design-system/primitives/Badge'
+import { ToggleGroup, ToggleGroupItem } from '@/design-system/primitives/ToggleGroup'
+import { EventCard } from '@/design-system/EventCard'
+import { SEED_EVENTS } from '@/api/adapters/mock/seedEvents'
 import { GradientBackdrop } from '@/design-system/GradientBackdrop'
 import { useToast } from '@/design-system/primitives/Toast'
 import { TOKENS } from '@/design-system/tokens'
 import { getContrastSummary } from '@/lib/contrast'
-import { ArrowRight, Calendar, MapPin, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { ArrowRight, Calendar, MapPin, CheckCircle2, AlertTriangle, LayoutGrid, List } from 'lucide-react'
 
 export const StyleguidePage: React.FC = () => {
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -22,6 +26,7 @@ export const StyleguidePage: React.FC = () => {
   const [selectedChip, setSelectedChip] = useState('all')
   const [activeTab, setActiveTab] = useState('about')
   const [testHex, setTestHex] = useState('#C93E27')
+  const [demoView, setDemoView] = useState<'grid' | 'list'>('grid')
   const { toast } = useToast()
 
   const contrastInfo = getContrastSummary(testHex)
@@ -387,6 +392,74 @@ export const StyleguidePage: React.FC = () => {
                 message="Unable to communicate with the registry."
                 onRetry={() => {}}
               />
+            </div>
+          </div>
+        </section>
+
+        {/* 11. CHAMPION & LAVENDER: EVENTCARD SHOWCASE (3 VARIANTS + POSTER FALLBACK) */}
+        <section className="space-y-6 pt-6 border-t border-line">
+          <div>
+            <span className="text-[13px] font-semibold text-champion uppercase tracking-wider block mb-1">
+              Champion & Lavender Visual System
+            </span>
+            <h2 className="text-h2 font-serif text-3xl font-normal text-ink">
+              EventCard Specification & Variants
+            </h2>
+            <p className="text-body text-ink-muted mt-1 max-w-2xl text-[14px]">
+              28px outer radius, 12px padding, 22px inner image radius. Micro-interaction 1.03x image hover scale, Instrument Serif display titles, verified club seals, status badges, and accessible stretched link.
+            </p>
+          </div>
+
+          {/* Badges & Segmented Toggle Demo */}
+          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-[22px] bg-lavender/30 border border-line">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[13px] font-medium text-ink-muted mr-1">Status Pills:</span>
+              <Badge variant="filling">Filling fast</Badge>
+              <Badge variant="promoted">Promoted</Badge>
+              <Badge variant="free">Free</Badge>
+              <Badge variant="online">Online</Badge>
+              <Badge variant="outline">₹299</Badge>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-[13px] font-medium text-ink-muted">View Mode:</span>
+              <ToggleGroup
+                type="single"
+                value={demoView}
+                onValueChange={(val) => val && setDemoView(val as 'grid' | 'list')}
+              >
+                <ToggleGroupItem value="grid" aria-label="Grid view">
+                  <LayoutGrid className="w-4 h-4" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="list" aria-label="List view">
+                  <List className="w-4 h-4" />
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+          </div>
+
+          {/* 3 Variants Demonstration */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold text-ink">Variant 1: Stacked (Standard Vertical Grid)</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Event with image */}
+              <EventCard event={SEED_EVENTS[0]} variant="stacked" />
+              {/* Event with filling fast status */}
+              <EventCard event={SEED_EVENTS[2]} variant="stacked" />
+              {/* Event with NO image -> Typographic Fallback Poster */}
+              <EventCard event={SEED_EVENTS[9]} variant="stacked" />
+            </div>
+
+            <h3 className="text-lg font-semibold text-ink pt-4">Variant 2: Overlay (Full-Bleed Hero / Promo)</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <EventCard event={SEED_EVENTS[1]} variant="overlay" />
+              <EventCard event={SEED_EVENTS[3]} variant="overlay" />
+            </div>
+
+            <h3 className="text-lg font-semibold text-ink pt-4">Variant 3: List Row (Horizontal Dense)</h3>
+            <div className="flex flex-col gap-4">
+              <EventCard event={SEED_EVENTS[0]} variant="list-row" />
+              <EventCard event={SEED_EVENTS[9]} variant="list-row" />
             </div>
           </div>
         </section>

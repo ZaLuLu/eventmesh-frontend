@@ -115,8 +115,26 @@ export const EventSchema = z.object({
   organizerName: z.string().optional(),
   isSignature: z.boolean().default(false),
   isFree: z.boolean().optional(),
-  price: z.number().optional(),
   isOnline: z.boolean().optional(),
+  price: z.number().optional(),
+  promotion: z
+    .object({
+      label: z.enum(['Promoted', 'Featured']),
+      priority: z.number().int().default(1),
+      startsAt: z.string(),
+      endsAt: z.string(),
+    })
+    .optional(),
+  publishedAt: z.string().optional(),
+  registrationsCount: z.number().int().nonnegative().default(0),
+  club: z
+    .object({
+      id: z.string(),
+      name: z.string(),
+      color: z.string(),
+      verified: z.boolean().default(false),
+    })
+    .optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 })
@@ -299,6 +317,13 @@ export function normalizeBackendEvent(item: VisibleEventRead | EventRead): Event
     isFree: item.is_free,
     price: (item.price_cents || 0) / 100,
     isOnline: item.is_online,
+    registrationsCount: 0,
+    club: {
+      id: item.organization?.id || 'org-1',
+      name: item.organization?.name || 'Organizer',
+      color: '#1A73E8',
+      verified: true,
+    },
   }
 }
 

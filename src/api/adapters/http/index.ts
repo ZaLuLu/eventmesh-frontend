@@ -182,6 +182,57 @@ export const httpEventsApi: EventsApi = {
       return []
     }
   },
+
+  listPromoted: async () => {
+    try {
+      const res = await requestJson<EventBrowseResponse>(`${V1}/events?limit=5`)
+      return (res.items || []).map(normalizeBackendEvent)
+    } catch {
+      return []
+    }
+  },
+
+  listNewest: async (params = {}) => {
+    try {
+      const query = new URLSearchParams()
+      if (params.limit) query.set('limit', String(params.limit))
+      if (params.cursor) query.set('offset', params.cursor)
+      const res = await requestJson<EventBrowseResponse>(
+        `${V1}/events${query.toString() ? `?${query.toString()}` : ''}`
+      )
+      const items = (res.items || []).map(normalizeBackendEvent)
+      return {
+        items,
+        nextCursor: res.next_offset ? String(res.next_offset) : undefined,
+        totalCount: res.total || items.length,
+      }
+    } catch {
+      return { items: [], totalCount: 0 }
+    }
+  },
+
+  list: async (params = {}) => {
+    try {
+      const query = new URLSearchParams()
+      if (params.category && params.category !== 'all') query.set('category', params.category)
+      if (params.q) query.set('q', params.q)
+      if (params.free !== undefined) query.set('free', String(params.free))
+      if (params.date && params.date !== 'all') query.set('date_range', params.date)
+      if (params.limit) query.set('limit', String(params.limit))
+      if (params.cursor) query.set('offset', params.cursor)
+      const res = await requestJson<EventBrowseResponse>(
+        `${V1}/events${query.toString() ? `?${query.toString()}` : ''}`
+      )
+      const items = (res.items || []).map(normalizeBackendEvent)
+      return {
+        items,
+        nextCursor: res.next_offset ? String(res.next_offset) : undefined,
+        totalCount: res.total || items.length,
+      }
+    } catch {
+      return { items: [], totalCount: 0 }
+    }
+  },
 }
 
 export const httpEventsAdminApi: EventsAdminApi = {

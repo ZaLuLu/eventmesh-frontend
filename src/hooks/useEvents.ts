@@ -35,6 +35,20 @@ export function useFeaturedEvents() {
   })
 }
 
+export function usePromotedEvents() {
+  return useQuery({
+    queryKey: ['events', 'promoted'],
+    queryFn: () => (api.events.listPromoted ? api.events.listPromoted() : api.events.getFeaturedEvents()),
+  })
+}
+
+export function useNewestEvents(params?: { limit?: number; cursor?: string }) {
+  return useQuery({
+    queryKey: ['events', 'newest', params],
+    queryFn: () => (api.events.listNewest ? api.events.listNewest(params) : api.events.getEvents()),
+  })
+}
+
 export function useAdminEvents(scope: { orgId: string; clubId?: string }) {
   return useQuery({
     queryKey: ['admin', 'events', scope],

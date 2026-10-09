@@ -80,7 +80,15 @@ async function simulateLatency(): Promise<void> {
 class MockDataStore {
   organization: Organization = getStored('org', SEED_ORGANIZATION)
   clubs: Organizer[] = getStored('clubs', SEED_CLUBS)
-  events: Event[] = getStored('events', SEED_EVENTS)
+  events: Event[] = (() => {
+    const v = getStored<string>('seed_ver', '')
+    if (v !== 'v2_champion_38') {
+      setStored('seed_ver', 'v2_champion_38')
+      setStored('events', SEED_EVENTS)
+      return SEED_EVENTS
+    }
+    return getStored('events', SEED_EVENTS)
+  })()
   registrations: Registration[] = getStored('registrations', SEED_REGISTRATIONS)
   certificates: Certificate[] = getStored('certificates', SEED_CERTIFICATES)
   announcements: Announcement[] = getStored('announcements', SEED_ANNOUNCEMENTS)
@@ -193,6 +201,128 @@ export const mockEventsApi: EventsApi = {
       .filter((e) => e.id !== eventId && (e.category === category || e.isSignature))
       .slice(0, 3)
   },
+
+  async listPromoted(): Promise<Event[]> {
+    await simulateLatency()
+    return mockStore.events
+      .filter((e) => e.status === 'published' || e.status === 'live')
+      .filter((e) => Boolean(e.promotion?.label || e.isSignature))
+      .sort((a, b) => {
+        const pA = a.promotion?.priority ?? (a.isSignature ? 10 : 0)
+        const pB = b.promotion?.priority ?? (b.isSignature ? 10 : 0)
+        return pB - pA
+      })
+      .slice(0, 5)
+  },
+
+  async listNewest(params?: { limit?: number; cursor?: string }): Promise<PaginatedResult<Event>> {
+    await simulateLatency()
+    const limit = params?.limit || 10
+    const cursor = params?.cursor ? Number(params.cursor) : 0
+    const published = mockStore.events
+      .filter((e) => e.status === 'published' || e.status === 'live')
+      .sort((a, b) => {
+        const timeA = new Date(a.publishedAt || a.startsAt).getTime()
+        const timeB = new Date(b.publishedAt || b.startsAt).getTime()
+        return timeB - timeA
+      })
+    const slice = published.slice(cursor, cursor + limit)
+    const nextCursor = cursor + limit < published.length ? String(cursor + limit) : undefined
+    return {
+      items: slice,
+      nextCursor,
+      totalCount: published.length,
+    }
+  },
+
+  async list(params?: {
+    category?: string
+    date?: string
+    free?: boolean
+    q?: string
+    sort?: string
+    cursor?: string
+    limit?: number
+  }): Promise<PaginatedResult<Event>> {
+    await simulateLatency()
+    let items = mockStore.events.filter((e) => e.status !== 'draft')
+
+    // Category filter
+    if (params?.category && params.category !== 'all') {
+      const cat = params.category.toLowerCase()
+      items = items.filter(
+        (e) =>
+          e.category.toLowerCase() === cat ||
+          e.type.toLowerCase() === cat ||
+          (e.tags && e.tags.some((t) => t.toLowerCase() === cat))
+      )
+    }
+
+    // Search query
+    if (params?.q) {
+      const query = params.q.toLowerCase().trim()
+      items = items.filter(
+        (e) =>
+          e.title.toLowerCase().includes(query) ||
+          e.description.toLowerCase().includes(query) ||
+          (e.organizerName && e.organizerName.toLowerCase().includes(query)) ||
+          (e.club?.name && e.club.name.toLowerCase().includes(query)) ||
+          (e.tags && e.tags.some((t) => t.toLowerCase() === query))
+      )
+    }
+
+    // Free filter
+    if (params?.free) {
+      items = items.filter((e) => e.isFree === true || e.price === 0 || !e.features?.paid)
+    }
+
+    // Date filter
+    if (params?.date && params.date !== 'all') {
+      const now = new Date()
+      if (params.date === 'today') {
+        const todayStr = now.toISOString().slice(0, 10)
+        items = items.filter((e) => e.startsAt.startsWith(todayStr))
+      } else if (params.date === 'this-weekend' || params.date === 'weekend') {
+        const inSevenDays = new Date(now.getTime() + 7 * 24 * 3600 * 1000)
+        items = items.filter((e) => {
+          const d = new Date(e.startsAt)
+          return d >= now && d <= inSevenDays
+        })
+      } else if (params.date === 'this-month') {
+        const nextMonth = new Date(now.getTime() + 30 * 24 * 3600 * 1000)
+        items = items.filter((e) => {
+          const d = new Date(e.startsAt)
+          return d >= now && d <= nextMonth
+        })
+      }
+    }
+
+    // Sort order
+    if (params?.sort === 'date-asc') {
+      items.sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())
+    } else if (params?.sort === 'date-desc') {
+      items.sort((a, b) => new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime())
+    } else if (params?.sort === 'popularity') {
+      items.sort((a, b) => (b.registrationsCount || 0) - (a.registrationsCount || 0))
+    } else if (params?.sort === 'newest') {
+      items.sort(
+        (a, b) =>
+          new Date(b.publishedAt || b.startsAt).getTime() -
+          new Date(a.publishedAt || a.startsAt).getTime()
+      )
+    }
+
+    const limit = params?.limit || 12
+    const cursor = params?.cursor ? Number(params.cursor) : 0
+    const paged = items.slice(cursor, cursor + limit)
+    const nextCursor = cursor + limit < items.length ? String(cursor + limit) : undefined
+
+    return {
+      items: paged,
+      nextCursor,
+      totalCount: items.length,
+    }
+  },
 }
 
 export const mockEventsAdminApi: EventsAdminApi = {
@@ -247,6 +377,13 @@ export const mockEventsAdminApi: EventsAdminApi = {
       results: [],
       photos: [],
       isSignature: eventData.isSignature || false,
+      registrationsCount: 0,
+      club: {
+        id: club.id,
+        name: club.name,
+        color: club.color,
+        verified: true,
+      },
       createdAt: new Date().toISOString(),
     }
 

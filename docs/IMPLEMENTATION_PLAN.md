@@ -225,14 +225,14 @@ export interface EventsApi {
 
 ## 6. Milestones & Progress Checklist
 
-- [ ] **M1: Tokens, Fonts, Tailwind Theme, & Radix/shadcn Setup**
+- [x] **M1: Tokens, Fonts, Tailwind Theme, & Radix/shadcn Setup**
   - Install dependencies (`embla-carousel-react`, `@radix-ui/react-toggle-group`, `@radix-ui/react-popover`, `@radix-ui/react-select`, `@radix-ui/react-tabs`, `@radix-ui/react-dialog`, `cmdk`, `torph`, `motion`).
   - Configure self-hosted Instrument Serif and update `tailwind.config.js` and `src/index.css`.
-  - *Acceptance*: `npm run build` succeeds, fonts load in browser, CSS tokens defined.
+  - *Acceptance*: `npm run build` succeeds, fonts load in browser, CSS tokens defined. (COMPLETED)
 
-- [ ] **M2: Restyled Primitives**
+- [x] **M2: Restyled Primitives**
   - Build/restyle `Button`, `Badge`, `ToggleGroup`, `Tabs`, `Select`, `Skeleton`, `Sheet`, `Popover`, `Command`.
-  - *Acceptance*: All primitives strictly follow pill/flat rules and 44px tap targets.
+  - *Acceptance*: All primitives strictly follow pill/flat rules and 44px tap targets. (COMPLETED)
 
 - [ ] **M3: EventCard Variants & /styleguide Page**
   - Build `EventCard` with variants A (stacked), B (overlay), C (list-row), fallback poster, and skeleton.

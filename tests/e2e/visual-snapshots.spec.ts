@@ -26,8 +26,8 @@ test.describe('Visual Breakpoints Verification & Snapshotting', () => {
 
       for (const route of ROUTES) {
         const routeName = route === '/' ? 'home' : route.replace('/', '')
-        await page.goto(route, { waitUntil: 'domcontentloaded' })
-        await page.waitForTimeout(400)
+        await page.goto(route, { waitUntil: 'networkidle' })
+        await page.waitForTimeout(800)
         const filePath = path.join(outDir, `${vp.name}-${routeName}.png`)
         await page.screenshot({ path: filePath })
       }

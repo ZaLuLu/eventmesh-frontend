@@ -48,6 +48,17 @@ export interface EventsApi {
   getUpcomingRail(): Promise<Event[]>
   getFeaturedEvents(): Promise<Event[]>
   getSimilarEvents(eventId: string, category: string): Promise<Event[]>
+  listPromoted(): Promise<Event[]>
+  listNewest(params?: { limit?: number; cursor?: string }): Promise<PaginatedResult<Event>>
+  list(params?: {
+    category?: string
+    date?: string
+    free?: boolean
+    q?: string
+    sort?: string
+    cursor?: string
+    limit?: number
+  }): Promise<PaginatedResult<Event>>
 }
 
 export interface EventsAdminApi {
