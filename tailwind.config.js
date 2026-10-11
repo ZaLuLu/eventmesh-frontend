@@ -7,48 +7,48 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Champion & Lavender Core Tokens
+        // High-Contrast Obsidian Stage & Electric Violet Tokens
         champion: {
-          DEFAULT: '#151130',
-          2: '#1E1846',
+          DEFAULT: '#0C0A1A',
+          2: '#141126',
         },
         lavender: {
-          DEFAULT: '#E6E4F3',
-          100: '#F5F4FA',
-          200: '#ECEAF5',
-          300: '#D9D5EB',
+          DEFAULT: '#DDD6FE',
+          100: '#F3F0FF',
+          200: '#E4DFFC',
+          300: '#C4B5FD',
         },
         violet: {
-          DEFAULT: '#5B47D6',
-          hover: '#4A38BF',
+          DEFAULT: '#5E4AE3',
+          hover: '#4D39D1',
         },
-        'on-dark': '#F3F0FF',
-        'on-dark-2': '#BDB6E0',
-        verified: '#1FA34A',
+        'on-dark': '#F8FAFC',
+        'on-dark-2': '#94A3B8',
+        verified: '#10B981',
 
-        // Semantic Canvas Tokens
-        bg: '#F7F5FD',
+        // Semantic Canvas Tokens (Crisp Slate Neutrals)
+        bg: '#F8F9FC',
         surface: '#FFFFFF',
-        'surface-sunken': '#F1EEFE',
-        subtle: '#F1EEFE',
-        line: '#E3DFF3',
+        'surface-sunken': '#F1F3F9',
+        subtle: '#F1F3F9',
+        line: '#E2E6EE',
         ink: {
-          DEFAULT: '#151130',
-          muted: '#4B4670',
-          subtle: '#6C6790',
+          DEFAULT: '#0F172A',
+          muted: '#475569',
+          subtle: '#64748B',
         },
-        text: '#151130',
-        'text-2': '#4B4670',
-        'text-3': '#6C6790',
+        text: '#0F172A',
+        'text-2': '#475569',
+        'text-3': '#64748B',
         accent: {
-          DEFAULT: '#5B47D6',
-          hover: '#4A38BF',
-          soft: '#F1EEFE',
+          DEFAULT: '#5E4AE3',
+          hover: '#4D39D1',
+          soft: '#EEF0FD',
         },
         'on-accent': '#FFFFFF',
-        success: '#1E7A4C',
-        warning: '#A85F00',
-        danger: '#B42318',
+        success: '#10B981',
+        warning: '#F59E0B',
+        danger: '#EF4444',
 
         // Admin Scope Specifics
         sidebar: 'var(--sidebar)',
@@ -56,11 +56,11 @@ export default {
         'admin-accent-hover': 'var(--admin-accent-hover)',
       },
       fontFamily: {
-        sans: ['"Inter Variable"', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        body: ['"Inter Variable"', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        serif: ['"Instrument Serif"', 'Georgia', 'serif'],
-        display: ['"Instrument Serif"', 'Georgia', 'serif'],
-        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+        sans: ['"Plus Jakarta Sans Variable"', '"Plus Jakarta Sans"', '"Inter Variable"', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        body: ['"Plus Jakarta Sans Variable"', '"Plus Jakarta Sans"', '"Inter Variable"', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        serif: ['"Plus Jakarta Sans Variable"', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        display: ['"Plus Jakarta Sans Variable"', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
       },
       fontSize: {
         caption: ['0.8125rem', { lineHeight: '1.4' }], // 13px (strict minimum)

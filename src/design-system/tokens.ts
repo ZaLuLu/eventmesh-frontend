@@ -1,37 +1,37 @@
 export const TOKENS = {
-  // Champion & Lavender Palette
-  champion: '#151130',
-  champion2: '#1E1846',
-  lavender: '#C8BEFA',
-  lavender100: '#F1EEFE',
+  // Obsidian Stage & Electric Accent Tokens
+  champion: '#0C0A1A',
+  champion2: '#141126',
+  lavender: '#DDD6FE',
+  lavender100: '#F3F0FF',
   lavender200: '#E4DFFC',
-  lavender300: '#D6CEFB',
-  violet: '#5B47D6',
-  violetHover: '#4A38BF',
+  lavender300: '#C4B5FD',
+  violet: '#5E4AE3',
+  violetHover: '#4D39D1',
 
-  // Canvas & Surfaces
-  bg: '#F7F5FD',
+  // Canvas & Surfaces (Crisp Slate Neutrals)
+  bg: '#F8F9FC',
   surface: '#FFFFFF',
-  subtle: '#F1EEFE',
-  line: '#E3DFF3',
+  subtle: '#F1F3F9',
+  line: '#E2E6EE',
 
   // Text
-  text: '#151130',
-  text2: '#4B4670',
-  text3: '#6C6790',
-  onDark: '#F3F0FF',
-  onDark2: '#BDB6E0',
+  text: '#0F172A',
+  text2: '#475569',
+  text3: '#64748B',
+  onDark: '#F8FAFC',
+  onDark2: '#94A3B8',
 
   // Status
-  success: '#1E7A4C',
-  warning: '#A85F00',
-  danger: '#B42318',
-  verified: '#1FA34A',
+  success: '#10B981',
+  warning: '#F59E0B',
+  danger: '#EF4444',
+  verified: '#10B981',
 
-  // Backward compatibility alias
-  accent: '#5B47D6',
-  accentHover: '#4A38BF',
-  accentSoft: '#F1EEFE',
+  // Accent Mappings
+  accent: '#5E4AE3',
+  accentHover: '#4D39D1',
+  accentSoft: '#EEF0FD',
   onAccent: '#FFFFFF',
 
   // Shadow

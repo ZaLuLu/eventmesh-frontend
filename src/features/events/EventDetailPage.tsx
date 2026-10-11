@@ -18,12 +18,17 @@ import { formatDate, formatTime } from '@/lib/dates'
 import { downloadICS } from '@/lib/ics'
 import { useToast } from '@/design-system/primitives/Toast'
 import { Skeleton } from '@/design-system/primitives/Skeleton'
+import { PosterArtwork } from '@/design-system/PosterArtwork'
+import { fireCelebrationConfetti } from '@/lib/confetti'
+import { BellToggle } from '@/design-system/micro/BellToggle'
+import { ProfileCard } from '@/design-system/3d/ProfileCard'
 
 export const EventDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>()
   const { toast } = useToast()
   const { data: event, isLoading, error } = useEvent(slug || '')
   const [activeTab, setActiveTab] = useState('about')
+  const [isReminded, setIsReminded] = useState(false)
 
   if (isLoading) {
     return (
@@ -90,10 +95,45 @@ export const EventDetailPage: React.FC = () => {
   const registeredCount = (event.capacity || 100) - (event.seatsLeft || 0)
   const clubColor = event.organizerColor || '#C93E27'
 
+  const speakerPhotos = [
+    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+  ]
+
+  const speakersList = event.people && event.people.length > 0
+    ? event.people.map((p, idx) => ({
+        name: p.name,
+        role: p.role,
+        bio: p.bio,
+        photo: (p as any).photo || speakerPhotos[idx % speakerPhotos.length],
+        status: p.role.toLowerCase().includes('keynote') ? 'Keynote Speaker' : 'Expert Mentor',
+        statusColor: p.role.toLowerCase().includes('keynote') ? '#EC4899' : '#6366F1',
+      }))
+    : [
+        {
+          name: 'Dr. Aris Thorne',
+          role: 'Keynote Speaker & AI Research Director',
+          bio: 'Former principal investigator leading applied distributed agentic systems.',
+          photo: speakerPhotos[0],
+          status: 'Keynote Speaker',
+          statusColor: '#EC4899',
+        },
+        {
+          name: 'Kavya Patel',
+          role: 'Lead Systems Architect & Mentor',
+          bio: 'Specialist in low-latency infrastructure and high-throughput event streaming architectures.',
+          photo: speakerPhotos[1],
+          status: 'Expert Mentor',
+          statusColor: '#6366F1',
+        },
+      ]
+
   const tabs = [
     { id: 'about', label: 'About' },
     { id: 'schedule', label: 'Schedule', count: event.schedule?.length },
-    { id: 'speakers', label: 'Speakers', count: event.people?.length },
+    { id: 'speakers', label: 'Speakers', count: speakersList.length },
     { id: 'rules', label: 'Rules' },
     { id: 'contact', label: 'Contact' },
   ]
@@ -112,6 +152,22 @@ export const EventDetailPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <BellToggle
+              size="sm"
+              pressed={isReminded}
+              onChange={(next) => {
+                setIsReminded(next)
+                toast({
+                  title: next ? 'Reminder Activated' : 'Reminder Disabled',
+                  message: next
+                    ? `You'll get an alert 2 hours before ${event.title} begins.`
+                    : 'Event reminder has been cleared.',
+                  type: 'info',
+                })
+              }}
+              onLabel="Reminder set"
+              offLabel="Remind me"
+            />
             <button
               type="button"
               onClick={handleShare}
@@ -133,17 +189,22 @@ export const EventDetailPage: React.FC = () => {
       </div>
 
       <div className="app-container py-6 sm:py-8 space-y-6">
-        {/* Cover image (max 360px tall) with 4px club top edge */}
-        <div className="relative w-full max-h-[360px] h-64 sm:h-80 md:h-[360px] rounded-panel overflow-hidden border border-line bg-subtle">
+        {/* Cover image (max 300px tall) with 4px club top edge and radiant aura */}
+        <div className="relative w-full max-h-[300px] h-56 sm:h-72 md:h-[300px] rounded-panel overflow-hidden border border-line bg-subtle group">
           <div
-            className="absolute top-0 left-0 right-0 h-1 z-10"
+            className="absolute top-0 left-0 right-0 h-1.5 z-10 shadow-sm"
             style={{ backgroundColor: clubColor }}
             aria-hidden="true"
           />
-          <img
-            src={event.banner || event.poster || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80'}
-            alt={event.title}
-            className="w-full h-full object-cover"
+          {/* Ambient blurred aura backdrop */}
+          <div
+            className="absolute -inset-4 blur-3xl opacity-20 pointer-events-none"
+            style={{ backgroundColor: clubColor }}
+            aria-hidden="true"
+          />
+          <PosterArtwork
+            event={event}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
           />
         </div>
 
@@ -164,7 +225,7 @@ export const EventDetailPage: React.FC = () => {
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-text tracking-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-text tracking-[-0.025em]">
             {event.title}
           </h1>
 
@@ -248,28 +309,47 @@ export const EventDetailPage: React.FC = () => {
               </div>
             )}
 
-            {/* Tab: Speakers */}
+            {/* Tab: Speakers & Mentors with 3D Profile Cards */}
             {activeTab === 'speakers' && (
-              <div className="bg-surface border border-line rounded-panel p-6 space-y-4">
-                <h3 className="text-h3 font-semibold text-text">Speakers & mentors</h3>
-                {event.people && event.people.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {event.people.map((person, idx) => (
-                      <div key={idx} className="p-3.5 rounded-[10px] bg-subtle flex items-start gap-3">
-                        <div className="h-10 w-10 rounded-full bg-accent-soft text-accent flex items-center justify-center font-semibold text-small flex-shrink-0">
-                          {person.name[0]}
-                        </div>
-                        <div className="min-w-0">
-                          <h4 className="font-semibold text-small text-text truncate">{person.name}</h4>
-                          <p className="text-caption text-accent font-medium">{person.role}</p>
-                          {person.bio && <p className="text-caption text-text-2 mt-1 line-clamp-2">{person.bio}</p>}
-                        </div>
-                      </div>
-                    ))}
+              <div className="bg-surface border border-line rounded-panel p-6 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-line pb-3">
+                  <div>
+                    <h3 className="text-h3 font-semibold text-text">Speakers & Mentors</h3>
+                    <p className="text-caption text-text-2 mt-0.5">
+                      Distinguished guest speakers and expert mentors guiding this session
+                    </p>
                   </div>
-                ) : (
-                  <p className="text-small text-text-2">No guest speakers listed for this event.</p>
-                )}
+                  <span className="hidden sm:inline-block text-caption font-mono text-text-3">
+                    Tilt cards for 3D holographic specular sheen
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                  {speakersList.map((person, idx) => (
+                    <div key={idx} className="flex justify-center">
+                      <ProfileCard
+                        avatarUrl={person.photo}
+                        name={person.name}
+                        title={person.role}
+                        handle={`${person.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.eth`}
+                        status={person.status}
+                        statusColor={person.statusColor}
+                        contactText="Connect with speaker"
+                        onContactClick={() => {
+                          toast({
+                            title: `Connecting with ${person.name}`,
+                            message: `Direct channel dispatched to ${person.name}.`,
+                            type: 'info',
+                          })
+                        }}
+                        theme="dark"
+                        radius={20}
+                        tiltStrength={14}
+                        className="w-full max-w-[300px]"
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

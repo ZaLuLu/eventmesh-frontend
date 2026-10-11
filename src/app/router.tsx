@@ -216,6 +216,14 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: 'account',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <AttendeeDashboardPage />
+          </Suspense>
+        ),
+      },
+      {
         path: 'verify/:certificateId',
         element: (
           <Suspense fallback={<LoadingFallback />}>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { motion } from 'framer-motion'
 import {
   Search,
   X,
@@ -202,7 +203,7 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
 
         {/* Row 2: Category Chips & Animated Result Counter */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-line/60">
-          {/* Category Chips Bar */}
+          {/* Category Chips Bar with Framer Motion Sliding Pill */}
           <div
             className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1 -mx-2 px-2"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
@@ -215,13 +216,20 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
                   type="button"
                   onClick={() => onCategoryChange(cat.id)}
                   className={cn(
-                    'h-8 px-3.5 rounded-full text-[13px] font-medium whitespace-nowrap transition-all duration-200 select-none flex-shrink-0',
+                    'relative h-8 px-3.5 rounded-full text-[13px] font-medium whitespace-nowrap transition-colors duration-200 select-none flex-shrink-0',
                     isSelected
-                      ? 'bg-champion text-white shadow-xs'
-                      : 'bg-surface text-ink-muted hover:text-ink hover:bg-surface-sunken border border-line/70'
+                      ? 'text-white font-semibold'
+                      : 'text-ink-muted hover:text-ink bg-surface border border-line/70'
                   )}
                 >
-                  {cat.label}
+                  {isSelected && (
+                    <motion.span
+                      layoutId="activeCategoryPill"
+                      className="absolute inset-0 rounded-full bg-champion shadow-xs z-0"
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative z-10">{cat.label}</span>
                 </button>
               )
             })}

@@ -18,10 +18,56 @@ import { Badge } from '@/design-system/primitives/Badge'
 import { Button } from '@/design-system/primitives/Button'
 import { cn } from '@/lib/utils'
 import { formatCardDate, formatPrice } from '@/design-system/EventCard'
+import { PosterArtwork } from '@/design-system/PosterArtwork'
+import { CelestialAuroraMesh } from '@/design-system/CelestialAuroraMesh'
 
 export interface PromoCarouselProps {
   events: Event[]
   className?: string
+}
+
+const ShowcaseCard3D: React.FC<{ children: React.ReactNode; href: string }> = ({ children, href }) => {
+  const cardRef = useRef<HTMLAnchorElement>(null)
+  const [rot, setRot] = useState({ x: 0, y: 0 })
+  const [glare, setGlare] = useState({ x: 50, y: 50, opacity: 0 })
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const rect = cardRef.current?.getBoundingClientRect()
+    if (!rect) return
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const nx = (x / rect.width) * 2 - 1
+    const ny = (y / rect.height) * 2 - 1
+    setRot({ x: -ny * 7, y: nx * 9 })
+    setGlare({ x: (x / rect.width) * 100, y: (y / rect.height) * 100, opacity: 0.22 })
+  }
+
+  const handleMouseLeave = () => {
+    setRot({ x: 0, y: 0 })
+    setGlare({ x: 50, y: 50, opacity: 0 })
+  }
+
+  return (
+    <Link
+      ref={cardRef}
+      to={href}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        transform: `perspective(1000px) rotateX(${rot.x}deg) rotateY(${rot.y}deg)`,
+        transition: 'transform 0.15s ease-out',
+      }}
+      className="group relative block rounded-[28px] p-2.5 bg-white/5 border border-white/15 shadow-2xl backdrop-blur-sm select-none cursor-pointer"
+    >
+      <div
+        className="pointer-events-none absolute inset-0 rounded-[28px] z-20 transition-opacity duration-300"
+        style={{
+          background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(255,255,255,${glare.opacity}), transparent 60%)`,
+        }}
+      />
+      {children}
+    </Link>
+  )
 }
 
 export const PromoCarousel: React.FC<PromoCarouselProps> = ({ events, className }) => {
@@ -96,12 +142,25 @@ export const PromoCarousel: React.FC<PromoCarouselProps> = ({ events, className 
       onTouchStart={() => setIsHovered(true)}
       onTouchEnd={() => setIsHovered(false)}
     >
-      {/* Background Subtle Mesh Gradient Pattern (pure flat, no glassmorphism) */}
+      {/* Generative 60fps Aurora Canvas Mesh Layer */}
+      <CelestialAuroraMesh opacity={0.7} speed={0.8} />
+
+      {/* Atmospheric Hairline Architectural Grid */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-40 mix-blend-screen"
+        className="absolute inset-0 pointer-events-none opacity-[0.04]"
         style={{
-          background:
-            'radial-gradient(ellipse 60% 50% at 80% 20%, rgba(123, 99, 168, 0.4) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 10% 90%, rgba(47, 75, 214, 0.25) 0%, transparent 60%)',
+          backgroundImage:
+            'linear-gradient(to right, rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.8) 1px, transparent 1px)',
+          backgroundSize: '48px 48px',
+        }}
+        aria-hidden="true"
+      />
+
+      {/* Organic Grain Texture Overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.035] mix-blend-overlay"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
         }}
         aria-hidden="true"
       />
@@ -145,8 +204,8 @@ export const PromoCarousel: React.FC<PromoCarouselProps> = ({ events, className 
                       </span>
                     </div>
 
-                    {/* Headline in Instrument Serif */}
-                    <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal leading-[1.08] tracking-tight text-white">
+                    {/* Headline in Modern Bold Tech Display */}
+                    <h2 className="font-sans text-3xl sm:text-4xl lg:text-[46px] font-bold leading-[1.06] tracking-[-0.03em] text-white">
                       <Link
                         to={eventHref}
                         className="hover:text-lavender transition-colors focus:outline-none focus-visible:underline"
@@ -222,34 +281,18 @@ export const PromoCarousel: React.FC<PromoCarouselProps> = ({ events, className 
 
                   {/* Right Column: Event Poster (5 Cols) */}
                   <div className="lg:col-span-5 hidden lg:block">
-                    <Link
-                      to={eventHref}
-                      className="group relative block rounded-[28px] p-2.5 bg-white/5 border border-white/15 transition-transform duration-300 hover:scale-[1.01]"
-                    >
-                      <div className="relative aspect-[5/4] rounded-[22px] overflow-hidden bg-white/10">
-                        {hasPoster ? (
-                          <img
-                            src={event.poster}
-                            alt={event.title}
-                            loading={index === 0 ? 'eager' : 'lazy'}
-                            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
-                          />
-                        ) : (
-                          <div
-                            className="w-full h-full p-6 flex flex-col justify-between"
-                            style={{
-                              background: `linear-gradient(135deg, ${clubColor}30 0%, #151130 100%)`,
-                            }}
-                          >
-                            <span className="text-[13px] font-semibold uppercase tracking-wider text-white/70">
-                              {event.category}
-                            </span>
-                            <span className="font-serif italic text-2xl leading-tight text-white line-clamp-3">
-                              {event.title}
-                            </span>
-                            <span className="text-[13px] text-white/60">{dateStr}</span>
-                          </div>
-                        )}
+                    <ShowcaseCard3D href={eventHref}>
+                      <div className="relative aspect-[5/4] rounded-[22px] overflow-hidden bg-white/10 shadow-lg">
+                        <PosterArtwork
+                          id={event.id}
+                          title={event.title}
+                          category={event.category}
+                          clubName={event.club?.name || event.organizerName}
+                          clubColor={clubColor}
+                          imageUrl={event.poster}
+                          dateStr={dateStr}
+                          priority={index === 0}
+                        />
 
                         {/* Top Badge overlay */}
                         <div className="absolute top-3 left-3 flex items-center gap-1.5 z-10">
@@ -263,7 +306,7 @@ export const PromoCarousel: React.FC<PromoCarouselProps> = ({ events, className 
                           )}
                         </div>
                       </div>
-                    </Link>
+                    </ShowcaseCard3D>
                   </div>
                 </div>
               </div>

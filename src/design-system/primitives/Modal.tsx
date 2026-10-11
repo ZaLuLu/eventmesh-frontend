@@ -9,7 +9,7 @@ export interface ModalProps {
   subtitle?: string
   children: React.ReactNode
   maxWidth?: string
-  surface?: 'public' | 'admin'
+  surface?: 'public' | 'admin' | 'dark'
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -37,22 +37,24 @@ export const Modal: React.FC<ModalProps> = ({
     }
   }, [isOpen, onClose])
 
+  const isDark = surface === 'dark'
+
   return (
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Flat semi-transparent backdrop without blur */}
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-text/40"
+            className={`fixed inset-0 ${isDark ? 'bg-black/80 backdrop-blur-md' : 'bg-text/40'}`}
             aria-hidden="true"
           />
 
-          {/* Modal surface: solid --surface, 1px hairline --line, 14px radius, floating shadow */}
+          {/* Modal surface */}
           <motion.div
             role="dialog"
             aria-modal="true"
@@ -60,17 +62,21 @@ export const Modal: React.FC<ModalProps> = ({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className={`relative z-10 w-full ${maxWidth} max-h-[90vh] overflow-y-auto bg-surface text-text rounded-panel border border-line shadow-floating p-6 sm:p-8 flex flex-col gap-6`}
+            className={`relative z-10 w-full ${maxWidth} max-h-[90vh] overflow-y-auto ${
+              isDark
+                ? 'bg-[#0C0A1A] text-slate-100 border border-white/15 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)]'
+                : 'bg-surface text-text border border-line shadow-floating'
+            } rounded-panel p-6 sm:p-8 flex flex-col gap-6`}
           >
-            <div className="flex items-start justify-between gap-4 border-b border-line pb-4">
+            <div className={`flex items-start justify-between gap-4 border-b ${isDark ? 'border-white/10' : 'border-line'} pb-4`}>
               <div>
                 {subtitle && (
-                  <span className="text-caption font-medium text-text-2 block mb-1">
+                  <span className={`text-caption font-medium block mb-1 ${isDark ? 'text-indigo-300/80 font-mono text-[11px] uppercase tracking-wider' : 'text-text-2'}`}>
                     {subtitle}
                   </span>
                 )}
                 {title && (
-                  <h3 className="font-semibold text-xl sm:text-2xl text-text tracking-tight">
+                  <h3 className={`font-bold text-xl sm:text-2xl tracking-tight ${isDark ? 'text-white' : 'text-text'}`}>
                     {title}
                   </h3>
                 )}
@@ -79,7 +85,11 @@ export const Modal: React.FC<ModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="p-2 rounded-[8px] border border-line hover:bg-subtle text-text-2 hover:text-text transition-colors duration-150"
+                className={`p-2 rounded-[8px] border transition-colors duration-150 ${
+                  isDark
+                    ? 'border-white/10 hover:bg-white/10 text-slate-400 hover:text-white'
+                    : 'border-line hover:bg-subtle text-text-2 hover:text-text'
+                }`}
                 aria-label="Close modal"
               >
                 <X className="h-5 w-5" />

@@ -1,8 +1,11 @@
 import React, { useState, useMemo } from 'react'
+import { motion, AnimatePresence } from 'motion/react'
 import { useSearchParams } from 'react-router-dom'
 import { useEvents } from '@/hooks/useEvents'
 import { useClubs } from '@/hooks/useClubs'
+import { Event } from '@/api'
 import { EventCardModern } from './components/EventCardModern'
+import { EventPeekDrawer } from '@/design-system/EventPeekDrawer'
 import { IndexRow } from '@/design-system/primitives/IndexRow'
 import { EmptyState } from '@/design-system/primitives/EmptyState'
 import { Sheet } from '@/design-system/primitives/Sheet'
@@ -23,6 +26,7 @@ export const ExplorePage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false)
   const [sortBy, setSortBy] = useState<'date' | 'popular' | 'title'>('date')
+  const [peekEvent, setPeekEvent] = useState<Event | null>(null)
 
   const activeCategory = searchParams.get('category') || 'ALL'
   const activeClub = searchParams.get('club') || 'ALL'
@@ -311,28 +315,59 @@ export const ExplorePage: React.FC = () => {
             ) : viewMode === 'grid' ? (
               /* Grids fill the row: 4 cols at 1280+, 3 at 1024, 2 at 640, 1 under 640 */
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-5">
-                {filteredEvents.map((evt) => (
-                  <EventCardModern key={evt.id} event={evt} />
-                ))}
+                <AnimatePresence mode="popLayout">
+                  {filteredEvents.map((evt, idx) => (
+                    <motion.div
+                      key={evt.id}
+                      layout
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{
+                        duration: 0.28,
+                        delay: Math.min(idx * 0.03, 0.24),
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                    >
+                      <EventCardModern
+                        event={evt}
+                        onPeek={setPeekEvent}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
             ) : (
               /* Clean Flat List View */
               <div className="divide-y divide-line border border-line rounded-panel overflow-hidden bg-surface">
-                {filteredEvents.map((event, idx) => (
-                  <IndexRow
-                    key={event.id}
-                    id={event.id}
-                    slug={event.slug}
-                    title={event.title}
-                    category={event.category}
-                    organizerName={event.organizerName || 'Technical Collective'}
-                    organizerColor={event.organizerColor}
-                    dateDisplay={formatDate(event.startsAt)}
-                    venueName={event.venue?.name}
-                    status={event.status}
-                    indexNumber={idx + 1}
-                  />
-                ))}
+                <AnimatePresence mode="popLayout">
+                  {filteredEvents.map((event, idx) => (
+                    <motion.div
+                      key={event.id}
+                      layout
+                      initial={{ opacity: 0, x: -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, scale: 0.98 }}
+                      transition={{
+                        duration: 0.24,
+                        delay: Math.min(idx * 0.02, 0.2),
+                      }}
+                    >
+                      <IndexRow
+                        id={event.id}
+                        slug={event.slug}
+                        title={event.title}
+                        category={event.category}
+                        organizerName={event.organizerName || 'Technical Collective'}
+                        organizerColor={event.organizerColor}
+                        dateDisplay={formatDate(event.startsAt)}
+                        venueName={event.venue?.name}
+                        status={event.status}
+                        indexNumber={idx + 1}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
             )}
           </div>
@@ -356,6 +391,13 @@ export const ExplorePage: React.FC = () => {
             </Button>
           </div>
         </Sheet>
+
+        {/* Event Quick Peek Drawer */}
+        <EventPeekDrawer
+          event={peekEvent}
+          isOpen={!!peekEvent}
+          onClose={() => setPeekEvent(null)}
+        />
       </div>
     </div>
   )

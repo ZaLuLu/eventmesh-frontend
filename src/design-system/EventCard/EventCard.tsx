@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Bookmark, CheckCircle2, MapPin, Calendar, ArrowRight } from 'lucide-react'
+import { Bookmark, CheckCircle2, MapPin, Calendar, ArrowRight, Eye, Sparkles } from 'lucide-react'
 import { Event } from '../../api/contracts'
 import { Badge } from '../primitives/Badge'
+import { PosterArtwork } from '../PosterArtwork'
+import { triggerConfetti } from '../../lib/confetti'
 import { cn } from '../../lib/utils'
 
 export interface EventCardProps {
@@ -11,6 +13,7 @@ export interface EventCardProps {
   aspectRatio?: '5/4' | '4/3' | '16/9' | '1/1'
   isBookmarked?: boolean
   onBookmarkToggle?: (eventId: string, bookmarked: boolean) => void
+  onPeek?: (event: Event) => void
   className?: string
   priority?: boolean
 }
@@ -43,6 +46,7 @@ export const EventCard: React.FC<EventCardProps> = ({
   aspectRatio = '5/4',
   isBookmarked: controlledBookmarked,
   onBookmarkToggle,
+  onPeek,
   className,
   priority = false,
 }) => {
@@ -54,7 +58,14 @@ export const EventCard: React.FC<EventCardProps> = ({
     e.stopPropagation()
     const nextState = !isBookmarked
     setInternalBookmarked(nextState)
+    if (nextState) triggerConfetti()
     onBookmarkToggle?.(event.id, nextState)
+  }
+
+  const handlePeekClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onPeek?.(event)
   }
 
   const clubColor = event.club?.color || event.organizerColor || '#2F4BD6'
@@ -83,34 +94,18 @@ export const EventCard: React.FC<EventCardProps> = ({
       >
         {/* Left Thumbnail */}
         <div className="relative w-full sm:w-48 md:w-56 aspect-[16/10] sm:aspect-[4/3] rounded-[18px] overflow-hidden bg-surface-sunken flex-shrink-0">
-          {hasImage ? (
-            <img
-              src={event.poster}
-              alt={event.title}
-              loading={priority ? 'eager' : 'lazy'}
-              className="w-full h-full object-cover transition-transform duration-300 ease-[cubic-bezier(0.2,0,0,1)] group-hover:scale-[1.03]"
-            />
-          ) : (
-            /* Typographic Fallback Thumbnail */
-            <div
-              className="w-full h-full p-4 flex flex-col justify-between"
-              style={{
-                background: `linear-gradient(135deg, ${clubColor}18 0%, #FFFFFF 100%)`,
-                borderLeft: `4px solid ${clubColor}`,
-              }}
-            >
-              <span className="text-[13px] font-semibold uppercase tracking-wider text-ink-muted">
-                {event.category}
-              </span>
-              <span className="font-serif italic text-lg leading-snug text-ink line-clamp-2">
-                {event.title}
-              </span>
-              <span className="text-[13px] font-medium text-ink-muted">{dateFormatted}</span>
-            </div>
-          )}
+          <PosterArtwork
+            id={event.id}
+            title={event.title}
+            category={event.category}
+            clubName={event.club?.name || event.organizerName}
+            clubColor={clubColor}
+            imageUrl={event.poster}
+            priority={priority}
+          />
 
           {/* Badges on thumbnail */}
-          <div className="absolute top-2 left-2 flex items-center gap-1.5 z-10">
+          <div className="absolute top-2 left-2 flex items-center gap-1.5 z-10 pointer-events-none">
             {isFillingFast && <Badge variant="filling">Filling fast</Badge>}
             {isFree ? (
               <Badge variant="free">Free</Badge>
@@ -212,36 +207,22 @@ export const EventCard: React.FC<EventCardProps> = ({
         )}
       >
         <div className="relative w-full aspect-[4/3] rounded-[22px] overflow-hidden bg-surface-sunken">
-          {hasImage ? (
-            <img
-              src={event.poster}
-              alt={event.title}
-              loading={priority ? 'eager' : 'lazy'}
-              className="w-full h-full object-cover transition-transform duration-300 ease-[cubic-bezier(0.2,0,0,1)] group-hover:scale-[1.03]"
-            />
-          ) : (
-            <div
-              className="w-full h-full p-6 flex flex-col justify-between"
-              style={{
-                background: `linear-gradient(135deg, ${clubColor}30 0%, #151130 100%)`,
-              }}
-            >
-              <span className="text-[13px] font-semibold uppercase tracking-wider text-white/80">
-                {event.category}
-              </span>
-              <span className="font-serif italic text-2xl leading-tight text-white line-clamp-3">
-                {event.title}
-              </span>
-              <span className="text-[13px] font-medium text-white/70">{dateFormatted}</span>
-            </div>
-          )}
+          <PosterArtwork
+            id={event.id}
+            title={event.title}
+            category={event.category}
+            clubName={event.club?.name || event.organizerName}
+            clubColor={clubColor}
+            imageUrl={event.poster}
+            priority={priority}
+          />
 
           {/* Dark gradient scrim */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none" />
 
-          {/* Top badges & bookmark */}
-          <div className="absolute top-3 inset-x-3 flex items-center justify-between z-10">
-            <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Top badges & actions */}
+          <div className="absolute top-3 inset-x-3 flex items-center justify-between z-10 pointer-events-none">
+            <div className="flex items-center gap-1.5 flex-wrap pointer-events-auto">
               {isPromoted && <Badge variant="promoted">Promoted</Badge>}
               {isFillingFast && <Badge variant="filling">Filling fast</Badge>}
               {isFree ? (
@@ -253,19 +234,32 @@ export const EventCard: React.FC<EventCardProps> = ({
               )}
             </div>
 
-            <button
-              type="button"
-              onClick={handleBookmarkClick}
-              aria-label={isBookmarked ? 'Remove from saved' : 'Save event'}
-              className={cn(
-                'w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200',
-                isBookmarked
-                  ? 'bg-champion text-white shadow-sm'
-                  : 'bg-white/90 backdrop-blur-sm text-ink hover:bg-white hover:text-champion'
+            <div className="flex items-center gap-1.5 pointer-events-auto">
+              {onPeek && (
+                <button
+                  type="button"
+                  onClick={handlePeekClick}
+                  title="Quick Preview"
+                  aria-label="Quick preview event"
+                  className="w-9 h-9 rounded-full flex items-center justify-center bg-white/90 backdrop-blur-sm text-ink hover:bg-white hover:text-champion shadow-xs transition-colors"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
               )}
-            >
-              <Bookmark className={cn('w-4 h-4', isBookmarked && 'fill-white')} />
-            </button>
+              <button
+                type="button"
+                onClick={handleBookmarkClick}
+                aria-label={isBookmarked ? 'Remove from saved' : 'Save event'}
+                className={cn(
+                  'w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200',
+                  isBookmarked
+                    ? 'bg-champion text-white shadow-sm'
+                    : 'bg-white/90 backdrop-blur-sm text-ink hover:bg-white hover:text-champion shadow-xs'
+                )}
+              >
+                <Bookmark className={cn('w-4 h-4', isBookmarked && 'fill-white')} />
+              </button>
+            </div>
           </div>
 
           {/* Bottom overlaid text */}
@@ -332,50 +326,15 @@ export const EventCard: React.FC<EventCardProps> = ({
             aspectClass
           )}
         >
-          {hasImage ? (
-            <img
-              src={event.poster}
-              alt={event.title}
-              loading={priority ? 'eager' : 'lazy'}
-              className="w-full h-full object-cover transition-transform duration-300 ease-[cubic-bezier(0.2,0,0,1)] group-hover:scale-[1.03]"
-            />
-          ) : (
-            /* Typographic Fallback Poster (No image) */
-            <div
-              className="w-full h-full p-5 flex flex-col justify-between relative overflow-hidden"
-              style={{
-                background: `linear-gradient(135deg, ${clubColor}14 0%, #FFFFFF 100%)`,
-                borderLeft: `5px solid ${clubColor}`,
-              }}
-            >
-              {/* Top Meta */}
-              <div className="flex items-center justify-between">
-                <span className="text-[13px] font-bold uppercase tracking-wider text-ink-muted">
-                  {event.category}
-                </span>
-                <span
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: clubColor }}
-                  aria-hidden="true"
-                />
-              </div>
-
-              {/* Center Title in Instrument Serif */}
-              <div className="my-auto py-2">
-                <span className="font-serif italic text-2xl font-normal leading-tight text-ink line-clamp-3">
-                  {event.title}
-                </span>
-              </div>
-
-              {/* Bottom Stamp */}
-              <div className="flex items-center justify-between text-[13px] text-ink-muted border-t border-line/60 pt-2">
-                <span className="font-semibold text-ink truncate">
-                  {event.club?.name || event.organizerName}
-                </span>
-                <span className="font-mono text-[12px]">{dateFormatted.split('·')[0]}</span>
-              </div>
-            </div>
-          )}
+          <PosterArtwork
+            id={event.id}
+            title={event.title}
+            category={event.category}
+            clubName={event.club?.name || event.organizerName}
+            clubColor={clubColor}
+            imageUrl={event.poster}
+            priority={priority}
+          />
 
           {/* Top Badges */}
           <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
@@ -391,20 +350,32 @@ export const EventCard: React.FC<EventCardProps> = ({
               )}
             </div>
 
-            {/* Bookmark Button */}
-            <button
-              type="button"
-              onClick={handleBookmarkClick}
-              aria-label={isBookmarked ? 'Remove from saved' : 'Save event'}
-              className={cn(
-                'pointer-events-auto w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200',
-                isBookmarked
-                  ? 'bg-champion text-white shadow-sm'
-                  : 'bg-white/95 backdrop-blur-sm text-ink hover:bg-white hover:text-champion shadow-xs'
+            <div className="flex items-center gap-1.5 pointer-events-auto">
+              {onPeek && (
+                <button
+                  type="button"
+                  onClick={handlePeekClick}
+                  title="Quick Preview"
+                  aria-label="Quick preview event"
+                  className="w-9 h-9 rounded-full flex items-center justify-center bg-white/95 backdrop-blur-sm text-ink hover:bg-champion hover:text-white shadow-xs transition-colors"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
               )}
-            >
-              <Bookmark className={cn('w-4 h-4', isBookmarked && 'fill-white')} />
-            </button>
+              <button
+                type="button"
+                onClick={handleBookmarkClick}
+                aria-label={isBookmarked ? 'Remove from saved' : 'Save event'}
+                className={cn(
+                  'w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200',
+                  isBookmarked
+                    ? 'bg-champion text-white shadow-sm'
+                    : 'bg-white/95 backdrop-blur-sm text-ink hover:bg-white hover:text-champion shadow-xs'
+                )}
+              >
+                <Bookmark className={cn('w-4 h-4', isBookmarked && 'fill-white')} />
+              </button>
+            </div>
           </div>
         </div>
 

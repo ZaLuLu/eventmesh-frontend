@@ -1,8 +1,9 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, ArrowRight, Sparkles } from 'lucide-react'
 import { Event } from '@/api/contracts'
 import { EventCard } from '@/design-system/EventCard'
+import { EventPeekDrawer } from '@/design-system/EventPeekDrawer'
 import { EventCardSkeleton } from '@/design-system/primitives/Skeleton'
 import { cn } from '@/lib/utils'
 
@@ -18,6 +19,7 @@ export const NewEventsRail: React.FC<NewEventsRailProps> = ({
   className,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const [peekEvent, setPeekEvent] = useState<Event | null>(null)
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (!scrollRef.current) return
@@ -104,12 +106,24 @@ export const NewEventsRail: React.FC<NewEventsRailProps> = ({
                 key={event.id}
                 className="flex-[0_0_280px] sm:flex-[0_0_320px] lg:flex-[0_0_330px] snap-start transition-transform duration-200"
               >
-                <EventCard event={event} variant="stacked" aspectRatio="5/4" />
+                <EventCard
+                  event={event}
+                  variant="stacked"
+                  aspectRatio="5/4"
+                  onPeek={setPeekEvent}
+                />
               </div>
             ))
           )}
         </div>
       </div>
+
+      {/* Interactive Quick-Preview Peek Drawer */}
+      <EventPeekDrawer
+        event={peekEvent}
+        isOpen={Boolean(peekEvent)}
+        onClose={() => setPeekEvent(null)}
+      />
     </section>
   )
 }
