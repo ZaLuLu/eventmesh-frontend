@@ -449,6 +449,98 @@ A critical examination of the live visual screenshots against world-class indust
    - File: `screenshots_upgraded/07_aurora_hero_home.png`
    - Highlights: High-impact display font with tight negative tracking, electric accents, clean slate contrast.
 
+---
+
+## 10. Implementation Plan: Campus Student ID Lanyard & Event Admission TearTicket Lifecycle
+
+### 10.1 Executive Vision & Architectural Shift
+
+Following direct architectural review, two key components are being repositioned to their natural real-world contexts, elevating the UX from generic modals to an authentic digital campus experience:
+
+1. **3D Lanyard as Campus Student / Member ID Card**:
+   - **Previous State**: Displayed inside a ticket inspection popup as a generic 3D pass.
+   - **Target Architecture**: Repositioned permanently into the **Attendee Profile & Account Section** (`AttendeeDashboardPage.tsx`). It hangs vertically beside the attendee's personal and academic records, rendered as an **Official Campus Student ID Badge** (featuring student photo, full name, university registration number, degree program, and verified barcode). Users can interactively swing and inspect their physical student ID anytime.
+
+2. **Perforated Ticket as Live Event Admission Pass with Integrated QR Code & Gate Tearing**:
+   - **Previous State**: Perforated ticket was separated from the QR code and OTP into different tabs in a modal.
+   - **Target Architecture**:
+     - **Direct QR Integration**: The QR code is rendered directly on the face of the ticket body alongside event artwork, venue, date, and seat tier.
+     - **Gate Check-In Tearing Lifecycle**:
+       - *Prior to Admission* (`status: "confirmed"`): The ticket is intact. Attendees present it at the entrance. Dragging to tear the right stub (or scanning) simulates gate entry: the stub detaches with celebration confetti and an authentic gate chime, and the registration updates to `"checked_in"`.
+       - *Post Admission* (`status: "checked_in"`): When re-opened, the ticket renders with its stub **already detached/torn**, bearing a green "ADMITTED / CHECKED IN" official gate stamp and entry timestamp, preventing duplicate entry and acting as a digital keepsake stub.
+
+3. **Added Value & "Do Better" Capabilities**:
+   - **Registration Modal Instant Ticket**: In `PassBookingModal.tsx` and `TicketTierModal.tsx`, upon confirming registration, generate the full celebratory ticket with live QR code immediately.
+   - **Simulated Gate Scanner Audio**: Synthesize a crisp 1200Hz kiosk chime using the Web Audio API on successful gate tear/scan.
+   - **Souvenir Pass Actions**: Add 1-tap "Save to Wallet / Download Pass" and "Copy Admission Hash".
+
+---
+
+### 10.2 Phased Implementation Roadmap
+
+```mermaid
+graph TD
+    A[Phase 1: Student ID Badge Canvas Texture] --> B[Phase 2: Profile Section Lanyard Integration]
+    B --> C[Phase 3: Integrated QR TearTicket Component]
+    C --> D[Phase 4: Gate Check-in State & Audio Chime]
+    D --> E[Phase 5: Registration Modals Ticket Integration]
+    E --> F[Phase 6: Verification & Screenshot Proof]
+```
+
+#### Phase 1: 3D Student ID Card Texture Generation
+- Create `generateStudentIDCardTexture(user, campus)` helper:
+  - Generates a high-resolution canvas texture for the 3D card face.
+  - Front face displays:
+    - University Header (`EVENTMESH // STUDENT IDENTITY BADGE`)
+    - Student Avatar Photo (`user.avatarUrl` or fallback portrait)
+    - Full Name (`user.name`) & Academic Roll Number (`user.registrationNumber`)
+    - Program & Semester (`user.degreeBranch · Sem 6`)
+    - EventMesh Verified Member Holographic Chip & QR Code
+- Configure the Three.js card finish to `holographic` with high specular reflectivity.
+
+#### Phase 2: Attendee Profile Section Redesign with Hanging 3D ID Badge
+- In `AttendeeDashboardPage.tsx`:
+  - Split the top profile hero into a 2-column ergonomic Bento showcase:
+    - **Left Column**: Clean student credentials card (Name, Registration number with copy pill, degree, email, verification badge, and stats: Passes Claimed, Events Attended, Certificates Earned).
+    - **Right Column**: Interactive 3D hanging Student ID Lanyard card with live Three.js physics canvas and "Drag to swing student ID" prompt.
+
+#### Phase 3: Event Admission Ticket with Integrated QR Code & Gate Stub
+- Build `EventAdmissionTicket.tsx`:
+  - Wraps `@react-bits/TearTicket`.
+  - **Left Ticket Body**:
+    - Embedded scannable `QRCode` (`EVENTMESH:PASS-{ticketCode}`).
+    - Event artwork banner / thumbnail.
+    - Title, Date, Time, Venue, and Attendee Name.
+    - Verified admission badge (`VIP PASS` / `GENERAL ADMISSION`).
+  - **Right Perforated Stub**:
+    - Gate stub title & ticket serial (`PASS-REG-1`).
+    - Dynamic rolling OTP (`@react-bits/CodeSlots`).
+    - Gate Check-in status indicator (`DRAG TO ADMIT ✂️` vs `ADMITTED ✓`).
+
+#### Phase 4: Gate Admission Lifecycle & Audio-Haptic Feedback
+- Hook into `useUpdateRegistrationStatus()` / `mockCheckinApi`:
+  - When the attendee or gatekeeper tears the stub:
+    1. Triggers Web Audio API synthesized gate admission chime (two-tone chime: 880Hz -> 1320Hz).
+    2. Fires celebratory confetti burst.
+    3. Mutates registration status to `'checked_in'` with `checkedInAt = new Date().toISOString()`.
+    4. Invalidates TanStack queries (`['registrations']`, `['my-registrations']`), incrementing the "Attended" count in real time!
+- If the ticket was already checked in (`reg.status === 'checked_in'`), pass `torn={true}` so the stub is displayed pre-detached with an official gate timestamp seal.
+
+#### Phase 5: Registration Success Flow Upgrade
+- In `PassBookingModal.tsx` and `TicketTierModal.tsx`:
+  - Replace the static QR box on success with the newly generated `EventAdmissionTicket`!
+  - Displays the full ticket with the integrated QR code and gives immediate access to claim and inspect.
+
+#### Phase 6: Strict Build Verification & Playwright Visual Testing
+- Run `npm run build` with `BypassSandbox: true` (0 TypeScript / bundling errors).
+- Update `verify_all_components.cjs` to capture:
+  - `16_profile_hanging_student_id_lanyard.png`: Attendee profile with hanging 3D student ID card.
+  - `17_event_admission_ticket_with_qr_intact.png`: Generated admission ticket with embedded QR code prior to admission.
+  - `18_event_admission_ticket_gate_torn.png`: Gate-admitted ticket with detached stub and green verified seal.
+  - `19_booking_modal_ticket_generated.png`: Registration success modal displaying newly minted ticket.
+- Push changes to GitHub `main` and verify automatic Vercel production deployment.
+
+
 
 
 

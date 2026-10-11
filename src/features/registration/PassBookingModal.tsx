@@ -12,9 +12,9 @@ import {
 import { useAuth } from '@/hooks/useAuth'
 import { useRegisterPass, useMyRegistrations } from '@/hooks/useRegistrations'
 import { Button } from '@/design-system/primitives/Button'
-import { QRCode } from '@/design-system/primitives/QRCode'
 import { formatDate, formatTime } from '@/lib/dates'
 import { Event } from '@/api'
+import { EventAdmissionTicket } from '@/design-system/micro/EventAdmissionTicket'
 
 export interface PassBookingModalProps {
   isOpen: boolean
@@ -64,14 +64,22 @@ export const PassBookingModal: React.FC<PassBookingModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="pass-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-text/40 animate-fade"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade"
     >
-      <div className="relative w-full max-w-lg rounded-panel bg-surface border border-line shadow-floating p-6 sm:p-8">
+      <div
+        className={`relative w-full ${
+          successRegistration
+            ? 'max-w-2xl bg-[#0C0A1A] text-white border-white/10 shadow-2xl'
+            : 'max-w-lg bg-surface text-text border-line shadow-floating'
+        } rounded-panel border p-6 sm:p-8 transition-all`}
+      >
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-button text-text-2 hover:text-text hover:bg-subtle transition-colors"
+          className={`absolute top-4 right-4 p-2 rounded-button transition-colors ${
+            successRegistration ? 'text-slate-400 hover:text-white hover:bg-white/10' : 'text-text-2 hover:text-text hover:bg-subtle'
+          }`}
           aria-label="Close dialog"
         >
           <X className="h-5 w-5" />
@@ -155,55 +163,54 @@ export const PassBookingModal: React.FC<PassBookingModalProps> = ({
             </div>
           </div>
         ) : (
-          /* Step 2: Celebration & Live QR Pass */
+          /* Step 2: Celebration & Live Generated Event Admission Ticket */
           <div className="space-y-5 text-center pt-1">
-            <div className="mx-auto w-12 h-12 rounded-full bg-accent-soft text-accent flex items-center justify-center">
+            <div className="mx-auto w-12 h-12 rounded-full bg-accent/20 text-indigo-400 flex items-center justify-center border border-accent/30">
               <CheckCircle2 className="h-6 w-6" />
             </div>
 
             <div>
-              <span className="px-3 py-0.5 rounded-chip bg-accent-soft text-accent text-caption font-semibold inline-block mb-1.5">
-                Pass confirmed
+              <span className="px-3 py-0.5 rounded-chip bg-accent/20 text-indigo-300 text-caption font-semibold inline-block mb-1.5 border border-accent/30">
+                Official Pass Generated
               </span>
-              <h2 id="pass-modal-title" className="font-semibold text-h2 text-text">
+              <h2 id="pass-modal-title" className="font-bold text-h2 text-white tracking-tight">
                 You're in!
               </h2>
-              <p className="text-small text-text-2 mt-1 max-w-sm mx-auto">
-                Your entry credential has been verified. Present this pass at the gate terminal.
+              <p className="text-small text-slate-400 mt-1 max-w-sm mx-auto">
+                Your entry ticket has been minted with an integrated gate QR code and OTP.
               </p>
             </div>
 
-            {/* Ticket Graphic */}
-            <div className="rounded-panel bg-subtle border border-line p-5 max-w-xs mx-auto space-y-4">
-              <div className="flex items-center justify-between text-caption pb-3 border-b border-line">
-                <span className="font-mono font-semibold text-text">{ticketCode}</span>
-                <span className="font-semibold text-on-accent bg-success px-2.5 py-0.5 rounded-chip">
-                  ACTIVE
-                </span>
-              </div>
-
-              <div className="flex justify-center py-2 bg-surface rounded-input p-4 border border-line">
-                <QRCode
-                  value={`EVENTMESH:${ticketCode}:${event.slug}`}
-                  size={140}
-                />
-              </div>
-
-              <div className="text-left text-small space-y-0.5">
-                <h4 className="font-semibold text-text truncate">{event.title}</h4>
-                <p className="text-text-2 text-caption">
-                  {formatDate(event.startsAt)} · {event.venue?.name}
-                </p>
-              </div>
+            {/* Generated Official Admission Ticket with Integrated QR */}
+            <div className="py-2 flex justify-center overflow-hidden">
+              <EventAdmissionTicket
+                registration={{
+                  id: successRegistration?.id || 'reg-new',
+                  ticketCode: ticketCode,
+                  eventTitle: event.title,
+                  eventStartsAt: event.startsAt,
+                  createdAt: new Date().toISOString(),
+                  venueName: event.venue?.name || 'Main Campus Venue',
+                  status: 'confirmed',
+                  userName: passholderName,
+                  userEmail: passholderEmail,
+                }}
+                disabled={true}
+              />
             </div>
 
             <div className="flex items-center gap-3 pt-2">
-              <Link to="/attendee/dashboard" className="flex-1">
+              <Link to="/account" className="flex-1">
                 <Button size="default" variant="primary" fullWidth icon={<Ticket className="h-4 w-4" />}>
                   Go to my passes
                 </Button>
               </Link>
-              <Button size="default" variant="secondary" onClick={onClose}>
+              <Button
+                size="default"
+                variant="secondary"
+                onClick={onClose}
+                className="bg-white/10 border-white/15 text-white hover:bg-white/20"
+              >
                 Done
               </Button>
             </div>

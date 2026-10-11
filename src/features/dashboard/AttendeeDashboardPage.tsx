@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { jsPDF } from 'jspdf'
-import { Ticket, Award, Download, QrCode } from 'lucide-react'
-import { useMyRegistrations, useCancelRegistration } from '@/hooks/useRegistrations'
+import { Ticket, Award, Download, QrCode, ShieldCheck, Copy, Check, Sparkles, GraduationCap, Building2 } from 'lucide-react'
+import { useMyRegistrations, useCancelRegistration, useUpdateRegistrationStatus } from '@/hooks/useRegistrations'
 import { useMyCertificates } from '@/hooks/useCertificates'
 import { useClubs } from '@/hooks/useClubs'
 import { useAuth } from '@/hooks/useAuth'
@@ -16,9 +16,8 @@ import { useToast } from '@/design-system/primitives/Toast'
 import { EmptyState } from '@/design-system/primitives/EmptyState'
 import { fireCelebrationConfetti } from '@/lib/confetti'
 import { TactileBoardingPass } from './components/TactileBoardingPass'
-import { Lanyard } from '@/design-system/3d/Lanyard'
-import { TearTicket } from '@/design-system/micro/TearTicket'
-import { CodeSlots } from '@/design-system/micro/CodeSlots'
+import { Lanyard, generateStudentIDTexture } from '@/design-system/3d'
+import { EventAdmissionTicket } from '@/design-system/micro/EventAdmissionTicket'
 
 export const AttendeeDashboardPage: React.FC = () => {
   const { session, isAuthenticated } = useAuth()
@@ -27,11 +26,25 @@ export const AttendeeDashboardPage: React.FC = () => {
   const { data: certificates = [], isLoading: certsLoading } = useMyCertificates()
   const { data: clubs = [] } = useClubs()
   const cancelMutation = useCancelRegistration()
+  const updateStatusMutation = useUpdateRegistrationStatus()
 
   const [selectedTicket, setSelectedTicket] = useState<Registration | null>(null)
   const [activeTab, setActiveTab] = useState('passes')
-  const [passView, setPassView] = useState<'lanyard' | 'tear' | 'barcode'>('lanyard')
-  const [isTorn, setIsTorn] = useState(false)
+  const [copiedRegNo, setCopiedRegNo] = useState(false)
+
+  // Generate high-resolution authentic Student ID Card texture for the 3D Lanyard
+  const studentIdTexture = useMemo(() => {
+    const s = session as any
+    return generateStudentIDTexture({
+      name: s?.name || 'Aditya Narayan',
+      registrationNumber: s?.registrationNumber || '21BCE1042',
+      degreeBranch: s?.degreeBranch || 'B.Tech Computer Science & Engineering',
+      semester: s?.semester || 6,
+      email: s?.email || 'aditya.narayan@vitstudent.ac.in',
+      role: 'STUDENT PASSHOLDER',
+      campus: 'CENTRAL UNIVERSITY CAMPUS',
+    })
+  }, [session])
 
   const handleCancelPass = async (reg: Registration) => {
     if (window.confirm('Are you sure you want to cancel this ticket pass?')) {
@@ -145,32 +158,104 @@ export const AttendeeDashboardPage: React.FC = () => {
 
   return (
     <div className="w-full bg-bg text-text pb-16">
-      {/* Header Strip */}
+      {/* Profile & Student ID Lanyard Credential Hero */}
       <div className="border-b border-line bg-surface">
-        <div className="app-container py-6 sm:py-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold text-text tracking-tight">
-              My tickets & account
-            </h1>
-            <p className="text-small text-text-2 mt-1">
-              {session?.name} · {session?.email}
-            </p>
-          </div>
+        <div className="app-container py-6 sm:py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            {/* Left 7 cols: Academic Profile Card */}
+            <div className="lg:col-span-7 space-y-5">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono tracking-wider bg-accent-soft text-accent uppercase border border-accent/20">
+                    <ShieldCheck className="w-3.5 h-3.5 text-accent" />
+                    OFFICIAL STUDENT IDENTITY
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                    Verified Campus Passholder
+                  </span>
+                </div>
 
-          <div className="flex items-center gap-3">
-            <div className="px-4 py-2.5 rounded-[10px] bg-subtle border border-line text-center min-w-[90px]">
-              <p className="font-semibold text-lg text-text">{registrations.length}</p>
-              <p className="text-caption text-text-2">Passes</p>
+                <h1 className="text-2xl sm:text-3xl font-bold text-text tracking-tight">
+                  {session?.name || 'Aditya Narayan'}
+                </h1>
+                <p className="text-small text-text-2">
+                  {session?.email || 'aditya.narayan@vitstudent.ac.in'}
+                </p>
+              </div>
+
+              {/* Student Metadata Bento Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-small">
+                <div className="p-3.5 rounded-xl bg-subtle border border-line flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-mono uppercase tracking-wider text-text-3">REGISTRATION NUMBER</p>
+                    <p className="font-mono font-bold text-base text-text mt-0.5">
+                      {(session as any)?.registrationNumber || '21BCE1042'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const regNum = (session as any)?.registrationNumber || '21BCE1042'
+                      navigator.clipboard.writeText(regNum)
+                      setCopiedRegNo(true)
+                      setTimeout(() => setCopiedRegNo(false), 2000)
+                      toast({ title: 'Copied ID', message: 'Registration number copied to clipboard', type: 'info' })
+                    }}
+                    className="p-1.5 rounded-lg border border-line hover:bg-surface text-text-2 transition-colors"
+                    title="Copy registration number"
+                  >
+                    {copiedRegNo ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-subtle border border-line">
+                  <p className="text-[10px] font-mono uppercase tracking-wider text-text-3">DEGREE & BRANCH</p>
+                  <p className="font-semibold text-text text-small truncate mt-0.5">
+                    {(session as any)?.degreeBranch || 'B.Tech Computer Science'}
+                  </p>
+                  <p className="text-caption text-text-3">Semester {(session as any)?.semester || 6} · Active Student</p>
+                </div>
+              </div>
+
+              {/* Summary Metric Counters */}
+              <div className="flex flex-wrap items-center gap-3 pt-1">
+                <div className="px-4 py-2.5 rounded-xl bg-subtle border border-line text-center min-w-[90px] flex-1 sm:flex-none">
+                  <p className="font-bold text-xl text-text">{registrations.length}</p>
+                  <p className="text-caption text-text-2">Active Passes</p>
+                </div>
+                <div className="px-4 py-2.5 rounded-xl bg-subtle border border-line text-center min-w-[90px] flex-1 sm:flex-none">
+                  <p className="font-bold text-xl text-emerald-600">
+                    {registrations.filter((r) => r.status === 'checked_in').length}
+                  </p>
+                  <p className="text-caption text-text-2">Attended & Verified</p>
+                </div>
+                <div className="px-4 py-2.5 rounded-xl bg-subtle border border-line text-center min-w-[90px] flex-1 sm:flex-none">
+                  <p className="font-bold text-xl text-text">{certificates.length}</p>
+                  <p className="text-caption text-text-2">Credentials Issued</p>
+                </div>
+              </div>
             </div>
-            <div className="px-4 py-2.5 rounded-[10px] bg-subtle border border-line text-center min-w-[90px]">
-              <p className="font-semibold text-lg text-text">
-                {registrations.filter((r) => r.status === 'checked_in').length}
-              </p>
-              <p className="text-caption text-text-2">Attended</p>
-            </div>
-            <div className="px-4 py-2.5 rounded-[10px] bg-subtle border border-line text-center min-w-[90px]">
-              <p className="font-semibold text-lg text-text">{certificates.length}</p>
-              <p className="text-caption text-text-2">Credentials</p>
+
+            {/* Right 5 cols: 3D Hanging Student ID Lanyard Stage */}
+            <div className="lg:col-span-5">
+              <div className="relative w-full h-[360px] sm:h-[390px] rounded-2xl overflow-hidden bg-gradient-to-b from-[#141126] via-[#0C0A1A] to-[#080612] border border-white/10 shadow-2xl flex items-center justify-center">
+                <Lanyard
+                  frontImage={studentIdTexture}
+                  cardColor="#120F24"
+                  finish="holographic"
+                  orientation="portrait"
+                  strapColor="#5E4AE3"
+                  size={0.86}
+                  intro={false}
+                  breeze={0.06}
+                />
+
+                {/* Physics Prompt Pill */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3.5 py-1.5 rounded-full bg-[#0C0A1A]/90 backdrop-blur-md border border-white/15 text-[11px] font-medium text-slate-300 shadow-xl pointer-events-none flex items-center gap-1.5 whitespace-nowrap">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Interactive 3D Student ID Badge · Drag to swing</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -307,211 +392,38 @@ export const AttendeeDashboardPage: React.FC = () => {
       {selectedTicket && (
         <Modal
           isOpen={Boolean(selectedTicket)}
-          onClose={() => {
-            setSelectedTicket(null)
-            setIsTorn(false)
-          }}
-          title="Digital Admission Credentials"
+          onClose={() => setSelectedTicket(null)}
+          title="Event Admission Pass"
           subtitle={`PASS-${selectedTicket.id.slice(0, 8).toUpperCase()}`}
           maxWidth="max-w-2xl"
           surface="dark"
         >
-          <div className="space-y-5">
-            {/* Pass Mode Switcher */}
-            <div className="flex items-center justify-center p-1 bg-white/5 border border-white/10 rounded-xl">
-              <button
-                type="button"
-                onClick={() => setPassView('lanyard')}
-                className={`flex-1 py-1.5 px-3 text-caption font-semibold rounded-lg transition-all ${
-                  passView === 'lanyard'
-                    ? 'bg-white/15 text-white shadow-sm border border-white/20'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                📇 3D Lanyard Pass
-              </button>
-              <button
-                type="button"
-                onClick={() => setPassView('tear')}
-                className={`flex-1 py-1.5 px-3 text-caption font-semibold rounded-lg transition-all ${
-                  passView === 'tear'
-                    ? 'bg-white/15 text-white shadow-sm border border-white/20'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                🎫 Perforated Stub
-              </button>
-              <button
-                type="button"
-                onClick={() => setPassView('barcode')}
-                className={`flex-1 py-1.5 px-3 text-caption font-semibold rounded-lg transition-all ${
-                  passView === 'barcode'
-                    ? 'bg-white/15 text-white shadow-sm border border-white/20'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                📱 QR & Gate OTP
-              </button>
-            </div>
+          <div className="space-y-4">
+            <EventAdmissionTicket
+              registration={selectedTicket}
+              onAdmit={() => {
+                updateStatusMutation.mutate({
+                  id: selectedTicket.id,
+                  status: 'checked_in',
+                })
+                setSelectedTicket({
+                  ...selectedTicket,
+                  status: 'checked_in',
+                })
+                toast({
+                  title: 'Admission Verified!',
+                  message: `Gate stub validated for ${selectedTicket.eventTitle}.`,
+                  type: 'success',
+                })
+              }}
+            />
 
-            {/* Mode 1: 3D Physics Lanyard Pass */}
-            {passView === 'lanyard' && (
-              <div className="space-y-4">
-                <div className="relative w-full h-[400px] rounded-2xl overflow-hidden bg-gradient-to-b from-[#141126] via-[#0C0A1A] to-[#080612] border border-white/10 flex items-center justify-center shadow-inner">
-                  <Lanyard
-                    cardColor="#141026"
-                    finish="holographic"
-                    orientation="portrait"
-                    strapColor="#6366f1"
-                    size={0.9}
-                  />
-
-                  {/* Physics Drag Indicator Pill */}
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3.5 py-1.5 rounded-full bg-[#0C0A1A]/85 backdrop-blur-md border border-white/15 text-[11px] font-medium text-slate-300 shadow-xl pointer-events-none flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>Drag lanyard to swing with Three.js physics</span>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                  <div>
-                    <h4 className="font-semibold text-small text-white">{selectedTicket.eventTitle}</h4>
-                    <p className="text-caption text-slate-400">
-                      {formatDate(selectedTicket.eventStartsAt || selectedTicket.createdAt, 'EEE, MMM d, yyyy')} · {selectedTicket.venueName}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <span className="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold font-mono tracking-wider bg-accent/20 text-indigo-300 border border-accent/30 uppercase">
-                      VIP PASS
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Mode 2: Perforated Tear Ticket Stub */}
-            {passView === 'tear' && (
-              <div className="space-y-4 flex flex-col items-center">
-                <div className="py-2 w-full flex justify-center overflow-hidden">
-                  <TearTicket
-                    width={480}
-                    height={200}
-                    stubSize={130}
-                    radius={16}
-                    holes={9}
-                    notch={10}
-                    torn={isTorn}
-                    onTear={() => {
-                      setIsTorn(true)
-                      fireCelebrationConfetti()
-                      toast({
-                        title: 'Stub Detached & Validated!',
-                        message: 'Gate stub torn successfully. Admission confirmed.',
-                        type: 'success',
-                      })
-                    }}
-                    background="#141126"
-                    color="#F8FAFC"
-                    borderColor="rgba(255,255,255,0.15)"
-                    stub={
-                      <div className="h-full flex flex-col justify-between items-center text-center p-3 font-mono bg-[#0C0A1A]/90">
-                        <div className="text-[10px] tracking-widest text-indigo-400 font-bold uppercase">
-                          GATE STUB
-                        </div>
-                        <div className="my-auto space-y-1">
-                          <p className="text-[11px] font-bold text-white">
-                            PASS-{selectedTicket.id.slice(0, 6).toUpperCase()}
-                          </p>
-                          <p className="text-[9px] text-slate-400 uppercase tracking-wider">
-                            {isTorn ? 'VALIDATED ✓' : 'DRAG TO TEAR ✂️'}
-                          </p>
-                        </div>
-                        <div className="text-[9px] text-slate-400 border-t border-dashed border-white/10 pt-1 w-full">
-                          CAMPUS ACCESS
-                        </div>
-                      </div>
-                    }
-                  >
-                    <div className="h-full p-4 flex flex-col justify-between bg-[#141126] text-white">
-                      <div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-accent/25 text-indigo-300 font-bold border border-accent/30">
-                            EVENTMESH OFFICIAL PASS
-                          </span>
-                          <span className="text-[10px] font-mono text-slate-400">
-                            SEAT GENERAL
-                          </span>
-                        </div>
-                        <h4 className="font-bold text-base text-white mt-2 line-clamp-1">
-                          {selectedTicket.eventTitle}
-                        </h4>
-                        <p className="text-caption text-slate-400 mt-0.5">
-                          {formatDate(selectedTicket.eventStartsAt || selectedTicket.createdAt, 'EEE, MMM d, yyyy')} · {selectedTicket.venueName}
-                        </p>
-                      </div>
-
-                      <div className="pt-2 border-t border-white/10 flex items-center justify-between">
-                        <div>
-                          <p className="text-[9px] uppercase tracking-wider text-slate-400">ATTENDEE</p>
-                          <p className="text-caption font-semibold text-white">{session?.name || 'Registered Guest'}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-[9px] uppercase tracking-wider text-slate-400">OTP CHECK-IN</p>
-                          <p className="text-caption font-mono font-bold text-indigo-300">074218</p>
-                        </div>
-                      </div>
-                    </div>
-                  </TearTicket>
-                </div>
-
-                <p className="text-caption text-slate-400 text-center">
-                  Drag or pull the right stub downwards to tear your admission pass and simulate gate check-in.
-                </p>
-              </div>
-            )}
-
-            {/* Mode 3: QR Code & Live Rotating CodeSlots */}
-            {passView === 'barcode' && (
-              <div className="text-center space-y-4">
-                <div className="flex flex-col items-center justify-center p-6 rounded-2xl bg-white/5 border border-white/10">
-                  <div className="p-3 bg-white rounded-xl shadow-2xl mb-4">
-                    <QRCode value={`PASS-${selectedTicket.id}`} size={180} />
-                  </div>
-
-                  <div className="space-y-1">
-                    <p className="text-[11px] font-mono uppercase tracking-wider text-slate-400">
-                      Dynamic 6-Digit Gate OTP
-                    </p>
-                    <div className="flex items-center justify-center pt-1">
-                      <CodeSlots
-                        value="074218"
-                        length={6}
-                        status="success"
-                        slotSize={40}
-                        radius={8}
-                        gap={8}
-                        className="bg-[#0C0A1A] border border-white/15 px-3 py-1 rounded-xl text-white"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <p className="text-caption text-slate-400">
-                  Present this QR code or 6-digit rolling OTP at the registration kiosk terminal.
-                </p>
-              </div>
-            )}
-
-            {/* Modal Actions */}
             <div className="flex items-center gap-3 pt-2">
               <Button
                 variant="secondary"
                 size="default"
                 fullWidth
-                onClick={() => {
-                  setSelectedTicket(null)
-                  setIsTorn(false)
-                }}
+                onClick={() => setSelectedTicket(null)}
                 className="bg-white/10 border-white/15 text-white hover:bg-white/20"
               >
                 Close Pass

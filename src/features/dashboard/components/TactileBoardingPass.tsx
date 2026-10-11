@@ -66,8 +66,12 @@ export const TactileBoardingPass: React.FC<TactileBoardingPassProps> = ({
                 PASS-{reg.id.slice(0, 8).toUpperCase()}
               </span>
               <div className="flex items-center gap-1.5">
-                <span className="text-caption font-semibold px-2.5 py-0.5 rounded-full bg-accent-soft text-accent">
-                  {reg.status.replace('_', ' ')}
+                <span className={`text-caption font-semibold px-2.5 py-0.5 rounded-full ${
+                  reg.status === 'checked_in'
+                    ? 'bg-emerald-500/15 text-emerald-600 border border-emerald-500/30'
+                    : 'bg-accent-soft text-accent'
+                }`}>
+                  {reg.status === 'checked_in' ? 'Admitted ✓' : reg.status.replace('_', ' ')}
                 </span>
                 <button
                   type="button"
@@ -95,7 +99,11 @@ export const TactileBoardingPass: React.FC<TactileBoardingPassProps> = ({
 
             <div className="pt-2 text-caption text-text-3 flex items-center justify-between border-t border-line/50">
               <span className="truncate">Attendee: <strong className="text-text font-medium">{reg.userName}</strong></span>
-              <span className="font-mono text-[11px] text-accent font-semibold flex-shrink-0">CONFIRMED</span>
+              <span className={`font-mono text-[11px] font-semibold flex-shrink-0 ${
+                reg.status === 'checked_in' ? 'text-emerald-600' : 'text-accent'
+              }`}>
+                {reg.status === 'checked_in' ? 'CHECKED IN' : 'CONFIRMED'}
+              </span>
             </div>
           </div>
 
@@ -112,10 +120,10 @@ export const TactileBoardingPass: React.FC<TactileBoardingPassProps> = ({
               variant="secondary"
               size="compact"
               fullWidth
-              icon={<QrCode className="h-4 w-4 text-accent" />}
+              icon={reg.status === 'checked_in' ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <QrCode className="h-4 w-4 text-accent" />}
               onClick={onPresent}
             >
-              Present Pass
+              {reg.status === 'checked_in' ? 'View Admitted Stub' : 'Present Pass'}
             </Button>
             <Button
               variant="tertiary"

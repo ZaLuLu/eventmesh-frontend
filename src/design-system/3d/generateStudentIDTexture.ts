@@ -1,0 +1,228 @@
+/**
+ * Utility to generate an authentic high-resolution Student / Member ID Card texture
+ * for the 3D physics Lanyard card face.
+ */
+
+export interface StudentIDData {
+  name: string
+  registrationNumber: string
+  degreeBranch: string
+  semester?: number
+  email: string
+  role?: string
+  avatarUrl?: string
+  campus?: string
+}
+
+export function generateStudentIDTexture(data: StudentIDData): string {
+  // Use 600x900 resolution (2:3 aspect ratio matching the portrait Lanyard card)
+  const width = 600
+  const height = 900
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const ctx = canvas.getContext('2d')
+
+  if (!ctx) return ''
+
+  // 1. Dark Obsidian Gradient Background
+  const bgGrad = ctx.createLinearGradient(0, 0, width, height)
+  bgGrad.addColorStop(0, '#120F24')
+  bgGrad.addColorStop(0.5, '#0A0815')
+  bgGrad.addColorStop(1, '#151028')
+  ctx.fillStyle = bgGrad
+  ctx.fillRect(0, 0, width, height)
+
+  // 2. Subtle Geometric Grid Lines for Tech Aesthetic
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)'
+  ctx.lineWidth = 1
+  for (let x = 0; x < width; x += 40) {
+    ctx.beginPath()
+    ctx.moveTo(x, 0)
+    ctx.lineTo(x, height)
+    ctx.stroke()
+  }
+  for (let y = 0; y < height; y += 40) {
+    ctx.beginPath()
+    ctx.moveTo(0, y)
+    ctx.lineTo(width, y)
+    ctx.stroke()
+  }
+
+  // 3. Top University / Header Banner
+  const headerGrad = ctx.createLinearGradient(0, 0, width, 0)
+  headerGrad.addColorStop(0, '#5E4AE3')
+  headerGrad.addColorStop(0.5, '#7C3AED')
+  headerGrad.addColorStop(1, '#4F46E5')
+  ctx.fillStyle = headerGrad
+  ctx.fillRect(0, 0, width, 120)
+
+  // Lanyard Slot Area Indicator (Top 40px)
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.35)'
+  ctx.beginPath()
+  ctx.roundRect((width - 120) / 2, 16, 120, 24, 12)
+  ctx.fill()
+
+  // Header Title
+  ctx.fillStyle = '#FFFFFF'
+  ctx.font = 'bold 20px "Plus Jakarta Sans Variable", sans-serif'
+  ctx.textAlign = 'center'
+  ctx.letterSpacing = '2px'
+  ctx.fillText('EVENTMESH // CAMPUS IDENTITY', width / 2, 75)
+
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.75)'
+  ctx.font = '500 13px "JetBrains Mono", monospace'
+  ctx.fillText(data.campus || 'CENTRAL UNIVERSITY CAMPUS', width / 2, 98)
+
+  // 4. RFID Smart Chip Graphic
+  const chipX = 54
+  const chipY = 150
+  const chipW = 72
+  const chipH = 56
+  const chipGrad = ctx.createLinearGradient(chipX, chipY, chipX + chipW, chipY + chipH)
+  chipGrad.addColorStop(0, '#D4AF37')
+  chipGrad.addColorStop(0.5, '#F5DEB3')
+  chipGrad.addColorStop(1, '#AA771C')
+  ctx.fillStyle = chipGrad
+  ctx.beginPath()
+  ctx.roundRect(chipX, chipY, chipW, chipH, 8)
+  ctx.fill()
+  ctx.strokeStyle = 'rgba(0,0,0,0.3)'
+  ctx.lineWidth = 1.5
+  ctx.strokeRect(chipX + 8, chipY + 8, chipW - 16, chipH - 16)
+  ctx.beginPath()
+  ctx.moveTo(chipX + chipW / 2, chipY + 8)
+  ctx.lineTo(chipX + chipW / 2, chipY + chipH - 8)
+  ctx.stroke()
+
+  // Verified Status Pill (Top Right)
+  ctx.fillStyle = 'rgba(16, 185, 129, 0.15)'
+  ctx.strokeStyle = '#10B981'
+  ctx.lineWidth = 1.5
+  ctx.beginPath()
+  ctx.roundRect(width - 180, 160, 126, 34, 17)
+  ctx.fill()
+  ctx.stroke()
+
+  ctx.fillStyle = '#10B981'
+  ctx.font = 'bold 12px "JetBrains Mono", monospace'
+  ctx.textAlign = 'center'
+  ctx.fillText('VERIFIED ID ✓', width - 180 + 63, 182)
+
+  // 5. Student Avatar Photo Frame
+  const photoSize = 190
+  const photoX = (width - photoSize) / 2
+  const photoY = 240
+
+  // Photo Glow & Border
+  ctx.fillStyle = 'rgba(94, 74, 227, 0.2)'
+  ctx.beginPath()
+  ctx.arc(photoX + photoSize / 2, photoY + photoSize / 2, photoSize / 2 + 8, 0, Math.PI * 2)
+  ctx.fill()
+
+  ctx.strokeStyle = '#5E4AE3'
+  ctx.lineWidth = 3
+  ctx.beginPath()
+  ctx.arc(photoX + photoSize / 2, photoY + photoSize / 2, photoSize / 2, 0, Math.PI * 2)
+  ctx.stroke()
+
+  // Inner Avatar Background
+  const avatarBg = ctx.createLinearGradient(photoX, photoY, photoX + photoSize, photoY + photoSize)
+  avatarBg.addColorStop(0, '#2E1065')
+  avatarBg.addColorStop(1, '#4C1D95')
+  ctx.fillStyle = avatarBg
+  ctx.beginPath()
+  ctx.arc(photoX + photoSize / 2, photoY + photoSize / 2, photoSize / 2 - 2, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Avatar Initials
+  const initials = data.name
+    .split(' ')
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+
+  ctx.fillStyle = '#FFFFFF'
+  ctx.font = 'bold 64px "Plus Jakarta Sans Variable", sans-serif'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(initials, photoX + photoSize / 2, photoY + photoSize / 2)
+  ctx.textBaseline = 'alphabetic'
+
+  // 6. Student Information Section
+  // Student Name
+  ctx.fillStyle = '#FFFFFF'
+  ctx.font = 'bold 32px "Plus Jakarta Sans Variable", sans-serif'
+  ctx.textAlign = 'center'
+  ctx.fillText(data.name, width / 2, 485)
+
+  // Registration Number (Tabular Mono with Badge)
+  ctx.fillStyle = '#818CF8'
+  ctx.font = '600 20px "JetBrains Mono", monospace'
+  ctx.fillText(`REG: ${data.registrationNumber}`, width / 2, 525)
+
+  // Program / Department
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'
+  ctx.font = '500 17px "Plus Jakarta Sans Variable", sans-serif'
+  ctx.fillText(data.degreeBranch, width / 2, 565)
+
+  // Academic Standing / Role
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.55)'
+  ctx.font = '14px "JetBrains Mono", monospace'
+  ctx.fillText(`SEMESTER ${data.semester || 6} · ${data.role || 'ATTENDEE'}`, width / 2, 595)
+
+  // Divider Line
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(60, 630)
+  ctx.lineTo(width - 60, 630)
+  ctx.stroke()
+
+  // 7. Security Hash & Metadata Row
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'
+  ctx.font = '11px "JetBrains Mono", monospace'
+  ctx.textAlign = 'left'
+  ctx.fillText(`ISSUED: OCT 2026`, 60, 665)
+  ctx.fillText(`EXP: JUN 2028`, 60, 685)
+
+  ctx.textAlign = 'right'
+  ctx.fillText(`CRYPTO ID: EM-${data.registrationNumber.slice(-4)}`, width - 60, 665)
+  ctx.fillText(`STATUS: ACTIVE PASSHOLDER`, width - 60, 685)
+
+  // 8. Bottom Barcode Aesthetic Simulation
+  const barcodeY = 720
+  const barcodeH = 75
+  const barcodeStartX = 60
+  const barcodeW = width - 120
+
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.04)'
+  ctx.fillRect(barcodeStartX - 10, barcodeY - 10, barcodeW + 20, barcodeH + 45)
+
+  ctx.fillStyle = '#FFFFFF'
+  // Deterministic bar widths
+  let curX = barcodeStartX
+  const seed = data.registrationNumber.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
+  for (let i = 0; curX < barcodeStartX + barcodeW; i++) {
+    const barWidth = ((seed + i * 7) % 5) + 1
+    const gap = ((seed + i * 3) % 4) + 2
+    ctx.fillRect(curX, barcodeY, barWidth, barcodeH)
+    curX += barWidth + gap
+  }
+
+  // Barcode Serial Text
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
+  ctx.font = '12px "JetBrains Mono", monospace'
+  ctx.textAlign = 'center'
+  ctx.fillText(`* EM-${data.registrationNumber}-2026-PASS *`, width / 2, barcodeY + barcodeH + 24)
+
+  // 9. Watermark Holographic Seal (Bottom Center)
+  ctx.strokeStyle = 'rgba(129, 140, 248, 0.2)'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.arc(width / 2, height - 28, 16, 0, Math.PI * 2)
+  ctx.stroke()
+
+  return canvas.toDataURL('image/png')
+}
