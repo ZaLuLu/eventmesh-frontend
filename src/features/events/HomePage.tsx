@@ -8,6 +8,7 @@ import { EventsToolbar } from './components/EventsToolbar'
 import { EventsDiscoveryView } from './components/EventsDiscoveryView'
 import { CampusRadarFeed } from './components/CampusRadarFeed'
 import { SubcultureTracks } from './components/SubcultureTracks'
+import { CampusAdmissionPasses } from './components/CampusAdmissionPasses'
 
 export const HomePage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -180,7 +181,12 @@ export const HomePage: React.FC = () => {
       <SubcultureTracks events={newestEvents} />
 
       {/* ==============================================================
-          ACT 4: NEW ADDITIONS RAIL
+          ACT 4: CAMPUS ADMISSION & PASS TIERS (Tactile Paper Pass)
+          ============================================================== */}
+      <CampusAdmissionPasses />
+
+      {/* ==============================================================
+          ACT 5: NEW ADDITIONS RAIL
           ============================================================== */}
       <NewEventsRail events={newestEvents} isLoading={isNewestLoading} />
 

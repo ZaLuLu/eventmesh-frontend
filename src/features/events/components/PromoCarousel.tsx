@@ -194,19 +194,19 @@ export const PromoCarousel: React.FC<PromoCarouselProps> = ({ events, className 
                         <Button
                           variant="primary"
                           size="md"
-                          className="bg-[#0047FF] text-white hover:bg-[#0037CC] px-6 font-semibold shadow-sm text-xs rounded-none uppercase tracking-wider"
+                          className="bg-[#0047FF] text-white hover:bg-[#0037CC] px-6 font-semibold shadow-sm text-xs rounded-none uppercase tracking-wider cursor-pointer"
                           icon={<ArrowRight className="w-4 h-4" />}
                         >
                           View event
                         </Button>
                       </Link>
 
-                      <Link
-                        to={eventHref}
-                        className="inline-flex items-center h-10 px-5 rounded-none border border-[#E2E8F0] text-[#0A0A0A] hover:text-[#0047FF] hover:border-[#0047FF] text-xs font-semibold uppercase tracking-wider transition-colors"
+                      <a
+                        href="#admission"
+                        className="inline-flex items-center h-10 px-5 rounded-none border border-[#E2E8F0] bg-white text-[#0A0A0A] hover:text-[#0047FF] hover:border-[#0047FF] text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer"
                       >
-                        Learn more
-                      </Link>
+                        Claim pass
+                      </a>
                     </div>
                   </div>
 
