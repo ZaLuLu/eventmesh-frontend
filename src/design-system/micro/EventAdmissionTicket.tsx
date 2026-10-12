@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { TearTicket } from './TearTicket'
 import { CodeSlots } from './CodeSlots'
@@ -11,14 +11,11 @@ import {
 } from '@/lib/sound'
 import { fireCelebrationConfetti } from '@/lib/confetti'
 import {
-  ShieldCheck,
   CheckCircle2,
-  Building2,
   Calendar,
   MapPin,
   Radio,
   QrCode,
-  RotateCcw,
   X
 } from 'lucide-react'
 
@@ -52,13 +49,6 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
 }) => {
   const isAlreadyAdmitted = registration.status === 'checked_in'
   const [isLocallyTorn, setIsLocallyTorn] = useState(isAlreadyAdmitted)
-  const [clockMs, setClockMs] = useState(Date.now())
-
-  // Dynamic live security clock (anti-screenshot watermark)
-  useEffect(() => {
-    const timer = setInterval(() => setClockMs(Date.now()), 100)
-    return () => clearInterval(timer)
-  }, [])
 
   const isTorn = isAlreadyAdmitted || isLocallyTorn
   const ticketCode = registration.ticketCode || `PASS-${registration.id.slice(0, 8).toUpperCase()}`
@@ -111,25 +101,15 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
     }
   }, [registration.id, ticketCode, isTorn, disabled])
 
-  // Simulated Venue Gate Scanner function (organizer perspective)
-  const handleSimulateVenueScan = () => {
-    try {
-      const channel = new BroadcastChannel('eventmesh_gate_admission')
-      channel.postMessage({ registrationId: registration.id, ticketCode })
-      channel.close()
-    } catch {}
-
-    window.dispatchEvent(
-      new CustomEvent('eventmesh_gate_admitted', {
-        detail: { registrationId: registration.id, ticketCode },
-      })
-    )
-  }
-
-  const liveDate = new Date(clockMs)
-  const liveTimeString =
-    liveDate.toLocaleTimeString('en-US', { hour12: false }) +
-    `.${String(liveDate.getMilliseconds()).padStart(3, '0')}`
+  // ESC key to close floating canvas
+  useEffect(() => {
+    if (!floatingCanvas || !onClose) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [floatingCanvas, onClose])
 
   // Generous luxury dimensions for natural paper pass
   const WIDTH = 720
@@ -138,23 +118,7 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
 
   const content = (
     <div className={`relative select-none flex flex-col items-center ${className}`}>
-      {/* Anti-Fraud Security Ribbon (Natural styling, zero neon) */}
-      <motion.div
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[720px] mb-3 px-4 py-2 rounded-xl bg-zinc-900/90 backdrop-blur-md border border-zinc-700/60 flex items-center justify-between text-xs font-mono shadow-md text-zinc-300"
-      >
-        <div className="flex items-center gap-2 text-emerald-400 font-semibold tracking-wide">
-          <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          <span>CRYPTOGRAPHIC VERIFIED PASS</span>
-        </div>
-        <div className="flex items-center gap-2 text-zinc-400">
-          <span className="w-2 h-2 rounded-full bg-emerald-400" />
-          <span className="font-medium tracking-wider">LIVE: {liveTimeString}</span>
-        </div>
-      </motion.div>
-
-      {/* Floating Canvas Ticket Stage */}
+      {/* Floating Canvas Ticket Stage (Pure floating pass, zero auxiliary dialogue boxes) */}
       <div className="w-full flex justify-center py-2 overflow-visible">
         <TearTicket
           width={WIDTH}
@@ -169,21 +133,27 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
           resistance={0.4}
           torn={isTorn}
           disabled={disabled}
-          background="#18181B" // Matte deep zinc paper (natural)
+          background="#18181B" // Matte deep charcoal paper (natural luxury)
           stubBackground="#141416" // Matte stub paper
           color="#F8FAFC"
           borderColor="rgba(255,255,255,0.12)"
           tilt={true}
           tiltMax={8}
-          className="shadow-[0_25px_60px_-15px_rgba(0,0,0,0.6)]"
+          className="shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)]"
           onTear={() => {
             playGateAdmissionChime()
             fireCelebrationConfetti()
             if (onAdmit) onAdmit()
           }}
           stub={
-            /* Natural Gate Stub */
-            <div className="h-full flex flex-col justify-between items-center text-center p-4 font-mono bg-[#141416] text-zinc-100 select-none">
+            /* Natural Gate Stub (Direct tap / drag to tear) */
+            <div
+              onClick={!isTorn && !disabled ? triggerDigitalTear : undefined}
+              className={`h-full flex flex-col justify-between items-center text-center p-4 font-mono bg-[#141416] text-zinc-100 select-none ${
+                !isTorn && !disabled ? 'cursor-pointer hover:bg-[#18181c] transition-colors' : ''
+              }`}
+              title={!isTorn && !disabled ? 'Tap or drag stub to simulate venue gate check-in' : undefined}
+            >
               {/* Stub Header */}
               <div className="w-full border-b border-zinc-700/60 pb-2 flex items-center justify-between">
                 <span className="text-[10px] tracking-widest text-zinc-400 font-bold uppercase">
@@ -218,7 +188,7 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
                   />
                 </div>
 
-                {/* Status Indicator */}
+                {/* Status Indicator on Stub */}
                 <div className="pt-1">
                   {isTorn ? (
                     <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold tracking-wider">
@@ -226,9 +196,9 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
                       <span>ADMITTED ✓</span>
                     </div>
                   ) : (
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-300 text-[9px] font-medium font-mono">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-zinc-800/80 border border-zinc-700 text-zinc-300 text-[9px] font-medium font-mono hover:border-zinc-500 transition-colors">
                       <Radio className="w-2.5 h-2.5 text-zinc-400" />
-                      <span>GATE SCAN READY</span>
+                      <span>TAP / DRAG TO TEAR</span>
                     </div>
                   )}
                 </div>
@@ -344,83 +314,33 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
           </div>
         </TearTicket>
       </div>
-
-      {/* Floating Action Controls Dock (Natural, no neon) */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mt-5 w-full max-w-[720px] flex flex-col items-center gap-3"
-      >
-        {!isTorn ? (
-          <div className="w-full p-4 rounded-xl bg-zinc-900/90 backdrop-blur-md border border-zinc-700/60 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
-            <div className="flex items-center gap-2 text-sm text-zinc-300">
-              <span className="w-2 h-2 rounded-full bg-zinc-400" />
-              <span>
-                Pass is <strong>Intact</strong> · Drag the stub or trigger scan to tear
-              </span>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleSimulateVenueScan}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold bg-zinc-100 text-zinc-900 hover:bg-white active:scale-[0.98] transition-all whitespace-nowrap cursor-pointer shadow-md"
-            >
-              <Building2 className="w-4 h-4" />
-              <span>Simulate Venue Kiosk Scan & Digital Tear</span>
-            </button>
-          </div>
-        ) : (
-          <div className="w-full p-4 rounded-xl bg-zinc-900/90 backdrop-blur-md border border-zinc-700/60 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
-            <div className="flex items-center gap-2 text-emerald-400 text-sm font-mono">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>Admission Verified at Venue Gate · Stub Detached</span>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setIsLocallyTorn(false)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono font-medium text-zinc-300 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 hover:text-white transition-all cursor-pointer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Replay Tear Animation</span>
-            </button>
-          </div>
-        )}
-      </motion.div>
     </div>
   )
 
-  // Floating Canvas Mode (Full-viewport atmospheric stage)
+  // Floating Canvas Mode (Pure floating ticket suspended in space)
   if (floatingCanvas) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 sm:p-8 backdrop-blur-xl bg-black/80 overflow-y-auto">
-        {/* Floating Top Header with Close Pill */}
-        <div className="w-full max-w-4xl flex items-center justify-between mb-4 px-2">
-          <div className="flex items-center gap-2 text-white">
-            <div className="w-7 h-7 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center text-xs font-bold text-zinc-300">
-              EM
-            </div>
-            <div>
-              <h2 className="text-sm font-bold tracking-tight text-white">Event Admission Canvas</h2>
-              <p className="text-[11px] text-zinc-400 font-mono">PASS-{passSerial} · Official Entry Pass</p>
-            </div>
-          </div>
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 backdrop-blur-2xl bg-black/85 overflow-y-auto"
+        onClick={(e) => {
+          if (e.target === e.currentTarget && onClose) onClose()
+        }}
+      >
+        {/* Minimalist Floating Close Pill */}
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="fixed top-6 right-6 z-50 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-400 hover:text-white text-xs font-mono transition-all cursor-pointer backdrop-blur-md shadow-xl"
+          >
+            <span>Close</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-black/60 text-[10px] text-zinc-400">ESC</kbd>
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
 
-          {onClose && (
-            <button
-              type="button"
-              onClick={onClose}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-800/90 hover:bg-zinc-700/90 border border-zinc-700 text-zinc-300 hover:text-white text-xs font-mono transition-all cursor-pointer shadow-md"
-            >
-              <span>Close Canvas</span>
-              <kbd className="px-1.5 py-0.5 rounded bg-black/50 text-[10px] text-zinc-400">ESC</kbd>
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
-
-        {/* Floating Stage */}
-        <div className="my-auto py-4 w-full flex justify-center">
+        {/* Floating Ticket Suspended in Canvas */}
+        <div className="my-auto py-6 animate-in fade-in zoom-in-95 duration-300">
           {content}
         </div>
       </div>

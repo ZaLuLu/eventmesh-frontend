@@ -517,7 +517,15 @@ const TearTicket: React.FC<TearTicketProps> = ({
 
   const simulatePaperTear = () => {
     const s = sim.current;
-    if (s.phase !== 'idle' || !stubRef.current) return;
+    if (!stubRef.current || s.phase === 'drop') return;
+
+    cancelAnimationFrame(s.raf);
+    s.raf = 0;
+    s.id = null;
+
+    // Reset snapped bridges so full natural rip sequence plays out
+    s.snapped = geo.bridges.map(() => false);
+    s.snapAt = geo.bridges.map(() => 0);
 
     // Start tear from top notch
     const far = false;
@@ -596,7 +604,7 @@ const TearTicket: React.FC<TearTicketProps> = ({
 
     if (used) {
       const s = sim.current;
-      if (s.phase === 'idle') {
+      if (s.phase !== 'drop') {
         simulatePaperTear();
       }
       return;
@@ -693,6 +701,13 @@ const TearTicket: React.FC<TearTicketProps> = ({
       s.age = 0;
       s.phase = 'drop';
     } else if (s.phase === 'held') {
+      const moved = Math.hypot(s.point.x - s.start.x, s.point.y - s.start.y);
+      if (moved < 8 && !disabled && !used) {
+        // Tap/click on stub triggers natural paper tear
+        simulatePaperTear();
+        return;
+      }
+      if (used) return;
       s.phase = 'return';
     }
     run();
@@ -700,7 +715,7 @@ const TearTicket: React.FC<TearTicketProps> = ({
   const onStubKey = (e: KeyboardEvent<HTMLDivElement>) => {
     if (disabled || used || (e.key !== 'Enter' && e.key !== ' ')) return;
     e.preventDefault();
-    if (!e.repeat) tearNow();
+    if (!e.repeat) simulatePaperTear();
   };
 
   useEffect(() => {

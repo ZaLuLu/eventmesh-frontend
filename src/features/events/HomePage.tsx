@@ -162,7 +162,11 @@ export const HomePage: React.FC = () => {
   }
 
   return (
-    <div className="w-full bg-bg text-text min-h-screen flex flex-col">
+    <div className="w-full bg-bg text-text min-h-screen flex flex-col relative overflow-x-hidden selection:bg-accent/20">
+      {/* Luma-Grade Ambient Radial Canvas Glow */}
+      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(120,119,198,0.08),rgba(255,255,255,0))] -z-10" />
+      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,rgba(99,102,241,0.04),rgba(255,255,255,0))] -z-10" />
+
       {/* ==============================================================
           ACT 1: THE MAINSTAGE PORTAL (Flagship Promoted Exhibition)
           ============================================================== */}

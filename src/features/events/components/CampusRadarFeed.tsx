@@ -62,7 +62,7 @@ export const CampusRadarFeed: React.FC<{ className?: string }> = ({ className = 
   return (
     <section
       aria-label="Campus Live Radar Feed"
-      className={`w-full py-8 sm:py-10 border-y border-line bg-surface/50 backdrop-blur-md relative overflow-hidden ${className}`}
+      className={`w-full py-10 sm:py-14 relative overflow-hidden ${className}`}
     >
       {/* Background Ambient Radar Waves */}
       <div className="absolute right-[-100px] top-1/2 -translate-y-1/2 w-[420px] h-[420px] rounded-full border border-accent/10 pointer-events-none animate-pulse -z-0" />
@@ -98,7 +98,7 @@ export const CampusRadarFeed: React.FC<{ className?: string }> = ({ className = 
             <Link
               key={venue.id}
               to={`/events/${venue.eventSlug}`}
-              className="group relative p-4 sm:p-5 rounded-2xl bg-surface border border-line hover:border-accent/40 shadow-sm hover:shadow-lg transition-all duration-200 flex flex-col justify-between"
+              className="group relative p-5 sm:p-6 rounded-2xl bg-surface/60 backdrop-blur-md border border-line/60 hover:border-accent/40 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between"
             >
               <div>
                 {/* Top Status & Gate Bar */}

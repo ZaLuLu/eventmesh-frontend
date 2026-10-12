@@ -79,7 +79,7 @@ export const SubcultureTracks: React.FC<SubcultureTracksProps> = ({ events, clas
   return (
     <section
       aria-label="Campus Subculture Tracks"
-      className={`w-full py-10 sm:py-14 bg-surface relative ${className}`}
+      className={`w-full py-10 sm:py-14 relative ${className}`}
     >
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Editorial Section Header */}
@@ -106,7 +106,7 @@ export const SubcultureTracks: React.FC<SubcultureTracksProps> = ({ events, clas
         </div>
 
         {/* Track Segmented Selector Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none mb-8 border-b border-line">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none mb-8 border-b border-line/40">
           {TRACKS.map((t) => {
             const Icon = t.icon
             const isActive = t.id === activeTrack
@@ -133,7 +133,7 @@ export const SubcultureTracks: React.FC<SubcultureTracksProps> = ({ events, clas
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mb-8">
           {/* Left 4 cols: Thematic Track Profile */}
           <div
-            className="lg:col-span-4 p-6 rounded-2xl border flex flex-col justify-between"
+            className="lg:col-span-4 p-6 rounded-2xl border flex flex-col justify-between backdrop-blur-md"
             style={{
               backgroundColor: `${currentDef.accentColor}08`,
               borderColor: `${currentDef.accentColor}25`,
@@ -172,7 +172,7 @@ export const SubcultureTracks: React.FC<SubcultureTracksProps> = ({ events, clas
               <Link
                 key={evt.id}
                 to={`/events/${evt.slug}`}
-                className="group p-4 sm:p-5 rounded-2xl bg-surface border border-line hover:border-accent/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                className="group p-5 sm:p-6 rounded-2xl bg-surface/60 backdrop-blur-md border border-line/60 hover:border-accent/40 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all flex flex-col justify-between"
               >
                 <div>
                   {/* Event Category & Price Row */}

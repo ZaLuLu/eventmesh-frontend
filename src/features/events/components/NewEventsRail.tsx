@@ -31,7 +31,7 @@ export const NewEventsRail: React.FC<NewEventsRailProps> = ({
     <section
       aria-label="New Events"
       className={cn(
-        'relative w-full bg-lavender py-10 sm:py-14 select-none',
+        'relative w-full bg-bg py-10 sm:py-14 select-none',
         'min-h-[50svh] flex flex-col justify-center',
         className
       )}
@@ -40,10 +40,10 @@ export const NewEventsRail: React.FC<NewEventsRailProps> = ({
         {/* Rail Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <span className="text-[13px] font-semibold text-champion uppercase tracking-wider block mb-1">
+            <span className="text-[13px] font-semibold text-accent uppercase tracking-wider block mb-1">
               New Additions
             </span>
-            <h2 className="font-serif text-3xl sm:text-4xl text-ink font-normal leading-tight tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-bold text-text tracking-tight font-sans">
               Recently published across all collectives
             </h2>
           </div>
@@ -51,7 +51,7 @@ export const NewEventsRail: React.FC<NewEventsRailProps> = ({
           <div className="flex items-center gap-3">
             <Link
               to="/explore?sort=newest"
-              className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-champion hover:gap-2 transition-all mr-2"
+              className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-accent hover:gap-2 transition-all mr-2"
             >
               <span>See all newest</span>
               <ArrowRight className="w-4 h-4" />
@@ -63,7 +63,7 @@ export const NewEventsRail: React.FC<NewEventsRailProps> = ({
                 type="button"
                 onClick={() => handleScroll('left')}
                 aria-label="Scroll new events left"
-                className="w-10 h-10 rounded-full bg-white text-champion hover:bg-white/80 shadow-xs border border-line flex items-center justify-center transition-all duration-200"
+                className="w-10 h-10 rounded-full bg-surface text-text hover:bg-surface-hover shadow-xs border border-line flex items-center justify-center transition-all duration-200"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -72,7 +72,7 @@ export const NewEventsRail: React.FC<NewEventsRailProps> = ({
                 type="button"
                 onClick={() => handleScroll('right')}
                 aria-label="Scroll new events right"
-                className="w-10 h-10 rounded-full bg-white text-champion hover:bg-white/80 shadow-xs border border-line flex items-center justify-center transition-all duration-200"
+                className="w-10 h-10 rounded-full bg-surface text-text hover:bg-surface-hover shadow-xs border border-line flex items-center justify-center transition-all duration-200"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
