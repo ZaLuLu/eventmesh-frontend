@@ -6,6 +6,7 @@ import { formatDate } from '@/lib/dates'
 import { PosterArtwork } from '@/design-system/PosterArtwork'
 import { fireCelebrationConfetti } from '@/lib/confetti'
 import { useCardTilt } from '@/hooks/useCardTilt'
+import { cn } from '@/lib/utils'
 
 export interface EventCardModernProps {
   event: Event
@@ -55,7 +56,7 @@ export const EventCardModern: React.FC<EventCardModernProps> = ({
     <div
       ref={cardRef}
       {...tiltProps}
-      className="group relative flex flex-col w-full bg-surface border border-line rounded-panel overflow-hidden transition-colors duration-200 hover:border-line-focus hover:shadow-card-hover select-none will-change-transform"
+      className="group relative flex flex-col w-full bg-transparent select-none will-change-transform"
       style={{
         ...tiltStyle,
         ['--card-club-color' as any]: clubColor,
@@ -64,122 +65,122 @@ export const EventCardModern: React.FC<EventCardModernProps> = ({
       {/* Specular glare sheen overlay */}
       <div style={glareStyle} aria-hidden="true" />
 
-      {/* 4px solid top edge in club color with subtle ambient halo */}
-      <div
-        className="h-1 w-full transition-all duration-300 group-hover:h-1.5"
-        style={{ backgroundColor: clubColor }}
-        aria-hidden="true"
-      />
-
       {/* Main clickable area to event details */}
       <Link
-        to={`/events/${event.slug}`}
-        className="block w-full focus-visible:outline-2 focus-visible:outline-text"
+        to={`/events/${event.slug || event.id}`}
+        className="block w-full focus-visible:outline-none focus-visible:underline"
       >
-        {/* Generative Poster Container */}
-        <div className={`relative ${aspectClass} w-full overflow-hidden bg-subtle`}>
-          <PosterArtwork
-            event={event}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
+        {/* Floating Poster with Corner Registration Ticks */}
+        <div className="relative mb-2.5">
+          <span className="absolute -top-1.5 -left-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┌</span>
+          <span className="absolute -top-1.5 -right-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┐</span>
+          <span className="absolute -bottom-1.5 -left-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">└</span>
+          <span className="absolute -bottom-1.5 -right-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┘</span>
 
-          {/* Rank Number if Top Shelf */}
-          {typeof rankNumber === 'number' && (
-            <div className="absolute top-2.5 left-2.5 h-7 w-7 rounded-full bg-surface/90 backdrop-blur-md text-text font-bold text-caption flex items-center justify-center border border-line shadow-sm">
-              #{rankNumber}
-            </div>
-          )}
+          <div className={`relative ${aspectClass} w-full overflow-hidden bg-[#0D192E] border border-[#1A2E4C] group-hover:border-sky-400 transition-colors`}>
+            <PosterArtwork
+              event={event}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-102"
+            />
 
-          {/* Quick Action Floating Overlay */}
-          <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
-            {onPeek && (
+            {/* Rank Number if Top Shelf */}
+            {typeof rankNumber === 'number' && (
+              <div className="absolute top-2 left-2 px-2 py-0.5 bg-[#08101E]/90 text-sky-400 font-mono text-xs font-bold border border-[#1A2E4C]">
+                #{String(rankNumber).padStart(2, '0')}
+              </div>
+            )}
+
+            {/* Quick Action Floating Overlay */}
+            <div className="absolute top-2 right-2 flex items-center gap-1 z-10 font-mono text-xs">
+              {onPeek && (
+                <button
+                  type="button"
+                  onClick={handlePeekClick}
+                  className="w-7 h-7 bg-[#08101E]/90 border border-[#1A2E4C] text-slate-300 hover:text-sky-300 hover:border-sky-400 flex items-center justify-center transition-colors"
+                  title="Quick Peek preview"
+                  aria-label={`Quick peek for ${event.title}`}
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                </button>
+              )}
               <button
                 type="button"
-                onClick={handlePeekClick}
-                className="h-8 w-8 rounded-full bg-surface/90 backdrop-blur-md border border-line text-text hover:text-accent hover:border-accent flex items-center justify-center shadow-sm transition-all hover:scale-110 active:scale-95"
-                title="Quick Peek preview"
-                aria-label={`Quick peek for ${event.title}`}
+                onClick={handleBookmarkClick}
+                className={cn(
+                  'w-7 h-7 border flex items-center justify-center transition-colors',
+                  isBookmarked
+                    ? 'bg-sky-500/20 text-sky-400 border-sky-400'
+                    : 'bg-[#08101E]/90 border-[#1A2E4C] text-slate-300 hover:text-sky-300 hover:border-sky-400'
+                )}
+                title={isBookmarked ? 'Saved to bookmarks' : 'Bookmark event'}
+                aria-label={`Bookmark ${event.title}`}
               >
-                <Eye className="h-4 w-4" />
+                <Bookmark className={cn('w-3.5 h-3.5', isBookmarked && 'fill-sky-400')} />
               </button>
-            )}
-            <button
-              type="button"
-              onClick={handleBookmarkClick}
-              className={`h-8 w-8 rounded-full backdrop-blur-md border shadow-sm flex items-center justify-center transition-all hover:scale-110 active:scale-95 ${
-                isBookmarked
-                  ? 'bg-accent text-on-accent border-accent'
-                  : 'bg-surface/90 border-line text-text hover:text-accent'
-              }`}
-              title={isBookmarked ? 'Saved to bookmarks' : 'Bookmark event'}
-              aria-label={`Bookmark ${event.title}`}
-            >
-              <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
-            </button>
-          </div>
+            </div>
 
-          {/* Free / Price Tag in bottom corner */}
-          <div className="absolute bottom-2.5 right-2.5 pointer-events-none">
-            <span className="inline-block px-2.5 py-0.5 rounded-full text-caption font-semibold bg-surface/90 backdrop-blur-md text-text border border-line shadow-sm">
-              {event.isFree ? 'Free admission' : `₹${event.price || 0}`}
-            </span>
+            {/* Free / Price Tag in bottom corner */}
+            <div className="absolute bottom-2 right-2 pointer-events-none font-mono text-xs">
+              <span className="px-2 py-0.5 bg-[#08101E]/90 text-slate-200 border border-[#1A2E4C] text-[11px]">
+                {event.isFree ? 'FREE' : `₹${event.price || 0}`}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Card Details */}
-        <div className="p-4 flex flex-col gap-2">
+        {/* Card Details (Directly on canvas) */}
+        <div className="flex flex-col gap-1.5">
           {/* Date Row */}
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-small text-text-2 font-normal truncate">
+          <div className="flex items-center justify-between gap-2 text-xs font-mono">
+            <span className="text-sky-400 font-semibold uppercase tracking-wider truncate">
               {dateFormatted}
             </span>
             {event.status && event.status !== 'published' && (
-              <span className="text-caption font-medium px-2 py-0.5 rounded-full bg-subtle text-text-2 border border-line flex-shrink-0">
+              <span className="text-[10px] px-1.5 py-0.5 bg-[#0D192E] text-slate-400 border border-[#1A2E4C] uppercase flex-shrink-0">
                 {event.status.replace(/_/g, ' ')}
               </span>
             )}
           </div>
 
           {/* Title */}
-          <h3 className="text-[17px] sm:text-[18px] font-bold leading-snug line-clamp-2 text-text group-hover:text-accent transition-colors tracking-tight font-sans">
+          <h3 className="text-base sm:text-[17px] font-bold leading-snug line-clamp-2 text-white group-hover:text-sky-300 transition-colors font-sans">
             {event.title}
           </h3>
 
-          {/* Social Proof & Capacity Bar */}
-          <div className="space-y-1.5 pt-1">
-            <div className="flex items-center justify-between text-[11px] font-mono text-text-2">
-              <span className="flex items-center gap-1.5 truncate">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <strong className="text-text">{event.registrationsCount || 120}</strong> passholders
+          {/* Capacity Drafting Bar */}
+          <div className="space-y-1 pt-0.5 font-mono text-xs">
+            <div className="flex items-center justify-between text-[11px] text-slate-400">
+              <span className="truncate">
+                <strong className="text-sky-300 font-semibold">{event.registrationsCount || 120}</strong> passholders
               </span>
-              <span className="text-[10px] text-text-3 font-semibold uppercase">
-                {event.isFree ? 'RSVP OPEN' : 'SEATS LIMITED'}
+              <span className="text-[10px] text-slate-500 uppercase">
+                {event.isFree ? 'RSVP OPEN' : 'LIMITED'}
               </span>
             </div>
 
-            {/* Micro Capacity Bar */}
-            <div className="w-full h-1 rounded-full bg-subtle overflow-hidden">
+            {/* Drafting Line Gauge */}
+            <div className="w-full h-[2px] bg-[#1A2E4C] overflow-hidden">
               <div
-                className="h-full rounded-full bg-accent/80 transition-all duration-300"
+                className="h-full bg-sky-400 transition-all duration-300"
                 style={{ width: `${Math.min(95, Math.max(30, ((event.registrationsCount || 75) % 80) + 20))}%` }}
               />
             </div>
           </div>
 
-          {/* Club with 10px dot & category */}
-          <div className="flex items-center justify-between gap-2 pt-2 border-t border-line/60 mt-1">
-            <div className="flex items-center gap-2 min-w-0">
+          {/* Club with dot & category */}
+          <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#1A2E4C] mt-0.5 text-xs font-mono text-slate-400">
+            <div className="flex items-center gap-1.5 min-w-0">
               <span
-                className="h-2.5 w-2.5 rounded-full flex-shrink-0 shadow-xs"
+                className="h-2 w-2 rounded-full flex-shrink-0"
                 style={{ backgroundColor: clubColor }}
                 aria-hidden="true"
               />
-              <span className="text-small text-text-2 truncate font-medium">
-                {event.organizerName || 'Technical Collective'}
+              <span className="text-slate-300 truncate">
+                {event.organizerName || 'Autonomous Club'}
               </span>
             </div>
 
-            <span className="text-caption text-text-3 font-mono font-medium flex-shrink-0">
+            <span className="text-slate-500 uppercase flex-shrink-0 text-[11px]">
               {event.category}
             </span>
           </div>

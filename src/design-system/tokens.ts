@@ -1,42 +1,42 @@
 export const TOKENS = {
-  // Obsidian Stage & Electric Accent Tokens
-  champion: '#0C0A1A',
-  champion2: '#141126',
-  lavender: '#DDD6FE',
-  lavender100: '#F3F0FF',
-  lavender200: '#E4DFFC',
-  lavender300: '#C4B5FD',
-  violet: '#5E4AE3',
-  violetHover: '#4D39D1',
+  // Architectural Prussian Blueprint Tokens
+  champion: '#08101E',
+  champion2: '#0D192E',
+  lavender: '#0D192E',
+  lavender100: '#11223D',
+  lavender200: '#162C4E',
+  lavender300: '#1A2E4C',
+  violet: '#38BDF8',
+  violetHover: '#0EA5E9',
 
-  // Canvas & Surfaces (Crisp Slate Neutrals)
-  bg: '#F8F9FC',
-  surface: '#FFFFFF',
-  subtle: '#F1F3F9',
-  line: '#E2E6EE',
+  // Canvas & Surfaces (Prussian Blueprint Drafting)
+  bg: '#08101E',
+  surface: '#0D192E',
+  subtle: '#11223D',
+  line: '#1A2E4C',
 
   // Text
-  text: '#0F172A',
-  text2: '#475569',
+  text: '#FFFFFF',
+  text2: '#94A3B8',
   text3: '#64748B',
-  onDark: '#F8FAFC',
+  onDark: '#FFFFFF',
   onDark2: '#94A3B8',
 
-  // Status
-  success: '#10B981',
-  warning: '#F59E0B',
-  danger: '#EF4444',
-  verified: '#10B981',
+  // Status (Matte Ink)
+  success: '#16A34A',
+  warning: '#D97706',
+  danger: '#DC2626',
+  verified: '#38BDF8',
 
-  // Accent Mappings
-  accent: '#5E4AE3',
-  accentHover: '#4D39D1',
-  accentSoft: '#EEF0FD',
-  onAccent: '#FFFFFF',
+  // Accent Mappings: Matte Sky Cyan
+  accent: '#38BDF8',
+  accentHover: '#0EA5E9',
+  accentSoft: 'rgba(56, 189, 248, 0.12)',
+  onAccent: '#08101E',
 
-  // Shadow
-  cardShadow: '0 10px 30px rgba(21, 17, 48, 0.08)',
-  floatingShadow: '0 4px 16px rgba(21, 17, 48, 0.08)',
+  // Shadow (Subtle paper elevation, zero neon blur)
+  cardShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
+  floatingShadow: '0 8px 30px rgba(0, 0, 0, 0.5)',
 
   // Border Radii
   radiusSmall: '8px',

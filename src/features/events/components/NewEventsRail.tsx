@@ -31,50 +31,49 @@ export const NewEventsRail: React.FC<NewEventsRailProps> = ({
     <section
       aria-label="New Events"
       className={cn(
-        'relative w-full bg-bg py-10 sm:py-14 select-none',
-        'min-h-[50svh] flex flex-col justify-center',
+        'relative w-full py-12 sm:py-16 select-none',
         className
       )}
     >
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        {/* Rail Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
+        {/* Unboxed Chapter Header */}
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pb-6 border-b border-[#1A2E4C] mb-8">
           <div>
-            <span className="text-[13px] font-semibold text-accent uppercase tracking-wider block mb-1">
-              New Additions
+            <span className="text-xs font-mono text-sky-400 font-semibold tracking-wider block mb-1">
+              04 // RECENT RELEASES
             </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-text tracking-tight font-sans">
-              Recently published across all collectives
+            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-sans">
+              Recently Published Across Campus
             </h2>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Link
               to="/explore?sort=newest"
-              className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-accent hover:gap-2 transition-all mr-2"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-sky-400 hover:text-sky-300 transition-colors"
             >
               <span>See all newest</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
 
-            {/* Scroll Navigation Buttons */}
+            {/* Architectural Drafting Scroll Navigation */}
             <div className="hidden sm:flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => handleScroll('left')}
                 aria-label="Scroll new events left"
-                className="w-10 h-10 rounded-full bg-surface text-text hover:bg-surface-hover shadow-xs border border-line flex items-center justify-center transition-all duration-200"
+                className="w-8 h-8 border border-[#1A2E4C] text-slate-400 hover:text-white hover:border-sky-400 flex items-center justify-center transition-colors cursor-pointer"
               >
-                <ChevronLeft className="w-5 h-5" />
+                <ChevronLeft className="w-4 h-4" />
               </button>
 
               <button
                 type="button"
                 onClick={() => handleScroll('right')}
                 aria-label="Scroll new events right"
-                className="w-10 h-10 rounded-full bg-surface text-text hover:bg-surface-hover shadow-xs border border-line flex items-center justify-center transition-all duration-200"
+                className="w-8 h-8 border border-[#1A2E4C] text-slate-400 hover:text-white hover:border-sky-400 flex items-center justify-center transition-colors cursor-pointer"
               >
-                <ChevronRight className="w-5 h-5" />
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>

@@ -70,37 +70,22 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
     <>
       <header
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 h-16 transition-colors duration-300 select-none',
-          isTransparent
-            ? 'bg-transparent text-white border-transparent'
-            : 'bg-surface/95 backdrop-blur-md text-ink border-b border-line shadow-xs'
+          'fixed top-0 left-0 right-0 z-50 h-14 bg-[#08101E]/95 backdrop-blur-md text-white border-b border-[#1A2E4C] select-none transition-colors'
         )}
       >
-        <div className="max-w-[1440px] mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+        <div className="max-w-[1440px] mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 font-mono">
           {/* Left: Brand Logo & Campus Selector */}
           <div className="flex items-center gap-3 sm:gap-6 flex-shrink-0">
             <Link
               to="/"
-              className="flex items-center gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-champion rounded-full"
+              className="flex items-center gap-2.5 group focus:outline-none"
               aria-label="EventMesh Home"
             >
-              {/* Collegiate Monogram Mark */}
-              <div
-                className={cn(
-                  'w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm tracking-tight transition-transform duration-200 group-hover:scale-105',
-                  isTransparent
-                    ? 'bg-white text-champion shadow-sm'
-                    : 'bg-champion text-white shadow-xs'
-                )}
-              >
+              {/* Drafting Monogram Mark */}
+              <div className="w-7 h-7 bg-[#0D192E] border border-sky-400/80 text-sky-400 flex items-center justify-center font-bold text-xs tracking-wider group-hover:border-sky-300 transition-colors">
                 EM
               </div>
-              <span
-                className={cn(
-                  'font-serif text-2xl tracking-tight transition-colors',
-                  isTransparent ? 'text-white' : 'text-ink'
-                )}
-              >
+              <span className="font-mono text-sm sm:text-base font-bold tracking-widest text-white uppercase">
                 EventMesh
               </span>
             </Link>
@@ -110,24 +95,19 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
               <button
                 type="button"
                 onClick={() => setIsCityOpen(!isCityOpen)}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-all duration-200',
-                  isTransparent
-                    ? 'bg-white/10 hover:bg-white/15 text-white/90 border border-white/10'
-                    : 'bg-lavender/40 hover:bg-lavender/60 text-ink-muted hover:text-ink border border-line'
-                )}
+                className="flex items-center gap-1.5 px-2.5 py-1 bg-[#0D192E] hover:bg-[#1A2E4C] text-slate-300 hover:text-white border border-[#1A2E4C] hover:border-sky-400/50 text-xs transition-colors"
                 aria-label="Select campus or city"
                 aria-expanded={isCityOpen}
               >
-                <MapPin className={cn('w-3.5 h-3.5', isTransparent ? 'text-lavender' : 'text-champion')} />
-                <span className="truncate max-w-[160px]">{selectedCity.split('·')[0].trim()}</span>
-                <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+                <MapPin className="w-3 h-3 text-sky-400" />
+                <span className="truncate max-w-[160px] uppercase">{selectedCity.split('·')[0].trim()}</span>
+                <ChevronDown className="w-3 h-3 opacity-70" />
               </button>
 
               {isCityOpen && (
-                <div className="absolute left-0 mt-2 w-56 rounded-[18px] bg-surface border border-line shadow-floating py-1.5 z-50 text-ink">
-                  <div className="px-3.5 py-1 text-[13px] font-semibold text-ink-subtle uppercase tracking-wider">
-                    Campuses & Hubs
+                <div className="absolute left-0 mt-2 w-56 bg-[#0D192E] border border-[#1A2E4C] shadow-xl py-1 z-50 text-xs">
+                  <div className="px-3 py-1 font-semibold text-slate-500 uppercase tracking-wider text-[11px] border-b border-[#1A2E4C]">
+                    CAMPUS LOCATIONS
                   </div>
                   {CITIES.map((city) => (
                     <button
@@ -137,14 +117,14 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                         setIsCityOpen(false)
                       }}
                       className={cn(
-                        'w-full text-left px-3.5 py-2 text-[14px] flex items-center justify-between transition-colors',
+                        'w-full text-left px-3 py-1.5 text-xs flex items-center justify-between transition-colors',
                         selectedCity === city
-                          ? 'text-champion font-semibold bg-lavender/30'
-                          : 'text-ink hover:bg-surface-sunken'
+                          ? 'text-sky-400 font-semibold bg-sky-500/10 border-l-2 border-sky-400'
+                          : 'text-slate-300 hover:bg-[#1A2E4C]/50 hover:text-white'
                       )}
                     >
-                      <span>{city}</span>
-                      {selectedCity === city && <span className="w-1.5 h-1.5 rounded-full bg-champion" />}
+                      <span className="uppercase">{city}</span>
+                      {selectedCity === city && <span className="w-1.5 h-1.5 bg-sky-400" />}
                     </button>
                   ))}
                 </div>
@@ -157,34 +137,22 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             <button
               type="button"
               onClick={onSearchOpen}
-              className={cn(
-                'w-full h-10 flex items-center justify-between px-3.5 rounded-full text-[13px] transition-all duration-200 text-left',
-                isTransparent
-                  ? 'bg-white/10 hover:bg-white/15 text-white/70 border border-white/15'
-                  : 'bg-surface-sunken hover:bg-lavender/20 text-ink-muted border border-line hover:border-champion/30'
-              )}
+              className="w-full h-8 flex items-center justify-between px-3 bg-[#0D192E] hover:bg-[#1A2E4C]/60 text-slate-400 hover:text-slate-200 border border-[#1A2E4C] hover:border-sky-400/50 text-xs transition-colors text-left"
             >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <Search className="w-4 h-4 flex-shrink-0 opacity-80" />
-                <span className="truncate">Search events, clubs, talks...</span>
+              <div className="flex items-center gap-2 min-w-0">
+                <Search className="w-3.5 h-3.5 flex-shrink-0 text-slate-500" />
+                <span className="truncate">Search catalog (symposiums, hackathons...)</span>
               </div>
-              <kbd
-                className={cn(
-                  'px-2 py-0.5 rounded-md text-[12px] font-mono border',
-                  isTransparent
-                    ? 'bg-white/10 border-white/20 text-white/80'
-                    : 'bg-surface border-line text-ink-muted'
-                )}
-              >
+              <kbd className="px-1.5 py-0.5 text-[11px] bg-[#08101E] border border-[#1A2E4C] text-slate-400">
                 ⌘K
               </kbd>
             </button>
           </div>
 
           {/* Right: Navigation, Host Event & Account */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 text-xs">
             {/* Desktop Nav Links */}
-            <nav className="hidden md:flex items-center gap-1 mr-1">
+            <nav className="hidden md:flex items-center gap-3 mr-2">
               {navLinks.map((link) => {
                 const isActive = location.pathname.startsWith(link.path)
                 return (
@@ -192,14 +160,10 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                     key={link.path}
                     to={link.path}
                     className={cn(
-                      'px-3 py-1.5 rounded-full text-[14px] font-medium transition-colors',
-                      isTransparent
-                        ? isActive
-                          ? 'text-white font-semibold bg-white/15'
-                          : 'text-white/80 hover:text-white hover:bg-white/10'
-                        : isActive
-                        ? 'text-champion font-semibold bg-lavender/40'
-                        : 'text-ink-muted hover:text-ink hover:bg-surface-sunken'
+                      'py-1 text-xs uppercase tracking-wider transition-colors',
+                      isActive
+                        ? 'text-sky-400 font-semibold border-b border-sky-400'
+                        : 'text-slate-400 hover:text-slate-200'
                     )}
                   >
                     {link.label}
@@ -212,40 +176,27 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             <button
               type="button"
               onClick={onSearchOpen}
-              className={cn(
-                'lg:hidden p-2 rounded-full transition-colors',
-                isTransparent ? 'text-white hover:bg-white/10' : 'text-ink hover:bg-surface-sunken'
-              )}
+              className="lg:hidden p-1.5 text-slate-300 hover:text-white transition-colors"
               aria-label="Search"
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-4 h-4" />
             </button>
 
             {/* Host Event / Admin Dashboard Button */}
             {canAccessAdmin() ? (
               <Link
                 to="/admin"
-                className={cn(
-                  'hidden sm:inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full text-[13px] font-semibold transition-all',
-                  isTransparent
-                    ? 'bg-white/15 text-white hover:bg-white/25 border border-white/20'
-                    : 'bg-lavender text-champion hover:bg-lavender-200 border border-lavender-300'
-                )}
+                className="hidden sm:inline-flex items-center gap-1.5 h-8 px-3 bg-[#0D192E] text-sky-400 hover:text-sky-300 border border-[#1A2E4C] hover:border-sky-400 text-xs font-semibold uppercase transition-colors"
               >
-                <LayoutDashboard className="w-3.5 h-3.5" />
+                <LayoutDashboard className="w-3 h-3" />
                 <span>Dashboard</span>
               </Link>
             ) : (
               <Link
                 to="/admin/events/new"
-                className={cn(
-                  'hidden sm:inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full text-[13px] font-medium transition-all',
-                  isTransparent
-                    ? 'text-white/90 hover:text-white hover:bg-white/10'
-                    : 'text-ink-muted hover:text-ink hover:bg-surface-sunken'
-                )}
+                className="hidden sm:inline-flex items-center gap-1.5 h-8 px-3 bg-[#0D192E] text-slate-300 hover:text-white border border-[#1A2E4C] hover:border-sky-400 text-xs uppercase transition-colors"
               >
-                <span>Host an event</span>
+                <span>Host event</span>
               </Link>
             )}
 
@@ -255,34 +206,29 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                 <button
                   type="button"
                   onClick={() => setIsAccountOpen(!isAccountOpen)}
-                  className={cn(
-                    'flex items-center gap-2 h-9 px-2 rounded-full border transition-all duration-200 text-[13px]',
-                    isTransparent
-                      ? 'border-white/20 hover:bg-white/10 text-white'
-                      : 'border-line hover:bg-surface-sunken text-ink'
-                  )}
+                  className="flex items-center gap-1.5 h-8 px-2 bg-[#0D192E] border border-[#1A2E4C] text-slate-200 hover:border-sky-400 text-xs transition-colors"
                   aria-label="Account menu"
                   aria-expanded={isAccountOpen}
                 >
-                  <div className="w-6 h-6 rounded-full bg-champion text-white flex items-center justify-center font-bold text-[12px]">
+                  <div className="w-5 h-5 bg-sky-500/20 text-sky-400 border border-sky-400/50 flex items-center justify-center font-bold text-[11px]">
                     {(session?.name || 'U')[0].toUpperCase()}
                   </div>
-                  <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+                  <ChevronDown className="w-3 h-3 opacity-70" />
                 </button>
 
                 {isAccountOpen && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-[18px] bg-surface border border-line shadow-floating py-1.5 z-50 text-ink">
-                    <div className="px-3.5 py-2 border-b border-line">
-                      <p className="text-[14px] font-semibold text-ink truncate">{session?.name}</p>
-                      <p className="text-[13px] text-ink-muted truncate">{session?.email}</p>
+                  <div className="absolute right-0 mt-2 w-56 bg-[#0D192E] border border-[#1A2E4C] shadow-xl py-1 z-50 text-slate-200 text-xs">
+                    <div className="px-3 py-2 border-b border-[#1A2E4C]">
+                      <p className="font-semibold text-white truncate">{session?.name}</p>
+                      <p className="text-slate-400 truncate text-[11px]">{session?.email}</p>
                     </div>
 
                     <Link
                       to="/attendee/dashboard"
                       onClick={() => setIsAccountOpen(false)}
-                      className="flex items-center gap-2 px-3.5 py-2 text-[14px] text-ink hover:bg-surface-sunken transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 text-slate-300 hover:text-sky-300 hover:bg-[#1A2E4C]/50 transition-colors"
                     >
-                      <Ticket className="w-4 h-4 text-champion" />
+                      <Ticket className="w-3.5 h-3.5 text-sky-400" />
                       <span>My tickets & credentials</span>
                     </Link>
 
@@ -290,14 +236,14 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                       <Link
                         to="/admin"
                         onClick={() => setIsAccountOpen(false)}
-                        className="flex items-center gap-2 px-3.5 py-2 text-[14px] text-ink hover:bg-surface-sunken transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 text-slate-300 hover:text-sky-300 hover:bg-[#1A2E4C]/50 transition-colors"
                       >
-                        <LayoutDashboard className="w-4 h-4 text-champion" />
+                        <LayoutDashboard className="w-3.5 h-3.5 text-sky-400" />
                         <span>Admin dashboard</span>
                       </Link>
                     )}
 
-                    <div className="border-t border-line my-1" />
+                    <div className="border-t border-[#1A2E4C] my-1" />
 
                     <button
                       type="button"
@@ -305,9 +251,9 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                         setIsAccountOpen(false)
                         logout()
                       }}
-                      className="w-full text-left flex items-center gap-2 px-3.5 py-2 text-[14px] text-danger hover:bg-danger/10 transition-colors"
+                      className="w-full text-left flex items-center gap-2 px-3 py-2 text-rose-400 hover:bg-rose-500/10 transition-colors"
                     >
-                      <LogOut className="w-4 h-4" />
+                      <LogOut className="w-3.5 h-3.5" />
                       <span>Sign out</span>
                     </button>
                   </div>
@@ -316,12 +262,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             ) : (
               <Link
                 to="/login"
-                className={cn(
-                  'h-9 px-4 rounded-full font-semibold text-[13px] inline-flex items-center justify-center transition-all shadow-xs',
-                  isTransparent
-                    ? 'bg-white text-champion hover:bg-white/90'
-                    : 'bg-champion text-white hover:bg-champion-hover'
-                )}
+                className="h-8 px-3.5 bg-sky-400 hover:bg-sky-300 text-[#08101E] font-semibold text-xs uppercase tracking-wider inline-flex items-center justify-center transition-colors"
               >
                 Sign in
               </Link>
@@ -331,10 +272,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(true)}
-              className={cn(
-                'md:hidden p-2 rounded-full transition-colors',
-                isTransparent ? 'text-white hover:bg-white/10' : 'text-ink hover:bg-surface-sunken'
-              )}
+              className="md:hidden p-1.5 text-slate-300 hover:text-white transition-colors"
               aria-label="Open mobile navigation menu"
             >
               <Menu className="w-5 h-5" />

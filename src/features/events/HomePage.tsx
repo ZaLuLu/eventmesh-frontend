@@ -162,10 +162,7 @@ export const HomePage: React.FC = () => {
   }
 
   return (
-    <div className="w-full bg-bg text-text min-h-screen flex flex-col relative overflow-x-hidden selection:bg-accent/20">
-      {/* Luma-Grade Ambient Radial Canvas Glow */}
-      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(120,119,198,0.08),rgba(255,255,255,0))] -z-10" />
-      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,rgba(99,102,241,0.04),rgba(255,255,255,0))] -z-10" />
+    <div className="w-full bg-[#08101E] bg-blueprint-grid text-slate-100 min-h-screen flex flex-col relative overflow-x-hidden selection:bg-sky-500/30 selection:text-white">
 
       {/* ==============================================================
           ACT 1: THE MAINSTAGE PORTAL (Flagship Promoted Exhibition)
@@ -192,7 +189,7 @@ export const HomePage: React.FC = () => {
           Sticky toolbar with category chips, date popover, Free toggle,
           sort select, segmented Grid/List toggle, and morphing counter.
           ============================================================== */}
-      <section id="discovery" aria-label="Explore all events" className="w-full bg-bg py-6 sm:py-8">
+      <section id="discovery" aria-label="Explore all events" className="w-full bg-transparent py-8 sm:py-12 border-t border-[#1A2E4C]">
         {/* Sticky Toolbar */}
         <EventsToolbar
           category={category}

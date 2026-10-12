@@ -15,48 +15,50 @@
    ========================================================================== */
 
 :root {
-  /* Obsidian Stage & Electric Accent Tokens */
-  --champion: #0C0A1A;
-  --champion-2: #141126;
-  --lavender: #DDD6FE;
-  --lavender-100: #F3F0FF;
-  --lavender-200: #E4DFFC;
-  --lavender-300: #C4B5FD;
-  --violet: #5E4AE3;
-  --violet-hover: #4D39D1;
-
-  /* Surfaces & Backgrounds (Crisp High-Contrast Slate Canvas) */
-  --bg: #F8F9FC;
-  --surface: #FFFFFF;
-  --subtle: #F1F3F9;
-  --line: #E2E6EE;
+  /* Architectural Prussian Blueprint Tokens */
+  --bg: #08101E;
+  --surface: #0D192E;
+  --surface-raised: #12223D;
+  --subtle: #11223D;
+  --line: #1A2E4C;
+  --line-hairline: rgba(147, 197, 253, 0.12);
 
   /* Typography / Text Tokens */
-  --text: #0F172A;
-  --text-2: #475569;
+  --text: #FFFFFF;
+  --text-2: #94A3B8;
   --text-3: #64748B;
-  --on-dark: #F8FAFC;
+  --on-dark: #FFFFFF;
   --on-dark-2: #94A3B8;
 
-  /* Status Colors */
-  --success: #10B981;
-  --warning: #F59E0B;
-  --danger: #EF4444;
-  --verified: #10B981;
+  /* Status & Rubber Stamp Colors (Matte, Zero Neon) */
+  --success: #16A34A;
+  --warning: #D97706;
+  --danger: #DC2626;
+  --verified: #38BDF8;
 
-  /* Accent Mappings */
-  --accent: #5E4AE3;
-  --accent-hover: #4D39D1;
-  --accent-soft: #EEF0FD;
-  --on-accent: #FFFFFF;
+  /* Accent Mappings: Matte Cyan Drafting Ink */
+  --accent: #38BDF8;
+  --accent-hover: #0EA5E9;
+  --accent-soft: rgba(56, 189, 248, 0.12);
+  --on-accent: #08101E;
+
+  /* Legacy / Compatibility Token Mappings */
+  --champion: #08101E;
+  --champion-2: #0D192E;
+  --lavender: #0D192E;
+  --lavender-100: #11223D;
+  --lavender-200: #162C4E;
+  --lavender-300: #1A2E4C;
+  --violet: #38BDF8;
+  --violet-hover: #0EA5E9;
 
   /* Admin Scope Defaults */
-  --sidebar: #0B1118;
-  --admin-accent: #0D9488;
-  --admin-accent-hover: #0F766E;
+  --sidebar: #060D1A;
+  --admin-accent: #38BDF8;
+  --admin-accent-hover: #0EA5E9;
 
   /* Club Dynamic Edge */
-  --club: #5E4AE3;
+  --club: #38BDF8;
 }
 
 /* Admin Scope: Applied on /admin routes */
@@ -131,6 +133,14 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Clean Blueprint Drafting Grid (Matte, Non-glowing) */
+.bg-blueprint-grid {
+  background-size: 36px 36px;
+  background-image: 
+    linear-gradient(to right, rgba(147, 197, 253, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(147, 197, 253, 0.05) 1px, transparent 1px);
 }
 
 /* Accessibility: Respect Reduced Motion Everywhere */

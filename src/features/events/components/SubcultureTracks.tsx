@@ -79,34 +79,31 @@ export const SubcultureTracks: React.FC<SubcultureTracksProps> = ({ events, clas
   return (
     <section
       aria-label="Campus Subculture Tracks"
-      className={`w-full py-10 sm:py-14 relative ${className}`}
+      className={`w-full py-12 sm:py-16 relative ${className}`}
     >
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Editorial Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+        {/* Unboxed Chapter Header */}
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pb-6 border-b border-[#1A2E4C] mb-8">
           <div>
-            <span className="text-[11px] font-bold font-mono text-accent uppercase tracking-wider block mb-1">
-              CURATED CAMPUS TRACKS
+            <span className="text-xs font-mono text-sky-400 font-semibold tracking-wider block mb-1">
+              03 // DISCIPLINE TRACKS
             </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-text tracking-tight font-sans">
-              Explore by Subculture & Discipline
+            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-sans">
+              Explore by Subculture & Track
             </h2>
-            <p className="text-small text-text-2 mt-1 max-w-xl">
-              Campus life moves across distinct creative wavelengths. Select a track to dive into targeted collectives.
-            </p>
           </div>
 
           <Link
             to="/explore"
-            className="inline-flex items-center gap-1.5 text-small font-semibold text-accent hover:gap-2 transition-all shrink-0"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-sky-400 hover:text-sky-300 transition-colors"
           >
             <span>Browse all categories</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
-        {/* Track Segmented Selector Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none mb-8 border-b border-line/40">
+        {/* Minimalist Architectural Tab Bar (No pill buttons, clean underlined text) */}
+        <div className="flex items-center gap-8 overflow-x-auto pb-4 scrollbar-none mb-8 border-b border-[#1A2E4C]">
           {TRACKS.map((t) => {
             const Icon = t.icon
             const isActive = t.id === activeTrack
@@ -116,101 +113,85 @@ export const SubcultureTracks: React.FC<SubcultureTracksProps> = ({ events, clas
                 type="button"
                 onClick={() => setActiveTrack(t.id)}
                 className={cn(
-                  'flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-medium text-small whitespace-nowrap transition-all duration-150',
+                  'flex items-center gap-2 pb-2 text-sm font-medium whitespace-nowrap transition-all duration-150 relative cursor-pointer',
                   isActive
-                    ? 'bg-text text-bg shadow-md font-semibold'
-                    : 'bg-subtle text-text-2 hover:text-text hover:bg-subtle/80'
+                    ? 'text-white font-semibold'
+                    : 'text-slate-400 hover:text-slate-200'
                 )}
               >
-                <Icon className={cn('w-4 h-4', isActive ? 'text-bg' : 'text-text-2')} />
+                <Icon className={cn('w-4 h-4', isActive ? 'text-sky-400' : 'text-slate-400')} />
                 <span>{t.label}</span>
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400" />
+                )}
               </button>
             )
           })}
         </div>
 
-        {/* Track Banner & Editorial Dossier */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mb-8">
-          {/* Left 4 cols: Thematic Track Profile */}
-          <div
-            className="lg:col-span-4 p-6 rounded-2xl border flex flex-col justify-between backdrop-blur-md"
-            style={{
-              backgroundColor: `${currentDef.accentColor}08`,
-              borderColor: `${currentDef.accentColor}25`,
-            }}
-          >
-            <div className="space-y-4">
-              <div
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold font-mono tracking-wider border"
-                style={{
-                  backgroundColor: `${currentDef.accentColor}15`,
-                  color: currentDef.accentColor,
-                  borderColor: `${currentDef.accentColor}30`,
-                }}
-              >
-                {currentDef.badge}
-              </div>
+        {/* Unboxed Track Showcase Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start mb-8">
+          {/* Left 4 cols: Open Editorial Profile (No Box) */}
+          <div className="lg:col-span-4 space-y-4">
+            <span className="text-xs font-mono text-sky-400 uppercase tracking-wider block">
+              {currentDef.badge}
+            </span>
 
-              <h3 className="text-xl sm:text-2xl font-bold text-text font-sans tracking-tight">
-                {currentDef.label}
-              </h3>
+            <h3 className="text-2xl sm:text-3xl font-bold text-white font-sans tracking-tight">
+              {currentDef.label}
+            </h3>
 
-              <p className="text-small text-text-2 leading-relaxed">
-                {currentDef.description}
-              </p>
-            </div>
+            <p className="text-sm text-slate-300 leading-relaxed">
+              {currentDef.description}
+            </p>
 
-            <div className="pt-6 border-t border-line/60 mt-6 flex items-center justify-between text-caption font-mono text-text-2">
-              <span>ACTIVE GATES: VERIFIED</span>
-              <span className="font-bold text-text">COLLEGIATE ACCREDITED</span>
+            <div className="pt-4 border-t border-[#1A2E4C] text-xs font-mono text-slate-400 flex items-center justify-between">
+              <span>CAMPUS ACCREDITED</span>
+              <span className="text-sky-400 font-semibold">VERIFIED CLUBS</span>
             </div>
           </div>
 
-          {/* Right 8 cols: Curated Event Dossier Cards */}
-          <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Right 8 cols: Frameless Event Dossiers (Zero Card Boxes) */}
+          <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
             {displayEvents.map((evt) => (
               <Link
                 key={evt.id}
                 to={`/events/${evt.slug}`}
-                className="group p-5 sm:p-6 rounded-2xl bg-surface/60 backdrop-blur-md border border-line/60 hover:border-accent/40 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all flex flex-col justify-between"
+                className="group border-t border-[#1A2E4C] pt-4 hover:border-sky-400 transition-colors flex flex-col justify-between"
               >
                 <div>
-                  {/* Event Category & Price Row */}
-                  <div className="flex items-center justify-between gap-2 mb-2.5">
-                    <span className="text-[10px] font-bold font-mono text-accent uppercase tracking-wider bg-accent-soft px-2 py-0.5 rounded">
+                  <div className="flex items-center justify-between gap-2 mb-2 text-xs font-mono">
+                    <span className="text-sky-400 font-medium uppercase tracking-wider">
                       {evt.category || 'FEATURED'}
                     </span>
-                    <span className="text-[11px] font-bold text-emerald-600 font-mono">
+                    <span className="text-emerald-400 font-semibold">
                       {evt.isFree ? 'FREE ADMISSION' : evt.price ? `₹${evt.price}` : 'RSVP OPEN'}
                     </span>
                   </div>
 
-                  {/* Event Title */}
-                  <h4 className="font-bold text-base text-text group-hover:text-accent transition-colors line-clamp-2 tracking-tight leading-snug mb-2">
+                  <h4 className="font-bold text-base sm:text-lg text-white group-hover:text-sky-300 transition-colors line-clamp-2 tracking-tight leading-snug mb-3">
                     {evt.title}
                   </h4>
 
-                  {/* Logistics Snippet */}
-                  <div className="space-y-1 text-caption text-text-2">
-                    <p className="flex items-center gap-1.5 truncate">
-                      <Calendar className="w-3.5 h-3.5 text-accent shrink-0" />
+                  <div className="space-y-1.5 text-xs text-slate-400 mb-4">
+                    <p className="flex items-center gap-2 truncate">
+                      <Calendar className="w-3.5 h-3.5 text-sky-400 shrink-0" />
                       <span>{formatDate(evt.startsAt, 'EEE, MMM d · h:mm a')}</span>
                     </p>
-                    <p className="flex items-center gap-1.5 truncate">
-                      <MapPin className="w-3.5 h-3.5 text-accent shrink-0" />
+                    <p className="flex items-center gap-2 truncate">
+                      <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                       <span>{evt.venue?.name || (evt as any).venueName || 'Main Campus'}</span>
                     </p>
                   </div>
                 </div>
 
-                {/* Social Proof & Quick CTA */}
-                <div className="pt-3 border-t border-line/60 mt-4 flex items-center justify-between text-[11px]">
-                  <div className="flex items-center gap-1.5 text-text-2">
-                    <Users className="w-3.5 h-3.5 text-emerald-600" />
-                    <span><strong>{evt.registrationsCount || 140}</strong> passholders</span>
+                <div className="pt-3 border-t border-[#1A2E4C]/60 flex items-center justify-between text-xs text-slate-400">
+                  <div className="flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5 text-sky-400" />
+                    <span><strong className="text-white">{evt.registrationsCount || 140}</strong> registered</span>
                   </div>
-                  <span className="font-semibold text-accent flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                    <span>Inspect</span>
+                  <span className="font-semibold text-sky-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                    <span>View Event</span>
                     <ArrowRight className="w-3 h-3" />
                   </span>
                 </div>

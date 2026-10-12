@@ -121,16 +121,16 @@ export const EventsDiscoveryView: React.FC<EventsDiscoveryViewProps> = ({
             size="lg"
             onClick={onLoadMore}
             disabled={isLoadingMore}
-            className="h-12 px-8 rounded-full border border-line bg-surface hover:bg-surface-sunken text-ink font-semibold shadow-xs transition-all text-[14px]"
+            className="h-10 px-8 rounded-none border border-[#1A2E4C] bg-[#0D192E] hover:border-sky-400 text-slate-200 hover:text-sky-300 font-mono text-xs tracking-wider uppercase transition-colors"
             icon={
               isLoadingMore ? (
-                <Loader2 className="w-4 h-4 animate-spin text-champion" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-400" />
               ) : (
-                <ArrowDown className="w-4 h-4 text-champion" />
+                <ArrowDown className="w-3.5 h-3.5 text-sky-400" />
               )
             }
           >
-            {isLoadingMore ? 'Loading events...' : 'Load more events'}
+            {isLoadingMore ? 'LOADING CATALOG...' : 'FETCH MORE ENTRIES'}
           </Button>
         </div>
       )}

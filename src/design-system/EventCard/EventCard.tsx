@@ -87,13 +87,17 @@ export const EventCard: React.FC<EventCardProps> = ({
         data-testid="event-card-list-row"
         className={cn(
           'group relative flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6',
-          'bg-surface border border-line rounded-[22px] p-3 sm:p-4',
-          'transition-all duration-300 ease-out hover:shadow-card hover:border-champion/30',
+          'bg-transparent border-b border-[#1A2E4C] py-4 transition-colors hover:border-sky-400/50',
           className
         )}
       >
-        {/* Left Thumbnail */}
-        <div className="relative w-full sm:w-48 md:w-56 aspect-[16/10] sm:aspect-[4/3] rounded-[18px] overflow-hidden bg-surface-sunken flex-shrink-0">
+        {/* Left Thumbnail (Unboxed with Corner Registration Ticks) */}
+        <div className="relative w-full sm:w-48 md:w-56 aspect-[16/10] sm:aspect-[4/3] border border-[#1A2E4C] group-hover:border-sky-400 transition-colors flex-shrink-0">
+          <span className="absolute -top-1.5 -left-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┌</span>
+          <span className="absolute -top-1.5 -right-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┐</span>
+          <span className="absolute -bottom-1.5 -left-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">└</span>
+          <span className="absolute -bottom-1.5 -right-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┘</span>
+
           <PosterArtwork
             id={event.id}
             title={event.title}
@@ -105,12 +109,20 @@ export const EventCard: React.FC<EventCardProps> = ({
           />
 
           {/* Badges on thumbnail */}
-          <div className="absolute top-2 left-2 flex items-center gap-1.5 z-10 pointer-events-none">
-            {isFillingFast && <Badge variant="filling">Filling fast</Badge>}
+          <div className="absolute top-2 left-2 flex items-center gap-1.5 z-10 pointer-events-none font-mono text-xs">
+            {isFillingFast && (
+              <span className="px-1.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px]">
+                Filling fast
+              </span>
+            )}
             {isFree ? (
-              <Badge variant="free">Free</Badge>
+              <span className="px-1.5 py-0.5 bg-emerald-950/90 text-emerald-300 border border-emerald-500/30 text-[11px]">
+                FREE
+              </span>
             ) : (
-              <Badge variant="outline">{formatPrice(event)}</Badge>
+              <span className="px-1.5 py-0.5 bg-[#08101E]/90 text-white border border-[#1A2E4C] text-[11px]">
+                {formatPrice(event)}
+              </span>
             )}
           </div>
         </div>
@@ -118,44 +130,44 @@ export const EventCard: React.FC<EventCardProps> = ({
         {/* Middle Content */}
         <div className="flex-1 min-w-0 pr-2">
           {/* Date & Category */}
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[13px] font-semibold text-champion uppercase tracking-wider">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-xs font-mono font-semibold text-sky-400 uppercase tracking-wider">
               {dateFormatted}
             </span>
-            <span className="text-ink-subtle">·</span>
-            <span className="text-[13px] text-ink-muted capitalize">{event.category}</span>
+            <span className="text-slate-600">·</span>
+            <span className="text-xs font-mono text-slate-400 uppercase">{event.category}</span>
           </div>
 
           {/* Title */}
-          <h3 className="font-serif text-xl sm:text-2xl text-ink leading-tight font-normal line-clamp-2 mb-2 group-hover:text-champion transition-colors">
+          <h3 className="font-sans text-lg sm:text-xl text-white font-bold leading-tight line-clamp-2 mb-2 group-hover:text-sky-300 transition-colors">
             <Link
               to={eventLink}
-              className="after:absolute after:inset-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-champion rounded-[22px]"
+              className="after:absolute after:inset-0 focus:outline-none focus-visible:underline"
             >
               {event.title}
             </Link>
           </h3>
 
           {/* Club attribution */}
-          <div className="flex items-center gap-2 text-[13px] text-ink-muted">
+          <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
             <span
-              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+              className="w-2 h-2 rounded-full flex-shrink-0"
               style={{ backgroundColor: clubColor }}
               aria-hidden="true"
             />
-            <span className="font-medium text-ink truncate">
+            <span className="text-slate-300 truncate">
               {event.club?.name || event.organizerName || 'Autonomous Club'}
             </span>
             {isVerified && (
-              <span title="Verified Club" className="inline-flex items-center text-[#1FA34A]">
-                <CheckCircle2 className="w-3.5 h-3.5 fill-[#1FA34A] text-white" />
+              <span title="Verified Club" className="inline-flex items-center text-sky-400">
+                <CheckCircle2 className="w-3 h-3 text-sky-400" />
               </span>
             )}
             {event.venue?.name && (
               <>
-                <span className="text-ink-subtle">·</span>
+                <span className="text-slate-600">·</span>
                 <span className="truncate flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5" />
+                  <MapPin className="w-3 h-3 text-sky-400" />
                   {event.venue.name}
                 </span>
               </>
@@ -164,29 +176,29 @@ export const EventCard: React.FC<EventCardProps> = ({
         </div>
 
         {/* Right Actions */}
-        <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-3 sm:gap-4 relative z-10">
+        <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-3 relative z-10">
           <button
             type="button"
             onClick={handleBookmarkClick}
             aria-label={isBookmarked ? 'Remove from saved' : 'Save event'}
             className={cn(
-              'w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-200',
+              'w-8 h-8 flex items-center justify-center border transition-all duration-150',
               isBookmarked
-                ? 'bg-champion text-white border-champion shadow-sm'
-                : 'bg-white text-ink border-line hover:border-champion hover:text-champion'
+                ? 'bg-sky-500/20 text-sky-400 border-sky-400'
+                : 'bg-[#0D192E] text-slate-400 border-[#1A2E4C] hover:border-sky-400 hover:text-sky-300'
             )}
           >
-            <Bookmark className={cn('w-4 h-4', isBookmarked && 'fill-white')} />
+            <Bookmark className={cn('w-3.5 h-3.5', isBookmarked && 'fill-sky-400')} />
           </button>
 
           <Link
             to={eventLink}
             aria-hidden="true"
             tabIndex={-1}
-            className="hidden sm:inline-flex items-center gap-1.5 text-[13px] font-semibold text-champion hover:gap-2 transition-all"
+            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-mono text-sky-400 hover:text-sky-300 hover:gap-2 transition-all uppercase"
           >
             <span>View event</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       </article>
@@ -201,12 +213,16 @@ export const EventCard: React.FC<EventCardProps> = ({
       <article
         data-testid="event-card-overlay"
         className={cn(
-          'group relative overflow-hidden rounded-[28px] p-3 bg-surface border border-line',
-          'transition-all duration-300 ease-out hover:shadow-card hover:border-champion/30 flex flex-col',
+          'group relative overflow-hidden bg-transparent border border-[#1A2E4C] group-hover:border-sky-400 transition-colors flex flex-col',
           className
         )}
       >
-        <div className="relative w-full aspect-[4/3] rounded-[22px] overflow-hidden bg-surface-sunken">
+        <span className="absolute -top-1.5 -left-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┌</span>
+        <span className="absolute -top-1.5 -right-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┐</span>
+        <span className="absolute -bottom-1.5 -left-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">└</span>
+        <span className="absolute -bottom-1.5 -right-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┘</span>
+
+        <div className="relative w-full aspect-[4/3] overflow-hidden bg-[#0D192E]">
           <PosterArtwork
             id={event.id}
             title={event.title}
@@ -217,20 +233,30 @@ export const EventCard: React.FC<EventCardProps> = ({
             priority={priority}
           />
 
-          {/* Dark gradient scrim */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none" />
+          {/* Scrim */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#08101E] via-[#08101E]/60 to-transparent pointer-events-none" />
 
           {/* Top badges & actions */}
-          <div className="absolute top-3 inset-x-3 flex items-center justify-between z-10 pointer-events-none">
+          <div className="absolute top-2.5 inset-x-2.5 flex items-center justify-between z-10 pointer-events-none font-mono text-xs">
             <div className="flex items-center gap-1.5 flex-wrap pointer-events-auto">
-              {isPromoted && <Badge variant="promoted">Promoted</Badge>}
-              {isFillingFast && <Badge variant="filling">Filling fast</Badge>}
+              {isPromoted && (
+                <span className="px-1.5 py-0.5 bg-[#08101E]/90 text-sky-400 border border-[#1A2E4C] font-semibold text-[11px]">
+                  PROMOTED
+                </span>
+              )}
+              {isFillingFast && (
+                <span className="px-1.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px]">
+                  Filling fast
+                </span>
+              )}
               {isFree ? (
-                <Badge variant="free">Free</Badge>
+                <span className="px-1.5 py-0.5 bg-emerald-950/90 text-emerald-300 border border-emerald-500/30 text-[11px]">
+                  FREE
+                </span>
               ) : (
-                <Badge variant="outline" className="bg-white/90 text-ink border-transparent">
+                <span className="px-1.5 py-0.5 bg-[#08101E]/90 text-white border border-[#1A2E4C] text-[11px]">
                   {formatPrice(event)}
-                </Badge>
+                </span>
               )}
             </div>
 
@@ -241,9 +267,9 @@ export const EventCard: React.FC<EventCardProps> = ({
                   onClick={handlePeekClick}
                   title="Quick Preview"
                   aria-label="Quick preview event"
-                  className="w-9 h-9 rounded-full flex items-center justify-center bg-white/90 backdrop-blur-sm text-ink hover:bg-white hover:text-champion shadow-xs transition-colors"
+                  className="w-8 h-8 flex items-center justify-center bg-[#08101E]/90 border border-[#1A2E4C] text-slate-300 hover:text-sky-300 hover:border-sky-400 transition-colors"
                 >
-                  <Eye className="w-4 h-4" />
+                  <Eye className="w-3.5 h-3.5" />
                 </button>
               )}
               <button
@@ -251,42 +277,42 @@ export const EventCard: React.FC<EventCardProps> = ({
                 onClick={handleBookmarkClick}
                 aria-label={isBookmarked ? 'Remove from saved' : 'Save event'}
                 className={cn(
-                  'w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200',
+                  'w-8 h-8 flex items-center justify-center border transition-all duration-150',
                   isBookmarked
-                    ? 'bg-champion text-white shadow-sm'
-                    : 'bg-white/90 backdrop-blur-sm text-ink hover:bg-white hover:text-champion shadow-xs'
+                    ? 'bg-sky-500/20 text-sky-400 border-sky-400'
+                    : 'bg-[#08101E]/90 text-slate-300 border-[#1A2E4C] hover:text-sky-300 hover:border-sky-400'
                 )}
               >
-                <Bookmark className={cn('w-4 h-4', isBookmarked && 'fill-white')} />
+                <Bookmark className={cn('w-3.5 h-3.5', isBookmarked && 'fill-sky-400')} />
               </button>
             </div>
           </div>
 
           {/* Bottom overlaid text */}
-          <div className="absolute bottom-3 inset-x-3 p-2 z-10">
-            <span className="block text-[13px] font-semibold text-white/90 uppercase tracking-wider mb-1">
+          <div className="absolute bottom-2.5 inset-x-2.5 p-1 z-10">
+            <span className="block text-xs font-mono font-semibold text-sky-400 uppercase tracking-wider mb-1">
               {dateFormatted}
             </span>
-            <h3 className="font-serif text-2xl text-white font-normal leading-tight line-clamp-2 mb-2 drop-shadow-sm">
+            <h3 className="font-sans text-lg font-bold text-white leading-tight line-clamp-2 mb-1.5">
               <Link
                 to={eventLink}
-                className="after:absolute after:inset-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-[22px]"
+                className="after:absolute after:inset-0 focus:outline-none focus-visible:underline"
               >
                 {event.title}
               </Link>
             </h3>
-            <div className="flex items-center gap-2 text-[13px] text-white/80">
+            <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
               <span
-                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                className="w-2 h-2 rounded-full flex-shrink-0"
                 style={{ backgroundColor: clubColor }}
                 aria-hidden="true"
               />
-              <span className="font-medium text-white truncate">
+              <span className="text-slate-300 truncate">
                 {event.club?.name || event.organizerName || 'Autonomous Club'}
               </span>
               {isVerified && (
-                <span title="Verified Club" className="inline-flex items-center text-[#1FA34A]">
-                  <CheckCircle2 className="w-3.5 h-3.5 fill-[#1FA34A] text-white" />
+                <span title="Verified Club" className="inline-flex items-center text-sky-400">
+                  <CheckCircle2 className="w-3 h-3 text-sky-400" />
                 </span>
               )}
             </div>
@@ -297,7 +323,7 @@ export const EventCard: React.FC<EventCardProps> = ({
   }
 
   // -------------------------------------------------------------
-  // VARIANT: STACKED (DEFAULT - 28px outer, 12px padding, 22px inner)
+  // VARIANT: STACKED (UNBOXED ARCHITECTURAL BLUEPRINT POSTER)
   // -------------------------------------------------------------
   const aspectClass =
     aspectRatio === '4/3'
@@ -312,87 +338,102 @@ export const EventCard: React.FC<EventCardProps> = ({
     <article
       data-testid="event-card-stacked"
       className={cn(
-        'group relative flex flex-col justify-between',
-        'bg-surface border border-line rounded-[28px] p-3',
-        'transition-all duration-300 ease-out hover:shadow-card hover:border-champion/30',
+        'group relative flex flex-col justify-between bg-transparent p-0 transition-colors',
         className
       )}
     >
       <div>
-        {/* Inner Image Container (22px radius) */}
-        <div
-          className={cn(
-            'relative w-full rounded-[22px] overflow-hidden bg-surface-sunken flex-shrink-0 mb-3.5',
-            aspectClass
-          )}
-        >
-          <PosterArtwork
-            id={event.id}
-            title={event.title}
-            category={event.category}
-            clubName={event.club?.name || event.organizerName}
-            clubColor={clubColor}
-            imageUrl={event.poster}
-            priority={priority}
-          />
+        {/* Floating Poster with Corner Registration Ticks */}
+        <div className="relative mb-3">
+          <span className="absolute -top-1.5 -left-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┌</span>
+          <span className="absolute -top-1.5 -right-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┐</span>
+          <span className="absolute -bottom-1.5 -left-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">└</span>
+          <span className="absolute -bottom-1.5 -right-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┘</span>
 
-          {/* Top Badges */}
-          <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
-            <div className="flex items-center gap-1.5 flex-wrap pointer-events-auto">
-              {isPromoted && <Badge variant="promoted">Promoted</Badge>}
-              {isFillingFast && <Badge variant="filling">Filling fast</Badge>}
-              {isFree ? (
-                <Badge variant="free">Free</Badge>
-              ) : (
-                <Badge variant="outline" className="bg-white/95 text-ink shadow-xs">
-                  {formatPrice(event)}
-                </Badge>
-              )}
-            </div>
+          <div
+            className={cn(
+              'relative w-full overflow-hidden bg-[#0D192E] border border-[#1A2E4C] group-hover:border-sky-400 transition-colors flex-shrink-0',
+              aspectClass
+            )}
+          >
+            <PosterArtwork
+              id={event.id}
+              title={event.title}
+              category={event.category}
+              clubName={event.club?.name || event.organizerName}
+              clubColor={clubColor}
+              imageUrl={event.poster}
+              priority={priority}
+            />
 
-            <div className="flex items-center gap-1.5 pointer-events-auto">
-              {onPeek && (
+            {/* Top Badges & Actions */}
+            <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none z-10 font-mono text-xs">
+              <div className="flex items-center gap-1.5 flex-wrap pointer-events-auto">
+                {isPromoted && (
+                  <span className="px-1.5 py-0.5 bg-[#08101E]/90 text-sky-400 border border-[#1A2E4C] font-semibold text-[11px]">
+                    PROMOTED
+                  </span>
+                )}
+                {isFillingFast && (
+                  <span className="px-1.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px]">
+                    Filling fast
+                  </span>
+                )}
+                {isFree ? (
+                  <span className="px-1.5 py-0.5 bg-emerald-950/90 text-emerald-300 border border-emerald-500/30 text-[11px]">
+                    FREE
+                  </span>
+                ) : (
+                  <span className="px-1.5 py-0.5 bg-[#08101E]/90 text-white border border-[#1A2E4C] text-[11px]">
+                    {formatPrice(event)}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1 pointer-events-auto">
+                {onPeek && (
+                  <button
+                    type="button"
+                    onClick={handlePeekClick}
+                    title="Quick Preview"
+                    aria-label="Quick preview event"
+                    className="w-7 h-7 flex items-center justify-center bg-[#08101E]/90 border border-[#1A2E4C] text-slate-300 hover:text-sky-300 hover:border-sky-400 transition-colors"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={handlePeekClick}
-                  title="Quick Preview"
-                  aria-label="Quick preview event"
-                  className="w-9 h-9 rounded-full flex items-center justify-center bg-white/95 backdrop-blur-sm text-ink hover:bg-champion hover:text-white shadow-xs transition-colors"
+                  onClick={handleBookmarkClick}
+                  aria-label={isBookmarked ? 'Remove from saved' : 'Save event'}
+                  className={cn(
+                    'w-7 h-7 flex items-center justify-center border transition-all duration-150',
+                    isBookmarked
+                      ? 'bg-sky-500/20 text-sky-400 border-sky-400'
+                      : 'bg-[#08101E]/90 text-slate-300 border-[#1A2E4C] hover:text-sky-300 hover:border-sky-400'
+                  )}
                 >
-                  <Eye className="w-4 h-4" />
+                  <Bookmark className={cn('w-3.5 h-3.5', isBookmarked && 'fill-sky-400')} />
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={handleBookmarkClick}
-                aria-label={isBookmarked ? 'Remove from saved' : 'Save event'}
-                className={cn(
-                  'w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200',
-                  isBookmarked
-                    ? 'bg-champion text-white shadow-sm'
-                    : 'bg-white/95 backdrop-blur-sm text-ink hover:bg-white hover:text-champion shadow-xs'
-                )}
-              >
-                <Bookmark className={cn('w-4 h-4', isBookmarked && 'fill-white')} />
-              </button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Card Body */}
-        <div className="px-1 pb-1">
+        {/* Card Body (Directly on canvas) */}
+        <div>
           {/* Date stamp */}
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-[13px] font-semibold text-champion uppercase tracking-wider">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-mono font-semibold text-sky-400 uppercase tracking-wider">
               {dateFormatted}
             </span>
           </div>
 
-          {/* Event Title in Instrument Serif */}
-          <h3 className="font-serif text-xl sm:text-[22px] text-ink font-normal leading-snug line-clamp-2 mb-2 group-hover:text-champion transition-colors">
+          {/* Event Title */}
+          <h3 className="font-sans text-base sm:text-[17px] text-white font-bold leading-snug line-clamp-2 mb-2 group-hover:text-sky-300 transition-colors">
             <Link
               to={eventLink}
-              className="after:absolute after:inset-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-champion rounded-[28px]"
+              className="focus:outline-none focus-visible:underline"
             >
               {event.title}
             </Link>
@@ -401,26 +442,26 @@ export const EventCard: React.FC<EventCardProps> = ({
       </div>
 
       {/* Card Footer: Club attribution & Venue */}
-      <div className="px-1 pt-2 mt-auto border-t border-line/60 flex items-center justify-between text-[13px] text-ink-muted">
-        <div className="flex items-center gap-2 min-w-0 pr-2">
+      <div className="pt-2 mt-auto border-t border-[#1A2E4C] flex items-center justify-between text-xs font-mono text-slate-400">
+        <div className="flex items-center gap-1.5 min-w-0 pr-2">
           <span
-            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+            className="w-2 h-2 rounded-full flex-shrink-0"
             style={{ backgroundColor: clubColor }}
             aria-hidden="true"
           />
-          <span className="font-medium text-ink truncate">
+          <span className="text-slate-300 truncate">
             {event.club?.name || event.organizerName || 'Autonomous Club'}
           </span>
           {isVerified && (
-            <span title="Verified Club" className="inline-flex items-center text-[#1FA34A] flex-shrink-0">
-              <CheckCircle2 className="w-3.5 h-3.5 fill-[#1FA34A] text-white" />
+            <span title="Verified Club" className="inline-flex items-center text-sky-400 flex-shrink-0">
+              <CheckCircle2 className="w-3 h-3 text-sky-400" />
             </span>
           )}
         </div>
 
         {event.venue?.name && (
-          <span className="truncate flex items-center gap-1 text-[13px] text-ink-muted max-w-[40%] text-right">
-            <MapPin className="w-3 h-3 flex-shrink-0" />
+          <span className="truncate flex items-center gap-1 text-slate-400 max-w-[40%] text-right">
+            <MapPin className="w-3 h-3 text-sky-400 flex-shrink-0" />
             <span className="truncate">{event.venue.name}</span>
           </span>
         )}
