@@ -425,49 +425,28 @@ export const AttendeeDashboardPage: React.FC = () => {
         )}
       </div>
 
-      {/* Interactive Digital Entry Pass Inspection Modal */}
+      {/* Interactive Digital Entry Pass Floating Canvas Inspection */}
       {selectedTicket && (
-        <Modal
-          isOpen={Boolean(selectedTicket)}
+        <EventAdmissionTicket
+          registration={selectedTicket}
+          floatingCanvas={true}
           onClose={() => setSelectedTicket(null)}
-          title="Event Admission Pass"
-          subtitle={`PASS-${selectedTicket.id.slice(0, 8).toUpperCase()}`}
-          maxWidth="max-w-2xl"
-          surface="dark"
-        >
-          <div className="space-y-4">
-            <EventAdmissionTicket
-              registration={selectedTicket}
-              onAdmit={() => {
-                updateStatusMutation.mutate({
-                  id: selectedTicket.id,
-                  status: 'checked_in',
-                })
-                setSelectedTicket({
-                  ...selectedTicket,
-                  status: 'checked_in',
-                })
-                toast({
-                  title: 'Admission Verified!',
-                  message: `Gate stub validated for ${selectedTicket.eventTitle}.`,
-                  type: 'success',
-                })
-              }}
-            />
-
-            <div className="flex items-center gap-3 pt-2">
-              <Button
-                variant="secondary"
-                size="default"
-                fullWidth
-                onClick={() => setSelectedTicket(null)}
-                className="bg-white/10 border-white/15 text-white hover:bg-white/20"
-              >
-                Close Pass
-              </Button>
-            </div>
-          </div>
-        </Modal>
+          onAdmit={() => {
+            updateStatusMutation.mutate({
+              id: selectedTicket.id,
+              status: 'checked_in',
+            })
+            setSelectedTicket({
+              ...selectedTicket,
+              status: 'checked_in',
+            })
+            toast({
+              title: 'Admission Verified!',
+              message: `Gate stub validated for ${selectedTicket.eventTitle}.`,
+              type: 'success',
+            })
+          }}
+        />
       )}
     </div>
   )

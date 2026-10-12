@@ -73,7 +73,7 @@ interface End extends Point {
   v: number;
 }
 
-interface Geometry {
+export interface Geometry {
   vertical: boolean;
   cross: number;
   body: string;
@@ -515,10 +515,90 @@ const TearTicket: React.FC<TearTicketProps> = ({
     paint(performance.now());
   };
 
+  const simulatePaperTear = () => {
+    const s = sim.current;
+    if (s.phase !== 'idle' || !stubRef.current) return;
+
+    // Start tear from top notch
+    const far = false;
+    const end = geo.ends[far ? 1 : 0];
+    s.sign = (far ? 1 : -1) * (geo.vertical ? -1 : 1);
+    s.hinge = { x: end.x, y: end.y };
+    s.hingeV = end.v;
+    if (stubRef.current) stubRef.current.style.transformOrigin = `${s.hinge.x}px ${s.hinge.y}px`;
+
+    const startX = width - stubSize * 0.45;
+    const startY = height * 0.8;
+    s.start = { x: startX, y: startY };
+    s.point = { x: startX, y: startY };
+    s.pt = performance.now();
+    s.pvx = 0;
+    s.pvy = 0;
+
+    const ux = startX - s.sx - s.hinge.x;
+    const uy = startY - s.sy - s.hinge.y;
+    s.grab = { x: s.hinge.x + ux, y: s.hinge.y + uy };
+    s.a0 = Math.atan2(s.grab.y - s.hinge.y, s.grab.x - s.hinge.x);
+    s.phase = 'held';
+    s.theta = 0;
+    s.thetaV = 0;
+    tiltX.set(0);
+    tiltY.set(0);
+    setGrabbing(true);
+    run();
+
+    const startTime = performance.now();
+    const duration = 650; // 650ms natural peeling paper rip
+    const targetX = startX + (geo.vertical ? 50 : 130);
+    const targetY = startY + (geo.vertical ? 130 : 65);
+
+    const pullStep = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = clamp(elapsed / duration, 0, 1);
+      // Smooth natural cubic easing (slow start, accelerating tear)
+      const ease = progress * progress * (3 - 2 * progress);
+
+      s.point = {
+        x: startX + (targetX - startX) * ease,
+        y: startY + (targetY - startY) * ease
+      };
+      s.pvx = ((targetX - startX) / (duration / 1000)) * 0.7;
+      s.pvy = ((targetY - startY) / (duration / 1000)) * 0.7;
+      s.pt = now;
+
+      if (progress < 1 && s.phase === 'held') {
+        requestAnimationFrame(pullStep);
+      } else {
+        // All bridges snapped, release stub to gravity drop
+        setGrabbing(false);
+        s.phase = 'drop';
+        s.vx = clamp(s.pvx, 140, 380);
+        s.vy = clamp(s.pvy, -60, 240);
+        s.spin = 2.4 * s.sign;
+        s.age = 0;
+        run();
+      }
+    };
+
+    requestAnimationFrame(pullStep);
+  };
+
+  const isInitialMount = useRef(true);
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      if (used) {
+        const s = sim.current;
+        if (s.phase === 'idle' && stubRef.current) stubRef.current.style.visibility = 'hidden';
+      }
+      return;
+    }
+
     if (used) {
       const s = sim.current;
-      if (s.phase === 'idle' && stubRef.current) stubRef.current.style.visibility = 'hidden';
+      if (s.phase === 'idle') {
+        simulatePaperTear();
+      }
       return;
     }
     setInstant(false);
@@ -745,5 +825,5 @@ const TearTicket: React.FC<TearTicketProps> = ({
   );
 };
 
-export { TearTicket };
+export { TearTicket, buildGeometry };
 export default TearTicket;

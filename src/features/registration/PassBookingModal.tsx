@@ -69,7 +69,7 @@ export const PassBookingModal: React.FC<PassBookingModalProps> = ({
       <div
         className={`relative w-full ${
           successRegistration
-            ? 'max-w-2xl bg-[#0C0A1A] text-white border-white/10 shadow-2xl'
+            ? 'max-w-3xl bg-[#0C0A1A] text-white border-white/10 shadow-2xl'
             : 'max-w-lg bg-surface text-text border-line shadow-floating'
         } rounded-panel border p-6 sm:p-8 transition-all`}
       >
