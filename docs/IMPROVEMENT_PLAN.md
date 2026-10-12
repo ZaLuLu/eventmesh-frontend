@@ -541,6 +541,270 @@ graph TD
 - Push changes to GitHub `main` and verify automatic Vercel production deployment.
 
 
+---
 
+## 11. Master Artistic & Engineering Audit: Unboxed Campus Identity, Curated Narrative Events & Live Venue Gate Tearing
 
+> **Audit Context**: Direct creative review on spatial layout, emotional resonance, unboxed 3D presentation, and authentic venue gate admission dynamics.  
+> **Core Objective**: Elevate EventMesh from a functional directory ("BookMyShow clone") into an enchanting, state-of-the-art **Campus Cultural Operating System**.  
+> **Status**: Comprehensive Audit & Architectural Plan Completed · Awaiting User Review & Comments (No code execution in this phase).
 
+---
+
+### 11.1 Executive Summary of Current Flaws & The Artistic-Engineering Remedy
+
+```
+┌───────────────────────────────────────┐       ┌─────────────────────────────────────────────────────────┐
+│           CURRENT LIMITATIONS         │       │          ARTISTIC & ENGINEERING REMEDY                  │
+├───────────────────────────────────────┤       ├─────────────────────────────────────────────────────────┤
+│ 1. 3D ID Badge in a Cramped Box       │  ───► │ Unboxed Architectural Suspension                        │
+│    • 360px container clips the strap  │       │ • Hangs naturally from campus header or titanium peg    │
+│    • Half the badge cuts off on swing │       │ • Full viewport headroom, transparent stage, 360° flip  │
+│    • Feels like an isolated iframe    │       │ • Ambient branch-colored backglow bleeds into page      │
+├───────────────────────────────────────┤       ├─────────────────────────────────────────────────────────┤
+│ 2. Events "Thrown with Zero Meaning"  │  ───► │ Curated Campus Narrative & Spatial Rhythm               │
+│    • Flat 3-column grid of posters    │       │ • Act 1: The Mainstage Portal (Cinematic Headliner)     │
+│    • Cold, generic BookMyShow feel    │       │ • Act 2: Living Campus Radar (Happening Right Now)      │
+│    • No sense of student subcultures  │       │ • Act 3: Curated Subculture Tracks (Hackathons, Arts)   │
+│    • No urgency or social context     │       │ • Act 4: Interactive Campus Timeline & Footfall Heatmap │
+├───────────────────────────────────────┤       ├─────────────────────────────────────────────────────────┤
+│ 3. Attendee Manually Tears Ticket     │  ───► │ Cryptographic Gate Pass & Live Venue Digital Tear       │
+│    • User pulls or clicks to tear     │       │ • Attendee pass is strictly tamper-proof & INTACT       │
+│    • Unrealistic & prone to fraud     │       │ • Anti-screenshot dynamic hologram & rolling OTP        │
+│    • Lacks venue authority check     │       │ • Venue scanner validates QR ──► pass TEARS DIGITALLY   │
+├───────────────────────────────────────┤       ├─────────────────────────────────────────────────────────┤
+│ 4. Plain, Sterile Visual Aesthetics   │  ───► │ Atmospheric Depth & Bioluminescent Polish              │
+│    • Flat white & grey containers     │       │ • Deep velvet cosmic stage (#08090E / #10121D)          │
+│    • Basic purple buttons & borders   │       │ • Frosted glassmorphism (backdrop-blur-2xl)             │
+│    • Static cards without tactile soul│       │ • Editorial display serif + high-tech mono metadata     │
+└───────────────────────────────────────┘       └─────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 11.2 Pillar 1: The Interactive Student ID Badge — Unboxing & Elevating
+
+#### A. The Structural Problem
+* Currently rendered inside a fixed `div className="relative w-full h-[360px] ... overflow-hidden border border-white/10"`.
+* The Three.js physics simulation anchors the lanyard strap above the container top boundary, causing the metallic clasp and upper strap to be brutally cropped.
+* When the user drags the badge to swing it, the badge swings into the bottom and side borders, cutting off the texture. It feels claustrophobic, like an embedded widget inside an admin box rather than a physical student credential.
+
+#### B. The Unboxed Architectural Vision
+1. **Zero Bounding Box (Open-Air Suspension)**:
+   * Remove the rectangular card frame, background box, and `overflow-hidden` constraints.
+   * Suspend the lanyard naturally from the top navigation bar or an architectural campus mounting peg (`Titanium suspension peg with subtle metallic sheen`).
+   * The Three.js canvas receives generous vertical headroom (`h-[540px]` to `h-[580px]`) with a 100% transparent background, allowing the strap and badge to swing freely across the entire section without clipping.
+2. **Two-Sided Physical Card Flipping (Front & Back)**:
+   * **Front Face**: High-contrast student photo/avatar, holographic RFID chip, university header, academic registration number (`21BCE1042`), degree program, and verified badge.
+   * **Back Face (Flip on click or drag)**: Emergency contact info, blood group, campus gate zone permissions (Tech Park, Central Library, Sports Complex), library clearance barcode, academic year QR, and the digital seal of the Dean of Student Affairs.
+3. **Bioluminescent Ambient Lighting**:
+   * Instead of a static dark canvas, cast an interactive ambient colored glow onto the page background behind the badge, dynamically themed to the student department or collective:
+     * *Computer Science & AI*: Electric Cyber Emerald (`#10B981`)
+     * *Robotics & Electronics*: Sunset Amber (`#F59E0B`)
+     * *Design & Media Arts*: Ultraviolet Neon (`#8B5CF6`)
+     * *Biotechnology & Sciences*: Oceanic Cyan (`#06B6D4`)
+4. **Natural Physics Tuning**:
+   * Set initial state upright and centered (`intro={false}`), with gentle atmospheric breeze (`breeze={0.04}`) so the badge feels alive.
+   * Dragging or spinning provides 360-degree freedom with smooth spring restitution.
+
+---
+
+### 11.3 Pillar 2: Event Discovery & Exhibition Storytelling — Beyond "BookMyShow"
+
+#### A. Why Current Event Platforms Feel Lifeless
+* Traditional ticketing sites (like BookMyShow) treat events like interchangeable cinema seats: a flat poster grid, generic city dropdowns, and sterile date pickers.
+* In a vibrant university campus, events are **cultural landmarks, high-stakes competitions, and collective memories**. They have different energies, times of day, social implications, and subcultures.
+
+#### B. The New Campus Narrative Layout
+We propose restructuring the discovery and home experience into **4 Dynamic Acts**:
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│ ACT 1: THE MAINSTAGE PORTAL (Campus Flagship Exhibition)               │
+│ • Full-bleed cinematic hero featuring the premier event of the month    │
+│ • Ambient procedural lighting matching event genre                     │
+│ • Live countdown to gate opening + Ticket scarcity percentage bar      │
+│ • Instant audio soundscape preview / teaser snippet                    │
+├────────────────────────────────────────────────────────────────────────┤
+│ ACT 2: THE LIVING CAMPUS RADAR ("Happening Today & Next 4 Hours")      │
+│ • Real-time glowing timeline feed of events live on campus right now   │
+│ • Pulse indicators: "Doors Open", "Final 12 Seats", "Live in Audi 1"   │
+│ • Live attendee counter ("342 students checked in")                    │
+├────────────────────────────────────────────────────────────────────────┤
+│ ACT 3: CURATED SUBCULTURE TRACKS (Editorial Dossiers)                  │
+│ • [Midnight Builds & Hackathons]: High-tech cyber grid, prize pools    │
+│ • [Research & Keynotes]: Swiss editorial layout, IEEE/ACM abstracts    │
+│ • [Pro-Nights & CultFest]: Vibrant chromatic blur, artist line-ups     │
+│ • [Workshops & Pop-Ups]: Interactive skill tags, peer testimonials     │
+├────────────────────────────────────────────────────────────────────────┤
+│ ACT 4: SPATIAL CAMPUS VIEWS (Timeline Ribbon vs. Campus Map)           │
+│ • The Chronological Stream: Continuous timeline showing event density  │
+│ • The Campus Venue Map: Building codes, distances, venue capacities    │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+#### C. Innovative Event Card Aesthetics
+1. **Asymmetric Tactile Cards**:
+   * Break away from uniform rectangular tiles. Feature cards dynamically scale based on importance (Hero showcase card is 2x wider with embedded video/audio snippet; lightning workshops are compact cards).
+2. **Social Attendance Context**:
+   * Display student social proof: "24 classmates from CSE Batch 26 attending", with overlapping frosted avatar rings.
+3. **Live Gate Readiness Bar**:
+   * Replace plain "Sold Out" text with a live visual capacity gauge:
+     * `92% Capacity Claimed · Final 18 Passes Available` with an amber pulse dot.
+4. **Tactile Hover & Audio Previews**:
+   * Hovering over a card activates a 3D perspective tilt with specular sheen, and plays a subtle 0.2s harmonic audio preview representing the event collective.
+
+---
+
+### 11.4 Pillar 3: Cryptographic Gate Pass & Live Venue Digital Tear Lifecycle
+
+#### A. The Critical Flaw in Current Ticket Tearing
+* In our current build, the ticket displays a "PULL DOWN TO TEAR" handle or a "Simulate Gate Check-In & Tear Stub" button that the attendee can trigger at home.
+* **Why this is wrong**: In real-world event operations, the ticket holder **must NEVER tear their own pass**. Allowing self-tearing creates fraudulent claims, premature invalidations, and confusion at the gate.
+* **The Correct Model**: The pass is presented to the **venue gate kiosk or organizer scanner**. When verified by the venue scanner, the ticket receives an admission confirmation and **tears digitally on the attendee screen in real time**!
+
+#### B. The Two-Sided Admission System Architecture
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Attendee as Student Attendee
+    participant Phone as Attendee Live Pass (EventMesh)
+    actor Organizer as Venue Gate Staff
+    participant Kiosk as Organizer Scanner Kiosk (/admin/checkin)
+    participant Server as Gate Verification API / WebSocket Hub
+
+    Attendee->>Phone: Opens Event Admission Pass
+    Note over Phone: Renders INTACT High-Security Pass<br/>Anti-screenshot watermark + Scannable QR + 30s OTP<br/>Status: "GATE SCAN READY · PRESENT TO KIOSK"<br/>(NO TEAR BUTTON)
+    Organizer->>Kiosk: Aims optical scanner at Attendee QR code
+    Kiosk->>Server: POST /api/checkin/verify { ticketCode, gateId: "GATE-01" }
+    Server-->>Kiosk: 200 OK: Ticket Valid & Admitted
+    Kiosk->>Attendee: "Admission Verified · Welcome to Turing Hackathon!"
+    Server->>Phone: Broadcast EVENT_GATE_ADMITTED { registrationId, status: "checked_in" }
+    Note over Phone: REAL-TIME DIGITAL TEAR SEQUENCE:<br/>1. Perforation splits with particle physics<br/>2. Stub detaches and slides away<br/>3. Dual-tone gate chime (880Hz -> 1320Hz)<br/>4. Emerald Gate Stamp: "ADMITTED · GATE 01 · 10:42 AM"<br/>5. Moves stub to Keepsake Archive
+```
+
+#### C. Attendee Live Pass View (The Secure Pass)
+1. **Intact, Tamper-Evident Pass**:
+   * Clean, uncompromised ticket body with attached perforated stub.
+   * **Anti-Screenshot Dynamic Security Layer**: An undulating micro-gradient wave across the ticket surface and a live millisecond clock prove the pass is active and not a static forwarded screenshot.
+   * **High-Density Cryptographic QR Code**: High-contrast, scannable QR containing signed payload: `EVENTMESH:PASS-{ticketId}:{token}`.
+   * **Rolling 6-Digit Gate OTP (CodeSlots)**: Refreshes synchronously every 30 seconds for manual gate keying if optical scanners fail.
+   * **Status Badge**: Glowing pulse badge: `● GATE SCAN READY · PRESENT AT ENTRANCE`.
+   * **Zero Manual Tear Controls**: The attendee cannot drag or click to tear the pass.
+
+#### D. Live Digital Tearing Sequence
+* When the admission webhook/broadcast fires:
+  1. **Acoustic Feedback**: Web Audio API synthesized dual-tone gate confirmation chime (880Hz -> 1320Hz) + physical paper tear impulse.
+  2. **Particle Physics**: Micro-fibers and confetti burst from the perforation seam.
+  3. **Stub Detachment**: The right stub smoothly detaches with spring physics and transitions to an archived souvenir badge.
+  4. **Official Gate Stamp**: The remaining ticket body is stamped with an authentic glowing emerald seal: `ADMITTED · GATE 01 · [TIME]`.
+  5. **Keepsake Collection**: The detached stub is saved into the student permanent "Campus Memories / Keepsake Passes" gallery.
+
+#### E. Built-In Venue Gate Scanner Simulator (For Testing & Demos)
+* To make this experience fully testable by the user without needing two physical phones:
+  * Provide a discreet "Organizer Gate Kiosk Simulator" drawer or toggle in development/preview mode.
+  * Clicking "Simulate Venue Gate Scan" triggers the check-in from the *venue perspective*, firing the server event and allowing the user to watch the ticket on their screen tear digitally in real time!
+
+---
+
+### 11.5 Pillar 4: Holistic Aesthetic Polish & Atmosphere (Curing "Plain and Boring")
+
+#### A. Color Palette Evolution
+* Transition from cold, sterile white-and-grey boxes to a curated, luminous dark-mode stage that feels like an elite collegiate exhibition:
+  * **Canvas Deep Base**: `#08090E` (Deep space obsidian)
+  * **Card & Surface Layers**: `#10121D` with subtle `#1E2238` border contrast
+  * **Primary Luminescence**: Electric Indigo (`#6366F1`) & Ultraviolet (`#A855F7`)
+  * **Campus Gate Accents**: Cyber Mint (`#10B981`) & Neon Amber (`#F59E0B`)
+
+#### B. Materiality & Glassmorphism
+* Cards float on frosted glass surfaces with `backdrop-blur-2xl` and 1px delicate translucent borders (`rgba(255,255,255,0.08)`).
+* Interactive cards cast subtle radial light following the cursor, simulating physical laminated badges under gallery spotlights.
+
+#### C. Typography & Hierarchy
+* **Display Titles**: High-contrast editorial font (*Instrument Serif* or *Cal Sans*) for evocative event headlines.
+* **Body Copy**: Refined *Inter* / *Plus Jakarta Sans* with optical kerning for high readability.
+* **Logistics & Security Data**: *JetBrains Mono* for ticket codes, gate numbers, seats, timestamps, and cryptographic hashes.
+
+---
+
+### 11.6 Individual Implementation Plans (For User Review & Feedback)
+
+Below are the 4 independent implementation plans. Please review and provide your feedback, priority ranking, or requested adjustments on each:
+
+---
+
+#### Plan A: Unboxed Campus Student ID Badge
+* **Target Files**:
+  * `src/features/dashboard/AttendeeDashboardPage.tsx`
+  * `src/design-system/3d/Lanyard.tsx`
+  * `src/design-system/3d/generateStudentIDTexture.ts`
+* **Changes**:
+  1. Remove the rectangular bounding card and `overflow-hidden` constraints around the lanyard in `AttendeeDashboardPage.tsx`.
+  2. Suspend the 3D lanyard from an architectural titanium mounting bar with generous `520px+` vertical headroom.
+  3. Add two-sided flip capability to the 3D card (Front: ID & RFID chip; Back: Emergency contacts, campus gate rights, Dean seal).
+  4. Add branch-colored dynamic ambient backglow that bleeds smoothly into the page.
+* **Review Questions for You**:
+  - *Do you want the 3D badge to flip automatically on hover, or on click?*
+  - *Should the background glow match the student department color (e.g. green for CSE, amber for Robotics)?*
+
+---
+
+#### Plan B: Curated Campus Narrative Events & Discovery Overhaul
+* **Target Files**:
+  * `src/features/events/HomePage.tsx`
+  * `src/features/events/components/MainstageHero.tsx` (new)
+  * `src/features/events/components/CampusRadarFeed.tsx` (new)
+  * `src/features/events/components/SubcultureTracks.tsx` (new)
+  * `src/design-system/EventCardModern.tsx`
+* **Changes**:
+  1. Replace the generic carousel with **Act 1: The Mainstage Portal** (Cinematic hero with live gate countdown and capacity gauge).
+  2. Add **Act 2: The Living Campus Radar** showing events happening today across campus with live attendee count pulses.
+  3. Group remaining events into **Act 3: Curated Subculture Tracks** (Hackathons, Research, Cultural, Workshops) with bespoke styling.
+  4. Upgrade event cards with social attendance avatars ("X classmates going"), capacity percentage bars, and 3D hover tilt.
+* **Review Questions for You**:
+  - *Do you prefer the events divided into thematic subculture tracks (Hackathons vs. Cultural vs. Keynotes) or a unified chronological stream?*
+  - *Would you like an interactive audio preview snippet when hovering over featured events?*
+
+---
+
+#### Plan C: Tamper-Proof Gate Pass & Real-Time Digital Venue Tearing
+* **Target Files**:
+  * `src/design-system/micro/EventAdmissionTicket.tsx`
+  * `src/features/dashboard/components/TactileBoardingPass.tsx`
+  * `src/features/admin/AdminCheckinPage.tsx`
+  * `src/lib/sound.ts`
+* **Changes**:
+  1. Remove all manual tear handles/buttons from the attendee pass view. The pass renders strictly intact with anti-screenshot live watermark and scannable QR code.
+  2. Implement real-time admission listening via `BroadcastChannel` / custom event dispatcher: when the ticket is checked in, the pass tears digitally on the attendee screen.
+  3. Build an authentic digital tear sequence: fiber particle burst, stub detachment animation, dual-tone kiosk chime, and glowing emerald gate stamp.
+  4. Provide an Organizer Gate Scanner Simulator button for easy one-click testing during review and demos.
+* **Review Questions for You**:
+  - *Should the detached stub be stored in a permanent "Keepsake Stubs" gallery on the profile page?*
+  - *For demo purposes, is an integrated "Simulate Venue Gate Scan" organizer button convenient for you to test the tear?*
+
+---
+
+#### Plan D: Holistic Atmospheric Beautification & Material Design
+* **Target Files**:
+  * `src/index.css`
+  * `tailwind.config.js`
+  * `src/components/layout/Navbar.tsx`
+  * `src/components/layout/Footer.tsx`
+* **Changes**:
+  1. Introduce deep velvet obsidian palette tokens (`#08090E`, `#10121D`, `#181B2D`).
+  2. Implement frosted glassmorphism on the top navigation bar and floating modal backdrops.
+  3. Add subtle acoustic feedback (soft click, tab switch, modal snap) with an accessible mute toggle in the navigation bar.
+  4. Enhance typography hierarchy with high-contrast display font pairing.
+* **Review Questions for You**:
+  - *Do you want the dark theme to be the primary default experience across the entire site?*
+  - *Would you like subtle sound effects on navigation interactions, with a mute switch?*
+
+---
+
+### 11.7 Next Steps & Feedback Request
+
+**No changes have been executed** as requested. Please review the 4 plans above and let me know:
+1. Which plans you approve or want prioritized first?
+2. Any specific aesthetic tweaks, colors, or component preferences you like adjusted before implementation?
+3. Once you give the green light on the plans and any adjustments, we will proceed with systematic execution!

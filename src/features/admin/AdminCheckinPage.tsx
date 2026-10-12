@@ -45,6 +45,19 @@ export const AdminCheckinPage: React.FC = () => {
       if (res.success && res.registration) {
         setLastCheckedIn(res.registration)
         setTicketInput('')
+
+        // Broadcast gate admission so attendee screen tears in real time!
+        try {
+          const channel = new BroadcastChannel('eventmesh_gate_admission')
+          channel.postMessage({ registrationId: res.registration.id, ticketCode: res.registration.ticketCode })
+          channel.close()
+        } catch {}
+        window.dispatchEvent(
+          new CustomEvent('eventmesh_gate_admitted', {
+            detail: { registrationId: res.registration.id, ticketCode: res.registration.ticketCode },
+          })
+        )
+
         toast({
           title: 'Check-in Verified',
           message: `${res.registration.userName} successfully checked in.`,

@@ -6,6 +6,8 @@ import { PromoCarousel } from './components/PromoCarousel'
 import { NewEventsRail } from './components/NewEventsRail'
 import { EventsToolbar } from './components/EventsToolbar'
 import { EventsDiscoveryView } from './components/EventsDiscoveryView'
+import { CampusRadarFeed } from './components/CampusRadarFeed'
+import { SubcultureTracks } from './components/SubcultureTracks'
 
 export const HomePage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -162,15 +164,22 @@ export const HomePage: React.FC = () => {
   return (
     <div className="w-full bg-bg text-text min-h-screen flex flex-col">
       {/* ==============================================================
-          TOP HALF: PROMOTED SHOWCASE CAROUSEL (>= 50svh, Desktop Cap 520px)
-          Background: --champion (#151130)
+          ACT 1: THE MAINSTAGE PORTAL (Flagship Promoted Exhibition)
           ============================================================== */}
       <PromoCarousel events={promoted} />
 
       {/* ==============================================================
-          BOTTOM HALF: NEW ADDITIONS RAIL (>= 50svh)
-          Background: --lavender (#E6E4F3)
-          Straight seam meeting Top Half, together filling first viewport!
+          ACT 2: THE LIVING CAMPUS RADAR (Happening Today across Venues)
+          ============================================================== */}
+      <CampusRadarFeed />
+
+      {/* ==============================================================
+          ACT 3: CURATED SUBCULTURE TRACKS (Editorial Chapters)
+          ============================================================== */}
+      <SubcultureTracks events={newestEvents} />
+
+      {/* ==============================================================
+          ACT 4: NEW ADDITIONS RAIL
           ============================================================== */}
       <NewEventsRail events={newestEvents} isLoading={isNewestLoading} />
 

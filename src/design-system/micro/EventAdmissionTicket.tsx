@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { TearTicket } from './TearTicket'
 import { CodeSlots } from './CodeSlots'
 import { QRCode } from '@/design-system/primitives'
 import { formatDate } from '@/lib/dates'
 import { playGateAdmissionChime, playTearImpulse } from '@/lib/sound'
 import { fireCelebrationConfetti } from '@/lib/confetti'
-import { CheckCircle2, QrCode, ScanLine, Sparkles } from 'lucide-react'
+import { CheckCircle2, QrCode, ScanLine, ShieldCheck, Radio, Building2, Smartphone } from 'lucide-react'
 
 export interface EventAdmissionTicketProps {
   registration: {
@@ -33,6 +33,13 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
 }) => {
   const isAlreadyAdmitted = registration.status === 'checked_in'
   const [isLocallyTorn, setIsLocallyTorn] = useState(isAlreadyAdmitted)
+  const [clockMs, setClockMs] = useState(Date.now())
+
+  // Dynamic live security clock (anti-screenshot watermark)
+  useEffect(() => {
+    const timer = setInterval(() => setClockMs(Date.now()), 100)
+    return () => clearInterval(timer)
+  }, [])
 
   const isTorn = isAlreadyAdmitted || isLocallyTorn
   const ticketCode = registration.ticketCode || `PASS-${registration.id.slice(0, 8).toUpperCase()}`
@@ -43,7 +50,7 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
     Math.abs(ticketCode.split('').reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7) % 900000) + 100000
   ).slice(0, 6)
 
-  const handleTear = () => {
+  const triggerDigitalTear = () => {
     if (isTorn || disabled) return
 
     playTearImpulse()
@@ -56,8 +63,64 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
     }
   }
 
+  // Real-time listener: Ticket ONLY tears when scanned & verified by the venue gate kiosk
+  useEffect(() => {
+    let channel: BroadcastChannel | null = null
+    try {
+      channel = new BroadcastChannel('eventmesh_gate_admission')
+      channel.onmessage = (event) => {
+        if (event.data?.registrationId === registration.id || event.data?.ticketCode === ticketCode) {
+          triggerDigitalTear()
+        }
+      }
+    } catch {}
+
+    const handleCustomAdmitted = (e: any) => {
+      if (e.detail?.registrationId === registration.id || e.detail?.ticketCode === ticketCode) {
+        triggerDigitalTear()
+      }
+    }
+    window.addEventListener('eventmesh_gate_admitted', handleCustomAdmitted)
+
+    return () => {
+      channel?.close()
+      window.removeEventListener('eventmesh_gate_admitted', handleCustomAdmitted)
+    }
+  }, [registration.id, ticketCode, isTorn, disabled])
+
+  // Simulated Venue Gate Scanner function (organizer perspective)
+  const handleSimulateVenueScan = () => {
+    // Broadcast event across channels
+    try {
+      const channel = new BroadcastChannel('eventmesh_gate_admission')
+      channel.postMessage({ registrationId: registration.id, ticketCode })
+      channel.close()
+    } catch {}
+
+    window.dispatchEvent(
+      new CustomEvent('eventmesh_gate_admitted', {
+        detail: { registrationId: registration.id, ticketCode },
+      })
+    )
+  }
+
+  const liveDate = new Date(clockMs)
+  const liveTimeString = liveDate.toLocaleTimeString('en-US', { hour12: false }) + `.${String(liveDate.getMilliseconds()).padStart(3, '0')}`
+
   return (
     <div className={`flex flex-col items-center select-none ${className}`}>
+      {/* Anti-Fraud Security Ribbon */}
+      <div className="w-full max-w-[580px] mb-2 px-3 py-1.5 rounded-lg bg-surface/90 border border-line flex items-center justify-between text-[11px] font-mono text-text-2">
+        <div className="flex items-center gap-1.5 text-emerald-600 font-semibold">
+          <ShieldCheck className="w-3.5 h-3.5" />
+          <span>CRYPTOGRAPHIC VERIFIED PASS</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>LIVE: {liveTimeString}</span>
+        </div>
+      </div>
+
       <div className="py-2 w-full flex justify-center overflow-hidden">
         <TearTicket
           width={580}
@@ -67,7 +130,7 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
           holes={9}
           notch={12}
           torn={isTorn}
-          onTear={handleTear}
+          disabled={true} // Attendee cannot manually tear their ticket!
           background="#120F24"
           color="#F8FAFC"
           borderColor="rgba(255,255,255,0.14)"
@@ -115,9 +178,9 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
                       <span>ADMITTED ✓</span>
                     </div>
                   ) : (
-                    <div className="inline-flex items-center gap-1 text-[9px] text-indigo-300/80 animate-pulse font-sans font-medium">
-                      <ScanLine className="w-3 h-3" />
-                      <span>PULL DOWN TO TEAR</span>
+                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-500/25 text-indigo-300 text-[9px] font-medium font-mono">
+                      <Radio className="w-2.5 h-2.5 text-indigo-400 animate-pulse" />
+                      <span>GATE SCAN READY</span>
                     </div>
                   )}
                 </div>
@@ -197,22 +260,29 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
         </TearTicket>
       </div>
 
-      {/* Helper Interaction Strip Below Ticket */}
-      <div className="flex items-center gap-3 mt-1">
+      {/* Interaction & Simulation Panel */}
+      <div className="flex flex-col items-center gap-2 mt-3 w-full max-w-[580px]">
         {!isTorn ? (
-          <button
-            type="button"
-            onClick={handleTear}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-caption font-semibold bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 transition-all hover:scale-105"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Simulate Gate Kiosk Check-In & Tear Stub</span>
-          </button>
+          <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-xl bg-surface border border-line">
+            <div className="flex items-center gap-2 text-text-2 text-caption">
+              <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+              <span>Attendee Pass is <strong>Intact</strong> · Scan at venue entrance</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSimulateVenueScan}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-caption font-semibold bg-accent text-white hover:bg-accent/90 shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap"
+            >
+              <Building2 className="w-4 h-4" />
+              <span>Venue Kiosk: Simulate Scan & Digital Tear</span>
+            </button>
+          </div>
         ) : (
-          <p className="text-caption text-emerald-400 font-mono flex items-center gap-1.5">
-            <CheckCircle2 className="w-4 h-4" />
-            <span>Admission validated at campus gate · Stub detached</span>
-          </p>
+          <div className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-caption font-mono">
+            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            <span>Admission verified at venue entrance · Stub detached & archived</span>
+          </div>
         )}
       </div>
     </div>

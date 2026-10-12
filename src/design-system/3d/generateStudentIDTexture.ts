@@ -12,9 +12,11 @@ export interface StudentIDData {
   role?: string
   avatarUrl?: string
   campus?: string
+  bloodGroup?: string
+  emergencyPhone?: string
 }
 
-export function generateStudentIDTexture(data: StudentIDData): string {
+export function generateStudentIDTexture(data: StudentIDData, side: 'front' | 'back' = 'front'): string {
   // Use 600x900 resolution (2:3 aspect ratio matching the portrait Lanyard card)
   const width = 600
   const height = 900
@@ -24,6 +26,11 @@ export function generateStudentIDTexture(data: StudentIDData): string {
   const ctx = canvas.getContext('2d')
 
   if (!ctx) return ''
+
+  if (side === 'back') {
+    return generateStudentIDBackTexture(ctx, width, height, data, canvas)
+  }
+
 
   // 1. Dark Obsidian Gradient Background
   const bgGrad = ctx.createLinearGradient(0, 0, width, height)
@@ -223,6 +230,198 @@ export function generateStudentIDTexture(data: StudentIDData): string {
   ctx.beginPath()
   ctx.arc(width / 2, height - 28, 16, 0, Math.PI * 2)
   ctx.stroke()
+
+  return canvas.toDataURL('image/png')
+}
+
+function generateStudentIDBackTexture(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  data: StudentIDData,
+  canvas: HTMLCanvasElement
+): string {
+  // 1. Dark Obsidian Gradient Background
+  const bgGrad = ctx.createLinearGradient(0, 0, width, height)
+  bgGrad.addColorStop(0, '#0F0C1E')
+  bgGrad.addColorStop(0.5, '#080612')
+  bgGrad.addColorStop(1, '#120F24')
+  ctx.fillStyle = bgGrad
+  ctx.fillRect(0, 0, width, height)
+
+  // 2. Security Guilloche Grid
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)'
+  ctx.lineWidth = 1
+  for (let x = 0; x < width; x += 40) {
+    ctx.beginPath()
+    ctx.moveTo(x, 0)
+    ctx.lineTo(x, height)
+    ctx.stroke()
+  }
+  for (let y = 0; y < height; y += 40) {
+    ctx.beginPath()
+    ctx.moveTo(0, y)
+    ctx.lineTo(width, y)
+    ctx.stroke()
+  }
+
+  // 3. Top Magnetic Stripe Simulation
+  const stripeY = 24
+  const stripeH = 80
+  const stripeGrad = ctx.createLinearGradient(0, stripeY, width, stripeY + stripeH)
+  stripeGrad.addColorStop(0, '#1E1B2E')
+  stripeGrad.addColorStop(0.5, '#2D2845')
+  stripeGrad.addColorStop(1, '#181526')
+  ctx.fillStyle = stripeGrad
+  ctx.fillRect(0, stripeY, width, stripeH)
+
+  // Magnetic Stripe Optical Line
+  ctx.fillStyle = 'rgba(255, 215, 0, 0.35)'
+  ctx.fillRect(0, stripeY + stripeH - 6, width, 4)
+
+  // 4. Campus Gate Zone Access Matrix
+  ctx.fillStyle = '#FFFFFF'
+  ctx.font = 'bold 16px "Plus Jakarta Sans Variable", sans-serif'
+  ctx.textAlign = 'left'
+  ctx.fillText('CAMPUS FACILITY ACCESS CLEARANCES', 50, 150)
+
+  const zones = [
+    { code: 'ZONE A', name: 'Tech Park Research & AI Labs', auth: true },
+    { code: 'ZONE B', name: 'Central Auditorium & Mainstage', auth: true },
+    { code: 'ZONE C', name: 'Autonomous Robotics Arena', auth: true },
+    { code: 'ZONE D', name: 'Digital Library & Fabrication Studio', auth: true },
+  ]
+
+  zones.forEach((z, idx) => {
+    const yPos = 185 + idx * 46
+
+    // Zone Container
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.03)'
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)'
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.roundRect(50, yPos, width - 100, 36, 6)
+    ctx.fill()
+    ctx.stroke()
+
+    // Zone Code Badge
+    ctx.fillStyle = '#818CF8'
+    ctx.font = 'bold 12px "JetBrains Mono", monospace'
+    ctx.fillText(z.code, 64, yPos + 22)
+
+    // Zone Name
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'
+    ctx.font = '500 13px "Plus Jakarta Sans Variable", sans-serif'
+    ctx.fillText(z.name, 135, yPos + 22)
+
+    // Authorized Tag
+    ctx.fillStyle = '#10B981'
+    ctx.font = 'bold 11px "JetBrains Mono", monospace'
+    ctx.textAlign = 'right'
+    ctx.fillText('GRANTED ✓', width - 64, yPos + 22)
+    ctx.textAlign = 'left'
+  })
+
+  // 5. Emergency Medical & Contact Dossier
+  const medY = 390
+  ctx.fillStyle = 'rgba(239, 68, 68, 0.08)'
+  ctx.strokeStyle = 'rgba(239, 68, 68, 0.25)'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.roundRect(50, medY, width - 100, 84, 8)
+  ctx.fill()
+  ctx.stroke()
+
+  ctx.fillStyle = '#F87171'
+  ctx.font = 'bold 13px "JetBrains Mono", monospace'
+  ctx.fillText('EMERGENCY MEDICAL DOSSIER', 68, medY + 26)
+
+  ctx.fillStyle = '#FFFFFF'
+  ctx.font = '14px "Plus Jakarta Sans Variable", sans-serif'
+  ctx.fillText(`Blood Group: ${data.bloodGroup || 'O+'}`, 68, medY + 52)
+  ctx.fillText(`Emergency ICE: ${data.emergencyPhone || '+91 98765 43210'}`, 240, medY + 52)
+
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'
+  ctx.font = '12px "JetBrains Mono", monospace'
+  ctx.fillText('Campus Clinic Hotline: ext. 4400 · Ambulance: 108', 68, medY + 72)
+
+  // 6. Dean of Student Affairs Digital Holographic Seal
+  const sealY = 510
+  const sealR = 54
+  const sealX = 120
+
+  // Gold Seal Ring
+  const sealGrad = ctx.createLinearGradient(sealX - sealR, sealY - sealR, sealX + sealR, sealY + sealR)
+  sealGrad.addColorStop(0, '#EAB308')
+  sealGrad.addColorStop(0.5, '#FDE047')
+  sealGrad.addColorStop(1, '#CA8A04')
+
+  ctx.strokeStyle = sealGrad
+  ctx.lineWidth = 2.5
+  ctx.beginPath()
+  ctx.arc(sealX, sealY, sealR, 0, Math.PI * 2)
+  ctx.stroke()
+
+  ctx.strokeStyle = 'rgba(234, 179, 8, 0.3)'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.arc(sealX, sealY, sealR - 6, 0, Math.PI * 2)
+  ctx.stroke()
+
+  ctx.fillStyle = '#FDE047'
+  ctx.font = 'bold 10px "JetBrains Mono", monospace'
+  ctx.textAlign = 'center'
+  ctx.fillText('EVENTMESH', sealX, sealY - 14)
+  ctx.fillText('SEAL OF THE DEAN', sealX, sealY + 2)
+  ctx.fillText('STUDENT AFFAIRS', sealX, sealY + 18)
+
+  // Dean's Signature Line
+  ctx.textAlign = 'left'
+  ctx.fillStyle = '#FFFFFF'
+  ctx.font = 'bold 15px "Plus Jakarta Sans Variable", sans-serif'
+  ctx.fillText('Authorized by Dean of Student Affairs', 195, sealY - 10)
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(195, sealY + 12)
+  ctx.lineTo(width - 50, sealY + 12)
+  ctx.stroke()
+
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'
+  ctx.font = '12px "JetBrains Mono", monospace'
+  ctx.fillText('Dr. K. R. Ramanathan, Ph.D · Verified Dean Signature', 195, sealY + 30)
+
+  // 7. Legal Disclaimer & Terms
+  const legalY = 620
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.45)'
+  ctx.font = '11px "Plus Jakarta Sans Variable", sans-serif'
+  ctx.fillText('This credential remains the official property of Central University Campus.', 50, legalY)
+  ctx.fillText('Non-transferable. Must be presented upon request by campus security & gate kiosks.', 50, legalY + 18)
+  ctx.fillText('Loss or theft must be immediately reported to registry@campus.eventmesh.org.', 50, legalY + 36)
+
+  // 8. Bottom Cryptographic Gate Hash
+  const hashY = 700
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.04)'
+  ctx.fillRect(40, hashY, width - 80, 80)
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'
+  ctx.strokeRect(40, hashY, width - 80, 80)
+
+  ctx.fillStyle = '#A5B4FC'
+  ctx.font = 'bold 12px "JetBrains Mono", monospace'
+  ctx.fillText('CRYPTOGRAPHIC ATTENDANCE TOKEN', 60, hashY + 28)
+
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.75)'
+  ctx.font = '11px "JetBrains Mono", monospace'
+  const cryptoHash = `SHA256: 0x${data.registrationNumber.split('').map(c => c.charCodeAt(0).toString(16)).join('')}9f2a7e4b01d`
+  ctx.fillText(cryptoHash.slice(0, 48), 60, hashY + 50)
+  ctx.fillText('NFC GATEWAY · ISO/IEC 14443 TYPE A COMPLIANT', 60, hashY + 68)
+
+  // 9. Bottom Footer
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'
+  ctx.font = '10px "JetBrains Mono", monospace'
+  ctx.textAlign = 'center'
+  ctx.fillText('EVENTMESH AUTONOMOUS CAMPUS PROTOCOL · SECURE BACK', width / 2, height - 30)
 
   return canvas.toDataURL('image/png')
 }

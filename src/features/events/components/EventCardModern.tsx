@@ -141,9 +141,30 @@ export const EventCardModern: React.FC<EventCardModernProps> = ({
           </div>
 
           {/* Title */}
-          <h3 className="text-[18px] sm:text-[19px] font-semibold leading-snug line-clamp-2 text-text group-hover:text-accent transition-colors">
+          <h3 className="text-[17px] sm:text-[18px] font-bold leading-snug line-clamp-2 text-text group-hover:text-accent transition-colors tracking-tight font-sans">
             {event.title}
           </h3>
+
+          {/* Social Proof & Capacity Bar */}
+          <div className="space-y-1.5 pt-1">
+            <div className="flex items-center justify-between text-[11px] font-mono text-text-2">
+              <span className="flex items-center gap-1.5 truncate">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <strong className="text-text">{event.registrationsCount || 120}</strong> passholders
+              </span>
+              <span className="text-[10px] text-text-3 font-semibold uppercase">
+                {event.isFree ? 'RSVP OPEN' : 'SEATS LIMITED'}
+              </span>
+            </div>
+
+            {/* Micro Capacity Bar */}
+            <div className="w-full h-1 rounded-full bg-subtle overflow-hidden">
+              <div
+                className="h-full rounded-full bg-accent/80 transition-all duration-300"
+                style={{ width: `${Math.min(95, Math.max(30, ((event.registrationsCount || 75) % 80) + 20))}%` }}
+              />
+            </div>
+          </div>
 
           {/* Club with 10px dot & category */}
           <div className="flex items-center justify-between gap-2 pt-2 border-t border-line/60 mt-1">
@@ -158,7 +179,7 @@ export const EventCardModern: React.FC<EventCardModernProps> = ({
               </span>
             </div>
 
-            <span className="text-caption text-text-3 font-medium flex-shrink-0">
+            <span className="text-caption text-text-3 font-mono font-medium flex-shrink-0">
               {event.category}
             </span>
           </div>

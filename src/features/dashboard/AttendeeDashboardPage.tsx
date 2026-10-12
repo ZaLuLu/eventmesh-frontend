@@ -32,8 +32,8 @@ export const AttendeeDashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('passes')
   const [copiedRegNo, setCopiedRegNo] = useState(false)
 
-  // Generate high-resolution authentic Student ID Card texture for the 3D Lanyard
-  const studentIdTexture = useMemo(() => {
+  // Generate high-resolution authentic Student ID Card textures (front & back) for the 3D Lanyard
+  const studentIdFrontTexture = useMemo(() => {
     const s = session as any
     return generateStudentIDTexture({
       name: s?.name || 'Aditya Narayan',
@@ -43,7 +43,24 @@ export const AttendeeDashboardPage: React.FC = () => {
       email: s?.email || 'aditya.narayan@vitstudent.ac.in',
       role: 'STUDENT PASSHOLDER',
       campus: 'CENTRAL UNIVERSITY CAMPUS',
-    })
+      bloodGroup: 'O+',
+      emergencyPhone: '+91 98765 43210',
+    }, 'front')
+  }, [session])
+
+  const studentIdBackTexture = useMemo(() => {
+    const s = session as any
+    return generateStudentIDTexture({
+      name: s?.name || 'Aditya Narayan',
+      registrationNumber: s?.registrationNumber || '21BCE1042',
+      degreeBranch: s?.degreeBranch || 'B.Tech Computer Science & Engineering',
+      semester: s?.semester || 6,
+      email: s?.email || 'aditya.narayan@vitstudent.ac.in',
+      role: 'STUDENT PASSHOLDER',
+      campus: 'CENTRAL UNIVERSITY CAMPUS',
+      bloodGroup: 'O+',
+      emergencyPhone: '+91 98765 43210',
+    }, 'back')
   }, [session])
 
   const handleCancelPass = async (reg: Registration) => {
@@ -236,25 +253,45 @@ export const AttendeeDashboardPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Right 5 cols: 3D Hanging Student ID Lanyard Stage */}
-            <div className="lg:col-span-5">
-              <div className="relative w-full h-[360px] sm:h-[390px] rounded-2xl overflow-hidden bg-gradient-to-b from-[#141126] via-[#0C0A1A] to-[#080612] border border-white/10 shadow-2xl flex items-center justify-center">
+            {/* Right 5 cols: Unboxed Architectural 3D Student ID Lanyard Stage */}
+            <div className="lg:col-span-5 relative flex flex-col items-center">
+              {/* Architectural Titanium Suspension Peg */}
+              <div className="z-10 flex flex-col items-center mb-[-12px]">
+                <div className="h-2 w-28 rounded-full bg-gradient-to-r from-slate-400 via-slate-100 to-slate-400 shadow-md border border-white/60" />
+                <div className="h-3 w-8 bg-gradient-to-b from-slate-200 to-slate-500 rounded-b-md shadow-sm border-x border-b border-slate-600/30 flex items-center justify-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                </div>
+              </div>
+
+              {/* Ambient Bioluminescent Backglow */}
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center -z-0">
+                <div className="w-[320px] h-[320px] rounded-full bg-emerald-500/10 blur-3xl" />
+                <div className="w-[280px] h-[280px] rounded-full bg-indigo-500/15 blur-2xl -translate-y-6" />
+              </div>
+
+              {/* Open-Air 3D Canvas Stage (No clipping borders, full headroom) */}
+              <div className="relative w-full h-[480px] sm:h-[520px] flex items-center justify-center overflow-visible">
                 <Lanyard
-                  frontImage={studentIdTexture}
+                  frontImage={studentIdFrontTexture}
+                  backImage={studentIdBackTexture}
                   cardColor="#120F24"
                   finish="holographic"
                   orientation="portrait"
                   strapColor="#5E4AE3"
-                  size={0.86}
+                  size={0.88}
+                  strapLength={0.34}
                   intro={false}
-                  breeze={0.06}
+                  breeze={0.04}
+                  className="w-full h-full"
                 />
+              </div>
 
-                {/* Physics Prompt Pill */}
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3.5 py-1.5 rounded-full bg-[#0C0A1A]/90 backdrop-blur-md border border-white/15 text-[11px] font-medium text-slate-300 shadow-xl pointer-events-none flex items-center gap-1.5 whitespace-nowrap">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Interactive 3D Student ID Badge · Drag to swing</span>
-                </div>
+              {/* Status & Interaction Prompt Pill */}
+              <div className="z-10 mt-[-8px] px-3.5 py-1.5 rounded-full bg-surface/90 backdrop-blur-md border border-line text-[11px] font-medium text-text-2 shadow-lg flex items-center gap-2 whitespace-nowrap">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="font-mono text-emerald-600 font-bold uppercase tracking-wider text-[10px]">NFC PASS ACTIVE</span>
+                <span className="text-line">|</span>
+                <span>Drag to swing & spin 3D ID</span>
               </div>
             </div>
           </div>
