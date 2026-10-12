@@ -82,96 +82,88 @@ export const PosterArtwork: React.FC<PosterArtworkProps> = (props) => {
       >
         <defs>
           <linearGradient id={`grad-${seed}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#151130" />
-            <stop offset="50%" stopColor={`${primaryColor}55`} />
-            <stop offset="100%" stopColor="#0B091A" />
+            <stop offset="0%" stopColor="#0047FF" />
+            <stop offset="100%" stopColor="#0035BE" />
           </linearGradient>
-
-          <radialGradient id={`glow-${seed}`} cx="60%" cy="40%" r="65%">
-            <stop offset="0%" stopColor={primaryColor} stopOpacity="0.45" />
-            <stop offset="60%" stopColor={primaryColor} stopOpacity="0.1" />
-            <stop offset="100%" stopColor="transparent" stopOpacity="0" />
-          </radialGradient>
 
           <pattern id={`grid-${seed}`} width="24" height="24" patternUnits="userSpaceOnUse">
             <path
               d="M 24 0 L 0 0 0 24"
               fill="none"
-              stroke="rgba(255,255,255,0.06)"
+              stroke="rgba(255,255,255,0.12)"
               strokeWidth="0.75"
             />
           </pattern>
         </defs>
 
-        {/* Deep Canvas Background */}
+        {/* Electric Cobalt Base Canvas */}
         <rect width="100%" height="100%" fill={`url(#grad-${seed})`} />
-        <rect width="100%" height="100%" fill={`url(#glow-${seed})`} />
         <rect width="100%" height="100%" fill={`url(#grid-${seed})`} />
 
         {/* Dynamic Pattern Elements based on variant */}
         {variant === 0 && (
-          // Telemetry & Vector Vectors
-          <g opacity="0.85">
-            <line x1="50" y1="50" x2="450" y2="350" stroke={primaryColor} strokeWidth="1.5" strokeDasharray="4 8" />
-            <line x1="50" y1="350" x2="450" y2="50" stroke="rgba(230,228,243,0.3)" strokeWidth="1" />
-            <circle cx="250" cy="200" r="110" fill="none" stroke={primaryColor} strokeWidth="1.5" />
-            <circle cx="250" cy="200" r="160" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.75" strokeDasharray="6 6" />
-            <circle cx="250" cy="200" r="45" fill={primaryColor} fillOpacity="0.25" />
-            <polygon points="250,90 350,260 150,260" fill="none" stroke="rgba(230,228,243,0.4)" strokeWidth="1.2" />
+          // Vector Vectors & Crosshairs
+          <g opacity="0.9">
+            <line x1="50" y1="50" x2="450" y2="350" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeDasharray="4 8" />
+            <line x1="50" y1="350" x2="450" y2="50" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
+            <circle cx="250" cy="200" r="110" fill="none" stroke="white" strokeWidth="1.5" />
+            <circle cx="250" cy="200" r="160" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.75" strokeDasharray="6 6" />
+            <circle cx="250" cy="200" r="45" fill="white" fillOpacity="0.2" />
+            <polygon points="250,90 350,260 150,260" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.2" />
           </g>
         )}
 
         {variant === 1 && (
-          // Neural Fourier Waveforms
-          <g opacity="0.9">
+          // Geometric Waves
+          <g opacity="0.95">
             {Array.from({ length: 6 }).map((_, i) => (
               <path
                 key={i}
                 d={`M -20 ${140 + i * 22} Q 120 ${80 + i * 30}, 250 ${200 + i * 15} T 520 ${160 + i * 20}`}
                 fill="none"
-                stroke={i % 2 === 0 ? primaryColor : 'rgba(230,228,243,0.5)'}
+                stroke="white"
                 strokeWidth={i === 2 ? '2' : '1'}
-                strokeOpacity={0.4 + i * 0.1}
+                strokeOpacity={0.3 + i * 0.12}
               />
             ))}
-            <circle cx="380" cy="120" r="70" fill={primaryColor} fillOpacity="0.2" />
-            <circle cx="120" cy="280" r="90" fill="rgba(123,99,168,0.25)" />
+            <circle cx="380" cy="120" r="70" fill="white" fillOpacity="0.15" />
+            <circle cx="120" cy="280" r="90" fill="white" fillOpacity="0.08" />
           </g>
         )}
 
         {variant === 2 && (
-          // Cybernetic Isometric Prisms
-          <g opacity="0.85">
+          // Isometric Prisms
+          <g opacity="0.9">
             <polygon
               points="250,60 380,140 380,290 250,370 120,290 120,140"
               fill="none"
-              stroke={primaryColor}
+              stroke="white"
               strokeWidth="2"
             />
             <polygon
               points="250,110 330,160 330,250 250,300 170,250 170,160"
-              fill={primaryColor}
-              fillOpacity="0.12"
-              stroke="rgba(255,255,255,0.3)"
+              fill="white"
+              fillOpacity="0.15"
+              stroke="rgba(255,255,255,0.4)"
               strokeWidth="1"
             />
-            <line x1="250" y1="60" x2="250" y2="370" stroke={primaryColor} strokeWidth="1" strokeDasharray="3 3" />
-            <line x1="120" y1="140" x2="380" y2="290" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+            <line x1="250" y1="60" x2="250" y2="370" stroke="white" strokeWidth="1" strokeDasharray="3 3" />
+            <line x1="120" y1="140" x2="380" y2="290" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
           </g>
         )}
 
         {variant === 3 && (
-          // Orbital Harmonic Gyroscopes
-          <g opacity="0.85">
-            <ellipse cx="250" cy="200" rx="180" ry="70" fill="none" stroke={primaryColor} strokeWidth="1.8" transform={`rotate(${angle % 45} 250 200)`} />
-            <ellipse cx="250" cy="200" rx="160" ry="90" fill="none" stroke="rgba(230,228,243,0.4)" strokeWidth="1.2" transform={`rotate(-${(angle * 1.5) % 60} 250 200)`} />
-            <ellipse cx="250" cy="200" rx="120" ry="120" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.8" strokeDasharray="4 6" />
-            <circle cx="250" cy="200" r="30" fill={primaryColor} fillOpacity="0.4" />
+          // Modernist Rings
+          <g opacity="0.9">
+            <ellipse cx="250" cy="200" rx="180" ry="70" fill="none" stroke="white" strokeWidth="1.8" transform={`rotate(${angle % 45} 250 200)`} />
+            <ellipse cx="250" cy="200" rx="160" ry="90" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.2" transform={`rotate(-${(angle * 1.5) % 60} 250 200)`} />
+            <ellipse cx="250" cy="200" rx="120" ry="120" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.8" strokeDasharray="4 6" />
+            <circle cx="250" cy="200" r="30" fill="white" fillOpacity="0.3" />
           </g>
         )}
 
         {/* Precision Modernist Tech Coordinates & Exhibition Watermark */}
-        <g fill="rgba(255,255,255,0.6)" fontSize="10" fontFamily="monospace" letterSpacing="2">
+        <g fill="rgba(255,255,255,0.85)" fontSize="10" fontFamily="monospace" letterSpacing="2">
           <text x="32" y="38">M//ESH.2026</text>
           <text x="380" y="38">#{(seed % 999).toString().padStart(3, '0')}</text>
           <text x="32" y="375">{category.toUpperCase()}</text>
@@ -187,7 +179,7 @@ export const PosterArtwork: React.FC<PosterArtworkProps> = (props) => {
   return (
     <div
       className={cn(
-        'relative w-full h-full overflow-hidden bg-[#151130] flex items-center justify-center group',
+        'relative w-full h-full overflow-hidden bg-[#0047FF] flex items-center justify-center group',
         className
       )}
     >

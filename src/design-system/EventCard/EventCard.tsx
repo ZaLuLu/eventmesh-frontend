@@ -87,16 +87,16 @@ export const EventCard: React.FC<EventCardProps> = ({
         data-testid="event-card-list-row"
         className={cn(
           'group relative flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6',
-          'bg-transparent border-b border-[#1A2E4C] py-4 transition-colors hover:border-sky-400/50',
+          'bg-transparent border-b border-[#E2E8F0] py-4 transition-colors hover:border-[#0047FF]',
           className
         )}
       >
         {/* Left Thumbnail (Unboxed with Corner Registration Ticks) */}
-        <div className="relative w-full sm:w-48 md:w-56 aspect-[16/10] sm:aspect-[4/3] border border-[#1A2E4C] group-hover:border-sky-400 transition-colors flex-shrink-0">
-          <span className="absolute -top-1.5 -left-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┌</span>
-          <span className="absolute -top-1.5 -right-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┐</span>
-          <span className="absolute -bottom-1.5 -left-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">└</span>
-          <span className="absolute -bottom-1.5 -right-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┘</span>
+        <div className="relative w-full sm:w-48 md:w-56 aspect-[16/10] sm:aspect-[4/3] border border-[#E2E8F0] group-hover:border-[#0047FF] transition-colors flex-shrink-0">
+          <span className="absolute -top-1.5 -left-1.5 text-[#0047FF] text-xs font-mono pointer-events-none z-20">┌</span>
+          <span className="absolute -top-1.5 -right-1.5 text-[#0047FF] text-xs font-mono pointer-events-none z-20">┐</span>
+          <span className="absolute -bottom-1.5 -left-1.5 text-[#0047FF] text-xs font-mono pointer-events-none z-20">└</span>
+          <span className="absolute -bottom-1.5 -right-1.5 text-[#0047FF] text-xs font-mono pointer-events-none z-20">┘</span>
 
           <PosterArtwork
             id={event.id}
@@ -111,16 +111,16 @@ export const EventCard: React.FC<EventCardProps> = ({
           {/* Badges on thumbnail */}
           <div className="absolute top-2 left-2 flex items-center gap-1.5 z-10 pointer-events-none font-mono text-xs">
             {isFillingFast && (
-              <span className="px-1.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px]">
+              <span className="px-1.5 py-0.5 bg-amber-50 text-amber-700 border border-amber-300 text-[11px] font-semibold">
                 Filling fast
               </span>
             )}
             {isFree ? (
-              <span className="px-1.5 py-0.5 bg-emerald-950/90 text-emerald-300 border border-emerald-500/30 text-[11px]">
+              <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-300 text-[11px] font-semibold">
                 FREE
               </span>
             ) : (
-              <span className="px-1.5 py-0.5 bg-[#08101E]/90 text-white border border-[#1A2E4C] text-[11px]">
+              <span className="px-1.5 py-0.5 bg-white/95 text-[#0A0A0A] border border-[#E2E8F0] text-[11px] font-semibold">
                 {formatPrice(event)}
               </span>
             )}
@@ -131,15 +131,15 @@ export const EventCard: React.FC<EventCardProps> = ({
         <div className="flex-1 min-w-0 pr-2">
           {/* Date & Category */}
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-xs font-mono font-semibold text-sky-400 uppercase tracking-wider">
+            <span className="text-xs font-mono font-semibold text-[#0047FF] uppercase tracking-wider">
               {dateFormatted}
             </span>
-            <span className="text-slate-600">·</span>
-            <span className="text-xs font-mono text-slate-400 uppercase">{event.category}</span>
+            <span className="text-slate-300">·</span>
+            <span className="text-xs font-mono text-slate-500 uppercase">{event.category}</span>
           </div>
 
           {/* Title */}
-          <h3 className="font-sans text-lg sm:text-xl text-white font-bold leading-tight line-clamp-2 mb-2 group-hover:text-sky-300 transition-colors">
+          <h3 className="font-sans text-lg sm:text-xl text-[#0A0A0A] font-bold leading-tight line-clamp-2 mb-2 group-hover:text-[#0047FF] transition-colors">
             <Link
               to={eventLink}
               className="after:absolute after:inset-0 focus:outline-none focus-visible:underline"
@@ -149,25 +149,25 @@ export const EventCard: React.FC<EventCardProps> = ({
           </h3>
 
           {/* Club attribution */}
-          <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
+          <div className="flex items-center gap-2 text-xs font-mono text-slate-500">
             <span
               className="w-2 h-2 rounded-full flex-shrink-0"
               style={{ backgroundColor: clubColor }}
               aria-hidden="true"
             />
-            <span className="text-slate-300 truncate">
+            <span className="text-slate-700 truncate">
               {event.club?.name || event.organizerName || 'Autonomous Club'}
             </span>
             {isVerified && (
-              <span title="Verified Club" className="inline-flex items-center text-sky-400">
-                <CheckCircle2 className="w-3 h-3 text-sky-400" />
+              <span title="Verified Club" className="inline-flex items-center text-[#0047FF]">
+                <CheckCircle2 className="w-3 h-3 text-[#0047FF]" />
               </span>
             )}
             {event.venue?.name && (
               <>
-                <span className="text-slate-600">·</span>
+                <span className="text-slate-300">·</span>
                 <span className="truncate flex items-center gap-1">
-                  <MapPin className="w-3 h-3 text-sky-400" />
+                  <MapPin className="w-3 h-3 text-[#0047FF]" />
                   {event.venue.name}
                 </span>
               </>
@@ -184,18 +184,18 @@ export const EventCard: React.FC<EventCardProps> = ({
             className={cn(
               'w-8 h-8 flex items-center justify-center border transition-all duration-150',
               isBookmarked
-                ? 'bg-sky-500/20 text-sky-400 border-sky-400'
-                : 'bg-[#0D192E] text-slate-400 border-[#1A2E4C] hover:border-sky-400 hover:text-sky-300'
+                ? 'bg-[#0047FF]/10 text-[#0047FF] border-[#0047FF]'
+                : 'bg-[#F8FAFC] text-slate-500 border-[#E2E8F0] hover:border-[#0047FF] hover:text-[#0047FF]'
             )}
           >
-            <Bookmark className={cn('w-3.5 h-3.5', isBookmarked && 'fill-sky-400')} />
+            <Bookmark className={cn('w-3.5 h-3.5', isBookmarked && 'fill-[#0047FF]')} />
           </button>
 
           <Link
             to={eventLink}
             aria-hidden="true"
             tabIndex={-1}
-            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-mono text-sky-400 hover:text-sky-300 hover:gap-2 transition-all uppercase"
+            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-mono text-[#0047FF] hover:text-[#0037CC] hover:gap-2 transition-all uppercase font-semibold"
           >
             <span>View event</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -213,16 +213,16 @@ export const EventCard: React.FC<EventCardProps> = ({
       <article
         data-testid="event-card-overlay"
         className={cn(
-          'group relative overflow-hidden bg-transparent border border-[#1A2E4C] group-hover:border-sky-400 transition-colors flex flex-col',
+          'group relative overflow-hidden bg-transparent border border-[#E2E8F0] group-hover:border-[#0047FF] transition-colors flex flex-col',
           className
         )}
       >
-        <span className="absolute -top-1.5 -left-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┌</span>
-        <span className="absolute -top-1.5 -right-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┐</span>
-        <span className="absolute -bottom-1.5 -left-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">└</span>
-        <span className="absolute -bottom-1.5 -right-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┘</span>
+        <span className="absolute -top-1.5 -left-1.5 text-[#0047FF] text-xs font-mono pointer-events-none z-20">┌</span>
+        <span className="absolute -top-1.5 -right-1.5 text-[#0047FF] text-xs font-mono pointer-events-none z-20">┐</span>
+        <span className="absolute -bottom-1.5 -left-1.5 text-[#0047FF] text-xs font-mono pointer-events-none z-20">└</span>
+        <span className="absolute -bottom-1.5 -right-1.5 text-[#0047FF] text-xs font-mono pointer-events-none z-20">┘</span>
 
-        <div className="relative w-full aspect-[4/3] overflow-hidden bg-[#0D192E]">
+        <div className="relative w-full aspect-[4/3] overflow-hidden bg-[#F8FAFC]">
           <PosterArtwork
             id={event.id}
             title={event.title}
@@ -234,27 +234,27 @@ export const EventCard: React.FC<EventCardProps> = ({
           />
 
           {/* Scrim */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#08101E] via-[#08101E]/60 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
 
           {/* Top badges & actions */}
           <div className="absolute top-2.5 inset-x-2.5 flex items-center justify-between z-10 pointer-events-none font-mono text-xs">
             <div className="flex items-center gap-1.5 flex-wrap pointer-events-auto">
               {isPromoted && (
-                <span className="px-1.5 py-0.5 bg-[#08101E]/90 text-sky-400 border border-[#1A2E4C] font-semibold text-[11px]">
+                <span className="px-1.5 py-0.5 bg-white/95 text-[#0047FF] border border-[#E2E8F0] font-semibold text-[11px]">
                   PROMOTED
                 </span>
               )}
               {isFillingFast && (
-                <span className="px-1.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px]">
+                <span className="px-1.5 py-0.5 bg-amber-50 text-amber-700 border border-amber-300 text-[11px] font-semibold">
                   Filling fast
                 </span>
               )}
               {isFree ? (
-                <span className="px-1.5 py-0.5 bg-emerald-950/90 text-emerald-300 border border-emerald-500/30 text-[11px]">
+                <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-300 text-[11px] font-semibold">
                   FREE
                 </span>
               ) : (
-                <span className="px-1.5 py-0.5 bg-[#08101E]/90 text-white border border-[#1A2E4C] text-[11px]">
+                <span className="px-1.5 py-0.5 bg-white/95 text-[#0A0A0A] border border-[#E2E8F0] text-[11px] font-semibold">
                   {formatPrice(event)}
                 </span>
               )}
@@ -267,7 +267,7 @@ export const EventCard: React.FC<EventCardProps> = ({
                   onClick={handlePeekClick}
                   title="Quick Preview"
                   aria-label="Quick preview event"
-                  className="w-8 h-8 flex items-center justify-center bg-[#08101E]/90 border border-[#1A2E4C] text-slate-300 hover:text-sky-300 hover:border-sky-400 transition-colors"
+                  className="w-8 h-8 flex items-center justify-center bg-white/95 border border-[#E2E8F0] text-slate-700 hover:text-[#0047FF] hover:border-[#0047FF] transition-colors"
                 >
                   <Eye className="w-3.5 h-3.5" />
                 </button>
@@ -279,18 +279,18 @@ export const EventCard: React.FC<EventCardProps> = ({
                 className={cn(
                   'w-8 h-8 flex items-center justify-center border transition-all duration-150',
                   isBookmarked
-                    ? 'bg-sky-500/20 text-sky-400 border-sky-400'
-                    : 'bg-[#08101E]/90 text-slate-300 border-[#1A2E4C] hover:text-sky-300 hover:border-sky-400'
+                    ? 'bg-[#0047FF]/10 text-[#0047FF] border-[#0047FF]'
+                    : 'bg-white/95 text-slate-700 border-[#E2E8F0] hover:text-[#0047FF] hover:border-[#0047FF]'
                 )}
               >
-                <Bookmark className={cn('w-3.5 h-3.5', isBookmarked && 'fill-sky-400')} />
+                <Bookmark className={cn('w-3.5 h-3.5', isBookmarked && 'fill-[#0047FF]')} />
               </button>
             </div>
           </div>
 
           {/* Bottom overlaid text */}
           <div className="absolute bottom-2.5 inset-x-2.5 p-1 z-10">
-            <span className="block text-xs font-mono font-semibold text-sky-400 uppercase tracking-wider mb-1">
+            <span className="block text-xs font-mono font-semibold text-[#0047FF] uppercase tracking-wider mb-1">
               {dateFormatted}
             </span>
             <h3 className="font-sans text-lg font-bold text-white leading-tight line-clamp-2 mb-1.5">
@@ -301,18 +301,18 @@ export const EventCard: React.FC<EventCardProps> = ({
                 {event.title}
               </Link>
             </h3>
-            <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
+            <div className="flex items-center gap-2 text-xs font-mono text-slate-300">
               <span
                 className="w-2 h-2 rounded-full flex-shrink-0"
                 style={{ backgroundColor: clubColor }}
                 aria-hidden="true"
               />
-              <span className="text-slate-300 truncate">
+              <span className="text-white truncate">
                 {event.club?.name || event.organizerName || 'Autonomous Club'}
               </span>
               {isVerified && (
-                <span title="Verified Club" className="inline-flex items-center text-sky-400">
-                  <CheckCircle2 className="w-3 h-3 text-sky-400" />
+                <span title="Verified Club" className="inline-flex items-center text-[#0047FF]">
+                  <CheckCircle2 className="w-3 h-3 text-[#0047FF]" />
                 </span>
               )}
             </div>
@@ -345,14 +345,14 @@ export const EventCard: React.FC<EventCardProps> = ({
       <div>
         {/* Floating Poster with Corner Registration Ticks */}
         <div className="relative mb-3">
-          <span className="absolute -top-1.5 -left-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┌</span>
-          <span className="absolute -top-1.5 -right-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┐</span>
-          <span className="absolute -bottom-1.5 -left-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">└</span>
-          <span className="absolute -bottom-1.5 -right-1.5 text-sky-400 text-xs font-mono pointer-events-none z-20">┘</span>
+          <span className="absolute -top-1.5 -left-1.5 text-[#0047FF] text-xs font-mono pointer-events-none z-20">┌</span>
+          <span className="absolute -top-1.5 -right-1.5 text-[#0047FF] text-xs font-mono pointer-events-none z-20">┐</span>
+          <span className="absolute -bottom-1.5 -left-1.5 text-[#0047FF] text-xs font-mono pointer-events-none z-20">└</span>
+          <span className="absolute -bottom-1.5 -right-1.5 text-[#0047FF] text-xs font-mono pointer-events-none z-20">┘</span>
 
           <div
             className={cn(
-              'relative w-full overflow-hidden bg-[#0D192E] border border-[#1A2E4C] group-hover:border-sky-400 transition-colors flex-shrink-0',
+              'relative w-full overflow-hidden bg-[#F8FAFC] border border-[#E2E8F0] group-hover:border-[#0047FF] transition-colors flex-shrink-0',
               aspectClass
             )}
           >
@@ -370,21 +370,21 @@ export const EventCard: React.FC<EventCardProps> = ({
             <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none z-10 font-mono text-xs">
               <div className="flex items-center gap-1.5 flex-wrap pointer-events-auto">
                 {isPromoted && (
-                  <span className="px-1.5 py-0.5 bg-[#08101E]/90 text-sky-400 border border-[#1A2E4C] font-semibold text-[11px]">
+                  <span className="px-1.5 py-0.5 bg-white/95 text-[#0047FF] border border-[#E2E8F0] font-semibold text-[11px]">
                     PROMOTED
                   </span>
                 )}
                 {isFillingFast && (
-                  <span className="px-1.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px]">
+                  <span className="px-1.5 py-0.5 bg-amber-50 text-amber-700 border border-amber-300 text-[11px] font-semibold">
                     Filling fast
                   </span>
                 )}
                 {isFree ? (
-                  <span className="px-1.5 py-0.5 bg-emerald-950/90 text-emerald-300 border border-emerald-500/30 text-[11px]">
+                  <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-300 text-[11px] font-semibold">
                     FREE
                   </span>
                 ) : (
-                  <span className="px-1.5 py-0.5 bg-[#08101E]/90 text-white border border-[#1A2E4C] text-[11px]">
+                  <span className="px-1.5 py-0.5 bg-white/95 text-[#0A0A0A] border border-[#E2E8F0] text-[11px] font-semibold">
                     {formatPrice(event)}
                   </span>
                 )}
@@ -397,7 +397,7 @@ export const EventCard: React.FC<EventCardProps> = ({
                     onClick={handlePeekClick}
                     title="Quick Preview"
                     aria-label="Quick preview event"
-                    className="w-7 h-7 flex items-center justify-center bg-[#08101E]/90 border border-[#1A2E4C] text-slate-300 hover:text-sky-300 hover:border-sky-400 transition-colors"
+                    className="w-7 h-7 flex items-center justify-center bg-white/95 border border-[#E2E8F0] text-slate-700 hover:text-[#0047FF] hover:border-[#0047FF] transition-colors"
                   >
                     <Eye className="w-3.5 h-3.5" />
                   </button>
@@ -409,11 +409,11 @@ export const EventCard: React.FC<EventCardProps> = ({
                   className={cn(
                     'w-7 h-7 flex items-center justify-center border transition-all duration-150',
                     isBookmarked
-                      ? 'bg-sky-500/20 text-sky-400 border-sky-400'
-                      : 'bg-[#08101E]/90 text-slate-300 border-[#1A2E4C] hover:text-sky-300 hover:border-sky-400'
+                      ? 'bg-[#0047FF]/10 text-[#0047FF] border-[#0047FF]'
+                      : 'bg-white/95 text-slate-700 border-[#E2E8F0] hover:text-[#0047FF] hover:border-[#0047FF]'
                   )}
                 >
-                  <Bookmark className={cn('w-3.5 h-3.5', isBookmarked && 'fill-sky-400')} />
+                  <Bookmark className={cn('w-3.5 h-3.5', isBookmarked && 'fill-[#0047FF]')} />
                 </button>
               </div>
             </div>
@@ -424,13 +424,13 @@ export const EventCard: React.FC<EventCardProps> = ({
         <div>
           {/* Date stamp */}
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-mono font-semibold text-sky-400 uppercase tracking-wider">
+            <span className="text-xs font-mono font-semibold text-[#0047FF] uppercase tracking-wider">
               {dateFormatted}
             </span>
           </div>
 
           {/* Event Title */}
-          <h3 className="font-sans text-base sm:text-[17px] text-white font-bold leading-snug line-clamp-2 mb-2 group-hover:text-sky-300 transition-colors">
+          <h3 className="font-sans text-base sm:text-[17px] text-[#0A0A0A] font-bold leading-snug line-clamp-2 mb-2 group-hover:text-[#0047FF] transition-colors">
             <Link
               to={eventLink}
               className="focus:outline-none focus-visible:underline"
@@ -442,26 +442,26 @@ export const EventCard: React.FC<EventCardProps> = ({
       </div>
 
       {/* Card Footer: Club attribution & Venue */}
-      <div className="pt-2 mt-auto border-t border-[#1A2E4C] flex items-center justify-between text-xs font-mono text-slate-400">
+      <div className="pt-2 mt-auto border-t border-[#E2E8F0] flex items-center justify-between text-xs font-mono text-slate-500">
         <div className="flex items-center gap-1.5 min-w-0 pr-2">
           <span
             className="w-2 h-2 rounded-full flex-shrink-0"
             style={{ backgroundColor: clubColor }}
             aria-hidden="true"
           />
-          <span className="text-slate-300 truncate">
+          <span className="text-slate-700 truncate">
             {event.club?.name || event.organizerName || 'Autonomous Club'}
           </span>
           {isVerified && (
-            <span title="Verified Club" className="inline-flex items-center text-sky-400 flex-shrink-0">
-              <CheckCircle2 className="w-3 h-3 text-sky-400" />
+            <span title="Verified Club" className="inline-flex items-center text-[#0047FF] flex-shrink-0">
+              <CheckCircle2 className="w-3 h-3 text-[#0047FF]" />
             </span>
           )}
         </div>
 
         {event.venue?.name && (
-          <span className="truncate flex items-center gap-1 text-slate-400 max-w-[40%] text-right">
-            <MapPin className="w-3 h-3 text-sky-400 flex-shrink-0" />
+          <span className="truncate flex items-center gap-1 text-slate-500 max-w-[40%] text-right">
+            <MapPin className="w-3 h-3 text-[#0047FF] flex-shrink-0" />
             <span className="truncate">{event.venue.name}</span>
           </span>
         )}

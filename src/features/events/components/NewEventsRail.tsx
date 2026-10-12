@@ -37,12 +37,12 @@ export const NewEventsRail: React.FC<NewEventsRailProps> = ({
     >
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 w-full">
         {/* Unboxed Chapter Header */}
-        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pb-6 border-b border-[#1A2E4C] mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pb-6 border-b border-[#E2E8F0] mb-8">
           <div>
-            <span className="text-xs font-mono text-sky-400 font-semibold tracking-wider block mb-1">
+            <span className="text-xs font-mono text-[#0047FF] font-semibold tracking-wider block mb-1">
               04 // RECENT RELEASES
             </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-sans">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#0A0A0A] tracking-tight font-sans">
               Recently Published Across Campus
             </h2>
           </div>
@@ -50,7 +50,7 @@ export const NewEventsRail: React.FC<NewEventsRailProps> = ({
           <div className="flex items-center gap-4">
             <Link
               to="/explore?sort=newest"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-sky-400 hover:text-sky-300 transition-colors"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0047FF] hover:text-[#0037CC] transition-colors"
             >
               <span>See all newest</span>
               <ArrowRight className="w-4 h-4" />
@@ -62,7 +62,7 @@ export const NewEventsRail: React.FC<NewEventsRailProps> = ({
                 type="button"
                 onClick={() => handleScroll('left')}
                 aria-label="Scroll new events left"
-                className="w-8 h-8 border border-[#1A2E4C] text-slate-400 hover:text-white hover:border-sky-400 flex items-center justify-center transition-colors cursor-pointer"
+                className="w-8 h-8 border border-[#E2E8F0] bg-[#F8FAFC] text-slate-600 hover:text-[#0047FF] hover:border-[#0047FF] flex items-center justify-center transition-colors cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -71,7 +71,7 @@ export const NewEventsRail: React.FC<NewEventsRailProps> = ({
                 type="button"
                 onClick={() => handleScroll('right')}
                 aria-label="Scroll new events right"
-                className="w-8 h-8 border border-[#1A2E4C] text-slate-400 hover:text-white hover:border-sky-400 flex items-center justify-center transition-colors cursor-pointer"
+                className="w-8 h-8 border border-[#E2E8F0] bg-[#F8FAFC] text-slate-600 hover:text-[#0047FF] hover:border-[#0047FF] flex items-center justify-center transition-colors cursor-pointer"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>

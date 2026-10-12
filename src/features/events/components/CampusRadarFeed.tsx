@@ -66,33 +66,33 @@ export const CampusRadarFeed: React.FC<{ className?: string }> = ({ className = 
     >
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Unboxed Chapter Header */}
-        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pb-6 border-b border-[#1A2E4C] mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pb-6 border-b border-[#E2E8F0] mb-8 font-mono">
           <div>
-            <span className="text-xs font-mono text-sky-400 font-semibold tracking-wider block mb-1">
+            <span className="text-xs text-[#0047FF] font-bold tracking-wider block mb-1">
               02 // CAMPUS SCHEDULE · TODAY
             </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-sans">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#0A0A0A] tracking-tight font-sans">
               Live Venues & Active Sessions
             </h2>
           </div>
 
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-slate-500 font-sans">
             Real-time venue check-ins across main campus halls
           </p>
         </div>
 
         {/* Frameless 3-Column Architectural Venue Schedule (Zero Boxes) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
-          {LIVE_VENUES.map((venue, idx) => (
+          {LIVE_VENUES.map((venue) => (
             <Link
               key={venue.id}
               to={`/events/${venue.eventSlug}`}
-              className="group flex flex-col justify-between border-l border-[#1A2E4C] pl-5 sm:pl-6 hover:border-sky-400 transition-colors duration-200"
+              className="group flex flex-col justify-between border-l border-[#E2E8F0] pl-5 sm:pl-6 hover:border-[#0047FF] transition-colors duration-200"
             >
               <div>
                 {/* Gate & Status Row */}
                 <div className="flex items-center justify-between gap-2 mb-3 text-xs font-mono">
-                  <span className="text-sky-400 font-medium">
+                  <span className="text-[#0047FF] font-semibold">
                     {venue.gateCode}
                   </span>
                   <span className="text-slate-400 text-[11px] uppercase tracking-wide">
@@ -101,40 +101,40 @@ export const CampusRadarFeed: React.FC<{ className?: string }> = ({ className = 
                 </div>
 
                 {/* Event Title */}
-                <h3 className="font-bold text-lg sm:text-xl text-white group-hover:text-sky-300 transition-colors leading-snug tracking-tight mb-2">
+                <h3 className="font-bold text-lg sm:text-xl text-[#0A0A0A] group-hover:text-[#0047FF] transition-colors leading-snug tracking-tight mb-2 font-sans">
                   {venue.eventTitle}
                 </h3>
 
                 {/* Venue Name */}
-                <p className="flex items-center gap-2 text-sm text-slate-300 mb-4">
-                  <MapPin className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                <p className="flex items-center gap-2 text-sm text-slate-600 mb-4">
+                  <MapPin className="w-3.5 h-3.5 text-[#0047FF] shrink-0" />
                   <span>{venue.venueName}</span>
                 </p>
               </div>
 
               {/* Progress & Time Info (Open, Unboxed) */}
-              <div className="space-y-2 pt-3 border-t border-[#1A2E4C]/60 text-xs text-slate-400">
+              <div className="space-y-2 pt-3 border-t border-[#E2E8F0] text-xs text-slate-500">
                 <div className="flex items-center justify-between">
                   <span>
-                    <strong className="text-white">{venue.attendeeCount}</strong> checked in
+                    <strong className="text-[#0A0A0A]">{venue.attendeeCount}</strong> checked in
                   </span>
-                  <span className="text-slate-300 font-mono">{venue.capacityPercent}% capacity</span>
+                  <span className="text-slate-600 font-mono">{venue.capacityPercent}% capacity</span>
                 </div>
 
-                {/* Matte Minimal Line */}
-                <div className="w-full h-1 bg-[#1A2E4C] rounded-full overflow-hidden">
+                {/* Minimal Line Gauge */}
+                <div className="w-full h-[2px] bg-[#E2E8F0] overflow-hidden">
                   <div
-                    className="h-full bg-sky-400 transition-all duration-300"
+                    className="h-full bg-[#0047FF] transition-all duration-300"
                     style={{ width: `${venue.capacityPercent}%` }}
                   />
                 </div>
 
                 <div className="flex items-center justify-between pt-1">
-                  <span className="flex items-center gap-1.5 text-slate-400">
-                    <Clock className="w-3 h-3 text-slate-500" />
+                  <span className="flex items-center gap-1.5 text-slate-500">
+                    <Clock className="w-3 h-3 text-slate-400" />
                     <span>{venue.timeNote}</span>
                   </span>
-                  <span className="font-semibold text-sky-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                  <span className="font-semibold text-[#0047FF] font-mono flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                     <span>View Event</span>
                     <ArrowRight className="w-3 h-3" />
                   </span>

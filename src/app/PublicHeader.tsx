@@ -70,7 +70,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
     <>
       <header
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 h-14 bg-[#08101E]/95 backdrop-blur-md text-white border-b border-[#1A2E4C] select-none transition-colors'
+          'fixed top-0 left-0 right-0 z-50 h-14 bg-white/95 backdrop-blur-md text-[#0A0A0A] border-b border-[#E2E8F0] select-none transition-colors'
         )}
       >
         <div className="max-w-[1440px] mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 font-mono">
@@ -81,11 +81,11 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
               className="flex items-center gap-2.5 group focus:outline-none"
               aria-label="EventMesh Home"
             >
-              {/* Drafting Monogram Mark */}
-              <div className="w-7 h-7 bg-[#0D192E] border border-sky-400/80 text-sky-400 flex items-center justify-center font-bold text-xs tracking-wider group-hover:border-sky-300 transition-colors">
+              {/* Electric Cobalt Monogram Mark */}
+              <div className="w-7 h-7 bg-[#0047FF] text-white flex items-center justify-center font-bold text-xs tracking-wider transition-opacity group-hover:opacity-90">
                 EM
               </div>
-              <span className="font-mono text-sm sm:text-base font-bold tracking-widest text-white uppercase">
+              <span className="font-mono text-sm sm:text-base font-bold tracking-widest text-[#0A0A0A] uppercase">
                 EventMesh
               </span>
             </Link>
@@ -95,18 +95,18 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
               <button
                 type="button"
                 onClick={() => setIsCityOpen(!isCityOpen)}
-                className="flex items-center gap-1.5 px-2.5 py-1 bg-[#0D192E] hover:bg-[#1A2E4C] text-slate-300 hover:text-white border border-[#1A2E4C] hover:border-sky-400/50 text-xs transition-colors"
+                className="flex items-center gap-1.5 px-2.5 py-1 bg-[#F8FAFC] hover:bg-[#F1F5F9] text-slate-700 hover:text-[#0A0A0A] border border-[#E2E8F0] hover:border-[#0047FF]/50 text-xs transition-colors"
                 aria-label="Select campus or city"
                 aria-expanded={isCityOpen}
               >
-                <MapPin className="w-3 h-3 text-sky-400" />
+                <MapPin className="w-3 h-3 text-[#0047FF]" />
                 <span className="truncate max-w-[160px] uppercase">{selectedCity.split('·')[0].trim()}</span>
                 <ChevronDown className="w-3 h-3 opacity-70" />
               </button>
 
               {isCityOpen && (
-                <div className="absolute left-0 mt-2 w-56 bg-[#0D192E] border border-[#1A2E4C] shadow-xl py-1 z-50 text-xs">
-                  <div className="px-3 py-1 font-semibold text-slate-500 uppercase tracking-wider text-[11px] border-b border-[#1A2E4C]">
+                <div className="absolute left-0 mt-2 w-56 bg-white border border-[#E2E8F0] shadow-xl py-1 z-50 text-xs">
+                  <div className="px-3 py-1 font-semibold text-slate-400 uppercase tracking-wider text-[11px] border-b border-[#E2E8F0]">
                     CAMPUS LOCATIONS
                   </div>
                   {CITIES.map((city) => (
@@ -119,12 +119,12 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                       className={cn(
                         'w-full text-left px-3 py-1.5 text-xs flex items-center justify-between transition-colors',
                         selectedCity === city
-                          ? 'text-sky-400 font-semibold bg-sky-500/10 border-l-2 border-sky-400'
-                          : 'text-slate-300 hover:bg-[#1A2E4C]/50 hover:text-white'
+                          ? 'text-[#0047FF] font-semibold bg-[#0047FF]/10 border-l-2 border-[#0047FF]'
+                          : 'text-slate-700 hover:bg-[#F8FAFC] hover:text-[#0A0A0A]'
                       )}
                     >
                       <span className="uppercase">{city}</span>
-                      {selectedCity === city && <span className="w-1.5 h-1.5 bg-sky-400" />}
+                      {selectedCity === city && <span className="w-1.5 h-1.5 bg-[#0047FF]" />}
                     </button>
                   ))}
                 </div>
@@ -137,13 +137,13 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             <button
               type="button"
               onClick={onSearchOpen}
-              className="w-full h-8 flex items-center justify-between px-3 bg-[#0D192E] hover:bg-[#1A2E4C]/60 text-slate-400 hover:text-slate-200 border border-[#1A2E4C] hover:border-sky-400/50 text-xs transition-colors text-left"
+              className="w-full h-8 flex items-center justify-between px-3 bg-[#F8FAFC] hover:bg-[#F1F5F9] text-slate-500 hover:text-[#0A0A0A] border border-[#E2E8F0] hover:border-[#0047FF]/50 text-xs transition-colors text-left"
             >
               <div className="flex items-center gap-2 min-w-0">
-                <Search className="w-3.5 h-3.5 flex-shrink-0 text-slate-500" />
+                <Search className="w-3.5 h-3.5 flex-shrink-0 text-slate-400" />
                 <span className="truncate">Search catalog (symposiums, hackathons...)</span>
               </div>
-              <kbd className="px-1.5 py-0.5 text-[11px] bg-[#08101E] border border-[#1A2E4C] text-slate-400">
+              <kbd className="px-1.5 py-0.5 text-[11px] bg-white border border-[#E2E8F0] text-slate-500">
                 ⌘K
               </kbd>
             </button>
@@ -162,8 +162,8 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                     className={cn(
                       'py-1 text-xs uppercase tracking-wider transition-colors',
                       isActive
-                        ? 'text-sky-400 font-semibold border-b border-sky-400'
-                        : 'text-slate-400 hover:text-slate-200'
+                        ? 'text-[#0047FF] font-semibold border-b-2 border-[#0047FF]'
+                        : 'text-slate-600 hover:text-[#0047FF]'
                     )}
                   >
                     {link.label}
@@ -176,7 +176,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             <button
               type="button"
               onClick={onSearchOpen}
-              className="lg:hidden p-1.5 text-slate-300 hover:text-white transition-colors"
+              className="lg:hidden p-1.5 text-slate-600 hover:text-[#0A0A0A] transition-colors"
               aria-label="Search"
             >
               <Search className="w-4 h-4" />
@@ -186,7 +186,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             {canAccessAdmin() ? (
               <Link
                 to="/admin"
-                className="hidden sm:inline-flex items-center gap-1.5 h-8 px-3 bg-[#0D192E] text-sky-400 hover:text-sky-300 border border-[#1A2E4C] hover:border-sky-400 text-xs font-semibold uppercase transition-colors"
+                className="hidden sm:inline-flex items-center gap-1.5 h-8 px-3 bg-[#F8FAFC] text-[#0047FF] hover:bg-[#EFF4FF] border border-[#E2E8F0] hover:border-[#0047FF] text-xs font-semibold uppercase transition-colors"
               >
                 <LayoutDashboard className="w-3 h-3" />
                 <span>Dashboard</span>
@@ -194,7 +194,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             ) : (
               <Link
                 to="/admin/events/new"
-                className="hidden sm:inline-flex items-center gap-1.5 h-8 px-3 bg-[#0D192E] text-slate-300 hover:text-white border border-[#1A2E4C] hover:border-sky-400 text-xs uppercase transition-colors"
+                className="hidden sm:inline-flex items-center gap-1.5 h-8 px-3 bg-[#F8FAFC] text-slate-700 hover:text-[#0047FF] border border-[#E2E8F0] hover:border-[#0047FF] text-xs uppercase transition-colors"
               >
                 <span>Host event</span>
               </Link>
@@ -206,29 +206,29 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                 <button
                   type="button"
                   onClick={() => setIsAccountOpen(!isAccountOpen)}
-                  className="flex items-center gap-1.5 h-8 px-2 bg-[#0D192E] border border-[#1A2E4C] text-slate-200 hover:border-sky-400 text-xs transition-colors"
+                  className="flex items-center gap-1.5 h-8 px-2 bg-[#F8FAFC] border border-[#E2E8F0] text-slate-700 hover:border-[#0047FF] text-xs transition-colors"
                   aria-label="Account menu"
                   aria-expanded={isAccountOpen}
                 >
-                  <div className="w-5 h-5 bg-sky-500/20 text-sky-400 border border-sky-400/50 flex items-center justify-center font-bold text-[11px]">
+                  <div className="w-5 h-5 bg-[#0047FF] text-white flex items-center justify-center font-bold text-[11px]">
                     {(session?.name || 'U')[0].toUpperCase()}
                   </div>
                   <ChevronDown className="w-3 h-3 opacity-70" />
                 </button>
 
                 {isAccountOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-[#0D192E] border border-[#1A2E4C] shadow-xl py-1 z-50 text-slate-200 text-xs">
-                    <div className="px-3 py-2 border-b border-[#1A2E4C]">
-                      <p className="font-semibold text-white truncate">{session?.name}</p>
-                      <p className="text-slate-400 truncate text-[11px]">{session?.email}</p>
+                  <div className="absolute right-0 mt-2 w-56 bg-white border border-[#E2E8F0] shadow-xl py-1 z-50 text-slate-800 text-xs">
+                    <div className="px-3 py-2 border-b border-[#E2E8F0]">
+                      <p className="font-semibold text-[#0A0A0A] truncate">{session?.name}</p>
+                      <p className="text-slate-500 truncate text-[11px]">{session?.email}</p>
                     </div>
 
                     <Link
                       to="/attendee/dashboard"
                       onClick={() => setIsAccountOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2 text-slate-300 hover:text-sky-300 hover:bg-[#1A2E4C]/50 transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 text-slate-700 hover:text-[#0047FF] hover:bg-[#EFF4FF] transition-colors"
                     >
-                      <Ticket className="w-3.5 h-3.5 text-sky-400" />
+                      <Ticket className="w-3.5 h-3.5 text-[#0047FF]" />
                       <span>My tickets & credentials</span>
                     </Link>
 
@@ -236,14 +236,14 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                       <Link
                         to="/admin"
                         onClick={() => setIsAccountOpen(false)}
-                        className="flex items-center gap-2 px-3 py-2 text-slate-300 hover:text-sky-300 hover:bg-[#1A2E4C]/50 transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 text-slate-700 hover:text-[#0047FF] hover:bg-[#EFF4FF] transition-colors"
                       >
-                        <LayoutDashboard className="w-3.5 h-3.5 text-sky-400" />
+                        <LayoutDashboard className="w-3.5 h-3.5 text-[#0047FF]" />
                         <span>Admin dashboard</span>
                       </Link>
                     )}
 
-                    <div className="border-t border-[#1A2E4C] my-1" />
+                    <div className="border-t border-[#E2E8F0] my-1" />
 
                     <button
                       type="button"
@@ -251,7 +251,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                         setIsAccountOpen(false)
                         logout()
                       }}
-                      className="w-full text-left flex items-center gap-2 px-3 py-2 text-rose-400 hover:bg-rose-500/10 transition-colors"
+                      className="w-full text-left flex items-center gap-2 px-3 py-2 text-rose-600 hover:bg-rose-50 transition-colors"
                     >
                       <LogOut className="w-3.5 h-3.5" />
                       <span>Sign out</span>
@@ -262,7 +262,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             ) : (
               <Link
                 to="/login"
-                className="h-8 px-3.5 bg-sky-400 hover:bg-sky-300 text-[#08101E] font-semibold text-xs uppercase tracking-wider inline-flex items-center justify-center transition-colors"
+                className="h-8 px-4 bg-[#0047FF] hover:bg-[#0037CC] text-white font-semibold text-xs uppercase tracking-wider inline-flex items-center justify-center transition-colors shadow-sm"
               >
                 Sign in
               </Link>
@@ -272,7 +272,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden p-1.5 text-slate-300 hover:text-white transition-colors"
+              className="md:hidden p-1.5 text-slate-600 hover:text-[#0A0A0A] transition-colors"
               aria-label="Open mobile navigation menu"
             >
               <Menu className="w-5 h-5" />

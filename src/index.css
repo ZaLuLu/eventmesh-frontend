@@ -15,50 +15,50 @@
    ========================================================================== */
 
 :root {
-  /* Architectural Prussian Blueprint Tokens */
-  --bg: #08101E;
-  --surface: #0D192E;
-  --surface-raised: #12223D;
-  --subtle: #11223D;
-  --line: #1A2E4C;
-  --line-hairline: rgba(147, 197, 253, 0.12);
+  /* Electric Cobalt & Paper White Reference Tokens */
+  --bg: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-raised: #F8FAFC;
+  --subtle: #F1F5F9;
+  --line: #E2E8F0;
+  --line-hairline: rgba(0, 71, 255, 0.12);
 
   /* Typography / Text Tokens */
-  --text: #FFFFFF;
-  --text-2: #94A3B8;
+  --text: #0A0A0A;
+  --text-2: #4B5563;
   --text-3: #64748B;
   --on-dark: #FFFFFF;
   --on-dark-2: #94A3B8;
 
-  /* Status & Rubber Stamp Colors (Matte, Zero Neon) */
+  /* Status Colors */
   --success: #16A34A;
   --warning: #D97706;
   --danger: #DC2626;
-  --verified: #38BDF8;
+  --verified: #0047FF;
 
-  /* Accent Mappings: Matte Cyan Drafting Ink */
-  --accent: #38BDF8;
-  --accent-hover: #0EA5E9;
-  --accent-soft: rgba(56, 189, 248, 0.12);
-  --on-accent: #08101E;
+  /* Accent Mappings: Electric Cobalt Blue */
+  --accent: #0047FF;
+  --accent-hover: #0037CC;
+  --accent-soft: rgba(0, 71, 255, 0.08);
+  --on-accent: #FFFFFF;
 
   /* Legacy / Compatibility Token Mappings */
-  --champion: #08101E;
-  --champion-2: #0D192E;
-  --lavender: #0D192E;
-  --lavender-100: #11223D;
-  --lavender-200: #162C4E;
-  --lavender-300: #1A2E4C;
-  --violet: #38BDF8;
-  --violet-hover: #0EA5E9;
+  --champion: #0047FF;
+  --champion-2: #0037CC;
+  --lavender: #EFF4FF;
+  --lavender-100: #F5F8FF;
+  --lavender-200: #E0EBFF;
+  --lavender-300: #C2D6FF;
+  --violet: #0047FF;
+  --violet-hover: #0037CC;
 
   /* Admin Scope Defaults */
-  --sidebar: #060D1A;
-  --admin-accent: #38BDF8;
-  --admin-accent-hover: #0EA5E9;
+  --sidebar: #0F172A;
+  --admin-accent: #0047FF;
+  --admin-accent-hover: #0037CC;
 
   /* Club Dynamic Edge */
-  --club: #38BDF8;
+  --club: #0047FF;
 }
 
 /* Admin Scope: Applied on /admin routes */
@@ -135,12 +135,12 @@ body {
   scrollbar-width: none;
 }
 
-/* Clean Blueprint Drafting Grid (Matte, Non-glowing) */
+/* Clean Blueprint Drafting Grid (Subtle Cobalt Paper Grid) */
 .bg-blueprint-grid {
-  background-size: 36px 36px;
+  background-size: 32px 32px;
   background-image: 
-    linear-gradient(to right, rgba(147, 197, 253, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(147, 197, 253, 0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgba(0, 71, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 71, 255, 0.035) 1px, transparent 1px);
 }
 
 /* Accessibility: Respect Reduced Motion Everywhere */

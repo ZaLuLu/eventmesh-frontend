@@ -11,12 +11,12 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   className = '',
   width = 'w-full',
   height = 'h-5',
-  rounded = 'rounded-md',
+  rounded = 'rounded-none',
   ...props
 }) => {
   return (
     <div
-      className={cn('bg-lavender-100/70 animate-pulse', rounded, width, height, className)}
+      className={cn('bg-slate-200/70 animate-pulse', rounded, width, height, className)}
       style={{ animationDuration: '1.8s' }}
       aria-busy="true"
       aria-live="polite"
@@ -32,32 +32,35 @@ export const EventCardSkeleton: React.FC<{ aspect?: '4/5' | '5/4'; className?: s
   return (
     <div
       className={cn(
-        'bg-surface rounded-card-outer p-3 border border-line shadow-soft flex flex-col gap-3',
+        'bg-transparent p-0 flex flex-col gap-3',
         className
       )}
     >
-      {/* Image thumbnail placeholder */}
-      <div
-        className={cn(
-          'w-full bg-lavender-100/70 rounded-card-inner relative overflow-hidden animate-pulse',
-          aspect === '4/5' ? 'aspect-[4/5]' : 'aspect-[5/4]'
-        )}
-      >
-        <div className="absolute top-2.5 left-2.5 w-12 h-14 bg-white/60 rounded-xl" />
-        <div className="absolute top-2.5 right-2.5 w-16 h-6 bg-white/60 rounded-full" />
+      {/* Image thumbnail placeholder with corner registration ticks */}
+      <div className="relative">
+        <span className="absolute -top-1.5 -left-1.5 text-[#0047FF] text-xs font-mono pointer-events-none z-20">┌</span>
+        <span className="absolute -top-1.5 -right-1.5 text-[#0047FF] text-xs font-mono pointer-events-none z-20">┐</span>
+        <span className="absolute -bottom-1.5 -left-1.5 text-[#0047FF] text-xs font-mono pointer-events-none z-20">└</span>
+        <span className="absolute -bottom-1.5 -right-1.5 text-[#0047FF] text-xs font-mono pointer-events-none z-20">┘</span>
+        <div
+          className={cn(
+            'w-full bg-[#F1F5F9] border border-[#E2E8F0] relative overflow-hidden animate-pulse',
+            aspect === '4/5' ? 'aspect-[4/5]' : 'aspect-[5/4]'
+          )}
+        />
       </div>
 
       {/* Content lines */}
-      <div className="flex flex-col gap-2 p-1">
-        <Skeleton height="h-5" width="w-4/5" rounded="rounded-md" />
-        <Skeleton height="h-4" width="w-full" rounded="rounded-md" />
-        <Skeleton height="h-4" width="w-3/5" rounded="rounded-md" />
+      <div className="flex flex-col gap-2 pt-1">
+        <Skeleton height="h-3" width="w-1/3" />
+        <Skeleton height="h-5" width="w-4/5" />
+        <Skeleton height="h-3" width="w-1/2" />
       </div>
 
       {/* Stats and Action */}
-      <div className="mt-auto pt-2 flex items-center justify-between border-t border-line/60">
-        <Skeleton height="h-4" width="w-20" rounded="rounded-full" />
-        <Skeleton height="h-10" width="w-24" rounded="rounded-full" />
+      <div className="mt-auto pt-2 flex items-center justify-between border-t border-[#E2E8F0]">
+        <Skeleton height="h-3" width="w-24" />
+        <Skeleton height="h-3" width="w-16" />
       </div>
     </div>
   )
@@ -67,23 +70,23 @@ export const EventCardRowSkeleton: React.FC<{ className?: string }> = ({ classNa
   return (
     <div
       className={cn(
-        'bg-surface rounded-card-row p-3 border border-line shadow-soft flex items-center gap-4',
+        'bg-transparent py-4 border-b border-[#E2E8F0] flex items-center gap-4',
         className
       )}
     >
       {/* Thumbnail */}
-      <div className="w-28 sm:w-36 h-24 sm:h-28 bg-lavender-100/70 rounded-[18px] flex-shrink-0 animate-pulse" />
+      <div className="w-28 sm:w-36 h-20 sm:h-24 bg-[#F1F5F9] border border-[#E2E8F0] flex-shrink-0 animate-pulse" />
 
       {/* Text Info */}
       <div className="flex-1 min-w-0 flex flex-col gap-2">
-        <Skeleton height="h-5" width="w-3/4" rounded="rounded-md" />
-        <Skeleton height="h-4" width="w-1/2" rounded="rounded-md" />
-        <Skeleton height="h-4" width="w-1/3" rounded="rounded-full" />
+        <Skeleton height="h-3" width="w-1/4" />
+        <Skeleton height="h-5" width="w-3/4" />
+        <Skeleton height="h-3" width="w-1/3" />
       </div>
 
       {/* Action CTA */}
       <div className="flex-shrink-0 hidden sm:block">
-        <Skeleton height="h-10" width="w-28" rounded="rounded-full" />
+        <Skeleton height="h-8" width="w-24" />
       </div>
     </div>
   )

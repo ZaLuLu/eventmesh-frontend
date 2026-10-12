@@ -1,42 +1,42 @@
 export const TOKENS = {
-  // Architectural Prussian Blueprint Tokens
-  champion: '#08101E',
-  champion2: '#0D192E',
-  lavender: '#0D192E',
-  lavender100: '#11223D',
-  lavender200: '#162C4E',
-  lavender300: '#1A2E4C',
-  violet: '#38BDF8',
-  violetHover: '#0EA5E9',
+  // Electric Cobalt & Paper White Reference Tokens
+  champion: '#0047FF',
+  champion2: '#0037CC',
+  lavender: '#EFF4FF',
+  lavender100: '#F5F8FF',
+  lavender200: '#E0EBFF',
+  lavender300: '#C2D6FF',
+  violet: '#0047FF',
+  violetHover: '#0037CC',
 
-  // Canvas & Surfaces (Prussian Blueprint Drafting)
-  bg: '#08101E',
-  surface: '#0D192E',
-  subtle: '#11223D',
-  line: '#1A2E4C',
+  // Canvas & Surfaces
+  bg: '#FFFFFF',
+  surface: '#FFFFFF',
+  subtle: '#F1F5F9',
+  line: '#E2E8F0',
 
   // Text
-  text: '#FFFFFF',
-  text2: '#94A3B8',
+  text: '#0A0A0A',
+  text2: '#4B5563',
   text3: '#64748B',
   onDark: '#FFFFFF',
   onDark2: '#94A3B8',
 
-  // Status (Matte Ink)
+  // Status
   success: '#16A34A',
   warning: '#D97706',
   danger: '#DC2626',
-  verified: '#38BDF8',
+  verified: '#0047FF',
 
-  // Accent Mappings: Matte Sky Cyan
-  accent: '#38BDF8',
-  accentHover: '#0EA5E9',
-  accentSoft: 'rgba(56, 189, 248, 0.12)',
-  onAccent: '#08101E',
+  // Accent Mappings: Electric Cobalt Blue
+  accent: '#0047FF',
+  accentHover: '#0037CC',
+  accentSoft: 'rgba(0, 71, 255, 0.08)',
+  onAccent: '#FFFFFF',
 
-  // Shadow (Subtle paper elevation, zero neon blur)
-  cardShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
-  floatingShadow: '0 8px 30px rgba(0, 0, 0, 0.5)',
+  // Shadow (Crisp micro elevation, zero blur)
+  cardShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+  floatingShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
 
   // Border Radii
   radiusSmall: '8px',

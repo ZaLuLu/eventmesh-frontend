@@ -73,7 +73,7 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
   return (
     <div
       className={cn(
-        'sticky top-16 z-30 bg-[#08101E]/95 backdrop-blur-md border-b border-[#1A2E4C] py-3.5 select-none transition-all',
+        'sticky top-16 z-30 bg-white/95 backdrop-blur-md border-b border-[#E2E8F0] py-3.5 select-none transition-all',
         className
       )}
     >
@@ -82,19 +82,19 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* Search Box (Delicate Hairline Input) */}
           <div className="relative flex-1 min-w-[220px] max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchQueryChange(e.target.value)}
               placeholder="Search catalog by title, venue, or host club..."
-              className="w-full h-9 pl-8 pr-8 bg-[#0D192E] border border-[#1A2E4C] focus:border-sky-400 focus:outline-none text-xs font-mono text-slate-100 placeholder:text-slate-500 transition-colors"
+              className="w-full h-9 pl-8 pr-8 bg-[#F8FAFC] border border-[#E2E8F0] focus:border-[#0047FF] focus:outline-none text-xs font-mono text-[#0A0A0A] placeholder:text-slate-400 transition-colors"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => onSearchQueryChange('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-200"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-[#0A0A0A]"
                 aria-label="Clear search input"
               >
                 <X className="w-3.5 h-3.5" />
@@ -112,16 +112,16 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
                   className={cn(
                     'h-9 px-3 border text-xs font-mono flex items-center gap-1.5 transition-colors',
                     dateFilter !== 'all'
-                      ? 'bg-sky-500/10 text-sky-400 border-sky-400 font-semibold'
-                      : 'bg-[#0D192E] text-slate-300 hover:text-sky-300 border-[#1A2E4C] hover:border-sky-400/50'
+                      ? 'bg-[#0047FF]/10 text-[#0047FF] border-[#0047FF] font-semibold'
+                      : 'bg-[#F8FAFC] text-slate-700 hover:text-[#0047FF] border-[#E2E8F0] hover:border-[#0047FF]'
                   )}
                   aria-label="Filter events by date"
                 >
-                  <Calendar className="w-3.5 h-3.5 text-sky-400" />
+                  <Calendar className="w-3.5 h-3.5 text-[#0047FF]" />
                   <span className="uppercase">{selectedDateLabel}</span>
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-48 p-1.5 bg-[#0D192E] border border-[#1A2E4C] text-xs font-mono shadow-xl z-50">
+              <PopoverContent className="w-48 p-1.5 bg-white border border-[#E2E8F0] text-xs font-mono shadow-xl z-50">
                 <div className="space-y-0.5">
                   {DATE_OPTIONS.map((opt) => (
                     <button
@@ -134,12 +134,12 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
                       className={cn(
                         'w-full text-left px-2.5 py-1.5 text-xs font-mono flex items-center justify-between transition-colors',
                         dateFilter === opt.id
-                          ? 'bg-sky-500/10 text-sky-400 font-semibold border-l-2 border-sky-400'
-                          : 'text-slate-300 hover:bg-[#1A2E4C]/50 hover:text-white'
+                          ? 'bg-[#0047FF]/10 text-[#0047FF] font-semibold border-l-2 border-[#0047FF]'
+                          : 'text-slate-700 hover:bg-[#F8FAFC] hover:text-[#0A0A0A]'
                       )}
                     >
                       <span className="uppercase">{opt.label}</span>
-                      {dateFilter === opt.id && <Check className="w-3 h-3 text-sky-400" />}
+                      {dateFilter === opt.id && <Check className="w-3 h-3 text-[#0047FF]" />}
                     </button>
                   ))}
                 </div>
@@ -153,13 +153,13 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
               className={cn(
                 'h-9 px-3 border text-xs font-mono flex items-center gap-1.5 transition-all',
                 freeOnly
-                  ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500 font-semibold'
-                  : 'bg-[#0D192E] text-slate-300 hover:text-white border-[#1A2E4C] hover:border-sky-400/50'
+                  ? 'bg-[#0047FF]/10 text-[#0047FF] border-[#0047FF] font-semibold'
+                  : 'bg-[#F8FAFC] text-slate-700 hover:text-[#0A0A0A] border-[#E2E8F0] hover:border-[#0047FF]'
               )}
               aria-pressed={freeOnly}
             >
               <span>FREE ONLY</span>
-              {freeOnly && <Check className="w-3 h-3 text-emerald-400" />}
+              {freeOnly && <Check className="w-3 h-3 text-[#0047FF]" />}
             </button>
 
             {/* Sort Select */}
@@ -167,11 +167,11 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
               <select
                 value={sortBy}
                 onChange={(e) => onSortByChange(e.target.value)}
-                className="w-full h-9 px-2.5 bg-[#0D192E] text-slate-200 border border-[#1A2E4C] hover:border-sky-400/50 text-xs font-mono focus:outline-none focus:border-sky-400 transition-colors uppercase cursor-pointer"
+                className="w-full h-9 px-2.5 bg-[#F8FAFC] text-slate-800 border border-[#E2E8F0] hover:border-[#0047FF] text-xs font-mono focus:outline-none focus:border-[#0047FF] transition-colors uppercase cursor-pointer"
               >
-                <option value="date-asc" className="bg-[#08101E] text-slate-200">SOONEST</option>
-                <option value="newest" className="bg-[#08101E] text-slate-200">NEWEST</option>
-                <option value="popularity" className="bg-[#08101E] text-slate-200">POPULARITY</option>
+                <option value="date-asc" className="bg-white text-slate-900">SOONEST</option>
+                <option value="newest" className="bg-white text-slate-900">NEWEST</option>
+                <option value="popularity" className="bg-white text-slate-900">POPULARITY</option>
               </select>
             </div>
 
@@ -180,19 +180,19 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
               type="single"
               value={viewMode}
               onValueChange={(val) => val && onViewModeChange(val as 'grid' | 'list')}
-              className="border border-[#1A2E4C] p-0.5 bg-[#0D192E]"
+              className="border border-[#E2E8F0] p-0.5 bg-[#F8FAFC]"
             >
               <ToggleGroupItem
                 value="grid"
                 aria-label="Grid view"
-                className="w-7 h-7 data-[state=on]:bg-[#1A2E4C] data-[state=on]:text-sky-400 text-slate-400"
+                className="w-7 h-7 data-[state=on]:bg-[#0047FF] data-[state=on]:text-white text-slate-500"
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
               </ToggleGroupItem>
               <ToggleGroupItem
                 value="list"
                 aria-label="List view"
-                className="w-7 h-7 data-[state=on]:bg-[#1A2E4C] data-[state=on]:text-sky-400 text-slate-400"
+                className="w-7 h-7 data-[state=on]:bg-[#0047FF] data-[state=on]:text-white text-slate-500"
               >
                 <List className="w-3.5 h-3.5" />
               </ToggleGroupItem>
@@ -201,7 +201,7 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
         </div>
 
         {/* Row 2: Category Drafting Tabs & Index Counter */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-[#1A2E4C]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-[#E2E8F0]">
           {/* Category Tabs with Architectural Underlines */}
           <div
             className="flex items-center gap-1 overflow-x-auto scrollbar-none py-0.5 -mx-2 px-2"
@@ -217,15 +217,15 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
                   className={cn(
                     'relative h-8 px-3 text-xs font-mono uppercase tracking-wider whitespace-nowrap transition-colors duration-150 select-none flex-shrink-0 flex items-center',
                     isSelected
-                      ? 'text-sky-400 font-semibold'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'text-[#0047FF] font-semibold'
+                      : 'text-slate-500 hover:text-[#0A0A0A]'
                   )}
                 >
                   <span className="relative z-10">{cat.label}</span>
                   {isSelected && (
                     <motion.div
                       layoutId="activeCategoryUnderline"
-                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-sky-400 z-0"
+                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#0047FF] z-0"
                       transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                     />
                   )}
@@ -235,9 +235,9 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
           </div>
 
           {/* Morphing Result Counter */}
-          <div className="flex items-center gap-1.5 text-xs font-mono text-slate-400 flex-shrink-0">
-            <span className="text-slate-400">INDEXED:</span>
-            <span className="text-sky-400 font-semibold min-w-[20px] inline-flex justify-center">
+          <div className="flex items-center gap-1.5 text-xs font-mono text-slate-500 flex-shrink-0">
+            <span className="text-slate-500">INDEXED:</span>
+            <span className="text-[#0047FF] font-semibold min-w-[20px] inline-flex justify-center">
               <TextMorph>{String(totalCount)}</TextMorph>
             </span>
             <span>{totalCount === 1 ? 'EVENT' : 'EVENTS'}</span>
