@@ -35,8 +35,11 @@ export default defineConfig({
             if (id.includes('motion') || id.includes('torph') || id.includes('embla-carousel')) {
               return 'vendor-motion'
             }
-            if (id.includes('@radix-ui') || id.includes('cmdk') || id.includes('@phosphor-icons') || id.includes('lucide-react')) {
+            if (id.includes('@radix-ui') || id.includes('cmdk')) {
               return 'vendor-ui'
+            }
+            if (id.includes('@phosphor-icons')) {
+              return 'vendor-icons'
             }
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom') || id.includes('@tanstack/react-query')) {
               return 'vendor-core'
