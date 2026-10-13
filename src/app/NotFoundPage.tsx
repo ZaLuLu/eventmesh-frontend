@@ -16,7 +16,7 @@ export const NotFoundPage: React.FC = () => {
 
         <div className="space-y-2">
           <h1 className="font-display font-extrabold text-5xl sm:text-6xl text-ink tracking-tight">
-            Off the <span className="font-accent italic text-cobalt">grid</span>
+            Off the <span className="font-accent text-cobalt not-italic font-normal">grid</span>
           </h1>
           <p className="text-ink-soft text-sm sm:text-base font-sans leading-relaxed">
             The event or checkpoint you are looking for has been moved, completed, or does not exist.

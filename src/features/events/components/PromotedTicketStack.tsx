@@ -139,7 +139,7 @@ export const PromotedTicketStack: React.FC<PromotedTicketStackProps> = ({ events
                     key={idx}
                     type="button"
                     onClick={() => setCurrentIndex(idx)}
-                    className={`h-2 rounded-full transition-all ${
+                    className={`h-2 rounded-full transition-[width,background-color] ${
                       currentIndex === idx ? 'w-6 bg-ink' : 'w-2 bg-ink/20 hover:bg-ink/40'
                     }`}
                     aria-label={`Go to slide ${idx + 1}`}

@@ -175,7 +175,7 @@ export const AdminShell: React.FC = () => {
                           key={item.path}
                           to={item.path}
                           onClick={() => setSidebarOpen(false)}
-                          className={`flex items-center gap-3 px-3 py-2 rounded-[10px] text-xs font-bold transition-all ${
+                          className={`flex items-center gap-3 px-3 py-2 rounded-[10px] text-xs font-bold transition-colors ${
                             isActive
                               ? 'bg-[#D4F25A] text-[#0F0D1F] shadow-[2px_2px_0_#000000]'
                               : 'text-white/70 hover:bg-white/5 hover:text-white'

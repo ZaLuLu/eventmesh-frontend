@@ -1,6 +1,7 @@
+// Hallmark macrostructure: AdminConsole-Certificates
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Eye, ExternalLink } from 'lucide-react'
+import { Eye, ArrowUpRight } from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { useAdminEvents } from '@/hooks/useEvents'
@@ -226,7 +227,7 @@ export const AdminCertificatesPage: React.FC = () => {
                     surface="admin"
                     variant="secondary"
                     size="sm"
-                    icon={<Eye className="h-3.5 w-3.5" />}
+                    icon={<Eye size={14} weight="bold" />}
                     onClick={() => setPreviewCert(cert)}
                   >
                     Inspect
@@ -237,7 +238,7 @@ export const AdminCertificatesPage: React.FC = () => {
                     className="p-2 border border-line rounded-btn text-text hover:bg-subtle transition-colors"
                     title="Verify Record"
                   >
-                    <ExternalLink className="h-4 w-4" />
+                    <ArrowUpRight size={16} weight="bold" />
                   </Link>
                 </div>
               </div>

@@ -31,12 +31,12 @@ const DenseEventRow: React.FC<{ event: Event }> = ({ event }) => {
   const isWaitlist = event.seatsLeft === 0 || (event as any).isWaitlist
 
   return (
-    <article className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border-[1.5px] border-ink/15 hover:border-ink hover:shadow-offset transition-all duration-150 select-none">
+    <article className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border-[1.5px] border-ink/15 hover:border-ink hover:shadow-offset transition-[border-color,box-shadow] duration-150 select-none">
       {/* Left: Date Block & Main Details */}
       <div className="flex items-start sm:items-center gap-4 min-w-0">
         {/* Date Stamp Block */}
         <div className="w-14 h-14 rounded-xl bg-paper-2 border border-ink/15 flex flex-col items-center justify-center flex-shrink-0 text-center font-mono">
-          <span className="text-[10px] uppercase font-bold text-cobalt tracking-wider">
+          <span className="text-xs uppercase font-bold text-cobalt tracking-wider">
             {new Date(event.startsAt).toLocaleDateString('en-IN', { month: 'short' })}
           </span>
           <span className="font-display font-extrabold text-lg text-ink leading-none">
@@ -144,7 +144,7 @@ export const EventsDiscoveryView: React.FC<EventsDiscoveryViewProps> = ({
 
   return (
     <div className={cn('w-full py-8', className)}>
-      <motion.div layout className="w-full transition-all duration-300">
+      <motion.div layout className="w-full">
         {viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
             <AnimatePresence mode="popLayout">

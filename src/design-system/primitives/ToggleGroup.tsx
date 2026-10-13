@@ -24,7 +24,7 @@ export const ToggleGroupItem = React.forwardRef<
   <ToggleGroupPrimitive.Item
     ref={ref}
     className={cn(
-      'inline-flex items-center justify-center gap-1.5 h-9 px-3.5 text-small font-medium rounded-full transition-all duration-150',
+      'inline-flex items-center justify-center gap-1.5 h-9 px-3.5 text-small font-medium rounded-full transition-colors duration-150',
       'text-text-2 hover:text-champion hover:bg-lavender-100/50',
       'data-[state=on]:bg-champion data-[state=on]:text-white data-[state=on]:font-semibold data-[state=on]:shadow-sm',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet focus-visible:ring-offset-1',

@@ -87,7 +87,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={isDisabled}
         className={cn(
-          'inline-flex items-center justify-center gap-2 select-none transition-all duration-150 rounded-full font-sans cursor-pointer',
+          'inline-flex items-center justify-center gap-2 select-none transition-[transform,background-color,border-color,color,box-shadow] duration-150 rounded-full font-sans cursor-pointer',
           fullWidth ? 'w-full' : 'w-auto',
           sizeClasses,
           getVariantClasses(),

@@ -1,3 +1,4 @@
+// Hallmark macrostructure: System-Styleguide
 import React, { useState } from 'react'
 import { Button } from '@/design-system/primitives/Button'
 import { Chip } from '@/design-system/primitives/Chip'
@@ -14,11 +15,10 @@ import { Badge } from '@/design-system/primitives/Badge'
 import { ToggleGroup, ToggleGroupItem } from '@/design-system/primitives/ToggleGroup'
 import { EventCard } from '@/design-system/EventCard'
 import { SEED_EVENTS } from '@/api/adapters/mock/seedEvents'
-import { GradientBackdrop } from '@/design-system/GradientBackdrop'
 import { useToast } from '@/design-system/primitives/Toast'
 import { TOKENS } from '@/design-system/tokens'
 import { getContrastSummary } from '@/lib/contrast'
-import { ArrowRight, Calendar, MapPin, CheckCircle2, AlertTriangle, LayoutGrid, List } from 'lucide-react'
+import { ArrowRight, CalendarBlank, MapPin, CheckCircle, Warning, SquaresFour, List } from '@phosphor-icons/react'
 
 export const StyleguidePage: React.FC = () => {
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -60,14 +60,13 @@ export const StyleguidePage: React.FC = () => {
           </p>
         </div>
 
-        {/* 1. HERO WITH GRADIENT BACKDROP */}
+        {/* 1. CAMPUS FUNK ELEVATION SYSTEM */}
         <section className="space-y-4">
           <h2 className="text-h2 font-semibold text-text border-b border-line pb-2">
-            1. Hero Billboard with Coral Dawn Backdrop
+            1. Campus Funk Elevation & Canvas System
           </h2>
-          <div className="relative rounded-panel overflow-hidden border border-line bg-surface max-h-[440px] p-6 sm:p-10 flex flex-col justify-center">
-            <GradientBackdrop />
-            <div className="relative z-10 max-w-xl bg-surface/95 border border-line rounded-panel p-6">
+          <div className="relative rounded-panel overflow-hidden border-2 border-ink bg-card shadow-[6px_6px_0_var(--ink)] max-h-[440px] p-6 sm:p-10 flex flex-col justify-center">
+            <div className="relative z-10 max-w-xl bg-paper border-2 border-ink rounded-panel p-6 shadow-[3px_3px_0_var(--ink)]">
               <span className="text-caption font-semibold text-accent block mb-1">
                 Featured Exhibition Showcase
               </span>
@@ -362,11 +361,11 @@ export const StyleguidePage: React.FC = () => {
                 <span>Contrast Ratio: {contrastInfo.contrastRatio}:1</span>
                 {contrastInfo.isAANormal ? (
                   <span className="text-success flex items-center gap-1 font-medium">
-                    <CheckCircle2 className="h-4 w-4" /> WCAG AA Pass
+                    <CheckCircle className="h-4 w-4" /> WCAG AA Pass
                   </span>
                 ) : (
                   <span className="text-danger flex items-center gap-1 font-medium">
-                    <AlertTriangle className="h-4 w-4" /> Fail (&lt; 4.5:1)
+                    <Warning className="h-4 w-4" /> Fail (&lt; 4.5:1)
                   </span>
                 )}
               </div>
@@ -429,7 +428,7 @@ export const StyleguidePage: React.FC = () => {
                 onValueChange={(val) => val && setDemoView(val as 'grid' | 'list')}
               >
                 <ToggleGroupItem value="grid" aria-label="Grid view">
-                  <LayoutGrid className="w-4 h-4" />
+                  <SquaresFour className="w-4 h-4" />
                 </ToggleGroupItem>
                 <ToggleGroupItem value="list" aria-label="List view">
                   <List className="w-4 h-4" />

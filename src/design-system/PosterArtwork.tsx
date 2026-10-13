@@ -210,8 +210,7 @@ export const PosterArtwork: React.FC<PosterArtworkProps> = (props) => {
             onLoad={() => setImageLoaded(true)}
             onError={() => setHasError(true)}
             className={cn(
-              'w-full h-full object-cover transition-all duration-500 ease-out',
-              'group-hover:scale-[1.04]',
+              'w-full h-full object-cover transition-opacity duration-300 ease-out',
               imageLoaded ? 'opacity-100' : 'opacity-0'
             )}
           />

@@ -42,7 +42,7 @@ export const Tabs: React.FC<TabsProps> = ({
               type="button"
               onClick={() => onChange(tab.id)}
               className={cn(
-                'inline-flex items-center gap-2 h-10 px-4 text-small font-medium rounded-full transition-all duration-150 select-none whitespace-nowrap outline-none',
+                'inline-flex items-center gap-2 h-10 px-4 text-small font-medium rounded-full transition-colors duration-150 select-none whitespace-nowrap outline-none',
                 'focus-visible:ring-2 focus-visible:ring-violet focus-visible:ring-offset-2',
                 isActive
                   ? 'bg-champion text-white font-semibold shadow-soft'

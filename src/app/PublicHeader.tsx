@@ -56,7 +56,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
     <>
       <header
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 h-16 bg-paper/90 backdrop-blur-md select-none transition-all duration-200',
+          'fixed top-0 left-0 right-0 z-50 h-16 bg-paper/90 backdrop-blur-md select-none transition-[border-color,box-shadow,background-color] duration-200',
           isScrolled
             ? 'border-b border-ink/10 shadow-[0_4px_12px_rgba(21,17,48,0.04)]'
             : 'border-b border-transparent'
@@ -74,12 +74,8 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
               <div className="w-8 h-8 rounded-full bg-ink text-paper flex items-center justify-center font-display font-black text-xs shadow-offset transition-transform duration-200 group-hover:-rotate-6 group-hover:bg-cobalt">
                 EM
               </div>
-              <span className="font-display font-extrabold text-xl tracking-tight text-ink flex items-baseline">
-                Event
-                <span className="font-accent italic text-cobalt font-normal text-2xl -ml-0.5 mr-0.5">
-                  M
-                </span>
-                esh
+              <span className="font-display font-black text-xl tracking-tight text-ink">
+                Event<span className="text-cobalt">Mesh</span>
               </span>
             </Link>
 
@@ -131,7 +127,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                   key={link.path}
                   to={link.path}
                   className={cn(
-                    'px-3.5 py-1.5 rounded-full text-sm font-medium transition-all duration-150',
+                    'px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors duration-150',
                     isActive
                       ? 'bg-ink text-paper font-semibold shadow-offset'
                       : 'text-ink/80 hover:text-ink hover:bg-paper-2'
@@ -178,7 +174,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             {/* My Tickets Pill (Section 7.1) */}
             <Link
               to="/attendee/dashboard"
-              className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-card hover:bg-paper-2 text-ink font-semibold text-xs border border-ink shadow-offset hover:-translate-y-0.5 active:translate-y-0 transition-all"
+              className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-card hover:bg-paper-2 text-ink font-semibold text-xs border border-ink shadow-offset hover:-translate-y-0.5 active:translate-y-0 transition-[transform,background-color,box-shadow]"
               aria-label="My tickets"
             >
               <Ticket size={15} weight="bold" className="text-cobalt" />
@@ -189,7 +185,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             {canAccessAdmin() && (
               <Link
                 to="/admin"
-                className="hidden xl:inline-flex items-center gap-1.5 h-9 px-3 rounded-full bg-lime text-ink font-semibold text-xs border border-ink shadow-offset hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                className="hidden xl:inline-flex items-center gap-1.5 h-9 px-3 rounded-full bg-lime text-ink font-semibold text-xs border border-ink shadow-offset hover:-translate-y-0.5 active:translate-y-0 transition-[transform,background-color,box-shadow]"
               >
                 <Gauge size={14} weight="bold" />
                 <span>Admin</span>
@@ -216,7 +212,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                   <div className="absolute right-0 mt-2 w-56 bg-card border border-ink/15 rounded-2xl shadow-offset py-1.5 z-50 text-xs">
                     <div className="px-3.5 py-2 border-b border-ink/10">
                       <p className="font-bold text-ink truncate">{session?.name}</p>
-                      <p className="text-ink-soft truncate text-[11px] font-mono">{session?.email}</p>
+                      <p className="text-ink-soft truncate text-xs font-mono">{session?.email}</p>
                     </div>
 
                     <Link
@@ -258,7 +254,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             ) : (
               <Link
                 to="/login"
-                className="h-9 px-4 bg-ink text-paper hover:bg-cobalt rounded-full font-semibold text-xs tracking-wide inline-flex items-center justify-center shadow-offset hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                className="h-9 px-4 bg-ink text-paper hover:bg-cobalt rounded-full font-semibold text-xs tracking-wide inline-flex items-center justify-center shadow-offset hover:-translate-y-0.5 active:translate-y-0 transition-[transform,background-color,box-shadow]"
               >
                 Sign in
               </Link>

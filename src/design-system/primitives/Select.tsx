@@ -1,5 +1,5 @@
 import React from 'react'
-import { ChevronDown } from 'lucide-react'
+import { CaretDown } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 
 export interface SelectOption {
@@ -70,7 +70,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           </select>
 
           <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-text-3">
-            <ChevronDown className="h-4 w-4" />
+            <CaretDown className="h-4 w-4" />
           </div>
         </div>
 

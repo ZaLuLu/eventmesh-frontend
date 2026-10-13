@@ -393,10 +393,10 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="fixed top-6 right-6 z-50 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-paper text-ink border border-ink hover:bg-white text-xs font-mono transition-all cursor-pointer shadow-[2px_2px_0_#151130]"
+            className="fixed top-6 right-6 z-50 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-paper text-ink border border-ink hover:bg-white text-xs font-mono transition-colors cursor-pointer shadow-[2px_2px_0_#151130]"
           >
             <span>Close</span>
-            <kbd className="px-1.5 py-0.5 rounded bg-ink/10 text-[10px] text-ink font-semibold">ESC</kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-ink/10 text-xs text-ink font-semibold">ESC</kbd>
             <X className="w-3.5 h-3.5" />
           </button>
         )}

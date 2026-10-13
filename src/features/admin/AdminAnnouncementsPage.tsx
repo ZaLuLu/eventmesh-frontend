@@ -1,5 +1,6 @@
+// Hallmark macrostructure: AdminConsole-Announcements
 import React, { useState } from 'react'
-import { Send, Trash2 } from 'lucide-react'
+import { PaperPlaneRight, Trash } from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { useAnnouncements, useCreateAnnouncement, useDeleteAnnouncement } from '@/hooks/useAnnouncements'
@@ -134,7 +135,7 @@ export const AdminAnnouncementsPage: React.FC = () => {
             size="sm"
             fullWidth
             loading={createMutation.isPending}
-            icon={<Send className="h-4 w-4" />}
+            icon={<PaperPlaneRight size={16} weight="bold" />}
           >
             Publish Notice
           </Button>
@@ -158,7 +159,7 @@ export const AdminAnnouncementsPage: React.FC = () => {
                     <div className="flex items-center gap-1.5">
                       {item.pinned && (
                         <span className="bg-accent text-on-accent px-1.5 py-0.5 rounded text-caption font-semibold">
-                          Pinned
+                           Pinned
                         </span>
                       )}
                       <span className="border border-line bg-subtle px-1.5 py-0.5 rounded capitalize text-text">
@@ -178,7 +179,7 @@ export const AdminAnnouncementsPage: React.FC = () => {
                       className="text-text-3 hover:text-danger p-1 transition-colors"
                       title="Delete notice"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash size={16} weight="bold" />
                     </button>
                   </div>
                 </div>

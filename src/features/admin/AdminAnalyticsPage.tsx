@@ -1,3 +1,4 @@
+// Hallmark macrostructure: AdminConsole-Analytics
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/api'

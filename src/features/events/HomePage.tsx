@@ -177,18 +177,18 @@ export const HomePage: React.FC = () => {
             <div className="lg:col-span-7 space-y-6 text-left">
               {/* Funky Sticker Tag */}
               <div className="flex items-center gap-2">
-                <Sticker color="mustard" size="sm" tilt={-2} icon={<Sparkle size={13} weight="fill" />}>
+                <Sticker color="mustard" size="sm" tilt={-2}>
                   Campus Season 2026
                 </Sticker>
                 <span className="text-xs font-mono font-semibold text-ink-soft">
-                  ✦ Two-tap RSVP · Verified Identity
+                  Two-tap RSVP · Verified Identity
                 </span>
               </div>
 
-              {/* Giant Display Headline */}
+              {/* Giant Display Headline (Gate 38a: Strictly Roman) */}
               <h1 className="font-display font-black text-[clamp(2.75rem,7vw,5.5rem)] leading-[0.95] tracking-tight text-ink">
                 Where student ideas make{' '}
-                <span className="font-accent italic text-cobalt font-normal">
+                <span className="font-accent text-cobalt not-italic font-normal">
                   noise.
                 </span>
               </h1>

@@ -68,7 +68,7 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
   return (
     <div
       className={cn(
-        'sticky top-16 z-30 bg-paper/95 backdrop-blur-md border-b border-ink/10 py-3.5 select-none transition-all',
+        'sticky top-16 z-30 bg-paper/95 border-b border-ink/10 py-3.5 select-none transition-[border-color,background-color]',
         className
       )}
     >
@@ -105,7 +105,7 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
                 <button
                   type="button"
                   className={cn(
-                    'h-9 px-3 rounded-full border text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm',
+                    'h-9 px-3 rounded-full border text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm',
                     dateFilter !== 'all'
                       ? 'bg-cobalt text-white border-cobalt'
                       : 'bg-card text-ink border-ink/20 hover:bg-paper-2'
@@ -146,7 +146,7 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
               type="button"
               onClick={() => onFreeOnlyChange(!freeOnly)}
               className={cn(
-                'h-9 px-3 rounded-full border text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm',
+                'h-9 px-3 rounded-full border text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm',
                 freeOnly
                   ? 'bg-mint text-ink border-ink shadow-offset'
                   : 'bg-card text-ink border-ink/20 hover:bg-paper-2'
@@ -175,7 +175,7 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
                 type="button"
                 onClick={() => onViewModeChange('grid')}
                 className={cn(
-                  'w-8 h-8 rounded-full flex items-center justify-center transition-all',
+                  'w-8 h-8 rounded-full flex items-center justify-center transition-colors',
                   viewMode === 'grid'
                     ? 'bg-ink text-paper shadow-offset'
                     : 'text-ink-soft hover:text-ink'
@@ -188,7 +188,7 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
                 type="button"
                 onClick={() => onViewModeChange('list')}
                 className={cn(
-                  'w-8 h-8 rounded-full flex items-center justify-center transition-all',
+                  'w-8 h-8 rounded-full flex items-center justify-center transition-colors',
                   viewMode === 'list'
                     ? 'bg-ink text-paper shadow-offset'
                     : 'text-ink-soft hover:text-ink'
@@ -212,7 +212,7 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
                   type="button"
                   onClick={() => onCategoryChange(cat.id)}
                   className={cn(
-                    'px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all',
+                    'px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors',
                     isSelected
                       ? 'bg-ink text-paper shadow-offset'
                       : 'bg-card text-ink-soft hover:text-ink hover:bg-paper-2 border border-ink/10'

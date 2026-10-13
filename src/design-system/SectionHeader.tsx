@@ -36,7 +36,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
 }) => {
   const activeBadge = badge || sticker
   const activeBadgeColor = badgeColor || stickerColor || 'mustard'
-  // Render title with the accent word swapped into Instrument Serif Italic
+  // Render title with the accent word highlighted in Roman accent font and brand color (Gate 38a: No italic headers)
   const renderTitle = () => {
     if (!accentWord) return title
 
@@ -46,7 +46,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
         return (
           <span
             key={index}
-            className="font-accent font-normal italic lowercase px-1 text-cobalt"
+            className="font-accent font-normal not-italic px-1 text-cobalt inline-block"
           >
             {part}
           </span>

@@ -15,8 +15,8 @@ export const PublicFooter: React.FC = () => {
               <div className="w-8 h-8 rounded-full bg-ink text-paper flex items-center justify-center font-display font-black text-xs shadow-offset group-hover:bg-cobalt transition-colors">
                 EM
               </div>
-              <span className="font-display font-extrabold text-xl tracking-tight text-ink">
-                Event<span className="font-accent italic text-cobalt font-normal text-2xl">M</span>esh
+              <span className="font-display font-black text-xl tracking-tight text-ink">
+                Event<span className="text-cobalt">Mesh</span>
               </span>
             </Link>
             <p className="text-sm text-ink-soft leading-relaxed max-w-xs">

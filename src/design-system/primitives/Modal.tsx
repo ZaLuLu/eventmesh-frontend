@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { X } from 'lucide-react'
+import { X } from '@phosphor-icons/react'
 
 export interface ModalProps {
   isOpen: boolean
@@ -37,46 +37,46 @@ export const Modal: React.FC<ModalProps> = ({
     }
   }, [isOpen, onClose])
 
-  const isDark = surface === 'dark'
+  const isDark = surface === 'dark' || surface === 'admin'
 
   return (
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
+          {/* Backdrop: Solid tactile ink wash, zero synthetic blur (Gate 7 & Mandate 3) */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.15 }}
             onClick={onClose}
-            className={`fixed inset-0 ${isDark ? 'bg-black/80 backdrop-blur-md' : 'bg-text/40'}`}
+            className={`fixed inset-0 ${isDark ? 'bg-black/80' : 'bg-ink/50'}`}
             aria-hidden="true"
           />
 
-          {/* Modal surface */}
+          {/* Modal surface: Tactile object with hard offset shadow */}
           <motion.div
             role="dialog"
             aria-modal="true"
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
             className={`relative z-10 w-full ${maxWidth} max-h-[90vh] overflow-y-auto ${
               isDark
-                ? 'bg-[#0C0A1A] text-slate-100 border border-white/15 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)]'
-                : 'bg-surface text-text border border-line shadow-floating'
-            } rounded-panel p-6 sm:p-8 flex flex-col gap-6`}
+                ? 'bg-[#181530] text-[#F6F1E7] border-2 border-[#2D2852] shadow-[5px_5px_0_var(--lime)]'
+                : 'bg-card text-ink border-2 border-ink shadow-[5px_5px_0_var(--ink)]'
+            } rounded-2xl p-6 sm:p-8 flex flex-col gap-6`}
           >
-            <div className={`flex items-start justify-between gap-4 border-b ${isDark ? 'border-white/10' : 'border-line'} pb-4`}>
+            <div className={`flex items-start justify-between gap-4 border-b ${isDark ? 'border-[#2D2852]' : 'border-ink/15'} pb-4`}>
               <div>
                 {subtitle && (
-                  <span className={`text-caption font-medium block mb-1 ${isDark ? 'text-indigo-300/80 font-mono text-[11px] uppercase tracking-wider' : 'text-text-2'}`}>
+                  <span className={`font-mono text-xs font-semibold uppercase tracking-wider block mb-1 ${isDark ? 'text-indigo-300' : 'text-ink-soft'}`}>
                     {subtitle}
                   </span>
                 )}
                 {title && (
-                  <h3 className={`font-bold text-xl sm:text-2xl tracking-tight ${isDark ? 'text-white' : 'text-text'}`}>
+                  <h3 className={`font-display font-extrabold text-xl sm:text-2xl tracking-tight ${isDark ? 'text-white' : 'text-ink'}`}>
                     {title}
                   </h3>
                 )}
@@ -85,14 +85,14 @@ export const Modal: React.FC<ModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className={`p-2 rounded-[8px] border transition-colors duration-150 ${
+                className={`p-2 rounded-lg border transition-colors duration-150 ${
                   isDark
-                    ? 'border-white/10 hover:bg-white/10 text-slate-400 hover:text-white'
-                    : 'border-line hover:bg-subtle text-text-2 hover:text-text'
+                    ? 'border-[#2D2852] hover:bg-white/10 text-slate-300 hover:text-white'
+                    : 'border-ink/20 hover:bg-paper-2 text-ink hover:text-cobalt'
                 }`}
                 aria-label="Close modal"
               >
-                <X className="h-5 w-5" />
+                <X size={18} weight="bold" />
               </button>
             </div>
 

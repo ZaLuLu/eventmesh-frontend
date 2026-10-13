@@ -52,7 +52,7 @@ export const GalleryPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setSelectedClub('all')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold flex-shrink-0 transition-all border-2 border-ink ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold flex-shrink-0 transition-colors border-2 border-ink ${
               selectedClub === 'all'
                 ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
                 : 'bg-card text-ink-soft hover:text-ink'
@@ -69,7 +69,7 @@ export const GalleryPage: React.FC = () => {
                 key={club.id}
                 type="button"
                 onClick={() => setSelectedClub(isSelected ? 'all' : club.name)}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold flex-shrink-0 transition-all border-2 border-ink ${
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold flex-shrink-0 transition-colors border-2 border-ink ${
                   isSelected
                     ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
                     : 'bg-card text-ink hover:bg-paper-2'
@@ -115,7 +115,7 @@ export const GalleryPage: React.FC = () => {
                 key={photo.id || idx}
                 onClick={() => setActivePhoto(photo)}
                 style={{ transform: `rotate(${rotation}deg)` }}
-                className="group relative rounded-[20px] border-2 border-ink bg-card p-4 pb-6 shadow-[5px_5px_0_#151130] hover:shadow-[8px_8px_0_#151130] hover:scale-[1.02] hover:rotate-0 transition-all duration-200 cursor-pointer select-none flex flex-col justify-between"
+                className="group relative rounded-[20px] border-2 border-ink bg-card p-4 pb-6 shadow-[5px_5px_0_#151130] hover:shadow-[8px_8px_0_#151130] hover:scale-[1.02] hover:rotate-0 transition-[box-shadow,transform] duration-200 cursor-pointer select-none flex flex-col justify-between"
               >
                 {/* Washi Tape Accent on Top Edge */}
                 <div

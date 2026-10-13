@@ -357,7 +357,7 @@ export const EventDetailPage: React.FC = () => {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-3.5 py-2 text-sm font-semibold rounded-full transition-all whitespace-nowrap ${
+                  className={`px-3.5 py-2 text-sm font-semibold rounded-full transition-colors whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'bg-ink text-paper shadow-sm'
                       : 'bg-transparent text-ink-soft hover:text-ink hover:bg-paper-2'
@@ -590,7 +590,7 @@ export const EventDetailPage: React.FC = () => {
                 </div>
                 <div className="h-2 w-full rounded-full bg-paper-2 overflow-hidden border border-ink/5">
                   <div
-                    className={`h-full rounded-full transition-all ${isSoldOut ? 'bg-amber-500' : 'bg-cobalt'}`}
+                    className={`h-full rounded-full transition-[width,background-color] ${isSoldOut ? 'bg-amber-500' : 'bg-cobalt'}`}
                     style={{ width: `${Math.min(100, Math.round((registeredCount / (event.capacity || 100)) * 100))}%` }}
                   />
                 </div>
@@ -609,7 +609,7 @@ export const EventDetailPage: React.FC = () => {
                         key={tier.id}
                         type="button"
                         onClick={() => setSelectedTierId(tier.id)}
-                        className={`w-full text-left p-3 rounded-[12px] border transition-all ${
+                        className={`w-full text-left p-3 rounded-[12px] border transition-colors ${
                           isSelected
                             ? 'bg-paper border-ink shadow-sm'
                             : 'bg-transparent border-ink/15 hover:border-ink/40'

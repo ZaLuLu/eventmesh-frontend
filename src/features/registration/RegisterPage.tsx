@@ -453,9 +453,9 @@ export const RegisterPage: React.FC = () => {
 
               {/* Step indicator progress bar */}
               <div className="grid grid-cols-3 gap-2">
-                <div className={`h-1.5 rounded-full transition-all ${currentStep >= 1 ? 'bg-cobalt' : 'bg-paper-2'}`} />
-                <div className={`h-1.5 rounded-full transition-all ${currentStep >= 2 ? 'bg-cobalt' : 'bg-paper-2'}`} />
-                <div className={`h-1.5 rounded-full transition-all ${currentStep === 3 ? 'bg-cobalt' : 'bg-paper-2'}`} />
+                <div className={`h-1.5 rounded-full transition-colors ${currentStep >= 1 ? 'bg-cobalt' : 'bg-paper-2'}`} />
+                <div className={`h-1.5 rounded-full transition-colors ${currentStep >= 2 ? 'bg-cobalt' : 'bg-paper-2'}`} />
+                <div className={`h-1.5 rounded-full transition-colors ${currentStep === 3 ? 'bg-cobalt' : 'bg-paper-2'}`} />
               </div>
             </div>
 

@@ -1,14 +1,15 @@
+// Hallmark macrostructure: Transactional-Modal
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import confetti from 'canvas-confetti'
 import {
   X,
   Ticket,
-  Calendar,
+  CalendarBlank,
   MapPin,
-  CheckCircle2,
+  CheckCircle,
   ShieldCheck,
-} from 'lucide-react'
+} from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
 import { useRegisterPass, useMyRegistrations } from '@/hooks/useRegistrations'
 import { Button } from '@/design-system/primitives/Button'
@@ -64,14 +65,14 @@ export const PassBookingModal: React.FC<PassBookingModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="pass-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/60 animate-fade"
     >
       <div
         className={`relative w-full ${
           successRegistration
-            ? 'max-w-3xl bg-[#0C0A1A] text-white border-white/10 shadow-2xl'
-            : 'max-w-lg bg-surface text-text border-line shadow-floating'
-        } rounded-panel border p-6 sm:p-8 transition-all`}
+            ? 'max-w-3xl bg-[#0C0A1A] text-white border-2 border-white/20 shadow-[6px_6px_0_#000]'
+            : 'max-w-lg bg-card text-ink border-2 border-ink shadow-[6px_6px_0_var(--ink)]'
+        } rounded-panel p-6 sm:p-8 transition-colors`}
       >
         {/* Close Button */}
         <button
@@ -102,10 +103,10 @@ export const PassBookingModal: React.FC<PassBookingModalProps> = ({
             </div>
 
             {/* Event Summary Box */}
-            <div className="rounded-input bg-subtle border border-line p-4 space-y-2.5 text-small">
+            <div className="rounded-input bg-paper border border-ink/20 p-4 space-y-2.5 text-small">
               <div className="flex items-center justify-between text-text">
                 <span className="flex items-center gap-2 font-medium">
-                  <Calendar className="h-4 w-4 text-accent shrink-0" />
+                  <CalendarBlank className="h-4 w-4 text-accent shrink-0" />
                   <span>{formatDate(event.startsAt)} · {formatTime(event.startsAt)}</span>
                 </span>
                 <span className="font-semibold text-caption px-2.5 py-0.5 rounded-chip bg-surface border border-line text-text">
@@ -166,7 +167,7 @@ export const PassBookingModal: React.FC<PassBookingModalProps> = ({
           /* Step 2: Celebration & Live Generated Event Admission Ticket */
           <div className="space-y-5 text-center pt-1">
             <div className="mx-auto w-12 h-12 rounded-full bg-accent/20 text-indigo-400 flex items-center justify-center border border-accent/30">
-              <CheckCircle2 className="h-6 w-6" />
+              <CheckCircle className="h-6 w-6" />
             </div>
 
             <div>

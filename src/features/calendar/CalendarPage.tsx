@@ -119,7 +119,7 @@ export const CalendarPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setViewMode('month')}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
               viewMode === 'month'
                 ? 'bg-ink text-paper'
                 : 'text-ink-soft hover:text-ink'
@@ -131,7 +131,7 @@ export const CalendarPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setViewMode('list')}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
               viewMode === 'list'
                 ? 'bg-ink text-paper'
                 : 'text-ink-soft hover:text-ink'
@@ -148,7 +148,7 @@ export const CalendarPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setSelectedClub('all')}
-          className={`px-3.5 py-1.5 rounded-full text-xs font-bold flex-shrink-0 transition-all border-2 border-ink ${
+          className={`px-3.5 py-1.5 rounded-full text-xs font-bold flex-shrink-0 transition-colors border-2 border-ink ${
             selectedClub === 'all'
               ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
               : 'bg-card text-ink-soft hover:text-ink hover:bg-paper-2'
@@ -165,7 +165,7 @@ export const CalendarPage: React.FC = () => {
               key={club.id}
               type="button"
               onClick={() => setSelectedClub(isSelected ? 'all' : club.id)}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold flex-shrink-0 transition-all border-2 border-ink ${
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold flex-shrink-0 transition-colors border-2 border-ink ${
                 isSelected
                   ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
                   : 'bg-card text-ink hover:bg-paper-2'
@@ -254,7 +254,7 @@ export const CalendarPage: React.FC = () => {
                   <div
                     key={`day-${day}`}
                     onClick={() => setSelectedDay(day)}
-                    className={`min-h-[90px] sm:min-h-[110px] p-2 sm:p-2.5 border-r-2 border-b-2 border-ink/15 cursor-pointer transition-all flex flex-col justify-between select-none ${
+                    className={`min-h-[90px] sm:min-h-[110px] p-2 sm:p-2.5 border-r-2 border-b-2 border-ink/15 cursor-pointer transition-colors flex flex-col justify-between select-none ${
                       isSelected
                         ? 'bg-lavender/30 ring-2 ring-inset ring-ink'
                         : hasEvents
@@ -427,7 +427,7 @@ export const CalendarPage: React.FC = () => {
               return (
                 <div
                   key={event.id}
-                  className="rounded-[18px] border-2 border-ink bg-card p-5 sm:p-6 shadow-[4px_4px_0_#151130] hover:shadow-[6px_6px_0_#151130] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  className="rounded-[18px] border-2 border-ink bg-card p-5 sm:p-6 shadow-[4px_4px_0_#151130] hover:shadow-[6px_6px_0_#151130] transition-[box-shadow,transform] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                 >
                   <div className="flex items-start gap-4">
                     {/* Date Block */}

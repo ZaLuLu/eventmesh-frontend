@@ -69,7 +69,7 @@ export const AnnouncementsPage: React.FC = () => {
               key={k.id}
               type="button"
               onClick={() => setSelectedKind(k.id)}
-              className={`px-4 py-2 rounded-full text-xs font-bold flex-shrink-0 transition-all border-2 border-ink ${
+              className={`px-4 py-2 rounded-full text-xs font-bold flex-shrink-0 transition-colors border-2 border-ink ${
                 selectedKind === k.id
                   ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
                   : 'bg-card text-ink-soft hover:text-ink hover:bg-paper-2'

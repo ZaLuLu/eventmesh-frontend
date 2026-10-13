@@ -1,6 +1,7 @@
+// Hallmark macrostructure: AdminConsole-EventsList
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Search, ExternalLink, Edit, Trash2 } from 'lucide-react'
+import { Plus, MagnifyingGlass, ArrowUpRight, PencilSimple, Trash } from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { useAdminEvents, usePublishEvent } from '@/hooks/useEvents'
@@ -80,7 +81,7 @@ export const AdminEventsListPage: React.FC = () => {
         </div>
 
         <Link to="/admin/events/new">
-          <Button surface="admin" size="sm" icon={<Plus className="h-4 w-4" />}>
+          <Button surface="admin" size="sm" icon={<Plus size={16} weight="bold" />}>
             Create Event Wizard
           </Button>
         </Link>
@@ -106,7 +107,7 @@ export const AdminEventsListPage: React.FC = () => {
         </div>
 
         <div className="relative max-w-xs w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-3" />
+          <MagnifyingGlass size={16} weight="bold" className="absolute left-3 top-1/2 -translate-y-1/2 text-text-3" />
           <input
             type="text"
             value={searchQuery}
@@ -204,7 +205,7 @@ export const AdminEventsListPage: React.FC = () => {
                         className="p-1.5 border border-line rounded-btn hover:bg-subtle text-text transition-colors"
                         title="Edit Event & Form"
                       >
-                        <Edit className="h-3.5 w-3.5" />
+                        <PencilSimple size={14} weight="bold" />
                       </Link>
 
                       {evt.status !== 'draft' && (
@@ -214,7 +215,7 @@ export const AdminEventsListPage: React.FC = () => {
                           className="p-1.5 border border-line rounded-btn hover:bg-subtle text-text transition-colors"
                           title="View Live Public Page"
                         >
-                          <ExternalLink className="h-3.5 w-3.5" />
+                          <ArrowUpRight size={14} weight="bold" />
                         </Link>
                       )}
 
@@ -224,7 +225,7 @@ export const AdminEventsListPage: React.FC = () => {
                         className="p-1.5 border border-line rounded-btn hover:bg-danger/10 text-text hover:text-danger hover:border-danger/40 transition-colors"
                         title="Delete Event"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash size={14} weight="bold" />
                       </button>
                     </div>
                   </td>

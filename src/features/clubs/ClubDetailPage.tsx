@@ -165,7 +165,7 @@ export const ClubDetailPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('events')}
-          className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+          className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
             activeTab === 'events'
               ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
               : 'bg-card border-2 border-ink/20 text-ink-soft hover:text-ink hover:border-ink'
@@ -177,7 +177,7 @@ export const ClubDetailPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('team')}
-          className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+          className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
             activeTab === 'team'
               ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
               : 'bg-card border-2 border-ink/20 text-ink-soft hover:text-ink hover:border-ink'
@@ -190,7 +190,7 @@ export const ClubDetailPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('gallery')}
-            className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+            className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
               activeTab === 'gallery'
                 ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
                 : 'bg-card border-2 border-ink/20 text-ink-soft hover:text-ink hover:border-ink'

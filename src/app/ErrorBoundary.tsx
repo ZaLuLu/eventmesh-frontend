@@ -43,7 +43,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
             <div className="space-y-2">
               <h1 className="font-display font-extrabold text-4xl sm:text-5xl text-ink tracking-tight">
-                System glitch <span className="font-accent italic text-tangerine">detected</span>
+                System glitch <span className="font-accent text-tangerine not-italic font-normal">detected</span>
               </h1>
               <p className="text-ink-soft text-sm sm:text-base font-sans leading-relaxed">
                 An unexpected condition interrupted the canvas. Your saved tickets and registrations remain secure in memory.
@@ -51,7 +51,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             {this.state.error && (
-              <pre className="bg-paper-2 border border-ink/15 rounded-lg p-3 text-left text-[11px] font-mono text-red-700 overflow-x-auto max-h-24">
+              <pre className="bg-paper-2 border border-ink/15 rounded-lg p-3 text-left text-xs font-mono text-red-700 overflow-x-auto max-h-24">
                 {this.state.error.message}
               </pre>
             )}

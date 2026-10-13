@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Bookmark, CheckCircle2, MapPin, Calendar, ArrowRight, Eye, Sparkles } from 'lucide-react'
+import { BookmarkSimple, CheckCircle, MapPin, CalendarBlank, ArrowRight, Eye, Sparkle } from '@phosphor-icons/react'
 import { Event } from '../../api/contracts'
 import { Badge } from '../primitives/Badge'
 import { PosterArtwork } from '../PosterArtwork'
@@ -160,7 +160,7 @@ export const EventCard: React.FC<EventCardProps> = ({
             </span>
             {isVerified && (
               <span title="Verified Club" className="inline-flex items-center text-[#0047FF]">
-                <CheckCircle2 className="w-3 h-3 text-[#0047FF]" />
+                <CheckCircle className="w-3 h-3 text-[#0047FF]" />
               </span>
             )}
             {event.venue?.name && (
@@ -182,20 +182,20 @@ export const EventCard: React.FC<EventCardProps> = ({
             onClick={handleBookmarkClick}
             aria-label={isBookmarked ? 'Remove from saved' : 'Save event'}
             className={cn(
-              'w-8 h-8 flex items-center justify-center border transition-all duration-150',
+              'w-8 h-8 flex items-center justify-center border transition-colors duration-150',
               isBookmarked
                 ? 'bg-[#0047FF]/10 text-[#0047FF] border-[#0047FF]'
                 : 'bg-[#F8FAFC] text-slate-500 border-[#E2E8F0] hover:border-[#0047FF] hover:text-[#0047FF]'
             )}
           >
-            <Bookmark className={cn('w-3.5 h-3.5', isBookmarked && 'fill-[#0047FF]')} />
+            <BookmarkSimple className={cn('w-3.5 h-3.5', isBookmarked && 'fill-[#0047FF]')} />
           </button>
 
           <Link
             to={eventLink}
             aria-hidden="true"
             tabIndex={-1}
-            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-mono text-[#0047FF] hover:text-[#0037CC] hover:gap-2 transition-all uppercase font-semibold"
+            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-mono text-[#0047FF] hover:text-[#0037CC] hover:gap-2 transition-[color,gap] uppercase font-semibold"
           >
             <span>View event</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -277,13 +277,13 @@ export const EventCard: React.FC<EventCardProps> = ({
                 onClick={handleBookmarkClick}
                 aria-label={isBookmarked ? 'Remove from saved' : 'Save event'}
                 className={cn(
-                  'w-8 h-8 flex items-center justify-center border transition-all duration-150',
+                  'w-8 h-8 flex items-center justify-center border transition-colors duration-150',
                   isBookmarked
                     ? 'bg-[#0047FF]/10 text-[#0047FF] border-[#0047FF]'
                     : 'bg-white/95 text-slate-700 border-[#E2E8F0] hover:text-[#0047FF] hover:border-[#0047FF]'
                 )}
               >
-                <Bookmark className={cn('w-3.5 h-3.5', isBookmarked && 'fill-[#0047FF]')} />
+                <BookmarkSimple className={cn('w-3.5 h-3.5', isBookmarked && 'fill-[#0047FF]')} />
               </button>
             </div>
           </div>
@@ -312,7 +312,7 @@ export const EventCard: React.FC<EventCardProps> = ({
               </span>
               {isVerified && (
                 <span title="Verified Club" className="inline-flex items-center text-[#0047FF]">
-                  <CheckCircle2 className="w-3 h-3 text-[#0047FF]" />
+                  <CheckCircle className="w-3 h-3 text-[#0047FF]" />
                 </span>
               )}
             </div>
@@ -407,13 +407,13 @@ export const EventCard: React.FC<EventCardProps> = ({
                   onClick={handleBookmarkClick}
                   aria-label={isBookmarked ? 'Remove from saved' : 'Save event'}
                   className={cn(
-                    'w-7 h-7 flex items-center justify-center border transition-all duration-150',
+                    'w-7 h-7 flex items-center justify-center border transition-colors duration-150',
                     isBookmarked
                       ? 'bg-[#0047FF]/10 text-[#0047FF] border-[#0047FF]'
                       : 'bg-white/95 text-slate-700 border-[#E2E8F0] hover:text-[#0047FF] hover:border-[#0047FF]'
                   )}
                 >
-                  <Bookmark className={cn('w-3.5 h-3.5', isBookmarked && 'fill-[#0047FF]')} />
+                  <BookmarkSimple className={cn('w-3.5 h-3.5', isBookmarked && 'fill-[#0047FF]')} />
                 </button>
               </div>
             </div>
@@ -454,7 +454,7 @@ export const EventCard: React.FC<EventCardProps> = ({
           </span>
           {isVerified && (
             <span title="Verified Club" className="inline-flex items-center text-[#0047FF] flex-shrink-0">
-              <CheckCircle2 className="w-3 h-3 text-[#0047FF]" />
+              <CheckCircle className="w-3 h-3 text-[#0047FF]" />
             </span>
           )}
         </div>

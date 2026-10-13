@@ -88,13 +88,14 @@
   --sidebar: #120F24;
 }
 
-/* Document Base */
+/* Document Base (Gate 34: overflow-x: clip on html and body) */
 html {
   background-color: var(--paper);
   color: var(--ink);
   font-family: 'Geist', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
 }
 
 body {
@@ -103,20 +104,26 @@ body {
   min-height: 100vh;
   background-color: var(--paper);
   color: var(--ink);
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
-/* Typography Floors & Display Rules */
+/* Navigation Offset Token (Gate 56: Secondary sticky docking) */
+:root {
+  --banner-height: 4rem;
+}
+
+/* Typography Floors & Display Rules (Gate 38a: Display & Accent always roman) */
 h1, h2, h3, .font-display {
   font-family: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', system-ui, sans-serif;
+  font-style: normal;
 }
 
 .font-accent {
   font-family: 'Instrument Serif', serif;
-  font-style: italic;
+  font-style: normal;
 }
 
-/* Focus Visible: 2px Cobalt ring with 2px paper offset */
+/* Focus Visible: 2px Cobalt ring with 2px paper offset (Gate 39) */
 :focus-visible {
   outline: 2px solid var(--cobalt);
   outline-offset: 2px;

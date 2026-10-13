@@ -1,3 +1,4 @@
+// Hallmark macrostructure: AdminConsole-Checkin
 import React, { useState, useEffect, useRef } from 'react'
 import { Scanner, IDetectedBarcode } from '@yudiel/react-qr-scanner'
 import { get, set } from 'idb-keyval'
@@ -315,7 +316,7 @@ export const AdminCheckinPage: React.FC = () => {
             {/* Progress Bar */}
             <div className="w-full h-2.5 bg-white/10 rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#D4F25A] transition-all duration-300 rounded-full"
+                className="h-full bg-[#D4F25A] transition-[width] duration-300 rounded-full"
                 style={{ width: `${Math.min(stats.percentage, 100)}%` }}
               />
             </div>

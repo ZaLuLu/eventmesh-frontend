@@ -63,7 +63,7 @@ export const ClubsPage: React.FC = () => {
             return (
               <div
                 key={club.id}
-                className="group relative flex flex-col justify-between rounded-[20px] border-2 border-ink bg-card p-6 sm:p-7 shadow-[4px_4px_0_#151130] hover:shadow-[6px_6px_0_#151130] hover:-translate-y-1 transition-all duration-200 select-none overflow-hidden"
+                className="group relative flex flex-col justify-between rounded-[20px] border-2 border-ink bg-card p-6 sm:p-7 shadow-[4px_4px_0_#151130] hover:shadow-[6px_6px_0_#151130] hover:-translate-y-1 transition-[box-shadow,transform] duration-200 select-none overflow-hidden"
               >
                 {/* Top Theme Banner Accent */}
                 <div

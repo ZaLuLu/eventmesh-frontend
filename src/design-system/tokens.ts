@@ -9,18 +9,18 @@ export const TOKENS = {
   violet: '#0047FF',
   violetHover: '#0037CC',
 
-  // Canvas & Surfaces
-  bg: '#FFFFFF',
-  surface: '#FFFFFF',
-  subtle: '#F1F5F9',
-  line: '#E2E8F0',
+  // Canvas & Surfaces (Campus Funk Paper & Card Tokens)
+  bg: '#F6F1E7',
+  surface: '#FFFDF8',
+  subtle: '#EFE8D9',
+  line: '#E2DBD0',
 
-  // Text
-  text: '#0A0A0A',
-  text2: '#4B5563',
-  text3: '#64748B',
-  onDark: '#FFFFFF',
-  onDark2: '#94A3B8',
+  // Text (Deep Ink & Soft Ink)
+  text: '#151130',
+  text2: '#4A4668',
+  text3: '#6B6885',
+  onDark: '#F6F1E7',
+  onDark2: '#C8BEFA',
 
   // Status
   success: '#16A34A',
@@ -34,9 +34,9 @@ export const TOKENS = {
   accentSoft: 'rgba(0, 71, 255, 0.08)',
   onAccent: '#FFFFFF',
 
-  // Shadow (Crisp micro elevation, zero blur)
-  cardShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-  floatingShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+  // Shadow (Crisp physical offset elevation, zero blur)
+  cardShadow: '3px 3px 0 #151130',
+  floatingShadow: '5px 5px 0 #151130',
 
   // Border Radii
   radiusSmall: '8px',
@@ -47,14 +47,14 @@ export const TOKENS = {
   radiusCardOuter: '28px',
   radiusPill: '9999px',
 
-  // Admin Scope
-  adminBg: '#F3F5F6',
-  adminSurface: '#FFFFFF',
-  adminSidebar: '#0F1A24',
-  adminAccent: '#17645F',
-  adminAccentHover: '#0F4F4B',
-  adminLine: '#E0E3E6',
-  adminSubtle: '#E8ECEE',
+  // Admin Scope (Obsidian Studio + Lime)
+  adminBg: '#0F0D1F',
+  adminSurface: '#181530',
+  adminSidebar: '#0F0D1F',
+  adminAccent: '#D4F25A',
+  adminAccentHover: '#BCE23E',
+  adminLine: '#2D2852',
+  adminSubtle: '#1F1B3E',
 
   // Curated Club Palettes
   curatedPalettes: [

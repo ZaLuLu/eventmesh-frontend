@@ -1,5 +1,6 @@
+// Hallmark macrostructure: Editorial-About
 import React from 'react'
-import { Target, Eye, Mail, Phone, MapPin } from 'lucide-react'
+import { Target, Eye, EnvelopeSimple, Phone, MapPin } from '@phosphor-icons/react'
 import { useOrg } from '@/hooks/useOrg'
 
 export const AboutPage: React.FC = () => {
@@ -182,7 +183,7 @@ export const AboutPage: React.FC = () => {
         <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-5 rounded-panel border border-line bg-surface space-y-1">
             <span className="text-caption font-medium text-text-3 flex items-center gap-1.5">
-              <Mail className="h-4 w-4 text-accent" /> Contact email
+              <EnvelopeSimple className="h-4 w-4 text-accent" /> Contact email
             </span>
             <p className="font-semibold text-text text-small">support@eventmesh.xyz</p>
           </div>

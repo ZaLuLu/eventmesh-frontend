@@ -1,7 +1,7 @@
 import React from 'react'
 import { create } from 'zustand'
 import { motion, AnimatePresence } from 'motion/react'
-import { Check, AlertCircle, Info, X } from 'lucide-react'
+import { Check, WarningCircle, Info, X } from '@phosphor-icons/react'
 
 export interface ToastItem {
   id: string
@@ -66,7 +66,7 @@ export const ToastContainer: React.FC = () => {
         {toasts.map((t) => {
           const typeIcons = {
             success: <Check className="h-4 w-4 text-[#8FE3C6] flex-shrink-0" />,
-            error: <AlertCircle className="h-4 w-4 text-[#FFA69E] flex-shrink-0" />,
+            error: <WarningCircle className="h-4 w-4 text-[#FFA69E] flex-shrink-0" />,
             info: <Info className="h-4 w-4 text-[#E7E4DE] flex-shrink-0" />,
           }
 
@@ -77,7 +77,7 @@ export const ToastContainer: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 12 }}
               transition={{ duration: 0.2 }}
-              className="pointer-events-auto bg-text text-white rounded-[10px] shadow-floating p-4 flex items-start gap-3 border border-text/10"
+              className="pointer-events-auto bg-ink text-white rounded-[10px] shadow-[4px_4px_0_#000] p-4 flex items-start gap-3 border-2 border-white/20"
             >
               <div className="mt-0.5">
                 {typeIcons[t.type || 'info']}

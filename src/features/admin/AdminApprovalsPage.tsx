@@ -1,5 +1,6 @@
+// Hallmark macrostructure: AdminConsole-Approvals
 import React from 'react'
-import { Check } from 'lucide-react'
+import { Check } from '@phosphor-icons/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api'
 import { Button } from '@/design-system/primitives/Button'
@@ -69,7 +70,7 @@ export const AdminApprovalsPage: React.FC = () => {
                     surface="admin"
                     size="sm"
                     loading={approveMutation.isPending}
-                    icon={<Check className="h-4 w-4" />}
+                    icon={<Check size={16} weight="bold" />}
                     onClick={() => approveMutation.mutate(evt.id)}
                   >
                     Approve & Publish

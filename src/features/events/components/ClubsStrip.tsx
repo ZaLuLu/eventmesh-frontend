@@ -41,7 +41,7 @@ export const ClubsStrip: React.FC = () => {
           <Link
             key={club.id}
             to={`/clubs/${club.slug || club.id}`}
-            className="group relative flex flex-col justify-between p-6 rounded-ticket border-[1.5px] border-ink bg-card shadow-offset transition-all duration-200 hover:-translate-y-1 hover:shadow-offset-lg select-none overflow-hidden"
+            className="group relative flex flex-col justify-between p-6 rounded-ticket border-[1.5px] border-ink bg-card shadow-offset transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-offset-lg select-none overflow-hidden"
           >
             {/* Top Bar: Club Color Dot & Member Sticker */}
             <div className="flex items-center justify-between gap-3 mb-4">
@@ -61,7 +61,7 @@ export const ClubsStrip: React.FC = () => {
               <button
                 type="button"
                 onClick={(e) => handleFollowClick(e, club.id)}
-                className={`px-3 py-1 rounded-full text-xs font-bold border border-ink flex items-center gap-1 transition-all ${
+                className={`px-3 py-1 rounded-full text-xs font-bold border border-ink flex items-center gap-1 transition-colors ${
                   isFollowed
                     ? 'bg-mint text-ink'
                     : 'bg-paper-2 text-ink hover:bg-ink hover:text-paper'
@@ -89,7 +89,7 @@ export const ClubsStrip: React.FC = () => {
                 <ArrowUpRight
                   size={18}
                   weight="bold"
-                  className="text-ink/40 group-hover:text-cobalt group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all"
+                  className="text-ink/40 group-hover:text-cobalt group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-[color,transform]"
                 />
               </h3>
               <p className="text-sm text-ink-soft line-clamp-2 leading-relaxed">

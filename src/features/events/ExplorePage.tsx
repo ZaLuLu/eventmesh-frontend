@@ -36,11 +36,11 @@ const DenseExploreRow: React.FC<{ event: Event }> = ({ event }) => {
   const isWaitlist = event.seatsLeft === 0 || (event as any).isWaitlist
 
   return (
-    <article className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border-[1.5px] border-ink/15 hover:border-ink hover:shadow-offset transition-all duration-150 select-none">
+    <article className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border-[1.5px] border-ink/15 hover:border-ink hover:shadow-offset transition-[border-color,box-shadow] duration-150 select-none">
       {/* Left: Date Stamp & Particulars */}
       <div className="flex items-start sm:items-center gap-4 min-w-0">
         <div className="w-14 h-14 rounded-xl bg-paper-2 border border-ink/15 flex flex-col items-center justify-center flex-shrink-0 text-center font-mono">
-          <span className="text-[10px] uppercase font-bold text-cobalt tracking-wider">
+          <span className="text-xs uppercase font-bold text-cobalt tracking-wider">
             {new Date(event.startsAt).toLocaleDateString('en-IN', { month: 'short' })}
           </span>
           <span className="font-display font-extrabold text-lg text-ink leading-none">
@@ -233,7 +233,7 @@ export const ExplorePage: React.FC = () => {
                 type="button"
                 onClick={() => setParam('category', cat.id)}
                 className={cn(
-                  'px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shadow-sm',
+                  'px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-[color,background-color,border-color,box-shadow] shadow-sm',
                   isSelected
                     ? 'bg-ink text-paper shadow-offset'
                     : 'bg-card text-ink hover:bg-paper-2 border border-ink/15'
@@ -267,7 +267,7 @@ export const ExplorePage: React.FC = () => {
             type="button"
             onClick={() => setParam('free', freeOnly ? '' : 'true')}
             className={cn(
-              'h-9 px-3 rounded-full border text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm',
+              'h-9 px-3 rounded-full border text-xs font-semibold flex items-center gap-1.5 transition-[color,background-color,border-color,box-shadow] shadow-sm',
               freeOnly
                 ? 'bg-mint text-ink border-ink shadow-offset'
                 : 'bg-card text-ink border-ink/20 hover:bg-paper-2'
@@ -296,7 +296,7 @@ export const ExplorePage: React.FC = () => {
               type="button"
               onClick={() => setViewMode('grid')}
               className={cn(
-                'w-8 h-8 rounded-full flex items-center justify-center transition-all',
+                'w-8 h-8 rounded-full flex items-center justify-center transition-[color,background-color,box-shadow]',
                 viewMode === 'grid'
                   ? 'bg-ink text-paper shadow-offset'
                   : 'text-ink-soft hover:text-ink'
@@ -309,7 +309,7 @@ export const ExplorePage: React.FC = () => {
               type="button"
               onClick={() => setViewMode('list')}
               className={cn(
-                'w-8 h-8 rounded-full flex items-center justify-center transition-all',
+                'w-8 h-8 rounded-full flex items-center justify-center transition-[color,background-color,box-shadow]',
                 viewMode === 'list'
                   ? 'bg-ink text-paper shadow-offset'
                   : 'text-ink-soft hover:text-ink'
@@ -407,7 +407,7 @@ export const ExplorePage: React.FC = () => {
                   type="button"
                   onClick={() => setParam('category', cat.id)}
                   className={cn(
-                    'px-3 py-1.5 rounded-full text-xs font-semibold transition-all',
+                    'px-3 py-1.5 rounded-full text-xs font-semibold transition-[color,background-color,border-color,box-shadow]',
                     activeCategory === cat.id
                       ? 'bg-ink text-paper shadow-offset'
                       : 'bg-card text-ink border border-ink/15'

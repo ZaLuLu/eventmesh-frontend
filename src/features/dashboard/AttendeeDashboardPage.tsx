@@ -321,7 +321,7 @@ export const AttendeeDashboardPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setBadgeViewMode('3d')}
-                  className={`px-2.5 py-1 rounded-full transition-all flex items-center gap-1 ${
+                  className={`px-2.5 py-1 rounded-full transition-colors flex items-center gap-1 ${
                     badgeViewMode === '3d'
                       ? 'bg-ink text-paper font-bold shadow-xs'
                       : 'text-ink-soft hover:text-ink'
@@ -332,7 +332,7 @@ export const AttendeeDashboardPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setBadgeViewMode('2d')}
-                  className={`px-2.5 py-1 rounded-full transition-all flex items-center gap-1 ${
+                  className={`px-2.5 py-1 rounded-full transition-colors flex items-center gap-1 ${
                     badgeViewMode === '2d'
                       ? 'bg-ink text-paper font-bold shadow-xs'
                       : 'text-ink-soft hover:text-ink'
@@ -408,7 +408,7 @@ export const AttendeeDashboardPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('passes')}
-            className={`px-4 py-2 rounded-full font-display font-bold text-sm transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-full font-display font-bold text-sm transition-colors flex items-center gap-2 ${
               activeTab === 'passes'
                 ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
                 : 'bg-paper text-ink hover:bg-card'
@@ -424,7 +424,7 @@ export const AttendeeDashboardPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('certificates')}
-            className={`px-4 py-2 rounded-full font-display font-bold text-sm transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-full font-display font-bold text-sm transition-colors flex items-center gap-2 ${
               activeTab === 'certificates'
                 ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
                 : 'bg-paper text-ink hover:bg-card'
@@ -440,7 +440,7 @@ export const AttendeeDashboardPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('clubs')}
-            className={`px-4 py-2 rounded-full font-display font-bold text-sm transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-full font-display font-bold text-sm transition-colors flex items-center gap-2 ${
               activeTab === 'clubs'
                 ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
                 : 'bg-paper text-ink hover:bg-card'
@@ -574,7 +574,7 @@ export const AttendeeDashboardPage: React.FC = () => {
                   <Link
                     key={club.id}
                     to={`/clubs/${club.slug}`}
-                    className="flex items-center gap-3 p-4 rounded-[14px] bg-card border-2 border-ink hover:shadow-[3px_3px_0_#151130] transition-all"
+                    className="flex items-center gap-3 p-4 rounded-[14px] bg-card border-2 border-ink hover:shadow-[3px_3px_0_#151130] transition-[box-shadow,transform]"
                   >
                     <span
                       className="h-4 w-4 rounded-full border border-ink flex-shrink-0"

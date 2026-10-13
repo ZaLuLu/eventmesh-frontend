@@ -1,6 +1,7 @@
+// Hallmark macrostructure: AdminConsole-EventWizard
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { Trash2, Save } from 'lucide-react'
+import { Trash, FloppyDisk } from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
 import { useClubs } from '@/hooks/useClubs'
 import { useEvent, useCreateEvent, useUpdateEvent, usePublishEvent } from '@/hooks/useEvents'
@@ -231,7 +232,7 @@ export const AdminEventWizardPage: React.FC = () => {
             surface="admin"
             variant="secondary"
             size="sm"
-            icon={<Save className="h-4 w-4" />}
+            icon={<FloppyDisk size={16} weight="bold" />}
             onClick={handleSaveDraft}
           >
             Save Draft
@@ -443,7 +444,7 @@ export const AdminEventWizardPage: React.FC = () => {
                     onClick={() => setSchedule(schedule.filter((_, i) => i !== idx))}
                     className="text-text-3 hover:text-danger p-1"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash size={16} weight="bold" />
                   </button>
                 </div>
               ))}
@@ -508,7 +509,7 @@ export const AdminEventWizardPage: React.FC = () => {
                     onClick={() => setPeople(people.filter((_, i) => i !== idx))}
                     className="text-text-3 hover:text-danger p-1"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash size={16} weight="bold" />
                   </button>
                 </div>
               ))}

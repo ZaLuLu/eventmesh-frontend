@@ -1,6 +1,7 @@
+// Hallmark macrostructure: AdminConsole-Dev
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { RefreshCw, Check } from 'lucide-react'
+import { ArrowCounterClockwise, Check } from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
 import { SEED_DEMO_USERS } from '@/api/adapters/mock/seedData'
 import { mockStore } from '@/api/adapters/mock'
@@ -61,7 +62,7 @@ export const DevAccountsPage: React.FC = () => {
           <Button
             variant="secondary"
             size="sm"
-            icon={<RefreshCw className="h-4 w-4" />}
+            icon={<ArrowCounterClockwise className="h-4 w-4" />}
             onClick={handleResetData}
           >
             Reset Seed Data

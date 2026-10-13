@@ -76,7 +76,7 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
                           : [...currentArray, opt]
                         onChange(field.id, updated)
                       }}
-                      className={`px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-colors ${
                         isChecked
                           ? 'bg-ink text-paper border-ink shadow-[2px_2px_0_#151130]'
                           : 'bg-card text-ink-soft border-ink/30 hover:border-ink'
@@ -87,8 +87,8 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
                   )
                 })}
               </div>
-              {field.helpText && <p className="text-[11px] text-ink-soft">{field.helpText}</p>}
-              {error && <p className="text-[11px] text-[#FF5C8A] font-bold">{error}</p>}
+              {field.helpText && <p className="text-xs text-ink-soft">{field.helpText}</p>}
+              {error && <p className="text-xs text-[#FF5C8A] font-bold">{error}</p>}
             </div>
           )
         }
@@ -114,10 +114,10 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
                   {field.required && <span className="ml-1 text-[#FF5C8A] font-bold">*</span>}
                 </label>
                 {field.helpText && (
-                  <p className="text-[11px] text-ink-soft mt-0.5">{field.helpText}</p>
+                  <p className="text-xs text-ink-soft mt-0.5">{field.helpText}</p>
                 )}
                 {error && (
-                  <p className="text-[11px] text-[#FF5C8A] font-bold mt-0.5">{error}</p>
+                  <p className="text-xs text-[#FF5C8A] font-bold mt-0.5">{error}</p>
                 )}
               </div>
             </div>
@@ -143,9 +143,9 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
                   className="text-xs text-ink-soft file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-2 file:border-ink file:text-xs file:font-bold file:bg-card file:text-ink cursor-pointer"
                 />
               </div>
-              {value && <p className="text-[11px] font-mono text-ink">Selected: {value}</p>}
-              {field.helpText && <p className="text-[11px] text-ink-soft">{field.helpText}</p>}
-              {error && <p className="text-[11px] text-[#FF5C8A] font-bold">{error}</p>}
+              {value && <p className="text-xs font-mono text-ink">Selected: {value}</p>}
+              {field.helpText && <p className="text-xs text-ink-soft">{field.helpText}</p>}
+              {error && <p className="text-xs text-[#FF5C8A] font-bold">{error}</p>}
             </div>
           )
         }

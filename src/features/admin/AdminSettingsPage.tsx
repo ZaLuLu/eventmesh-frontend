@@ -1,5 +1,6 @@
+// Hallmark macrostructure: AdminConsole-Settings
 import React, { useState, useEffect } from 'react'
-import { Save } from 'lucide-react'
+import { FloppyDisk } from '@phosphor-icons/react'
 import { useOrg } from '@/hooks/useOrg'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api'
@@ -148,7 +149,7 @@ export const AdminSettingsPage: React.FC = () => {
             surface="admin"
             size="sm"
             loading={updateMutation.isPending}
-            icon={<Save className="h-4 w-4" />}
+            icon={<FloppyDisk size={16} weight="bold" />}
           >
             Save Configuration
           </Button>

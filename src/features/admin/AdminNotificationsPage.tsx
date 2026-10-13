@@ -1,5 +1,6 @@
+// Hallmark macrostructure: AdminConsole-Notifications
 import React, { useState } from 'react'
-import { Send } from 'lucide-react'
+import { PaperPlaneRight } from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { useAdminEvents } from '@/hooks/useEvents'
@@ -230,7 +231,7 @@ export const AdminNotificationsPage: React.FC = () => {
             size="sm"
             fullWidth
             loading={sendMutation.isPending}
-            icon={<Send className="h-4 w-4" />}
+            icon={<PaperPlaneRight size={16} weight="bold" />}
           >
             Dispatch Broadcast
           </Button>

@@ -1,3 +1,4 @@
+// Hallmark macrostructure: AdminConsole-Registrations
 import React, { useState } from 'react'
 import { DownloadSimple, MagnifyingGlass, UserCheck, ArrowUpRight } from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
@@ -88,7 +89,7 @@ export const AdminRegistrationsPage: React.FC = () => {
           type="button"
           onClick={handleExportCSV}
           disabled={registrations.length === 0}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-[12px] bg-[#D4F25A] hover:bg-[#c2e245] text-[#0F0D1F] text-xs font-bold transition-all disabled:opacity-40"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-[12px] bg-[#D4F25A] hover:bg-[#c2e245] text-[#0F0D1F] text-xs font-bold transition-[background-color,transform] disabled:opacity-40"
         >
           <DownloadSimple className="w-4 h-4" weight="bold" />
           <span>Export CSV Roster</span>
@@ -169,14 +170,14 @@ export const AdminRegistrationsPage: React.FC = () => {
 
                   <td className="py-3 px-4">
                     <p className="font-bold text-white line-clamp-1">{reg.eventTitle}</p>
-                    <p className="text-[11px] text-white/50">
+                    <p className="text-xs text-white/50">
                       {reg.organizerName}
                     </p>
                   </td>
 
                   <td className="py-3 px-4">
                     <span
-                      className={`inline-block text-[11px] px-2.5 py-0.5 rounded-full border capitalize font-bold ${
+                      className={`inline-block text-xs px-2.5 py-0.5 rounded-full border capitalize font-bold ${
                         reg.status === 'checked_in'
                           ? 'bg-[#7FD8B8]/15 text-[#7FD8B8] border-[#7FD8B8]/30'
                           : reg.status === 'registered'
@@ -190,7 +191,7 @@ export const AdminRegistrationsPage: React.FC = () => {
                     </span>
                   </td>
 
-                  <td className="py-3 px-4 text-white/50 font-mono text-[11px] tabular-nums">
+                  <td className="py-3 px-4 text-white/50 font-mono text-xs tabular-nums">
                     {formatDate(reg.createdAt, 'medium')}
                   </td>
 

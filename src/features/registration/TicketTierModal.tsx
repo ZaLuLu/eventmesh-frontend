@@ -1,6 +1,7 @@
+// Hallmark macrostructure: Transactional-Modal
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { X, Ticket, Check } from 'lucide-react'
+import { X, Ticket, Check } from '@phosphor-icons/react'
 import { Event } from '@/api'
 import { Button } from '@/design-system/primitives/Button'
 
@@ -75,11 +76,11 @@ export const TicketTierModal: React.FC<TicketTierModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-text/40"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/50 animate-fade"
       role="dialog"
       aria-modal="true"
     >
-      <div className="relative w-full max-w-xl rounded-panel bg-surface border border-line shadow-floating p-6 sm:p-8 overflow-hidden">
+      <div className="relative w-full max-w-xl rounded-panel bg-card border-2 border-ink shadow-[6px_6px_0_var(--ink)] p-6 sm:p-8 overflow-hidden">
         {/* Close Button */}
         <button
           type="button"

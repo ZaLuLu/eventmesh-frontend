@@ -1,7 +1,8 @@
+// Hallmark macrostructure: Overlay-CommandPalette
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
-import { Search, X, Calendar, Users, Megaphone, ArrowUpRight } from 'lucide-react'
+import { MagnifyingGlass, X, CalendarBlank, Users, Megaphone, ArrowUpRight } from '@phosphor-icons/react'
 import { api, SearchResults } from '@/api'
 
 interface SearchModalProps {
@@ -77,12 +78,12 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="relative z-10 w-full max-w-2xl bg-surface border border-line rounded-panel shadow-floating flex flex-col max-h-[80vh] overflow-hidden"
+            className="relative z-10 w-full max-w-2xl bg-card border-2 border-ink rounded-panel shadow-[6px_6px_0_var(--ink)] flex flex-col max-h-[80vh] overflow-hidden"
           >
             {/* Search Input Bar (48px input, 10px radius) */}
-            <div className="p-4 border-b border-line">
-              <div className="flex items-center gap-3 px-3.5 h-12 bg-subtle rounded-[10px] border border-line">
-                <Search className="h-5 w-5 text-accent flex-shrink-0" />
+            <div className="p-4 border-b-2 border-ink bg-paper">
+              <div className="flex items-center gap-3 px-3.5 h-12 bg-card rounded-[10px] border-2 border-ink">
+                <MagnifyingGlass className="h-5 w-5 text-accent flex-shrink-0" />
                 <input
                   autoFocus
                   type="text"
@@ -131,7 +132,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
               {results.events.length > 0 && (
                 <div>
                   <div className="flex items-center gap-2 mb-2 text-caption font-semibold text-text-2">
-                    <Calendar className="h-4 w-4 text-accent" />
+                    <CalendarBlank className="h-4 w-4 text-accent" />
                     <span>Events ({results.events.length})</span>
                   </div>
                   <div className="space-y-1">

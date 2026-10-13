@@ -1,5 +1,6 @@
+// Hallmark macrostructure: AdminConsole-Gallery
 import React, { useState } from 'react'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash } from '@phosphor-icons/react'
 import { usePermission } from '@/hooks/usePermission'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api, OrganizerGalleryItem } from '@/api'
@@ -113,7 +114,7 @@ export const AdminGalleryPage: React.FC = () => {
             size="sm"
             fullWidth
             loading={addMutation.isPending}
-            icon={<Plus className="h-4 w-4" />}
+            icon={<Plus size={16} weight="bold" />}
           >
             Append to Archive
           </Button>
@@ -144,7 +145,7 @@ export const AdminGalleryPage: React.FC = () => {
                       className="text-text-3 hover:text-danger p-1 rounded-btn transition-colors"
                       title="Delete"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash size={14} weight="bold" />
                     </button>
                   </div>
                 </div>

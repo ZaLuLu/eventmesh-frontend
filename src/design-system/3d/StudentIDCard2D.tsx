@@ -78,7 +78,7 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
         aria-label="Student ID Badge"
       >
         <motion.div
-          className="relative w-full h-full transition-all duration-500 ease-out preserve-3d"
+          className="relative w-full h-full preserve-3d"
           animate={{ rotateY: isFlipped ? 180 : 0 }}
           transition={{ type: 'spring', stiffness: 260, damping: 20 }}
           style={{ transformStyle: 'preserve-3d' }}

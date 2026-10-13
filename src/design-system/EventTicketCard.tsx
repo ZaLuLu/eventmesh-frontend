@@ -41,7 +41,7 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
 
   return (
     <article
-      className={`group relative flex flex-col bg-card border-[1.5px] border-ink rounded-ticket overflow-hidden shadow-offset transition-all duration-200 hover:-translate-y-1 hover:shadow-offset-lg select-none ${className}`}
+      className={`group relative flex flex-col bg-card border-[1.5px] border-ink rounded-ticket overflow-hidden shadow-offset transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-offset-lg select-none ${className}`}
     >
       {/* 1. TOP COVER / POSTER STAGE */}
       <div className="relative w-full h-48 sm:h-52 overflow-hidden bg-paper-2 border-b border-ink">
@@ -50,7 +50,7 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
             src={event.poster}
             alt={event.title}
             loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover"
           />
         ) : (
           <PosterArt
@@ -94,7 +94,7 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
                 onBookmark(event.id)
               }}
               aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark event'}
-              className="pointer-events-auto p-1.5 rounded-full bg-card/90 backdrop-blur-xs border border-ink text-ink hover:bg-cobalt hover:text-white transition-colors shadow-[1px_1px_0_#151130]"
+              className="pointer-events-auto p-1.5 rounded-full bg-card/90 border border-ink text-ink hover:bg-cobalt hover:text-white transition-colors shadow-[1px_1px_0_var(--ink)]"
             >
               <BookmarkSimple
                 size={16}
@@ -118,7 +118,7 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
           {/* Club Chip & Date Row */}
           <div className="flex items-center justify-between gap-2 text-xs font-mono">
             <span
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-bold text-[11px] uppercase border"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-bold text-xs uppercase border"
               style={{
                 backgroundColor: clubTheme.color,
                 color: clubTheme.textColor,

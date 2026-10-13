@@ -1,3 +1,4 @@
+// Hallmark macrostructure: Overlay-NotificationInbox
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Bell, Check, Sparkle, Megaphone, Clock, Certificate, Ticket } from '@/design-system/Icon'

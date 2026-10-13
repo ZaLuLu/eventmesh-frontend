@@ -1,6 +1,7 @@
+// Hallmark macrostructure: AdminConsole-Dashboard
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Send } from 'lucide-react'
+import { Plus, PaperPlaneRight } from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { useQuery } from '@tanstack/react-query'
@@ -50,12 +51,12 @@ export const AdminDashboardPage: React.FC = () => {
 
         <div className="flex flex-wrap items-center gap-3">
           <Link to="/admin/events/new">
-            <Button surface="admin" size="sm" icon={<Plus className="h-4 w-4" />}>
+            <Button surface="admin" size="sm" icon={<Plus size={16} weight="bold" />}>
               Create Event
             </Button>
           </Link>
           <Link to="/admin/announcements">
-            <Button surface="admin" variant="secondary" size="sm" icon={<Send className="h-4 w-4" />}>
+            <Button surface="admin" variant="secondary" size="sm" icon={<PaperPlaneRight size={16} weight="bold" />}>
               Post Notice
             </Button>
           </Link>

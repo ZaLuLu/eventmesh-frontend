@@ -3,16 +3,16 @@ import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import {
   X,
-  Calendar,
+  CalendarBlank,
   MapPin,
   Users,
-  CheckCircle2,
-  Share2,
-  Bookmark,
+  CheckCircle,
+  ShareNetwork,
+  BookmarkSimple,
   ArrowRight,
-  ExternalLink,
-  Sparkles,
-} from 'lucide-react'
+  ArrowUpRight,
+  Sparkle,
+} from '@phosphor-icons/react'
 import { Event } from '@/api/contracts'
 import { PosterArtwork } from './PosterArtwork'
 import { Button } from './primitives/Button'
@@ -90,14 +90,14 @@ export const EventPeekDrawer: React.FC<EventPeekDrawerProps> = ({
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex justify-end">
-          {/* Backdrop with frosted blur */}
+          {/* Backdrop without blur */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-champion/60 backdrop-blur-sm"
+            className="fixed inset-0 bg-ink/50"
             aria-hidden="true"
           />
 
@@ -110,17 +110,17 @@ export const EventPeekDrawer: React.FC<EventPeekDrawerProps> = ({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-            className="relative z-10 w-full max-w-lg bg-surface text-ink border-l border-line shadow-2xl flex flex-col h-full overflow-hidden"
+            className="relative z-10 w-full max-w-lg bg-card text-ink border-l-2 border-ink shadow-[ -6px_0_0_var(--ink)] flex flex-col h-full overflow-hidden"
           >
             {/* Header Toolbar */}
-            <div className="px-6 py-4 border-b border-line flex items-center justify-between bg-surface/90 backdrop-blur sticky top-0 z-20">
+            <div className="px-6 py-4 border-b-2 border-ink flex items-center justify-between bg-card sticky top-0 z-20">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: clubColor }} />
-                <span className="text-[13px] font-semibold text-ink-muted uppercase tracking-wider">
+                <span className="text-xs font-semibold text-ink-soft uppercase tracking-wider">
                   {event.club?.name || event.organizerName}
                 </span>
                 {isVerified && (
-                  <CheckCircle2 className="w-3.5 h-3.5 fill-[#1FA34A] text-white" />
+                  <CheckCircle className="w-3.5 h-3.5 text-accent" />
                 )}
               </div>
 
@@ -131,7 +131,7 @@ export const EventPeekDrawer: React.FC<EventPeekDrawerProps> = ({
                   aria-label="Bookmark event"
                   className="p-2 rounded-full hover:bg-subtle text-ink-muted hover:text-champion transition-colors"
                 >
-                  <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-champion text-champion' : ''}`} />
+                  <BookmarkSimple className={`w-4 h-4 ${isBookmarked ? 'fill-champion text-champion' : ''}`} />
                 </button>
 
                 <button
@@ -140,7 +140,7 @@ export const EventPeekDrawer: React.FC<EventPeekDrawerProps> = ({
                   aria-label="Share event"
                   className="p-2 rounded-full hover:bg-subtle text-ink-muted hover:text-champion transition-colors"
                 >
-                  <Share2 className="w-4 h-4" />
+                  <ShareNetwork className="w-4 h-4" />
                 </button>
 
                 <button
@@ -198,7 +198,7 @@ export const EventPeekDrawer: React.FC<EventPeekDrawerProps> = ({
               {/* Quick Info Grid */}
               <div className="grid grid-cols-2 gap-3 p-4 rounded-panel bg-subtle/50 border border-line/80">
                 <div className="flex items-start gap-2.5">
-                  <Calendar className="w-4 h-4 text-champion mt-0.5 flex-shrink-0" />
+                  <CalendarBlank className="w-4 h-4 text-champion mt-0.5 flex-shrink-0" />
                   <div>
                     <span className="text-caption text-ink-muted block font-medium">Date & Time</span>
                     <span className="text-small font-semibold text-ink">{dateStr}</span>
@@ -226,7 +226,7 @@ export const EventPeekDrawer: React.FC<EventPeekDrawerProps> = ({
                 </div>
 
                 <div className="flex items-start gap-2.5">
-                  <Sparkles className="w-4 h-4 text-champion mt-0.5 flex-shrink-0" />
+                  <Sparkle className="w-4 h-4 text-champion mt-0.5 flex-shrink-0" />
                   <div>
                     <span className="text-caption text-ink-muted block font-medium">Certificate</span>
                     <span className="text-small font-semibold text-ink">Verified Digital Pass</span>
@@ -264,7 +264,7 @@ export const EventPeekDrawer: React.FC<EventPeekDrawerProps> = ({
               <Link to={eventHref} className="flex-1">
                 <Button variant="secondary" fullWidth size="md">
                   <span>Full Details</span>
-                  <ExternalLink className="w-4 h-4 ml-1.5" />
+                  <ArrowUpRight className="w-4 h-4 ml-1.5" />
                 </Button>
               </Link>
 

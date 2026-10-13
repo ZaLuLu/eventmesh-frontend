@@ -16,7 +16,7 @@ export const ForbiddenPage: React.FC = () => {
 
         <div className="space-y-2">
           <h1 className="font-display font-extrabold text-4xl sm:text-5xl text-ink tracking-tight">
-            Restricted <span className="font-accent italic text-pink">zone</span>
+            Restricted <span className="font-accent text-pink not-italic font-normal">zone</span>
           </h1>
           <p className="text-ink-soft text-sm sm:text-base font-sans leading-relaxed">
             Your active role does not have authorization to view this administrative console or operating desk.
@@ -29,7 +29,7 @@ export const ForbiddenPage: React.FC = () => {
             <ShieldWarning size={15} weight="bold" className="text-pink" />
             <span>RBAC Verification Notice</span>
           </div>
-          <p className="text-[11px] leading-normal">
+          <p className="text-xs leading-normal">
             Front-end route restrictions are UX-level indicators. Privilege boundaries are cryptographically enforced by the association backend gateway.
           </p>
         </div>

@@ -70,7 +70,7 @@ export const PublicShell: React.FC = () => {
               )}
             >
               {tab.icon}
-              <span className="text-[11px] mt-0.5 tracking-tight">{tab.label}</span>
+              <span className="text-xs mt-0.5 tracking-tight">{tab.label}</span>
             </Link>
           )
         })}

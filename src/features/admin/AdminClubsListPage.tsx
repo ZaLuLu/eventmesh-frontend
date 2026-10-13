@@ -1,6 +1,7 @@
+// Hallmark macrostructure: AdminConsole-ClubsList
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { ExternalLink } from 'lucide-react'
+import { ArrowUpRight } from '@phosphor-icons/react'
 import { useClubs } from '@/hooks/useClubs'
 
 export const AdminClubsListPage: React.FC = () => {
@@ -66,7 +67,7 @@ export const AdminClubsListPage: React.FC = () => {
                       className="px-2.5 py-1 border border-line rounded-btn hover:bg-subtle inline-flex items-center gap-1 text-caption text-text transition-colors"
                     >
                       <span>Public</span>
-                      <ExternalLink className="h-3 w-3" />
+                      <ArrowUpRight size={12} weight="bold" />
                     </Link>
                   </td>
                 </tr>

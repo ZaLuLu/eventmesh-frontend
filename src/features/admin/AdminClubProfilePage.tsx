@@ -1,5 +1,6 @@
+// Hallmark macrostructure: AdminConsole-ClubProfile
 import React, { useState, useEffect } from 'react'
-import { Palette, CheckCircle2, AlertTriangle, Save } from 'lucide-react'
+import { Palette, CheckCircle, Warning, FloppyDisk } from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { useClub, useUpdateClub } from '@/hooks/useClubs'
@@ -144,11 +145,11 @@ export const AdminClubProfilePage: React.FC = () => {
                 <span className="flex items-center gap-1 font-semibold">
                   {contrast.isAANormal ? (
                     <span className="text-success flex items-center gap-1">
-                      <CheckCircle2 className="h-3.5 w-3.5" /> WCAG AA Pass
+                      <CheckCircle size={14} weight="bold" /> WCAG AA Pass
                     </span>
                   ) : (
                     <span className="text-danger flex items-center gap-1">
-                      <AlertTriangle className="h-3.5 w-3.5" /> Fail (&lt; 4.5:1)
+                      <Warning size={14} weight="bold" /> Fail (&lt; 4.5:1)
                     </span>
                   )}
                 </span>
@@ -233,7 +234,7 @@ export const AdminClubProfilePage: React.FC = () => {
             surface="admin"
             size="sm"
             loading={updateMutation.isPending}
-            icon={<Save className="h-4 w-4" />}
+            icon={<FloppyDisk size={16} weight="bold" />}
           >
             Save Profile Updates
           </Button>
