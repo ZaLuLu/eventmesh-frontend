@@ -19,6 +19,8 @@ import { usePermission } from '@/hooks/usePermission'
 import { hasMultipleCampuses, APP_CONFIG, CampusLocation } from '@/config/appConfig'
 import { SoundToggleButton } from '@/design-system/SoundProvider'
 import { NotificationInbox } from '@/features/notifications/NotificationInbox'
+import { DiscoveryDrawer } from '@/features/events/components/DiscoveryDrawer'
+import { LanyardProfileOverlay } from '@/features/dashboard/components/LanyardProfileOverlay'
 import { cn } from '@/lib/utils'
 
 interface PublicHeaderProps {
@@ -33,6 +35,8 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isAccountOpen, setIsAccountOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isDiscoveryOpen, setIsDiscoveryOpen] = useState(false)
+  const [isLanyardOpen, setIsLanyardOpen] = useState(false)
   const [selectedCampus, setSelectedCampus] = useState(APP_CONFIG.campuses[0]?.name || 'Main Campus')
   const [isCampusOpen, setIsCampusOpen] = useState(false)
 
@@ -67,8 +71,18 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
               'bg-[var(--color-paper)]/85 backdrop-blur-xl border border-[var(--color-line)] shadow-[0_2px_12px_-2px_rgba(20,17,29,0.06)]'
             )}
           >
-            {/* Left: Minimal Wordmark & Campus Tag */}
-            <div className="flex items-center gap-3 sm:gap-5 flex-shrink-0">
+            {/* Left: Hamburger Discovery Trigger, Minimal Wordmark & Campus Tag */}
+            <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsDiscoveryOpen(true)}
+                className="p-1.5 text-ink-soft hover:text-ink hover:bg-surface-subtle rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                title="Filter events by category & club"
+                aria-label="Open discovery drawer"
+              >
+                <List size={18} weight="bold" />
+              </button>
+
               <Link
                 to="/"
                 className="flex items-center gap-2 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-full"
@@ -226,6 +240,20 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                         <span>Passes & Wallet</span>
                       </Link>
 
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsAccountOpen(false)
+                          setIsLanyardOpen(true)
+                        }}
+                        className="w-full text-left flex items-center gap-2 px-3.5 py-2 text-ink hover:text-accent hover:bg-surface-subtle transition-colors"
+                      >
+                        <span className="w-3.5 h-3.5 rounded-full bg-accent/20 text-accent font-bold text-[9px] flex items-center justify-center">
+                          ID
+                        </span>
+                        <span>3D Identity Pass</span>
+                      </button>
+
                       {canAccessAdmin() && (
                         <Link
                           to="/admin"
@@ -302,6 +330,18 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
           </div>
         )}
       </header>
+
+      {/* Slide-out Discovery Drawer (Categories, Clubs & Fast Filters) */}
+      <DiscoveryDrawer
+        isOpen={isDiscoveryOpen}
+        onClose={() => setIsDiscoveryOpen(false)}
+      />
+
+      {/* 3D Physics Lanyard Profile Experience */}
+      <LanyardProfileOverlay
+        isOpen={isLanyardOpen}
+        onClose={() => setIsLanyardOpen(false)}
+      />
     </>
   )
 }

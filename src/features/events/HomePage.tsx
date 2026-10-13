@@ -3,8 +3,8 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { usePromotedEvents, useNewestEvents } from '@/hooks/useEvents'
 import { api, Event, PaginatedResult } from '@/api'
-import { PromotedTicketStack } from './components/PromotedTicketStack'
-import { NewEventsRail } from './components/NewEventsRail'
+import { FeaturedEventsHero } from './components/FeaturedEventsHero'
+import { EventShowcaseGrid } from './components/EventShowcaseGrid'
 import { ClubsStrip } from './components/ClubsStrip'
 import { EventsToolbar } from './components/EventsToolbar'
 import { EventsDiscoveryView } from './components/EventsDiscoveryView'
@@ -146,84 +146,24 @@ export const HomePage: React.FC = () => {
   return (
     <div className="w-full bg-[var(--color-paper)] text-[var(--color-ink)] min-h-screen flex flex-col select-none">
       {/* ==============================================================
-          HERO ACT: TWO-COLUMN BORDERLESS SHOWCASE
-          Clean typography + Featured Artwork Stage
+          HERO ACT: FEATURED EVENTS DISCOVERY CAROUSEL
+          Kinetic horizontal slider adapting @reactbits-pro/about-15
           ============================================================== */}
-      <section className="relative w-full pt-8 pb-16 sm:pt-14 sm:pb-24 border-b border-line/60 overflow-hidden">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-            {/* Left Headline Stage */}
-            <div className="lg:col-span-7 space-y-6 text-left">
-              {/* Live Signal Indicator */}
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="font-mono text-xs uppercase tracking-wider text-accent font-medium">
-                  Autumn Season 2026 · Verified Collectives
-                </span>
-              </div>
-
-              {/* Upright Roman Headline (Gate 38a) */}
-              <h1 className="font-sans font-semibold text-4xl sm:text-6xl tracking-tight text-ink leading-[1.05]">
-                Where student ideas make{' '}
-                <span className="text-accent">
-                  noise.
-                </span>
-              </h1>
-
-              {/* Subcopy */}
-              <p className="text-base sm:text-lg text-ink-soft max-w-lg leading-relaxed">
-                Handcrafted hackathons, algorithmic sprints, and design salons from autonomous campus collectives. Grab a seat in two taps.
-              </p>
-
-              {/* Primary Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <a
-                  href="#discovery"
-                  className="inline-flex items-center gap-2 h-11 px-6 rounded-full bg-ink text-paper hover:bg-accent hover:text-white text-sm font-medium transition-colors"
-                >
-                  <span>Browse sessions</span>
-                  <ArrowDown size={14} weight="bold" />
-                </a>
-
-                <Link
-                  to="/attendee/dashboard"
-                  className="inline-flex items-center gap-2 h-11 px-6 rounded-full bg-surface-subtle hover:bg-accent-soft text-ink hover:text-accent border border-line text-sm font-medium transition-colors"
-                >
-                  <Ticket size={15} weight="bold" className="text-accent" />
-                  <span>My tickets</span>
-                </Link>
-              </div>
-
-              {/* Honest Metadata Line (Gate 46) */}
-              <div className="pt-6 flex items-center gap-6 text-xs font-mono text-ink-muted border-t border-line/60">
-                <div>
-                  <span className="font-semibold text-ink">5</span> flagship sessions
-                </div>
-                <span>·</span>
-                <div>
-                  <span className="font-semibold text-ink">100%</span> verified student rsvp
-                </div>
-                <span>·</span>
-                <div>
-                  <span className="font-semibold text-ink">Zero</span> container slop
-                </div>
-              </div>
-            </div>
-
-            {/* Right: Featured Showcase Card */}
-            <div className="lg:col-span-5 flex justify-center lg:justify-end">
-              <PromotedTicketStack events={promoted} />
-            </div>
-          </div>
-        </div>
-      </section>
+      <FeaturedEventsHero events={promoted.length > 0 ? promoted : discoveryEvents} />
 
       {/* ==============================================================
-          SECTION 1: NEWEST ACROSS CAMPUS
+          SECTION 1: RECENTLY UPLOADED SESSIONS
+          Showcase Grid adapting @reactbits-pro/showcase-4 patterns
           ============================================================== */}
-      <section className="relative w-full py-14 sm:py-20 border-b border-line/60">
+      <section className="relative w-full py-12 sm:py-16 border-b border-line/60">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <NewEventsRail events={newestEvents} isLoading={isNewestLoading} />
+          <EventShowcaseGrid
+            events={newestEvents.length > 0 ? newestEvents : discoveryEvents}
+            title="Recently Scheduled Sessions"
+            subtitle="Browse newly announced hackathons, workshops, and gatherings across student guilds."
+            showCategoryFilters={true}
+            isLoading={isNewestLoading}
+          />
         </div>
       </section>
 

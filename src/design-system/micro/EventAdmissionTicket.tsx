@@ -18,15 +18,16 @@ import {
   QrCode,
   X,
   Ticket,
-  Scissors,
-  WarningCircle,
-} from '@phosphor-icons/react'
-import { Sticker } from '@/design-system/primitives/Sticker'
+  ArrowsClockwise,
+} from '@/design-system/Icon'
+import { Scissors } from '@phosphor-icons/react'
+import { cn } from '@/lib/utils'
 
 export interface EventAdmissionTicketProps {
   registration: {
     id: string
     ticketCode?: string
+    eventId?: string
     eventTitle?: string
     eventStartsAt?: string
     createdAt: string
@@ -48,27 +49,30 @@ export interface EventAdmissionTicketProps {
   onClose?: () => void
 }
 
+/**
+ * EventAdmissionTicket:
+ * Centered, responsive digital admission pass with repeatable user-controlled visual tear
+ * and permanent server-validated QR check-in redemption.
+ *
+ * CRITICAL DISCIPLINE: Visual tearing NEVER consumes admission or changes server state.
+ * Only verified gate check-in transitions the pass into the permanent Admitted state.
+ */
 export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
   registration,
   state,
-  demoMode = false,
+  demoMode = true,
   onAdmit,
   disabled = false,
   className = '',
   floatingCanvas = false,
   onClose,
 }) => {
+  // Authoritative server admission status
   const backendAdmitted = state ? state === 'checked_in' : registration.status === 'checked_in'
-  const [isLocallyTorn, setIsLocallyTorn] = useState(backendAdmitted)
 
-  // Sync with prop changes
-  useEffect(() => {
-    if (backendAdmitted) {
-      setIsLocallyTorn(true)
-    }
-  }, [backendAdmitted])
+  // User-controlled tactile visual tear state (independent of server admission)
+  const [isVisualTorn, setIsVisualTorn] = useState(false)
 
-  const isTorn = backendAdmitted || isLocallyTorn
   const ticketCode = registration.ticketCode || `PASS-${registration.id.slice(0, 8).toUpperCase()}`
   const passSerial = registration.id.slice(0, 6).toUpperCase()
 
@@ -77,46 +81,54 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
     Math.abs(ticketCode.split('').reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7) % 900000) + 100000
   ).slice(0, 6)
 
-  // QR Code payload: signed token from backend or structured standard
-  const qrValue = registration.verificationToken || `EVENTMESH:${ticketCode}:${registration.id}`
+  // Standardized structured QR payload matching AdminCheckinPage validator
+  const qrValue = JSON.stringify({
+    v: 1,
+    ticketId: ticketCode,
+    code: ticketCode,
+    registrationId: registration.id,
+    eventId: registration.eventId || '',
+    sig: `SIG_${registration.id.slice(0, 8)}`,
+  })
 
   // Format admission timestamp
   const admissionTimestamp = registration.checkedInAt
     ? formatTime(registration.checkedInAt)
     : formatTime(new Date().toISOString())
 
-  const triggerDigitalTear = () => {
-    if (isTorn || disabled) return
-
+  // User gesture: Trigger visual tear (repeatable, tactile only)
+  const triggerVisualTear = () => {
+    if (backendAdmitted || isVisualTorn || disabled) return
     playPaperTearSound()
     playTearImpulse()
-    setIsLocallyTorn(true)
-
-    // Gate chime & confetti upon scan completion
-    setTimeout(() => {
-      playGateAdmissionChime()
-      fireCelebrationConfetti()
-      if (onAdmit) {
-        onAdmit()
-      }
-    }, 750)
+    setIsVisualTorn(true)
   }
 
-  // Real-time venue gate listener: tears when volunteer scanner hits /admin/checkin
+  // User gesture: Reset visual tear (repeatable before admission)
+  const resetVisualTear = () => {
+    if (backendAdmitted) return
+    setIsVisualTorn(false)
+  }
+
+  // Real-time venue gate listener: When volunteer scanner records check-in at /admin/checkin
   useEffect(() => {
     let channel: BroadcastChannel | null = null
     try {
       channel = new BroadcastChannel('eventmesh_gate_admission')
       channel.onmessage = (event) => {
         if (event.data?.registrationId === registration.id || event.data?.ticketCode === ticketCode) {
-          triggerDigitalTear()
+          playGateAdmissionChime()
+          fireCelebrationConfetti()
+          if (onAdmit) onAdmit()
         }
       }
     } catch {}
 
     const handleCustomAdmitted = (e: any) => {
       if (e.detail?.registrationId === registration.id || e.detail?.ticketCode === ticketCode) {
-        triggerDigitalTear()
+        playGateAdmissionChime()
+        fireCelebrationConfetti()
+        if (onAdmit) onAdmit()
       }
     }
     window.addEventListener('eventmesh_gate_admitted', handleCustomAdmitted)
@@ -125,7 +137,7 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
       channel?.close()
       window.removeEventListener('eventmesh_gate_admitted', handleCustomAdmitted)
     }
-  }, [registration.id, ticketCode, isTorn, disabled])
+  }, [registration.id, ticketCode, onAdmit])
 
   // ESC key listener for floating canvas
   useEffect(() => {
@@ -137,79 +149,74 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [floatingCanvas, onClose])
 
-  // Dimensions for natural collegiate paper pass
-  const WIDTH = 720
-  const HEIGHT = 280
-  const STUB_SIZE = 220
+  // Effective torn display state for the TearTicket component
+  const isPhysicallyTorn = backendAdmitted ? false : isVisualTorn
 
   const content = (
-    <div className={`relative select-none flex flex-col items-center ${className}`}>
-      {/* Accessibility Status Region (F-15) */}
+    <div className={cn('relative select-none flex flex-col items-center max-w-full', className)}>
+      {/* Screen Reader Announcement */}
       <div className="sr-only" aria-live="polite">
-        {isTorn
+        {backendAdmitted
           ? `Ticket validated. Admitted to ${registration.eventTitle || 'event'} at ${admissionTimestamp}.`
-          : `Ticket intact. Present QR code to venue gate volunteer.`}
+          : `Ticket intact. Present QR code to venue coordinator.`}
       </div>
 
-      {/* Floating Canvas Ticket Stage */}
-      <div className="w-full flex justify-center py-2 overflow-visible">
+      {/* Centered Ticket Stage with Responsive Scaling Container */}
+      <div className="w-full max-w-[700px] overflow-visible flex justify-center py-2">
         <TearTicket
-          width={WIDTH}
-          height={HEIGHT}
-          stubSize={STUB_SIZE}
+          width={680}
+          height={280}
+          stubSize={210}
           radius={16}
           holes={11}
           notch={14}
           roughness={2}
-          tearAngle={28}
-          stretch={34}
+          tearAngle={22}
+          stretch={30}
           resistance={0.4}
-          torn={isTorn}
-          disabled={disabled || (!demoMode && !isTorn)}
-          background="#FFFDF8" // Warm cardstock paper
-          stubBackground="#0047FF" // Electric Cobalt gate stub
-          color="#151130"
-          borderColor="#151130"
-          borderWidth={1.5}
-          tilt={true}
-          tiltMax={5}
-          className="shadow-[4px_4px_0_#151130]"
-          onTear={() => {
-            playGateAdmissionChime()
-            fireCelebrationConfetti()
-            if (onAdmit) onAdmit()
-          }}
+          torn={isPhysicallyTorn}
+          disabled={backendAdmitted || disabled}
+          background="#FAF9FC" // Alabaster Paper
+          stubBackground="#14111D" // Obsidian Slate Gate Stub
+          color="#14111D"
+          borderColor="#E8E5EE"
+          borderWidth={1}
+          tilt={!backendAdmitted}
+          tiltMax={4}
+          className="shadow-[0_8px_30px_-4px_rgba(20,17,29,0.08)]"
+          onTear={triggerVisualTear}
           stub={
             /* Physical Gate Stub */
             <div
-              onClick={demoMode && !isTorn && !disabled ? triggerDigitalTear : undefined}
-              className={`h-full flex flex-col justify-between items-center text-center p-4 font-mono bg-cobalt text-white select-none relative ${
-                demoMode && !isTorn && !disabled ? 'cursor-pointer hover:bg-[#0037CC] transition-colors' : ''
-              }`}
+              onClick={!backendAdmitted && !isVisualTorn ? triggerVisualTear : undefined}
+              className={cn(
+                'h-full flex flex-col justify-between items-center text-center p-4 font-mono bg-[#14111D] text-white select-none relative',
+                !backendAdmitted && !isVisualTorn ? 'cursor-pointer hover:bg-[#1D1929] transition-colors' : ''
+              )}
               title={
-                demoMode && !isTorn && !disabled
-                  ? 'Click to simulate gate check-in tear'
-                  : 'Official venue check-in stub'
+                backendAdmitted
+                  ? 'Official venue admission record'
+                  : 'Click or drag to test paper tear'
               }
             >
               {/* Stub Header */}
-              <div className="w-full border-b border-white/20 pb-2 flex items-center justify-between">
-                <span className="text-[10px] tracking-widest text-white/90 font-bold uppercase">
+              <div className="w-full border-b border-white/15 pb-2 flex items-center justify-between">
+                <span className="text-[10px] tracking-widest text-accent font-bold uppercase">
                   GATE STUB
                 </span>
-                <span className="text-[9px] text-white/70 font-mono">
+                <span className="text-[10px] text-white/60 font-mono">
                   #{passSerial}
                 </span>
               </div>
 
-              {/* Center OTP & Check-in Details */}
+              {/* Center OTP & Check-in Status */}
               <div className="my-auto w-full space-y-2">
                 <div>
                   <p className="text-xs font-bold text-white tracking-wider">
                     {ticketCode}
                   </p>
-                  <p className="text-[10px] text-white/80 uppercase tracking-wider">
-                    VENUE CHECK-IN OTP
+                  <p className="text-[9px] text-white/60 uppercase tracking-wider">
+                    VENUE ENTRY OTP
                   </p>
                 </div>
 
@@ -218,138 +225,136 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
                   <CodeSlots
                     value={rollingOtp}
                     length={6}
-                    status={isTorn ? 'success' : 'idle'}
-                    slotSize={22}
+                    status={backendAdmitted ? 'success' : 'idle'}
+                    slotSize={20}
                     radius={4}
-                    gap={4}
-                    className="bg-black/30 border border-white/30 px-2 py-1 text-white"
+                    gap={3}
+                    className="bg-black/40 border border-white/20 px-2 py-1 text-white text-xs font-mono"
                   />
                 </div>
 
-                {/* Status Indicator */}
+                {/* Status Indicator Pill */}
                 <div className="pt-1">
-                  {isTorn ? (
-                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-mint text-ink text-[10px] font-bold tracking-wider rounded-full border border-ink shadow-[1px_1px_0_#151130]">
-                      <CheckCircle className="w-3.5 h-3.5" weight="bold" />
+                  {backendAdmitted ? (
+                    <div className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-wider rounded-full border border-emerald-500/40">
+                      <CheckCircle size={13} weight="bold" />
                       <span>ADMITTED ✓</span>
                     </div>
-                  ) : demoMode ? (
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-white/15 border border-white/30 text-white text-[9px] font-medium font-mono hover:bg-white/25 transition-colors rounded-full">
-                      <Scissors className="w-3 h-3" />
-                      <span>CLICK TO TEAR (DEMO)</span>
+                  ) : isVisualTorn ? (
+                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-accent/20 text-accent text-[9px] font-mono rounded-full border border-accent/40">
+                      <span>TORN (TEST)</span>
                     </div>
                   ) : (
-                    <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-black/20 text-white/90 text-[9px] font-mono rounded-full">
-                      <span>GATE VOLUNTEER SCAN</span>
+                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-white/10 text-white/80 text-[9px] font-mono rounded-full">
+                      <span>VENUE GATE READY</span>
                     </div>
                   )}
                 </div>
               </div>
 
               {/* Stub Footer */}
-              <div className="text-[9px] text-white/70 border-t border-dashed border-white/20 pt-2 w-full flex items-center justify-between font-mono">
-                <span>CAMPUS GATE</span>
-                <span className="font-bold text-white">{isTorn ? 'TORN / ADMITTED' : 'INTACT'}</span>
+              <div className="text-[9px] text-white/50 border-t border-dashed border-white/15 pt-2 w-full flex items-center justify-between font-mono">
+                <span>GATE PASS</span>
+                <span className="font-bold text-white/80">
+                  {backendAdmitted ? 'VALIDATED' : isVisualTorn ? 'TORN' : 'INTACT'}
+                </span>
               </div>
             </div>
           }
         >
-          {/* Main Pass Body (Natural Warm Paper #FFFDF8) */}
+          {/* Main Pass Body (Clean Alabaster Surface) */}
           <div className="h-full p-5 sm:p-6 flex flex-col justify-between bg-card text-ink select-none relative overflow-hidden">
             {/* Top Bar */}
-            <div className="flex items-center justify-between border-b border-ink/15 pb-2.5">
+            <div className="flex items-center justify-between border-b border-line pb-2.5">
               <div className="flex items-center gap-2">
-                <span className="font-display font-black text-xs uppercase px-2 py-0.5 bg-cobalt text-white border border-ink shadow-[1px_1px_0_#151130]">
+                <span className="font-sans font-bold text-xs uppercase px-2.5 py-0.5 bg-ink text-paper rounded-md">
                   EVENTMESH
                 </span>
                 <span className="text-xs font-mono text-ink-soft uppercase font-semibold">
-                  {registration.tierName || 'GENERAL ADMISSION'}
+                  {registration.tierName || 'GENERAL PASS'}
                 </span>
                 {registration.teamName && (
-                  <Sticker color="tangerine" size="sm" className="font-mono text-[9px]">
+                  <span className="px-2 py-0.5 rounded-md bg-accent/10 text-accent font-mono text-[10px] font-semibold">
                     TEAM: {registration.teamName}
-                  </Sticker>
+                  </span>
                 )}
               </div>
 
               <div>
-                {isTorn ? (
-                  <span className="text-xs font-mono uppercase px-2.5 py-0.5 bg-mint text-ink font-bold border border-ink shadow-[1px_1px_0_#151130] flex items-center gap-1">
-                    <CheckCircle className="w-3.5 h-3.5" weight="bold" />
-                    ADMITTED
+                {backendAdmitted ? (
+                  <span className="text-xs font-mono uppercase px-2.5 py-0.5 bg-emerald-50 text-emerald-700 font-bold rounded-full border border-emerald-200 flex items-center gap-1">
+                    <CheckCircle size={13} weight="bold" />
+                    VERIFIED
                   </span>
                 ) : (
-                  <span className="text-xs font-mono uppercase px-2 py-0.5 bg-paper text-ink font-semibold border border-ink/30">
-                    PASS INTACT
+                  <span className="text-xs font-mono uppercase px-2.5 py-0.5 bg-surface-subtle text-ink-soft font-medium rounded-full border border-line">
+                    ACTIVE
                   </span>
                 )}
               </div>
             </div>
 
-            {/* Middle Section: Integrated QR Code + Event Details */}
-            <div className="flex items-center gap-6 py-2">
-              {/* Crisp Natural Paper QR Code Card (Mandate 1: QR on ticket face) */}
-              <div className="shrink-0 p-2.5 bg-white border-1.5 border-ink relative group shadow-[2px_2px_0_#151130]">
+            {/* Middle Section: Scannable QR Code + Event Details */}
+            <div className="flex items-center gap-5 py-2">
+              {/* High-Contrast Scannable QR Card */}
+              <div className="shrink-0 p-2 bg-white rounded-xl border border-line shadow-xs">
                 <QRCode
                   value={qrValue}
-                  size={96}
+                  size={92}
                 />
               </div>
 
               {/* Event Metadata */}
               <div className="flex-1 min-w-0 space-y-1.5">
-                <h3 className="font-display font-extrabold text-lg sm:text-xl text-ink leading-tight line-clamp-2 tracking-tight">
+                <h3 className="font-sans font-bold text-lg sm:text-xl text-ink leading-tight line-clamp-2 tracking-tight">
                   {registration.eventTitle || 'Campus Flagship Event'}
                 </h3>
-                <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-ink-soft">
-                  <span className="inline-flex items-center gap-1.5 font-medium">
-                    <CalendarBlank className="w-3.5 h-3.5 text-cobalt" weight="bold" />
+
+                <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs font-mono text-ink-soft">
+                  <span className="inline-flex items-center gap-1.5 font-medium text-ink">
+                    <CalendarBlank size={13} weight="bold" className="text-accent" />
                     {formatDate(registration.eventStartsAt || registration.createdAt, 'EEE, MMM d, yyyy')}
                   </span>
                   <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-ink-soft" weight="bold" />
-                    {registration.venueName || 'Main Campus Venue'}
+                    <MapPin size={13} weight="bold" className="text-ink-soft" />
+                    <span className="truncate">{registration.venueName || 'Main Campus Venue'}</span>
                   </span>
                 </div>
+
                 <div className="flex items-center gap-2 pt-0.5 text-xs text-ink">
-                  <div className="w-5 h-5 rounded-full bg-cobalt text-white text-[10px] font-bold flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-full bg-accent text-white text-[10px] font-bold flex items-center justify-center">
                     {registration.userName ? registration.userName.charAt(0).toUpperCase() : 'S'}
                   </div>
-                  <span>
-                    Attendee: <strong>{registration.userName || 'Aditya Narayan'}</strong>
+                  <span className="text-ink-soft">
+                    Attendee: <strong className="text-ink">{registration.userName || 'Student'}</strong>
                   </span>
-                  <span className="text-ink-soft font-mono text-[11px] border-l border-ink/20 pl-2">
-                    21BCE1042
+                  <span className="text-ink-muted font-mono text-[11px] border-l border-line pl-2">
+                    {passSerial}
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Bottom Bar */}
-            <div className="pt-2 border-t border-ink/15 flex items-center justify-between text-xs font-mono text-ink-soft">
-              <span className="tracking-wide text-cobalt font-bold">{ticketCode}</span>
+            <div className="pt-2 border-t border-line flex items-center justify-between text-xs font-mono text-ink-soft">
+              <span className="tracking-wide text-accent font-semibold">{ticketCode}</span>
               <div className="flex items-center gap-1.5 text-ink-soft">
-                <QrCode className="w-3.5 h-3.5 text-cobalt" weight="bold" />
+                <QrCode size={13} weight="bold" className="text-accent" />
                 <span>OFFICIAL GATE SCAN READY</span>
               </div>
             </div>
 
-            {/* Natural Stamped Paper Admission Seal (Zero neon or sci-fi glow, Mandate 1) */}
+            {/* Permanent Verified Admission Seal (renders only when backendAdmitted is true) */}
             <AnimatePresence>
-              {isTorn && (
+              {backendAdmitted && (
                 <motion.div
-                  initial={{ scale: 2.2, opacity: 0, rotate: -20 }}
-                  animate={{ scale: 1, opacity: 1, rotate: -6 }}
-                  transition={{
-                    type: 'spring',
-                    stiffness: 280,
-                    damping: 18,
-                    delay: 0.15,
-                  }}
+                  initial={{ scale: 1.8, opacity: 0, rotate: -15 }}
+                  animate={{ scale: 1, opacity: 1, rotate: -4 }}
+                  transition={{ type: 'spring', stiffness: 280, damping: 20 }}
                   className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
                 >
-                  <div className="px-6 py-2.5 border-3 border-cobalt bg-paper/95 text-cobalt font-display text-base font-black uppercase tracking-widest shadow-[3px_3px_0_#0047FF] flex items-center gap-2 rotate-[-5deg]">
-                    <CheckCircle className="w-5 h-5 text-cobalt" weight="bold" />
+                  <div className="px-6 py-2.5 rounded-xl border-2 border-emerald-500 bg-white/95 text-emerald-600 font-sans text-sm font-bold tracking-wider shadow-lg flex items-center gap-2">
+                    <CheckCircle size={18} weight="bold" />
                     <span>ADMITTED AT {admissionTimestamp}</span>
                   </div>
                 </motion.div>
@@ -359,28 +364,40 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
         </TearTicket>
       </div>
 
-      {/* Accessible Alternative Action Button (F-15) */}
-      {demoMode && !isTorn && (
-        <div className="mt-3 flex items-center gap-2">
-          <button
-            type="button"
-            onClick={triggerDigitalTear}
-            className="btn-funk-secondary text-xs px-3 py-1.5 flex items-center gap-1.5"
-            aria-label="Tear stub and simulate admission"
-          >
-            <Scissors className="w-3.5 h-3.5" />
-            <span>Tear stub (Demo / Accessibility fallback)</span>
-          </button>
+      {/* Tactile Tear Controls (Repeatable, active only before admission) */}
+      {!backendAdmitted && (
+        <div className="mt-3 flex items-center gap-3">
+          {!isVisualTorn ? (
+            <button
+              type="button"
+              onClick={triggerVisualTear}
+              className="px-3.5 py-1.5 rounded-full bg-surface-subtle hover:bg-accent-soft text-ink-soft hover:text-accent border border-line text-xs font-mono flex items-center gap-1.5 transition-colors"
+              aria-label="Simulate tearing pass stub"
+            >
+              <Scissors size={13} weight="bold" />
+              <span>Tear stub (tactile preview)</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={resetVisualTear}
+              className="px-3.5 py-1.5 rounded-full bg-ink text-paper hover:bg-accent text-xs font-mono flex items-center gap-1.5 transition-colors shadow-xs"
+              aria-label="Restore intact pass stub"
+            >
+              <ArrowsClockwise size={13} weight="bold" />
+              <span>Restore pass stub</span>
+            </button>
+          )}
         </div>
       )}
     </div>
   )
 
-  // Floating Canvas Mode (Suspended in paper darkroom overlay)
+  // Floating Overlay Presentation
   if (floatingCanvas) {
     return (
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 backdrop-blur-md bg-ink/80 overflow-y-auto"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 backdrop-blur-md bg-black/70 overflow-y-auto"
         onClick={(e) => {
           if (e.target === e.currentTarget && onClose) onClose()
         }}
@@ -388,21 +405,20 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
         aria-modal="true"
         aria-label="Official Admission Ticket"
       >
-        {/* Minimalist Floating Close Pill */}
+        {/* Floating Close Button */}
         {onClose && (
           <button
             type="button"
             onClick={onClose}
-            className="fixed top-6 right-6 z-50 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-paper text-ink border border-ink hover:bg-white text-xs font-mono transition-colors cursor-pointer shadow-[2px_2px_0_#151130]"
+            className="fixed top-6 right-6 z-50 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/15 backdrop-blur-md text-xs font-mono transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             <span>Close</span>
-            <kbd className="px-1.5 py-0.5 rounded bg-ink/10 text-xs text-ink font-semibold">ESC</kbd>
-            <X className="w-3.5 h-3.5" />
+            <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-white/80 font-mono">ESC</kbd>
+            <X size={13} weight="bold" />
           </button>
         )}
 
-        {/* Floating Ticket Suspended in Canvas */}
-        <div className="my-auto py-6 animate-in fade-in zoom-in-95 duration-300">
+        <div className="my-auto py-6 animate-in fade-in zoom-in-95 duration-200">
           {content}
         </div>
       </div>

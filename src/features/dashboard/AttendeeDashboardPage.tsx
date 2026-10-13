@@ -14,6 +14,7 @@ import {
   IdentificationCard,
   ArrowRight,
   CalendarBlank,
+  PencilSimple,
 } from '@phosphor-icons/react'
 import { useMyRegistrations, useCancelRegistration, useUpdateRegistrationStatus } from '@/hooks/useRegistrations'
 import { useMyCertificates } from '@/hooks/useCertificates'
@@ -28,8 +29,10 @@ import { useToast } from '@/design-system/primitives/Toast'
 import { EmptyState } from '@/design-system/primitives/EmptyState'
 import { fireCelebrationConfetti } from '@/lib/confetti'
 import { TactileBoardingPass } from './components/TactileBoardingPass'
-import { Lanyard, generateStudentIDTexture, StudentIDCard2D } from '@/design-system/3d'
 import { EventAdmissionTicket } from '@/design-system/micro/EventAdmissionTicket'
+import { LanyardProfileOverlay } from './components/LanyardProfileOverlay'
+import { AvatarSelectorModal } from './components/AvatarSelectorModal'
+import { resolveUserAvatar } from '@/lib/avatars'
 
 export const AttendeeDashboardPage: React.FC = () => {
   const { session, isAuthenticated } = useAuth()
@@ -43,18 +46,15 @@ export const AttendeeDashboardPage: React.FC = () => {
   const [selectedTicket, setSelectedTicket] = useState<Registration | null>(null)
   const [activeTab, setActiveTab] = useState<'passes' | 'certificates' | 'clubs'>('passes')
   const [copiedRegNo, setCopiedRegNo] = useState(false)
-  const [badgeViewMode, setBadgeViewMode] = useState<'3d' | '2d'>('3d')
+  const [isLanyardOpen, setIsLanyardOpen] = useState(false)
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false)
+  const [avatarUrl, setAvatarUrl] = useState<string>(() => resolveUserAvatar(session))
 
-  // Auto-switch to 2D ID Badge for mobile viewports or prefers-reduced-motion (F-15)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const isMobile = window.innerWidth < 768
-      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      if (isMobile || prefersReduced) {
-        setBadgeViewMode('2d')
-      }
+    if (session) {
+      setAvatarUrl(resolveUserAvatar(session))
     }
-  }, [])
+  }, [session])
 
   // Student Identity Data
   const studentData = useMemo(() => {
@@ -76,15 +76,6 @@ export const AttendeeDashboardPage: React.FC = () => {
       emergencyPhone: '+91 98765 43210',
     }
   }, [session])
-
-  // High-resolution authentic Student ID Card textures for 3D Lanyard
-  const studentIdFrontTexture = useMemo(() => {
-    return generateStudentIDTexture(studentData, 'front')
-  }, [studentData])
-
-  const studentIdBackTexture = useMemo(() => {
-    return generateStudentIDTexture(studentData, 'back')
-  }, [studentData])
 
   const handleCopyRegNo = () => {
     navigator.clipboard.writeText(studentData.registrationNumber)
@@ -308,92 +299,76 @@ export const AttendeeDashboardPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column (5 cols): 3D Physics Lanyard ID Badge */}
+          {/* Right Column (5 cols): Official ID Pass Card & 3D Interactive Lanyard Trigger */}
           <div className="lg:col-span-5 flex flex-col items-center">
-            {/* 3D vs 2D View Switcher Controls */}
-            <div className="w-full flex items-center justify-between pb-3 px-2">
-              <span className="text-[11px] font-mono font-medium uppercase text-ink-soft/70 tracking-wider flex items-center gap-1.5">
-                <IdentificationCard className="w-4 h-4 text-primary" weight="bold" />
-                OFFICIAL ID BADGE
-              </span>
-              <div className="inline-flex rounded-full bg-surface p-1 text-xs font-mono">
+            <div className="w-full bg-surface/80 rounded-2xl p-6 border border-line/40 shadow-xs space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-line/20">
+                <div className="flex items-center gap-2">
+                  <IdentificationCard className="w-4 h-4 text-primary" weight="bold" />
+                  <span className="text-[11px] font-mono font-medium uppercase tracking-wider text-ink-soft">
+                    CAMPUS PASS CARD
+                  </span>
+                </div>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  ACTIVE
+                </span>
+              </div>
+
+              {/* Avatar & Identity summary */}
+              <div className="flex items-center gap-4">
+                <div className="relative group">
+                  <img
+                    src={avatarUrl}
+                    alt={studentData.name}
+                    className="w-16 h-16 rounded-full border-2 border-line/60 bg-surface-subtle object-cover shadow-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setIsAvatarModalOpen(true)}
+                    className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-ink text-surface shadow hover:scale-105 transition-transform"
+                    title="Change avatar"
+                    aria-label="Change avatar"
+                  >
+                    <PencilSimple className="w-3 h-3" weight="bold" />
+                  </button>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-display font-medium text-base text-ink truncate">{studentData.name}</h3>
+                  </div>
+                  <p className="font-mono text-xs text-ink-soft truncate">{studentData.registrationNumber}</p>
+                  <button
+                    type="button"
+                    onClick={() => setIsAvatarModalOpen(true)}
+                    className="text-[11px] font-medium text-primary hover:underline mt-0.5 inline-block"
+                  >
+                    Customize avatar
+                  </button>
+                </div>
+              </div>
+
+              {/* 3D Lanyard Pass Launcher */}
+              <div className="pt-2">
                 <button
                   type="button"
-                  onClick={() => setBadgeViewMode('3d')}
-                  className={`px-2.5 py-1 rounded-full transition-colors flex items-center gap-1 ${
-                    badgeViewMode === '3d'
-                      ? 'bg-ink text-paper font-bold shadow-xs'
-                      : 'text-ink-soft hover:text-ink'
-                  }`}
+                  onClick={() => setIsLanyardOpen(true)}
+                  className="w-full group relative overflow-hidden rounded-xl bg-ink text-paper p-4 text-left transition-all hover:shadow-md hover:bg-ink/90 flex items-center justify-between"
                 >
-                  <Cube className="w-3.5 h-3.5" /> 3D
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBadgeViewMode('2d')}
-                  className={`px-2.5 py-1 rounded-full transition-colors flex items-center gap-1 ${
-                    badgeViewMode === '2d'
-                      ? 'bg-ink text-paper font-bold shadow-xs'
-                      : 'text-ink-soft hover:text-ink'
-                  }`}
-                >
-                  <IdentificationCard className="w-3.5 h-3.5" /> 2D
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Cube className="w-4 h-4 text-accent" weight="bold" />
+                      <span className="font-display font-medium text-sm text-paper">Inspect 3D Identity Pass</span>
+                    </div>
+                    <p className="text-[11px] text-paper/70 font-mono">
+                      Interactive physics lanyard with participation credentials
+                    </p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-paper/70 group-hover:translate-x-1 transition-transform" weight="bold" />
                 </button>
               </div>
             </div>
-
-            {/* Stage: Render 3D Physics Lanyard or 2D Static ID Badge */}
-            {badgeViewMode === '3d' ? (
-              <div className="w-full flex flex-col items-center">
-                {/* Architectural Suspension Bracket */}
-                <div className="z-10 flex flex-col items-center mb-[-12px]">
-                  <div className="h-2 w-24 rounded-full bg-zinc-300 border border-ink shadow-[1px_1px_0_#151130]" />
-                  <div className="h-3 w-8 bg-zinc-400 border-x border-b border-ink rounded-b-md flex items-center justify-center">
-                    <span className="w-1.5 h-1.5 rounded-full bg-mint" />
-                  </div>
-                </div>
-
-                {/* Open-Air 3D Canvas Stage */}
-                <div className="relative w-full h-[420px] sm:h-[460px] flex items-center justify-center overflow-visible">
-                  <Lanyard
-                    frontImage={studentIdFrontTexture}
-                    backImage={studentIdBackTexture}
-                    cardColor="#151130"
-                    finish="matte"
-                    orientation="portrait"
-                    strapColor="#0047FF"
-                    size={0.88}
-                    strapLength={0.34}
-                    intro={false}
-                    breeze={0.03}
-                    className="w-full h-full"
-                  />
-                </div>
-
-                {/* Status Prompt Pill */}
-                <div className="z-10 mt-[-8px] px-3.5 py-1 rounded-full bg-paper border border-ink text-[11px] font-mono text-ink shadow-[2px_2px_0_#151130] flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-mint animate-pulse" />
-                  <span className="font-bold">PHYSICS LANYARD</span>
-                  <span className="text-ink/40">·</span>
-                  <span className="text-ink-soft">Drag to swing & spin</span>
-                </div>
-              </div>
-            ) : (
-              /* 2D Tactile ID Badge Fallback (F-15) */
-              <div className="w-full flex flex-col items-center py-2">
-                <StudentIDCard2D
-                  name={studentData.name}
-                  registrationNumber={studentData.registrationNumber}
-                  degreeBranch={studentData.degreeBranch}
-                  semester={studentData.semester}
-                  email={studentData.email}
-                  role={studentData.role}
-                  campus={studentData.campus}
-                  bloodGroup={studentData.bloodGroup}
-                  emergencyPhone={studentData.emergencyPhone}
-                />
-              </div>
-            )}
           </div>
         </div>
       </section>
@@ -627,6 +602,19 @@ export const AttendeeDashboardPage: React.FC = () => {
           }}
         />
       )}
+
+      {/* 3D Lanyard Fullscreen Profile Overlay */}
+      <LanyardProfileOverlay
+        isOpen={isLanyardOpen}
+        onClose={() => setIsLanyardOpen(false)}
+      />
+
+      {/* Avatar Customizer Modal */}
+      <AvatarSelectorModal
+        isOpen={isAvatarModalOpen}
+        onClose={() => setIsAvatarModalOpen(false)}
+        onAvatarSelected={(url) => setAvatarUrl(url)}
+      />
     </PageShell>
   )
 }

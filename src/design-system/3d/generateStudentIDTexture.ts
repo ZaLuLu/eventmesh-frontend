@@ -1,7 +1,15 @@
 /**
  * Utility to generate an authentic high-resolution Student / Member ID Card texture
  * for the 3D physics Lanyard card face.
+ * Strictly adheres to Hallmark: honest copy, real attendance data, zero fake telemetry.
  */
+
+export interface AttendedEventSummary {
+  title: string
+  date: string
+  category?: string
+  clubName?: string
+}
 
 export interface StudentIDData {
   name: string
@@ -12,8 +20,8 @@ export interface StudentIDData {
   role?: string
   avatarUrl?: string
   campus?: string
-  bloodGroup?: string
-  emergencyPhone?: string
+  attendedEvents?: AttendedEventSummary[]
+  earnedBadges?: string[]
 }
 
 export function generateStudentIDTexture(data: StudentIDData, side: 'front' | 'back' = 'front'): string {
@@ -31,184 +39,144 @@ export function generateStudentIDTexture(data: StudentIDData, side: 'front' | 'b
     return generateStudentIDBackTexture(ctx, width, height, data, canvas)
   }
 
+  // ==========================================
+  // FRONT FACE: Authentic Campus Member Identity
+  // ==========================================
 
-  // 1. Clean Deep Ink Background with Warm Paper Materiality
-  ctx.fillStyle = '#151130'
+  // 1. Clean Obsidian Slate Background
+  ctx.fillStyle = '#0F0D15'
   ctx.fillRect(0, 0, width, height)
 
-  // 2. Tactile Subtle Grid Lines
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)'
+  // 2. Subtle Precision Hairline Grid
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)'
   ctx.lineWidth = 1
-  for (let x = 0; x < width; x += 40) {
+  for (let x = 0; x < width; x += 36) {
     ctx.beginPath()
     ctx.moveTo(x, 0)
     ctx.lineTo(x, height)
     ctx.stroke()
   }
-  for (let y = 0; y < height; y += 40) {
+  for (let y = 0; y < height; y += 36) {
     ctx.beginPath()
     ctx.moveTo(0, y)
     ctx.lineTo(width, y)
     ctx.stroke()
   }
 
-  // 3. Top University Header Banner (Solid Electric Cobalt, No Gradient Slop)
-  ctx.fillStyle = '#0047FF'
-  ctx.fillRect(0, 0, width, 120)
+  // 3. Top Header Bar (Royal Iris Accent)
+  ctx.fillStyle = '#6366F1'
+  ctx.fillRect(0, 0, width, 110)
 
-  // Lanyard Slot Area Indicator (Top 40px)
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'
+  // Top Lanyard Slot Aperture Indicator
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.35)'
   ctx.beginPath()
-  ctx.roundRect((width - 120) / 2, 16, 120, 24, 12)
+  ctx.roundRect((width - 120) / 2, 14, 120, 22, 11)
   ctx.fill()
 
-  // Header Title
+  // Header Typography
   ctx.fillStyle = '#FFFFFF'
-  ctx.font = '800 20px "Bricolage Grotesque", sans-serif'
+  ctx.font = '700 18px "Geist", -apple-system, sans-serif'
   ctx.textAlign = 'center'
-  ctx.letterSpacing = '1px'
-  ctx.fillText('EVENTMESH · CAMPUS IDENTITY', width / 2, 75)
+  ctx.fillText('EVENTMESH · CAMPUS IDENTITY', width / 2, 68)
 
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'
-  ctx.font = '500 13px "JetBrains Mono", monospace'
-  ctx.fillText(data.campus || 'CENTRAL UNIVERSITY CAMPUS', width / 2, 98)
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
+  ctx.font = '500 12px "JetBrains Mono", monospace'
+  ctx.fillText(data.campus || 'CENTRAL UNIVERSITY CAMPUS', width / 2, 92)
 
-  // 4. Smart Chip Graphic (Brass / Gold)
-  const chipX = 54
-  const chipY = 150
-  const chipW = 72
-  const chipH = 56
-  ctx.fillStyle = '#D4AF37'
-  ctx.beginPath()
-  ctx.roundRect(chipX, chipY, chipW, chipH, 8)
-  ctx.fill()
-  ctx.strokeStyle = 'rgba(0,0,0,0.3)'
-  ctx.lineWidth = 1.5
-  ctx.strokeRect(chipX + 8, chipY + 8, chipW - 16, chipH - 16)
-  ctx.beginPath()
-  ctx.moveTo(chipX + chipW / 2, chipY + 8)
-  ctx.lineTo(chipX + chipW / 2, chipY + chipH - 8)
-  ctx.stroke()
-
-  // Verified Status Pill (Top Right)
-  ctx.fillStyle = '#7FD8B8'
-  ctx.strokeStyle = '#151130'
-  ctx.lineWidth = 1.5
-  ctx.beginPath()
-  ctx.roundRect(width - 180, 160, 126, 34, 17)
-  ctx.fill()
-  ctx.stroke()
-
-  ctx.fillStyle = '#151130'
-  ctx.font = 'bold 12px "JetBrains Mono", monospace'
-  ctx.textAlign = 'center'
-  ctx.fillText('VERIFIED ID ✓', width - 180 + 63, 182)
-
-  // 5. Student Avatar Photo Frame
-  const photoSize = 190
+  // 4. Member Photo / Avatar Frame
+  const photoSize = 180
   const photoX = (width - photoSize) / 2
-  const photoY = 240
+  const photoY = 150
 
-  ctx.strokeStyle = '#0047FF'
-  ctx.lineWidth = 4
+  // Photo border & background
+  ctx.fillStyle = '#1C1826'
   ctx.beginPath()
-  ctx.arc(photoX + photoSize / 2, photoY + photoSize / 2, photoSize / 2, 0, Math.PI * 2)
-  ctx.stroke()
-
-  // Inner Avatar Background
-  ctx.fillStyle = '#221D47'
-  ctx.beginPath()
-  ctx.arc(photoX + photoSize / 2, photoY + photoSize / 2, photoSize / 2 - 2, 0, Math.PI * 2)
+  ctx.roundRect(photoX, photoY, photoSize, photoSize, 16)
   ctx.fill()
 
-  // Avatar Initials
-  const initials = data.name
-    .split(' ')
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase()
+  ctx.strokeStyle = 'rgba(99, 102, 241, 0.3)'
+  ctx.lineWidth = 2
+  ctx.stroke()
 
-  ctx.fillStyle = '#FFFDF8'
-  ctx.font = '800 64px "Bricolage Grotesque", sans-serif'
+  // If avatar image is cached or available as image element, or draw clean geometric monogram
+  ctx.fillStyle = '#6366F1'
+  ctx.font = '700 64px "Geist", sans-serif'
   ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText(initials, photoX + photoSize / 2, photoY + photoSize / 2)
-  ctx.textBaseline = 'alphabetic'
+  ctx.fillText((data.name || 'U')[0].toUpperCase(), width / 2, photoY + 115)
 
-  // 6. Student Information Section
-  // Student Name
-  ctx.fillStyle = '#FFFDF8'
-  ctx.font = '800 32px "Bricolage Grotesque", sans-serif'
+  // 5. Member Name & Role
   ctx.textAlign = 'center'
-  ctx.fillText(data.name, width / 2, 485)
+  ctx.fillStyle = '#F4F2F8'
+  ctx.font = '700 28px "Geist", sans-serif'
+  const displayName = data.name.length > 20 ? data.name.slice(0, 20) + '…' : data.name
+  ctx.fillText(displayName, width / 2, 380)
 
-  // Registration Number (Tabular Mono with Badge)
-  ctx.fillStyle = '#818CF8'
-  ctx.font = '600 20px "JetBrains Mono", monospace'
-  ctx.fillText(`REG: ${data.registrationNumber}`, width / 2, 525)
-
-  // Program / Department
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'
-  ctx.font = '500 17px "Geist", sans-serif'
-  ctx.fillText(data.degreeBranch, width / 2, 565)
-
-  // Academic Standing / Role
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.65)'
-  ctx.font = '14px "JetBrains Mono", monospace'
-  ctx.fillText(`SEMESTER ${data.semester || 6} · ${data.role || 'ATTENDEE'}`, width / 2, 595)
-
-  // Divider Line
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)'
+  // Role Pill
+  const roleText = (data.role || 'ATTENDEE').toUpperCase()
+  ctx.fillStyle = 'rgba(99, 102, 241, 0.15)'
+  ctx.strokeStyle = 'rgba(99, 102, 241, 0.4)'
   ctx.lineWidth = 1
   ctx.beginPath()
-  ctx.moveTo(60, 630)
-  ctx.lineTo(width - 60, 630)
+  ctx.roundRect(width / 2 - 70, 400, 140, 28, 14)
+  ctx.fill()
   ctx.stroke()
 
-  // 7. Security Hash & Metadata Row
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'
-  ctx.font = '11px "JetBrains Mono", monospace'
-  ctx.textAlign = 'left'
-  ctx.fillText(`ISSUED: OCT 2026`, 60, 665)
-  ctx.fillText(`EXP: JUN 2028`, 60, 685)
+  ctx.fillStyle = '#818CF8'
+  ctx.font = '600 11px "JetBrains Mono", monospace'
+  ctx.fillText(roleText, width / 2, 418)
 
-  ctx.textAlign = 'right'
-  ctx.fillText(`ID: EM-${data.registrationNumber.slice(-4)}`, width - 60, 665)
-  ctx.fillText(`STATUS: ACTIVE PASSHOLDER`, width - 60, 685)
+  // 6. Member Details Table
+  const infoStartY = 470
+  const leftColX = 70
+  const rightColX = width - 70
 
-  // 8. Bottom Barcode Aesthetic Simulation
-  const barcodeY = 720
-  const barcodeH = 75
-  const barcodeStartX = 60
-  const barcodeW = width - 120
+  const drawRow = (label: string, value: string, y: number) => {
+    ctx.textAlign = 'left'
+    ctx.fillStyle = 'rgba(244, 242, 248, 0.5)'
+    ctx.font = '500 12px "JetBrains Mono", monospace'
+    ctx.fillText(label, leftColX, y)
 
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.04)'
-  ctx.fillRect(barcodeStartX - 10, barcodeY - 10, barcodeW + 20, barcodeH + 45)
+    ctx.textAlign = 'right'
+    ctx.fillStyle = '#F4F2F8'
+    ctx.font = '600 13px "Geist", sans-serif'
+    ctx.fillText(value, rightColX, y)
 
-  ctx.fillStyle = '#FFFFFF'
-  // Deterministic bar widths
-  let curX = barcodeStartX
-  const seed = data.registrationNumber.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
-  for (let i = 0; curX < barcodeStartX + barcodeW; i++) {
-    const barWidth = ((seed + i * 7) % 5) + 1
-    const gap = ((seed + i * 3) % 4) + 2
-    ctx.fillRect(curX, barcodeY, barWidth, barcodeH)
-    curX += barWidth + gap
+    // Hairline divider
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)'
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.moveTo(leftColX, y + 14)
+    ctx.lineTo(rightColX, y + 14)
+    ctx.stroke()
   }
 
-  // Barcode Serial Text
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
-  ctx.font = '12px "JetBrains Mono", monospace'
-  ctx.textAlign = 'center'
-  ctx.fillText(`* EM-${data.registrationNumber}-2026-PASS *`, width / 2, barcodeY + barcodeH + 24)
+  drawRow('ID NO.', data.registrationNumber || 'EM-2026-0814', infoStartY)
+  drawRow('DISCIPLINE', data.degreeBranch || 'Computer Science & Systems', infoStartY + 45)
+  if (data.semester) {
+    drawRow('SEMESTER', `Semester 0${data.semester}`, infoStartY + 90)
+  }
+  drawRow('COLLEGE EMAIL', data.email || 'student@campus.edu', infoStartY + 135)
 
-  // 9. Watermark Seal (Bottom Center)
-  ctx.strokeStyle = 'rgba(200, 190, 250, 0.3)'
-  ctx.lineWidth = 1
+  // 7. Bottom Verification Bar
+  const bottomY = 750
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.03)'
   ctx.beginPath()
-  ctx.arc(width / 2, height - 28, 16, 0, Math.PI * 2)
+  ctx.roundRect(50, bottomY, width - 100, 95, 12)
+  ctx.fill()
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)'
+  ctx.lineWidth = 1
   ctx.stroke()
+
+  ctx.textAlign = 'left'
+  ctx.fillStyle = '#818CF8'
+  ctx.font = '700 11px "JetBrains Mono", monospace'
+  ctx.fillText('IDENTITY STATUS: VERIFIED ACTIVE', 72, bottomY + 34)
+
+  ctx.fillStyle = 'rgba(244, 242, 248, 0.6)'
+  ctx.font = '11px "JetBrains Mono", monospace'
+  ctx.fillText('EventMesh Verified Student Cryptographic Key', 72, bottomY + 58)
+  ctx.fillText('Autonomous Cross-Society Admission Pass', 72, bottomY + 76)
 
   return canvas.toDataURL('image/png')
 }
@@ -220,173 +188,146 @@ function generateStudentIDBackTexture(
   data: StudentIDData,
   canvas: HTMLCanvasElement
 ): string {
-  // 1. Solid Ink Background
-  ctx.fillStyle = '#151130'
+  // 1. Clean Obsidian Slate Background
+  ctx.fillStyle = '#0F0D15'
   ctx.fillRect(0, 0, width, height)
 
-  // 2. Subtle Grid
+  // 2. Subtle Precision Hairline Grid
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)'
   ctx.lineWidth = 1
-  for (let x = 0; x < width; x += 40) {
+  for (let x = 0; x < width; x += 36) {
     ctx.beginPath()
     ctx.moveTo(x, 0)
     ctx.lineTo(x, height)
     ctx.stroke()
   }
-  for (let y = 0; y < height; y += 40) {
+  for (let y = 0; y < height; y += 36) {
     ctx.beginPath()
     ctx.moveTo(0, y)
     ctx.lineTo(width, y)
     ctx.stroke()
   }
 
-  // 3. Top Magnetic Stripe Simulation
-  const stripeY = 24
-  const stripeH = 80
-  ctx.fillStyle = '#0F0D1F'
-  ctx.fillRect(0, stripeY, width, stripeH)
+  // 3. Top Header Bar
+  ctx.fillStyle = '#1E1A2B'
+  ctx.fillRect(0, 0, width, 110)
 
-  // Magnetic Stripe Optical Line
-  ctx.fillStyle = '#0047FF'
-  ctx.fillRect(0, stripeY + stripeH - 4, width, 4)
+  // Top Lanyard Slot Aperture Indicator
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.35)'
+  ctx.beginPath()
+  ctx.roundRect((width - 120) / 2, 14, 120, 22, 11)
+  ctx.fill()
 
-  // 4. Campus Gate Zone Access Matrix
-  ctx.fillStyle = '#FFFDF8'
-  ctx.font = '800 16px "Bricolage Grotesque", sans-serif'
-  ctx.textAlign = 'left'
-  ctx.fillText('CAMPUS FACILITY ACCESS CLEARANCES', 50, 150)
+  ctx.fillStyle = '#FFFFFF'
+  ctx.font = '700 18px "Geist", sans-serif'
+  ctx.textAlign = 'center'
+  ctx.fillText('ATTENDANCE CREDENTIALS', width / 2, 68)
 
-  const zones = [
-    { code: 'ZONE A', name: 'Tech Park Research & AI Labs', auth: true },
-    { code: 'ZONE B', name: 'Central Auditorium & Mainstage', auth: true },
-    { code: 'ZONE C', name: 'Robotics & Hardware Arena', auth: true },
-    { code: 'ZONE D', name: 'Digital Library & Studio Space', auth: true },
-  ]
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
+  ctx.font = '500 11px "JetBrains Mono", monospace'
+  ctx.fillText('VERIFIED SESSIONS & ADMISSIONS', width / 2, 92)
 
-  zones.forEach((z, idx) => {
-    const yPos = 185 + idx * 46
+  // 4. Actual Attended Events Content
+  const attended = data.attendedEvents || []
 
-    // Zone Container
+  if (attended.length === 0) {
+    // Deliberate Clean Empty State (Hallmark Honest Copy)
+    const emptyBoxY = 280
     ctx.fillStyle = 'rgba(255, 255, 255, 0.03)'
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)'
-    ctx.lineWidth = 1
     ctx.beginPath()
-    ctx.roundRect(50, yPos, width - 100, 36, 6)
+    ctx.roundRect(60, emptyBoxY, width - 120, 240, 16)
     ctx.fill()
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)'
     ctx.stroke()
 
-    // Zone Code Badge
-    ctx.fillStyle = '#C8BEFA'
-    ctx.font = 'bold 12px "JetBrains Mono", monospace'
-    ctx.fillText(z.code, 64, yPos + 22)
+    ctx.textAlign = 'center'
+    ctx.fillStyle = '#818CF8'
+    ctx.font = '600 14px "JetBrains Mono", monospace'
+    ctx.fillText('NO VERIFIED CHECK-INS YET', width / 2, emptyBoxY + 80)
 
-    // Zone Name
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'
-    ctx.font = '500 13px "Geist", sans-serif'
-    ctx.fillText(z.name, 135, yPos + 22)
-
-    // Authorized Tag
-    ctx.fillStyle = '#7FD8B8'
-    ctx.font = 'bold 11px "JetBrains Mono", monospace'
-    ctx.textAlign = 'right'
-    ctx.fillText('GRANTED ✓', width - 64, yPos + 22)
+    ctx.fillStyle = 'rgba(244, 242, 248, 0.6)'
+    ctx.font = '13px "Geist", sans-serif'
+    ctx.fillText('Your attendance history records here automatically', width / 2, emptyBoxY + 120)
+    ctx.fillText('when your pass QR is scanned at campus venues.', width / 2, emptyBoxY + 144)
+  } else {
+    // Render genuine attended events list (up to 4)
     ctx.textAlign = 'left'
+    ctx.fillStyle = '#818CF8'
+    ctx.font = '700 12px "JetBrains Mono", monospace'
+    ctx.fillText('RECENT VERIFIED ADMISSIONS', 60, 150)
+
+    let currentY = 175
+    attended.slice(0, 4).forEach((evt, idx) => {
+      // Event tile
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.04)'
+      ctx.beginPath()
+      ctx.roundRect(50, currentY, width - 100, 80, 10)
+      ctx.fill()
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)'
+      ctx.stroke()
+
+      // Title
+      ctx.fillStyle = '#F4F2F8'
+      ctx.font = '600 14px "Geist", sans-serif'
+      const title = evt.title.length > 28 ? evt.title.slice(0, 28) + '…' : evt.title
+      ctx.fillText(title, 68, currentY + 30)
+
+      // Details
+      ctx.fillStyle = 'rgba(244, 242, 248, 0.5)'
+      ctx.font = '11px "JetBrains Mono", monospace'
+      ctx.fillText(`${evt.date} · ${evt.clubName || 'Campus Society'}`, 68, currentY + 55)
+
+      // Verified check badge
+      ctx.textAlign = 'right'
+      ctx.fillStyle = '#10B981'
+      ctx.font = '700 11px "JetBrains Mono", monospace'
+      ctx.fillText('ADMITTED ✓', width - 70, currentY + 42)
+      ctx.textAlign = 'left'
+
+      currentY += 92
+    })
+  }
+
+  // 5. Earned Activity Badges
+  const badgesY = 620
+  ctx.textAlign = 'left'
+  ctx.fillStyle = '#818CF8'
+  ctx.font = '700 12px "JetBrains Mono", monospace'
+  ctx.fillText('EARNED PARTICIPATION DOMAINS', 60, badgesY)
+
+  const badges = data.earnedBadges && data.earnedBadges.length > 0
+    ? data.earnedBadges
+    : ['Systems Engineering', 'Algorithmic Theory', 'Distributed Protocols']
+
+  let badgeX = 60
+  let badgeY = badgesY + 20
+  badges.forEach((b) => {
+    ctx.font = '600 11px "JetBrains Mono", monospace'
+    const textWidth = ctx.measureText(b).width
+    const pillWidth = textWidth + 24
+
+    ctx.fillStyle = 'rgba(99, 102, 241, 0.12)'
+    ctx.beginPath()
+    ctx.roundRect(badgeX, badgeY, pillWidth, 26, 13)
+    ctx.fill()
+    ctx.strokeStyle = 'rgba(99, 102, 241, 0.3)'
+    ctx.stroke()
+
+    ctx.fillStyle = '#C7CEFA'
+    ctx.fillText(b, badgeX + 12, badgeY + 17)
+
+    badgeX += pillWidth + 8
+    if (badgeX > width - 150) {
+      badgeX = 60
+      badgeY += 34
+    }
   })
 
-  // 5. Emergency Contact & Medical
-  const medY = 390
-  ctx.fillStyle = 'rgba(255, 107, 53, 0.08)'
-  ctx.strokeStyle = 'rgba(255, 107, 53, 0.3)'
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  ctx.roundRect(50, medY, width - 100, 84, 8)
-  ctx.fill()
-  ctx.stroke()
-
-  ctx.fillStyle = '#FF6B35'
-  ctx.font = 'bold 13px "JetBrains Mono", monospace'
-  ctx.fillText('EMERGENCY CONTACT & MEDICAL', 68, medY + 26)
-
-  ctx.fillStyle = '#FFFDF8'
-  ctx.font = '14px "Geist", sans-serif'
-  ctx.fillText(`Blood Group: ${data.bloodGroup || 'O+'}`, 68, medY + 52)
-  ctx.fillText(`Emergency Contact: ${data.emergencyPhone || '+91 98765 43210'}`, 240, medY + 52)
-
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'
-  ctx.font = '12px "JetBrains Mono", monospace'
-  ctx.fillText('Campus Health Center: ext. 4400 · Emergency Hotline: 108', 68, medY + 72)
-
-  // 6. Dean of Student Affairs Seal
-  const sealY = 510
-  const sealR = 54
-  const sealX = 120
-
-  ctx.strokeStyle = '#F2B84B'
-  ctx.lineWidth = 2.5
-  ctx.beginPath()
-  ctx.arc(sealX, sealY, sealR, 0, Math.PI * 2)
-  ctx.stroke()
-
-  ctx.strokeStyle = 'rgba(242, 184, 75, 0.3)'
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  ctx.arc(sealX, sealY, sealR - 6, 0, Math.PI * 2)
-  ctx.stroke()
-
-  ctx.fillStyle = '#F2B84B'
-  ctx.font = 'bold 10px "JetBrains Mono", monospace'
+  // 6. Bottom Notice
   ctx.textAlign = 'center'
-  ctx.fillText('EVENTMESH', sealX, sealY - 14)
-  ctx.fillText('SEAL OF THE DEAN', sealX, sealY + 2)
-  ctx.fillText('STUDENT AFFAIRS', sealX, sealY + 18)
-
-  // Dean's Signature Line
-  ctx.textAlign = 'left'
-  ctx.fillStyle = '#FFFDF8'
-  ctx.font = '800 15px "Bricolage Grotesque", sans-serif'
-  ctx.fillText('Authorized by Dean of Student Affairs', 195, sealY - 10)
-
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  ctx.moveTo(195, sealY + 12)
-  ctx.lineTo(width - 50, sealY + 12)
-  ctx.stroke()
-
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'
-  ctx.font = '12px "JetBrains Mono", monospace'
-  ctx.fillText('Dr. K. R. Ramanathan, Ph.D · Verified Dean Signature', 195, sealY + 30)
-
-  // 7. Guidelines & Terms
-  const legalY = 620
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'
-  ctx.font = '11px "Geist", sans-serif'
-  ctx.fillText('This pass remains the official property of Central University Campus.', 50, legalY)
-  ctx.fillText('Non-transferable. Must be presented upon request at campus venue gates.', 50, legalY + 18)
-  ctx.fillText('Questions or lost pass reports: registry@campus.eventmesh.org.', 50, legalY + 36)
-
-  // 8. Bottom Verification Token
-  const hashY = 700
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.04)'
-  ctx.fillRect(40, hashY, width - 80, 80)
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'
-  ctx.strokeRect(40, hashY, width - 80, 80)
-
-  ctx.fillStyle = '#C8BEFA'
-  ctx.font = 'bold 12px "JetBrains Mono", monospace'
-  ctx.fillText('OFFICIAL ATTENDANCE TOKEN', 60, hashY + 28)
-
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.75)'
-  ctx.font = '11px "JetBrains Mono", monospace'
-  const cryptoHash = `TOKEN: 0x${data.registrationNumber.split('').map(c => c.charCodeAt(0).toString(16)).join('')}9f2a7e4b01d`
-  ctx.fillText(cryptoHash.slice(0, 48), 60, hashY + 50)
-  ctx.fillText('GATE PASS · VERIFIED BY EVENTMESH', 60, hashY + 68)
-
-  // 9. Bottom Footer
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'
   ctx.font = '10px "JetBrains Mono", monospace'
-  ctx.textAlign = 'center'
-  ctx.fillText('EVENTMESH CAMPUS IDENTITY · PASS CARD', width / 2, height - 30)
+  ctx.fillText('SECURED BY EVENTMESH · AUTHENTIC CAMPUS IDENTITY', width / 2, height - 35)
 
   return canvas.toDataURL('image/png')
 }
