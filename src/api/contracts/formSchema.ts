@@ -8,6 +8,7 @@ export const FormFieldTypeSchema = z.enum([
   'multiselect',
   'checkbox',
   'file',
+  'url',
   'number',
   'date',
   'longtext',

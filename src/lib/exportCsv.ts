@@ -1,6 +1,32 @@
 /**
- * CSV Export utility
+ * CSV Export utility with CSV Formula Injection / DDE attack defense (Audit F-16).
  */
+
+/**
+ * Sanitizes a cell value to prevent CSV formula injection.
+ * Formula triggers (=, +, -, @, tabs) in spreadsheet software (Excel, Sheets)
+ * are neutralized by prefixing with a single quote.
+ */
+export function sanitizeCsvCell(value: unknown): string {
+  if (value == null) return ''
+  let str = typeof value === 'object' ? JSON.stringify(value) : String(value)
+  if (/^[=+\-@\t\r]/.test(str)) {
+    str = `'${str}`
+  }
+  return str
+}
+
+export function formatCsvRow<T extends Record<string, unknown>>(
+  row: T,
+  columns: { key: keyof T; label: string }[]
+): string {
+  return columns
+    .map((c) => {
+      const sanitized = sanitizeCsvCell(row[c.key])
+      return `"${sanitized.replace(/"/g, '""')}"`
+    })
+    .join(',')
+}
 
 export function exportToCSV<T extends Record<string, unknown>>(
   filename: string,
@@ -12,16 +38,7 @@ export function exportToCSV<T extends Record<string, unknown>>(
   const header = columns.map((c) => `"${c.label.replace(/"/g, '""')}"`).join(',')
 
   const body = rows
-    .map((row) =>
-      columns
-        .map((c) => {
-          const val = row[c.key]
-          if (val == null) return '""'
-          const str = typeof val === 'object' ? JSON.stringify(val) : String(val)
-          return `"${str.replace(/"/g, '""')}"`
-        })
-        .join(',')
-    )
+    .map((row) => formatCsvRow(row, columns))
     .join('\r\n')
 
   const csvContent = `${header}\r\n${body}`

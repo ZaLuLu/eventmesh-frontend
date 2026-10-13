@@ -1,6 +1,6 @@
 import React from 'react'
 import { create } from 'zustand'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { Check, AlertCircle, Info, X } from 'lucide-react'
 
 export interface ToastItem {

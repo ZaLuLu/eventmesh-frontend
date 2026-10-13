@@ -1,13 +1,31 @@
 /**
  * Web Audio API synthesized sounds for tactile kiosk and check-in interactions.
  * Zero external audio file dependencies.
+ * Enhanced with SoundProvider controls, global mute, and reduced-motion compliance (Audit F-14).
  */
+
+import { useSoundStore } from '@/stores/useSoundStore'
 
 class SoundController {
   private ctx: AudioContext | null = null
 
+  private isAudioPermitted(): boolean {
+    if (typeof window === 'undefined') return false
+    // 1. Check global user mute setting
+    const { isMuted, hasUserGesture } = useSoundStore.getState()
+    if (isMuted) return false
+
+    // 2. Respect OS-level reduced motion preference
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
+
+    // 3. User gesture check (prevent autoplay policy errors)
+    if (!hasUserGesture) return false
+
+    return true
+  }
+
   private getContext(): AudioContext | null {
-    if (typeof window === 'undefined') return null
+    if (!this.isAudioPermitted()) return null
     if (!this.ctx) {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext
       if (AudioCtx) {
@@ -63,7 +81,7 @@ class SoundController {
       osc2.start(now + 0.08)
       osc2.stop(now + 0.45)
     } catch {
-      // Gracefully silent if user has not interacted with DOM or audio is disabled
+      // Gracefully silent if audio context is blocked
     }
   }
 
@@ -158,9 +176,35 @@ class SoundController {
 
       osc.start(now)
       osc.stop(now + 0.06)
-    } catch {
-      // Graceful fallback
-    }
+    } catch {}
+  }
+
+  /**
+   * Low discordant buzz for rejection / scan error
+   */
+  playErrorTone() {
+    try {
+      const ctx = this.getContext()
+      if (!ctx) return
+
+      const now = ctx.currentTime
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+
+      osc.type = 'sawtooth'
+      osc.frequency.setValueAtTime(160, now)
+      osc.frequency.linearRampToValueAtTime(110, now + 0.22)
+
+      gain.gain.setValueAtTime(0, now)
+      gain.gain.linearRampToValueAtTime(0.2, now + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25)
+
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+
+      osc.start(now)
+      osc.stop(now + 0.25)
+    } catch {}
   }
 }
 
@@ -169,3 +213,16 @@ export const playGateAdmissionChime = () => soundController.playGateAdmissionChi
 export const playTearImpulse = () => soundController.playTearImpulse()
 export const playLaserScanChirp = () => soundController.playLaserScanChirp()
 export const playPaperTearSound = () => soundController.playPaperTearSound()
+export const playErrorTone = () => soundController.playErrorTone()
+
+export function playSound(type: 'gate_chime' | 'success' | 'error' | 'paper_tear' | 'laser' | string) {
+  if (type === 'gate_chime' || type === 'success') {
+    soundController.playGateAdmissionChime()
+  } else if (type === 'error') {
+    soundController.playErrorTone()
+  } else if (type === 'paper_tear') {
+    soundController.playPaperTearSound()
+  } else {
+    soundController.playLaserScanChirp()
+  }
+}

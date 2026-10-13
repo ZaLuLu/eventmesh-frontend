@@ -1,22 +1,35 @@
-import React, { useState, useMemo } from 'react'
+// Hallmark macrostructure: Dashboard-Bento
+import React, { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { jsPDF } from 'jspdf'
-import { Ticket, Award, Download, QrCode, ShieldCheck, Copy, Check, Sparkles, GraduationCap, Building2 } from 'lucide-react'
+import {
+  Ticket,
+  Certificate as CertificateIcon,
+  DownloadSimple,
+  ShieldCheck,
+  Copy,
+  Check,
+  GraduationCap,
+  Sparkle,
+  Cube,
+  IdentificationCard,
+  ArrowRight,
+  CalendarBlank,
+} from '@phosphor-icons/react'
 import { useMyRegistrations, useCancelRegistration, useUpdateRegistrationStatus } from '@/hooks/useRegistrations'
 import { useMyCertificates } from '@/hooks/useCertificates'
 import { useClubs } from '@/hooks/useClubs'
 import { useAuth } from '@/hooks/useAuth'
+import { PageShell } from '@/design-system/layout/PageShell'
+import { Sticker } from '@/design-system/primitives/Sticker'
 import { Button } from '@/design-system/primitives/Button'
-import { QRCode } from '@/design-system/primitives/QRCode'
-import { Modal } from '@/design-system/primitives/Modal'
-import { Tabs } from '@/design-system/primitives/Tabs'
-import { formatDate, formatTime } from '@/lib/dates'
+import { formatDate } from '@/lib/dates'
 import { Registration, Certificate } from '@/api'
 import { useToast } from '@/design-system/primitives/Toast'
 import { EmptyState } from '@/design-system/primitives/EmptyState'
 import { fireCelebrationConfetti } from '@/lib/confetti'
 import { TactileBoardingPass } from './components/TactileBoardingPass'
-import { Lanyard, generateStudentIDTexture } from '@/design-system/3d'
+import { Lanyard, generateStudentIDTexture, StudentIDCard2D } from '@/design-system/3d'
 import { EventAdmissionTicket } from '@/design-system/micro/EventAdmissionTicket'
 
 export const AttendeeDashboardPage: React.FC = () => {
@@ -29,14 +42,31 @@ export const AttendeeDashboardPage: React.FC = () => {
   const updateStatusMutation = useUpdateRegistrationStatus()
 
   const [selectedTicket, setSelectedTicket] = useState<Registration | null>(null)
-  const [activeTab, setActiveTab] = useState('passes')
+  const [activeTab, setActiveTab] = useState<'passes' | 'certificates' | 'clubs'>('passes')
   const [copiedRegNo, setCopiedRegNo] = useState(false)
+  const [badgeViewMode, setBadgeViewMode] = useState<'3d' | '2d'>('3d')
 
-  // Generate high-resolution authentic Student ID Card textures (front & back) for the 3D Lanyard
-  const studentIdFrontTexture = useMemo(() => {
+  // Auto-switch to 2D ID Badge for mobile viewports or prefers-reduced-motion (F-15)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isMobile = window.innerWidth < 768
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      if (isMobile || prefersReduced) {
+        setBadgeViewMode('2d')
+      }
+    }
+  }, [])
+
+  // Student Identity Data
+  const studentData = useMemo(() => {
     const s = session as any
-    return generateStudentIDTexture({
-      name: s?.name || 'Aditya Narayan',
+    const rawName = s?.name || 'Aditya Narayan'
+    const cleanName = rawName
+      .replace(/\s*\([^)]*\)/g, '')
+      .trim() || 'Aditya Narayan'
+
+    return {
+      name: cleanName,
       registrationNumber: s?.registrationNumber || '21BCE1042',
       degreeBranch: s?.degreeBranch || 'B.Tech Computer Science & Engineering',
       semester: s?.semester || 6,
@@ -45,23 +75,28 @@ export const AttendeeDashboardPage: React.FC = () => {
       campus: 'CENTRAL UNIVERSITY CAMPUS',
       bloodGroup: 'O+',
       emergencyPhone: '+91 98765 43210',
-    }, 'front')
+    }
   }, [session])
+
+  // High-resolution authentic Student ID Card textures for 3D Lanyard
+  const studentIdFrontTexture = useMemo(() => {
+    return generateStudentIDTexture(studentData, 'front')
+  }, [studentData])
 
   const studentIdBackTexture = useMemo(() => {
-    const s = session as any
-    return generateStudentIDTexture({
-      name: s?.name || 'Aditya Narayan',
-      registrationNumber: s?.registrationNumber || '21BCE1042',
-      degreeBranch: s?.degreeBranch || 'B.Tech Computer Science & Engineering',
-      semester: s?.semester || 6,
-      email: s?.email || 'aditya.narayan@vitstudent.ac.in',
-      role: 'STUDENT PASSHOLDER',
-      campus: 'CENTRAL UNIVERSITY CAMPUS',
-      bloodGroup: 'O+',
-      emergencyPhone: '+91 98765 43210',
-    }, 'back')
-  }, [session])
+    return generateStudentIDTexture(studentData, 'back')
+  }, [studentData])
+
+  const handleCopyRegNo = () => {
+    navigator.clipboard.writeText(studentData.registrationNumber)
+    setCopiedRegNo(true)
+    setTimeout(() => setCopiedRegNo(false), 2000)
+    toast({
+      title: 'Copied ID',
+      message: `${studentData.registrationNumber} copied to clipboard`,
+      type: 'info',
+    })
+  }
 
   const handleCancelPass = async (reg: Registration) => {
     if (window.confirm('Are you sure you want to cancel this ticket pass?')) {
@@ -93,50 +128,63 @@ export const AttendeeDashboardPage: React.FC = () => {
         format: 'a4',
       })
 
-      doc.setFillColor(251, 250, 248)
+      // Warm paper background (#F6F1E7)
+      doc.setFillColor(246, 241, 231)
       doc.rect(0, 0, 297, 210, 'F')
 
-      doc.setDrawColor(201, 62, 39)
+      // Double collegiate ink border
+      doc.setDrawColor(21, 17, 48)
       doc.setLineWidth(1.5)
       doc.rect(12, 12, 273, 186)
 
-      doc.setDrawColor(231, 228, 222)
-      doc.setLineWidth(0.5)
+      doc.setDrawColor(0, 71, 255)
+      doc.setLineWidth(0.6)
       doc.rect(15, 15, 267, 180)
 
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(11)
-      doc.setTextColor(94, 90, 85)
-      doc.text('EVENTMESH · VERIFIABLE DIGITAL CREDENTIAL', 148.5, 36, { align: 'center' })
+      doc.setTextColor(74, 70, 104)
+      doc.text('EVENTMESH · VERIFIABLE CAMPUS CREDENTIAL', 148.5, 36, { align: 'center' })
 
       doc.setFont('helvetica', 'bold')
-      doc.setFontSize(26)
-      doc.setTextColor(27, 26, 25)
+      doc.setFontSize(28)
+      doc.setTextColor(21, 17, 48)
       doc.text('CERTIFICATE OF PARTICIPATION', 148.5, 52, { align: 'center' })
 
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(13)
-      doc.setTextColor(94, 90, 85)
+      doc.setTextColor(74, 70, 104)
       doc.text('This document certifies that', 148.5, 75, { align: 'center' })
 
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(22)
-      doc.setTextColor(201, 62, 39)
+      doc.setTextColor(0, 71, 255)
       doc.text(cert.recipientName.toUpperCase(), 148.5, 92, { align: 'center' })
 
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(13)
-      doc.setTextColor(94, 90, 85)
-      doc.text('has successfully completed', 148.5, 108, { align: 'center' })
+      doc.setTextColor(74, 70, 104)
+      doc.text('has successfully completed & attended', 148.5, 108, { align: 'center' })
 
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(18)
-      doc.setTextColor(27, 26, 25)
+      doc.setTextColor(21, 17, 48)
       doc.text(cert.eventTitle.toUpperCase(), 148.5, 122, { align: 'center' })
 
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(11)
+      doc.setTextColor(74, 70, 104)
       doc.text(`Organized by ${cert.organizerName}`, 148.5, 134, { align: 'center' })
+
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(9)
+      doc.setTextColor(74, 70, 104)
+      doc.text(
+        `Certificate ID: ${cert.certificateId} · Issued ${formatDate(cert.issuedAt)} · Verified by EventMesh`,
+        148.5,
+        178,
+        { align: 'center' }
+      )
 
       doc.save(`${cert.certificateId}.pdf`)
       fireCelebrationConfetti()
@@ -146,175 +194,285 @@ export const AttendeeDashboardPage: React.FC = () => {
         message: `Saved ${cert.certificateId}.pdf`,
         type: 'success',
       })
-    } catch (err) {
+    } catch {
       toast({ title: 'Download failed', type: 'error' })
     }
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="app-container py-16 flex items-center justify-center">
-        <div className="max-w-md w-full bg-surface border border-line rounded-panel p-8 text-center space-y-4">
-          <h2 className="text-xl font-semibold text-text">Sign in required</h2>
-          <p className="text-small text-text-2">
-            Sign in to access your digital entry passes, credentials, and followed clubs.
+      <PageShell className="py-16">
+        <div className="max-w-md mx-auto bg-card border-2 border-ink rounded-[16px] p-8 text-center space-y-4 shadow-[4px_4px_0_#151130]">
+          <h2 className="font-display font-extrabold text-2xl text-ink">Sign in required</h2>
+          <p className="text-sm text-ink-soft">
+            Sign in to access your digital entry passes, official credentials, and followed clubs.
           </p>
-          <Link to="/login">
-            <Button variant="primary" size="default">Sign in</Button>
+          <Link to="/login" className="inline-block pt-2">
+            <button type="button" className="btn-funk-primary px-6 py-2.5">
+              Sign in with Campus SSO
+            </button>
           </Link>
         </div>
-      </div>
+      </PageShell>
     )
   }
 
-  const tabs = [
-    { id: 'passes', label: 'My tickets', count: registrations.length },
-    { id: 'certificates', label: 'Certificates', count: certificates.length },
-    { id: 'clubs', label: 'Followed clubs', count: followedClubs.length },
-  ]
+  const activePasses = registrations.filter((r) => r.status !== 'cancelled')
+  const attendedPasses = registrations.filter((r) => r.status === 'checked_in')
 
   return (
-    <div className="w-full bg-bg text-text pb-16">
-      {/* Profile & Student ID Lanyard Credential Hero */}
-      <div className="border-b border-line bg-surface">
-        <div className="app-container py-6 sm:py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            {/* Left 7 cols: Academic Profile Card */}
-            <div className="lg:col-span-7 space-y-5">
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono tracking-wider bg-accent-soft text-accent uppercase border border-accent/20">
-                    <ShieldCheck className="w-3.5 h-3.5 text-accent" />
-                    OFFICIAL STUDENT IDENTITY
-                  </span>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                    Verified Campus Passholder
-                  </span>
-                </div>
+    <PageShell className="py-6 sm:py-8 space-y-8">
+      {/* ========================================================================= */}
+      {/* PROFILE BENTO HEADER (Mandate 2: 3D Lanyard beside Student Info)          */}
+      {/* ========================================================================= */}
+      <section className="bg-card border-2 border-ink rounded-[20px] p-6 sm:p-8 shadow-[4px_4px_0_#151130]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          {/* Left Column (7 cols): Academic Profile Bento */}
+          <div className="lg:col-span-7 space-y-6">
+            {/* Header Sticker Chips */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Sticker color="ink" size="sm" className="font-mono text-xs">
+                CAMPUS IDENTITY
+              </Sticker>
+              <Sticker color="mint" size="sm" className="font-mono text-xs font-bold">
+                VERIFIED PASSHOLDER ✓
+              </Sticker>
+            </div>
 
-                <h1 className="text-2xl sm:text-3xl font-bold text-text tracking-tight">
-                  {session?.name || 'Aditya Narayan'}
-                </h1>
-                <p className="text-small text-text-2">
-                  {session?.email || 'aditya.narayan@vitstudent.ac.in'}
+            {/* Student Name & Email */}
+            <div>
+              <h1 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl text-ink tracking-tight leading-tight">
+                {studentData.name}
+              </h1>
+              <p className="font-mono text-sm text-ink-soft mt-1">
+                {studentData.email}
+              </p>
+            </div>
+
+            {/* Academic Info Bento Tiles */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-sm">
+              {/* Registration Number Tile with Copy */}
+              <div className="p-4 rounded-[12px] bg-paper border-1.5 border-ink/20 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-mono uppercase tracking-wider text-ink-soft font-semibold">
+                    REGISTRATION NUMBER
+                  </p>
+                  <p className="font-mono font-black text-lg text-ink mt-0.5">
+                    {studentData.registrationNumber}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCopyRegNo}
+                  className="p-2 rounded-md border border-ink/20 hover:border-ink hover:bg-card text-ink transition-colors"
+                  title="Copy registration number"
+                  aria-label="Copy registration number"
+                >
+                  {copiedRegNo ? (
+                    <Check className="w-4 h-4 text-emerald-600" weight="bold" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+
+              {/* Program & Semester Tile */}
+              <div className="p-4 rounded-[12px] bg-paper border-1.5 border-ink/20">
+                <p className="text-[10px] font-mono uppercase tracking-wider text-ink-soft font-semibold">
+                  DEGREE & BRANCH
                 </p>
-              </div>
-
-              {/* Student Metadata Bento Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-small">
-                <div className="p-3.5 rounded-xl bg-subtle border border-line flex items-center justify-between">
-                  <div>
-                    <p className="text-[10px] font-mono uppercase tracking-wider text-text-3">REGISTRATION NUMBER</p>
-                    <p className="font-mono font-bold text-base text-text mt-0.5">
-                      {(session as any)?.registrationNumber || '21BCE1042'}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const regNum = (session as any)?.registrationNumber || '21BCE1042'
-                      navigator.clipboard.writeText(regNum)
-                      setCopiedRegNo(true)
-                      setTimeout(() => setCopiedRegNo(false), 2000)
-                      toast({ title: 'Copied ID', message: 'Registration number copied to clipboard', type: 'info' })
-                    }}
-                    className="p-1.5 rounded-lg border border-line hover:bg-surface text-text-2 transition-colors"
-                    title="Copy registration number"
-                  >
-                    {copiedRegNo ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                  </button>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-subtle border border-line">
-                  <p className="text-[10px] font-mono uppercase tracking-wider text-text-3">DEGREE & BRANCH</p>
-                  <p className="font-semibold text-text text-small truncate mt-0.5">
-                    {(session as any)?.degreeBranch || 'B.Tech Computer Science'}
-                  </p>
-                  <p className="text-caption text-text-3">Semester {(session as any)?.semester || 6} · Active Student</p>
-                </div>
-              </div>
-
-              {/* Summary Metric Counters */}
-              <div className="flex flex-wrap items-center gap-3 pt-1">
-                <div className="px-4 py-2.5 rounded-xl bg-subtle border border-line text-center min-w-[90px] flex-1 sm:flex-none">
-                  <p className="font-bold text-xl text-text">{registrations.length}</p>
-                  <p className="text-caption text-text-2">Active Passes</p>
-                </div>
-                <div className="px-4 py-2.5 rounded-xl bg-subtle border border-line text-center min-w-[90px] flex-1 sm:flex-none">
-                  <p className="font-bold text-xl text-emerald-600">
-                    {registrations.filter((r) => r.status === 'checked_in').length}
-                  </p>
-                  <p className="text-caption text-text-2">Attended & Verified</p>
-                </div>
-                <div className="px-4 py-2.5 rounded-xl bg-subtle border border-line text-center min-w-[90px] flex-1 sm:flex-none">
-                  <p className="font-bold text-xl text-text">{certificates.length}</p>
-                  <p className="text-caption text-text-2">Credentials Issued</p>
-                </div>
+                <p className="font-bold text-ink text-sm truncate mt-0.5">
+                  {studentData.degreeBranch}
+                </p>
+                <p className="font-mono text-[11px] text-ink-soft mt-0.5">
+                  Semester {studentData.semester} · Active Student
+                </p>
               </div>
             </div>
 
-            {/* Right 5 cols: Unboxed Architectural 3D Student ID Lanyard Stage */}
-            <div className="lg:col-span-5 relative flex flex-col items-center">
-              {/* Architectural Titanium Suspension Peg */}
-              <div className="z-10 flex flex-col items-center mb-[-12px]">
-                <div className="h-2 w-28 rounded-full bg-gradient-to-r from-slate-400 via-slate-100 to-slate-400 shadow-md border border-white/60" />
-                <div className="h-3 w-8 bg-gradient-to-b from-slate-200 to-slate-500 rounded-b-md shadow-sm border-x border-b border-slate-600/30 flex items-center justify-center">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                </div>
+            {/* Metric Summary Counters */}
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <div className="px-4 py-2.5 rounded-[12px] bg-paper border-1.5 border-ink/20 text-center min-w-[100px] flex-1 sm:flex-none">
+                <p className="font-display font-black text-2xl text-ink">{activePasses.length}</p>
+                <p className="text-xs font-mono text-ink-soft">Active Passes</p>
               </div>
-
-              {/* Ambient Bioluminescent Backglow */}
-              <div className="absolute inset-0 pointer-events-none flex items-center justify-center -z-0">
-                <div className="w-[320px] h-[320px] rounded-full bg-emerald-500/10 blur-3xl" />
-                <div className="w-[280px] h-[280px] rounded-full bg-indigo-500/15 blur-2xl -translate-y-6" />
+              <div className="px-4 py-2.5 rounded-[12px] bg-paper border-1.5 border-ink/20 text-center min-w-[100px] flex-1 sm:flex-none">
+                <p className="font-display font-black text-2xl text-emerald-700">
+                  {attendedPasses.length}
+                </p>
+                <p className="text-xs font-mono text-ink-soft">Admitted at Gate</p>
               </div>
-
-              {/* Open-Air 3D Canvas Stage (No clipping borders, full headroom) */}
-              <div className="relative w-full h-[480px] sm:h-[520px] flex items-center justify-center overflow-visible">
-                <Lanyard
-                  frontImage={studentIdFrontTexture}
-                  backImage={studentIdBackTexture}
-                  cardColor="#120F24"
-                  finish="holographic"
-                  orientation="portrait"
-                  strapColor="#5E4AE3"
-                  size={0.88}
-                  strapLength={0.34}
-                  intro={false}
-                  breeze={0.04}
-                  className="w-full h-full"
-                />
-              </div>
-
-              {/* Status & Interaction Prompt Pill */}
-              <div className="z-10 mt-[-8px] px-3.5 py-1.5 rounded-full bg-surface/90 backdrop-blur-md border border-line text-[11px] font-medium text-text-2 shadow-lg flex items-center gap-2 whitespace-nowrap">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="font-mono text-emerald-600 font-bold uppercase tracking-wider text-[10px]">NFC PASS ACTIVE</span>
-                <span className="text-line">|</span>
-                <span>Drag to swing & spin 3D ID</span>
+              <div className="px-4 py-2.5 rounded-[12px] bg-paper border-1.5 border-ink/20 text-center min-w-[100px] flex-1 sm:flex-none">
+                <p className="font-display font-black text-2xl text-ink">{certificates.length}</p>
+                <p className="text-xs font-mono text-ink-soft">Credentials</p>
               </div>
             </div>
           </div>
+
+          {/* Right Column (5 cols): 3D Physics Lanyard ID Badge (Mandate 2 & F-15) */}
+          <div className="lg:col-span-5 flex flex-col items-center">
+            {/* 3D vs 2D View Switcher Controls (F-15 Accessibility) */}
+            <div className="w-full flex items-center justify-between pb-3 px-2">
+              <span className="text-[11px] font-mono font-bold uppercase text-ink-soft tracking-wider flex items-center gap-1.5">
+                <IdentificationCard className="w-4 h-4 text-cobalt" weight="bold" />
+                OFFICIAL ID BADGE
+              </span>
+              <div className="inline-flex rounded-full bg-paper p-1 border border-ink/20 text-xs font-mono">
+                <button
+                  type="button"
+                  onClick={() => setBadgeViewMode('3d')}
+                  className={`px-2.5 py-1 rounded-full transition-all flex items-center gap-1 ${
+                    badgeViewMode === '3d'
+                      ? 'bg-ink text-paper font-bold shadow-xs'
+                      : 'text-ink-soft hover:text-ink'
+                  }`}
+                >
+                  <Cube className="w-3.5 h-3.5" /> 3D
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBadgeViewMode('2d')}
+                  className={`px-2.5 py-1 rounded-full transition-all flex items-center gap-1 ${
+                    badgeViewMode === '2d'
+                      ? 'bg-ink text-paper font-bold shadow-xs'
+                      : 'text-ink-soft hover:text-ink'
+                  }`}
+                >
+                  <IdentificationCard className="w-3.5 h-3.5" /> 2D
+                </button>
+              </div>
+            </div>
+
+            {/* Stage: Render 3D Physics Lanyard or 2D Static ID Badge */}
+            {badgeViewMode === '3d' ? (
+              <div className="w-full flex flex-col items-center">
+                {/* Architectural Suspension Bracket */}
+                <div className="z-10 flex flex-col items-center mb-[-12px]">
+                  <div className="h-2 w-24 rounded-full bg-zinc-300 border border-ink shadow-[1px_1px_0_#151130]" />
+                  <div className="h-3 w-8 bg-zinc-400 border-x border-b border-ink rounded-b-md flex items-center justify-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-mint" />
+                  </div>
+                </div>
+
+                {/* Open-Air 3D Canvas Stage */}
+                <div className="relative w-full h-[420px] sm:h-[460px] flex items-center justify-center overflow-visible">
+                  <Lanyard
+                    frontImage={studentIdFrontTexture}
+                    backImage={studentIdBackTexture}
+                    cardColor="#151130"
+                    finish="matte"
+                    orientation="portrait"
+                    strapColor="#0047FF"
+                    size={0.88}
+                    strapLength={0.34}
+                    intro={false}
+                    breeze={0.03}
+                    className="w-full h-full"
+                  />
+                </div>
+
+                {/* Status Prompt Pill */}
+                <div className="z-10 mt-[-8px] px-3.5 py-1 rounded-full bg-paper border border-ink text-[11px] font-mono text-ink shadow-[2px_2px_0_#151130] flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-mint animate-pulse" />
+                  <span className="font-bold">PHYSICS LANYARD</span>
+                  <span className="text-ink/40">·</span>
+                  <span className="text-ink-soft">Drag to swing & spin</span>
+                </div>
+              </div>
+            ) : (
+              /* 2D Tactile ID Badge Fallback (F-15) */
+              <div className="w-full flex flex-col items-center py-2">
+                <StudentIDCard2D
+                  name={studentData.name}
+                  registrationNumber={studentData.registrationNumber}
+                  degreeBranch={studentData.degreeBranch}
+                  semester={studentData.semester}
+                  email={studentData.email}
+                  role={studentData.role}
+                  campus={studentData.campus}
+                  bloodGroup={studentData.bloodGroup}
+                  emergencyPhone={studentData.emergencyPhone}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* TICKET & CREDENTIAL TABS                                                  */}
+      {/* ========================================================================= */}
+      <section className="space-y-6">
+        {/* Tab Header Controls */}
+        <div className="flex flex-wrap items-center gap-2 border-b-2 border-ink pb-3">
+          <button
+            type="button"
+            onClick={() => setActiveTab('passes')}
+            className={`px-4 py-2 rounded-full font-display font-bold text-sm transition-all flex items-center gap-2 ${
+              activeTab === 'passes'
+                ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
+                : 'bg-paper text-ink hover:bg-card'
+            }`}
+          >
+            <Ticket className="w-4 h-4" weight="bold" />
+            <span>My Tickets</span>
+            <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-xs font-mono">
+              {registrations.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('certificates')}
+            className={`px-4 py-2 rounded-full font-display font-bold text-sm transition-all flex items-center gap-2 ${
+              activeTab === 'certificates'
+                ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
+                : 'bg-paper text-ink hover:bg-card'
+            }`}
+          >
+            <CertificateIcon className="w-4 h-4" weight="bold" />
+            <span>Certificates</span>
+            <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-xs font-mono">
+              {certificates.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('clubs')}
+            className={`px-4 py-2 rounded-full font-display font-bold text-sm transition-all flex items-center gap-2 ${
+              activeTab === 'clubs'
+                ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
+                : 'bg-paper text-ink hover:bg-card'
+            }`}
+          >
+            <GraduationCap className="w-4 h-4" weight="bold" />
+            <span>Followed Clubs</span>
+            <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-xs font-mono">
+              {followedClubs.length}
+            </span>
+          </button>
         </div>
 
-        <div className="app-container">
-          <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
-        </div>
-      </div>
-
-      <div className="app-container py-8">
-        {/* TAB 1: PASSES */}
+        {/* TAB 1: PASSES & BOARDING PASSES */}
         {activeTab === 'passes' && (
           <div>
             {regsLoading ? (
-              <p className="text-small text-text-2">Loading passes...</p>
+              <p className="text-sm font-mono text-ink-soft">Loading tickets...</p>
             ) : registrations.length === 0 ? (
-              <EmptyState
-                title="No active passes"
-                description="You have not registered for any upcoming events yet."
-                actionLabel="Explore events"
-                onAction={() => window.location.assign('/explore')}
-              />
+              <div className="bg-card border-2 border-ink rounded-[16px] p-8 text-center space-y-3 shadow-[4px_4px_0_#151130]">
+                <h3 className="font-display font-bold text-xl text-ink">No active passes yet</h3>
+                <p className="text-sm text-ink-soft max-w-sm mx-auto">
+                  You haven't reserved seats for upcoming events. Browse campus collectives to grab a pass.
+                </p>
+                <div className="pt-2">
+                  <Link to="/explore">
+                    <button type="button" className="btn-funk-primary px-5 py-2 text-sm">
+                      Explore events
+                    </button>
+                  </Link>
+                </div>
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {registrations.map((reg) => (
@@ -337,50 +495,53 @@ export const AttendeeDashboardPage: React.FC = () => {
         {activeTab === 'certificates' && (
           <div>
             {certsLoading ? (
-              <p className="text-small text-text-2">Loading certificates...</p>
+              <p className="text-sm font-mono text-ink-soft">Loading certificates...</p>
             ) : certificates.length === 0 ? (
-              <EmptyState
-                title="No certificates issued"
-                description="Certificates are granted upon verified completion of workshops and hackathons."
-              />
+              <div className="bg-card border-2 border-ink rounded-[16px] p-8 text-center space-y-3 shadow-[4px_4px_0_#151130]">
+                <h3 className="font-display font-bold text-xl text-ink">No credentials issued yet</h3>
+                <p className="text-sm text-ink-soft max-w-sm mx-auto">
+                  Certificates are automatically minted upon verified attendance at hackathons and workshops.
+                </p>
+              </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {certificates.map((cert) => (
                   <div
                     key={cert.id}
-                    className="bg-surface border border-line rounded-panel p-5 space-y-4"
+                    className="bg-card border-2 border-ink rounded-[16px] p-5 space-y-4 shadow-[3px_3px_0_#151130]"
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between border-b border-ink/15 pb-2.5">
                       <div className="flex items-center gap-2">
-                        <Award className="h-5 w-5 text-accent" />
-                        <span className="font-semibold text-small text-text">Certificate</span>
+                        <CertificateIcon className="h-5 w-5 text-cobalt" weight="bold" />
+                        <span className="font-display font-bold text-sm text-ink">Credential</span>
                       </div>
-                      <span className="font-mono text-caption text-text-3">
+                      <span className="font-mono text-xs text-ink-soft font-semibold">
                         {cert.certificateId}
                       </span>
                     </div>
 
                     <div>
-                      <h4 className="font-semibold text-small text-text">{cert.eventTitle}</h4>
-                      <p className="text-caption text-text-2 mt-0.5">
-                        Issued {formatDate(cert.issuedAt)} by {cert.organizerName}
+                      <h4 className="font-display font-bold text-base text-ink leading-snug">
+                        {cert.eventTitle}
+                      </h4>
+                      <p className="text-xs text-ink-soft mt-1">
+                        Issued {formatDate(cert.issuedAt)} · {cert.organizerName}
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2 pt-2 border-t border-line">
-                      <Button
-                        variant="secondary"
-                        size="compact"
-                        fullWidth
-                        icon={<Download className="h-4 w-4" />}
+                    <div className="flex items-center gap-2 pt-2 border-t border-ink/15">
+                      <button
+                        type="button"
+                        className="btn-funk-primary flex-1 py-1.5 text-xs flex items-center justify-center gap-1.5"
                         onClick={() => downloadCertificatePDF(cert)}
                       >
-                        Download PDF
-                      </Button>
+                        <DownloadSimple className="h-4 w-4" weight="bold" />
+                        <span>Download PDF</span>
+                      </button>
                       <Link to={`/verify/${cert.certificateId}`}>
-                        <Button variant="tertiary" size="compact">
+                        <button type="button" className="btn-funk-secondary text-xs px-3 py-1.5">
                           Verify
-                        </Button>
+                        </button>
                       </Link>
                     </div>
                   </div>
@@ -394,42 +555,55 @@ export const AttendeeDashboardPage: React.FC = () => {
         {activeTab === 'clubs' && (
           <div>
             {followedClubs.length === 0 ? (
-              <EmptyState
-                title="No followed clubs"
-                description="Follow clubs to receive immediate updates about their new events."
-                actionLabel="Explore clubs"
-                onAction={() => window.location.assign('/clubs')}
-              />
+              <div className="bg-card border-2 border-ink rounded-[16px] p-8 text-center space-y-3 shadow-[4px_4px_0_#151130]">
+                <h3 className="font-display font-bold text-xl text-ink">No followed clubs</h3>
+                <p className="text-sm text-ink-soft max-w-sm mx-auto">
+                  Follow campus collectives to receive immediate updates about their new workshops and flagship gatherings.
+                </p>
+                <div className="pt-2">
+                  <Link to="/clubs">
+                    <button type="button" className="btn-funk-primary px-5 py-2 text-sm">
+                      Explore clubs
+                    </button>
+                  </Link>
+                </div>
+              </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {followedClubs.map((club) => (
                   <Link
                     key={club.id}
                     to={`/clubs/${club.slug}`}
-                    className="flex items-center gap-3 p-4 rounded-[10px] bg-surface border border-line hover:border-text-3 transition-colors"
+                    className="flex items-center gap-3 p-4 rounded-[14px] bg-card border-2 border-ink hover:shadow-[3px_3px_0_#151130] transition-all"
                   >
                     <span
-                      className="h-3 w-3 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: club.color || '#C93E27' }}
+                      className="h-4 w-4 rounded-full border border-ink flex-shrink-0"
+                      style={{ backgroundColor: club.color || '#0047FF' }}
                       aria-hidden="true"
                     />
-                    <div className="min-w-0">
-                      <h4 className="font-semibold text-small text-text truncate">{club.name}</h4>
-                      <p className="text-caption text-text-2 truncate">{club.joinMode ? club.joinMode.replace('_', ' ') : 'Collective'}</p>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-display font-bold text-sm text-ink truncate">{club.name}</h4>
+                      <p className="text-xs text-ink-soft truncate">
+                        {club.joinMode ? club.joinMode.replace('_', ' ') : 'Campus Collective'}
+                      </p>
                     </div>
+                    <ArrowRight className="w-4 h-4 text-ink-soft" />
                   </Link>
                 ))}
               </div>
             )}
           </div>
         )}
-      </div>
+      </section>
 
-      {/* Interactive Digital Entry Pass Floating Canvas Inspection */}
+      {/* ========================================================================= */}
+      {/* FLOATING TICKET PASS INSPECTION (Mandate 1: Intact QR Face / Gate Tear)   */}
+      {/* ========================================================================= */}
       {selectedTicket && (
         <EventAdmissionTicket
           registration={selectedTicket}
           floatingCanvas={true}
+          demoMode={false} // Normal student flow: pass is presented to volunteer
           onClose={() => setSelectedTicket(null)}
           onAdmit={() => {
             updateStatusMutation.mutate({
@@ -448,6 +622,8 @@ export const AttendeeDashboardPage: React.FC = () => {
           }}
         />
       )}
-    </div>
+    </PageShell>
   )
 }
+
+export default AttendeeDashboardPage

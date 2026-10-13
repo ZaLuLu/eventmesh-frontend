@@ -97,6 +97,9 @@ export interface RegistrationsApi {
   register(payload: RegisterPayload): Promise<Registration>
   registerPass?(eventSlug: string): Promise<RegistrationRead>
   cancelRegistration?(eventSlug: string): Promise<void>
+  cancelMyRegistration?(registrationId: string): Promise<boolean>
+  joinWaitlist?(eventId: string, answers?: Record<string, any>): Promise<Registration>
+  getTicketPass?(registrationId: string): Promise<{ token: string; status: 'intact' | 'checked_in'; otp: string; checkedInAt?: string }>
   getEventAttendees?(eventSlug: string): Promise<AttendeeRead[]>
   getRegistrations(filter: {
     eventId?: string
@@ -113,6 +116,8 @@ export interface CheckinResult {
   success: boolean
   registration?: Registration
   message: string
+  admittedAt?: string
+  alreadyAdmitted?: boolean
 }
 
 export interface CheckinStats {
@@ -123,6 +128,7 @@ export interface CheckinStats {
 
 export interface CheckinApi {
   checkinTicket(ticketCode: string, eventId?: string): Promise<CheckinResult>
+  checkinWithToken?(token: string, eventId?: string): Promise<CheckinResult>
   undoCheckin(registrationId: string): Promise<boolean>
   getCheckinStats(eventId: string): Promise<CheckinStats>
 }
@@ -151,6 +157,9 @@ export interface AnnouncementsApi {
 export interface NotificationsApi {
   getNotifications(filter?: { orgId: string; clubId?: string }): Promise<Notification[]>
   sendNotification(notification: Partial<Notification>): Promise<Notification>
+  getMyNotifications?(): Promise<Notification[]>
+  markNotificationRead?(id: string): Promise<boolean>
+  markAllNotificationsRead?(): Promise<boolean>
 }
 
 export interface ClubsApi {

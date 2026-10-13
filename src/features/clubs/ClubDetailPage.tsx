@@ -1,15 +1,24 @@
+// Hallmark macrostructure: Profile-Club
 import React, { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Users, ChevronRight, Check } from 'lucide-react'
+import {
+  Users,
+  CaretRight,
+  Sparkle,
+  CalendarCheck,
+  EnvelopeSimple,
+  Image as ImageIcon,
+  CheckCircle,
+} from '@phosphor-icons/react'
 import { useClub, useToggleFollowClub } from '@/hooks/useClubs'
 import { useEvents } from '@/hooks/useEvents'
+import { PageShell } from '@/design-system/layout/PageShell'
+import { Sticker } from '@/design-system/primitives/Sticker'
 import { Button } from '@/design-system/primitives/Button'
-import { EventCardModern } from '@/features/events/components/EventCardModern'
-import { useToast } from '@/design-system/primitives/Toast'
-import { Skeleton } from '@/design-system/primitives/Skeleton'
-import { EmptyState } from '@/design-system/primitives/EmptyState'
+import { EventTicketCard } from '@/design-system/EventTicketCard'
 import { BellToggle } from '@/design-system/micro/BellToggle'
-import { ProfileCard } from '@/design-system/3d/ProfileCard'
+import { getClubTheme } from '@/design-system/clubColors'
+import { useToast } from '@/design-system/primitives/Toast'
 
 export const ClubDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>()
@@ -18,41 +27,40 @@ export const ClubDetailPage: React.FC = () => {
   const { data: clubEventsData } = useEvents({ clubId: club?.id })
   const toggleFollowMutation = useToggleFollowClub()
 
+  const [activeTab, setActiveTab] = useState<'events' | 'team' | 'gallery'>('events')
+
   if (isLoading || !club) {
     return (
-      <div className="app-container py-12 max-h-[240px] flex flex-col justify-center gap-4">
-        <Skeleton height="h-8" width="w-1/2" />
-        <Skeleton height="h-28" />
-      </div>
+      <PageShell className="py-12">
+        <div className="h-64 rounded-[20px] bg-paper-2 border-2 border-ink animate-pulse shadow-[4px_4px_0_#151130]" />
+      </PageShell>
     )
   }
 
   const events = clubEventsData?.items || []
   const upcomingEvents = events.filter((e) => e.status !== 'completed' && e.status !== 'archived')
-  const completedEvents = events.filter((e) => e.status === 'completed')
+  const pastEvents = events.filter((e) => e.status === 'completed')
 
-  // Curated leadership team with fallback for rich 3D presentation
+  const theme = getClubTheme(club.name)
+
   const fallbackLeads = [
     {
       name: 'Aditya Narayan',
       role: 'President & System Architect',
       photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
-      status: 'Club President',
-      statusColor: '#10B981',
+      badge: 'Club Lead',
     },
     {
       name: 'Rohan Sharma',
       role: 'VP Engineering & Infrastructure',
       photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
-      status: 'Tech Director',
-      statusColor: '#6366F1',
+      badge: 'Tech Director',
     },
     {
       name: 'Dr. Sunita Rao',
-      role: 'Faculty Coordinator & Research Chair',
+      role: 'Faculty Coordinator & Mentor',
       photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
-      status: 'Faculty Advisor',
-      statusColor: '#F59E0B',
+      badge: 'Faculty Advisor',
     },
   ]
 
@@ -64,10 +72,9 @@ export const ClubDetailPage: React.FC = () => {
   const leadMembers = existingCoordinators.length > 0
     ? existingCoordinators.map((c, i) => ({
         name: c.name,
-        role: c.role || (i === 0 ? 'Lead Organizer' : 'Coordinator'),
+        role: c.role || (i === 0 ? 'Lead Organizer' : 'Core Coordinator'),
         photo: c.photo || fallbackLeads[i % fallbackLeads.length].photo,
-        status: i === 0 ? 'Lead Organizer' : i === 1 ? 'Technical VP' : 'Faculty Mentor',
-        statusColor: i === 0 ? '#10B981' : i === 1 ? '#6366F1' : '#F59E0B',
+        badge: i === 0 ? 'Lead Organizer' : i === 1 ? 'Technical VP' : 'Core Committee',
       }))
     : fallbackLeads
 
@@ -75,9 +82,9 @@ export const ClubDetailPage: React.FC = () => {
     try {
       const isNowFollowed = await toggleFollowMutation.mutateAsync(club.id)
       toast({
-        title: isNowFollowed ? `Following ${club.name}` : `Unfollowed ${club.name}`,
+        title: isNowFollowed ? `Subscribed to ${club.name}` : `Unfollowed ${club.name}`,
         message: isNowFollowed
-          ? 'You will receive updates for newly announced events.'
+          ? 'You will receive updates for newly announced events and workshops.'
           : 'You will no longer receive priority notifications.',
         type: 'info',
       })
@@ -86,168 +93,262 @@ export const ClubDetailPage: React.FC = () => {
     }
   }
 
-  const color = club.color || '#C93E27'
-
   return (
-    <div className="w-full bg-bg text-text pb-16">
-      {/* Breadcrumb */}
-      <div className="border-b border-line bg-surface py-3">
-        <div className="app-container flex items-center gap-2 text-small text-text-2">
-          <Link to="/" className="hover:text-text transition-colors">Home</Link>
-          <ChevronRight className="h-3.5 w-3.5 text-text-3" />
-          <Link to="/clubs" className="hover:text-text transition-colors">Clubs</Link>
-          <ChevronRight className="h-3.5 w-3.5 text-text-3" />
-          <span className="text-text font-medium">{club.name}</span>
-        </div>
-      </div>
+    <PageShell className="py-6 sm:py-10 space-y-8">
+      {/* Short Sentence-Case Breadcrumb */}
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-ink-soft">
+        <Link to="/" className="hover:text-ink transition-colors">Home</Link>
+        <CaretRight className="w-3.5 h-3.5 text-ink-soft/60" weight="bold" />
+        <Link to="/clubs" className="hover:text-ink transition-colors">Clubs</Link>
+        <CaretRight className="w-3.5 h-3.5 text-ink-soft/60" weight="bold" />
+        <span className="text-ink truncate">{club.name}</span>
+      </nav>
 
-      {/* Hero Section */}
-      <section className="border-b border-line bg-surface py-8">
-        <div className="app-container flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              {/* 10px Club Dot */}
-              <span
-                className="h-2.5 w-2.5 rounded-full flex-shrink-0"
-                style={{ backgroundColor: color }}
-                aria-hidden="true"
-              />
-              <span className="text-caption font-semibold text-text-2">
-                {club.joinMode ? club.joinMode.replace('_', ' ') : 'Engineering Collective'}
-              </span>
-              <span className="text-line">·</span>
-              <span className="text-caption text-text-3">
-                {club.followersCount || 40} members
-              </span>
+      {/* Header Band in Club Theme Color */}
+      <header className="relative rounded-[24px] border-2 border-ink bg-card shadow-[6px_6px_0_#151130] overflow-hidden">
+        {/* Top Header Theme Color Strip */}
+        <div
+          className="h-16 sm:h-24 border-b-2 border-ink w-full relative"
+          style={{ backgroundColor: theme.hex }}
+        >
+          <div className="absolute right-4 top-4 flex items-center gap-2">
+            <Sticker color={theme.token} size="sm" className="font-bold uppercase tracking-wider text-[11px] bg-card text-ink">
+              Official Collective
+            </Sticker>
+          </div>
+        </div>
+
+        {/* Club Details Block */}
+        <div className="p-6 sm:p-8 space-y-6">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+            <div className="space-y-3 max-w-3xl">
+              <h1 className="font-display font-extrabold text-3xl sm:text-5xl text-ink tracking-tight leading-none">
+                {club.name}
+              </h1>
+
+              <p className="text-ink-soft text-base sm:text-lg leading-relaxed">
+                {club.about || club.whatWeDo || 'Collegiate builder community focused on technical workshops, hackathons, and open projects.'}
+              </p>
+
+              {/* Sticker Row */}
+              <div className="flex flex-wrap items-center gap-2.5 pt-2">
+                <Sticker color={theme.token} size="md" icon={<Users className="w-4 h-4" weight="bold" />}>
+                  {club.followersCount || 42}+ Members
+                </Sticker>
+                <Sticker color="mustard" size="md" icon={<CalendarCheck className="w-4 h-4" weight="bold" />}>
+                  {events.length} Events Total
+                </Sticker>
+                <Sticker color="mint" size="md">
+                  {club.joinMode ? club.joinMode.replace('_', ' ') : 'Open Membership'}
+                </Sticker>
+              </div>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl font-semibold text-text tracking-tight">
-              {club.name}
-            </h1>
+            {/* Subscribe Action */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <BellToggle
+                pressed={Boolean(club.isFollowed)}
+                onChange={handleToggleFollow}
+                onLabel="Subscribed"
+                offLabel="Follow Club"
+                size="md"
+                badge={true}
+                count={club.followersCount || 42}
+              />
+            </div>
+          </div>
+        </div>
+      </header>
 
-            <p className="text-small text-text-2 max-w-2xl leading-relaxed">
-              {club.about || club.whatWeDo || 'Specialized collegiate collective focused on hands-on engineering, open-source building, and competitions.'}
+      {/* Tabs Navigation Bar */}
+      <div className="flex items-center gap-2 border-b-2 border-ink/15 pb-2">
+        <button
+          type="button"
+          onClick={() => setActiveTab('events')}
+          className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+            activeTab === 'events'
+              ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
+              : 'bg-card border-2 border-ink/20 text-ink-soft hover:text-ink hover:border-ink'
+          }`}
+        >
+          Events ({events.length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('team')}
+          className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+            activeTab === 'team'
+              ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
+              : 'bg-card border-2 border-ink/20 text-ink-soft hover:text-ink hover:border-ink'
+          }`}
+        >
+          Organizers ({leadMembers.length})
+        </button>
+
+        {club.gallery && club.gallery.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setActiveTab('gallery')}
+            className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+              activeTab === 'gallery'
+                ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
+                : 'bg-card border-2 border-ink/20 text-ink-soft hover:text-ink hover:border-ink'
+            }`}
+          >
+            Gallery ({club.gallery.length})
+          </button>
+        )}
+      </div>
+
+      {/* Tab Contents */}
+      {activeTab === 'events' && (
+        <div className="space-y-10">
+          {/* Upcoming Events */}
+          <section className="space-y-6">
+            <div className="flex items-center justify-between border-b-2 border-ink/10 pb-3">
+              <h2 className="font-display font-extrabold text-2xl text-ink">
+                Upcoming Events ({upcomingEvents.length})
+              </h2>
+            </div>
+
+            {upcomingEvents.length === 0 ? (
+              <div className="rounded-[20px] border-2 border-ink bg-card p-8 sm:p-12 text-center space-y-3 shadow-[4px_4px_0_#151130]">
+                <p className="font-display font-bold text-xl text-ink">
+                  No upcoming events right now
+                </p>
+                <p className="text-ink-soft text-sm max-w-md mx-auto">
+                  {club.name} is currently planning their next workshop or hackathon. Follow the club above to get notified when seats open.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                {upcomingEvents.map((evt) => (
+                  <EventTicketCard key={evt.id} event={evt} />
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Past Events */}
+          {pastEvents.length > 0 && (
+            <section className="space-y-6 pt-4">
+              <div className="flex items-center justify-between border-b-2 border-ink/10 pb-3">
+                <h2 className="font-display font-bold text-xl text-ink-soft">
+                  Past Events ({pastEvents.length})
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 opacity-90">
+                {pastEvents.map((evt) => (
+                  <EventTicketCard key={evt.id} event={evt} />
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      )}
+
+      {/* Team / Organizers Tab */}
+      {activeTab === 'team' && (
+        <section className="space-y-6">
+          <div className="border-b-2 border-ink/10 pb-3">
+            <h2 className="font-display font-extrabold text-2xl text-ink">
+              Core Leadership & Mentors
+            </h2>
+            <p className="text-ink-soft text-sm mt-1">
+              Student coordinators and faculty mentors running {club.name}
             </p>
           </div>
 
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <BellToggle
-              pressed={Boolean(club.isFollowed)}
-              onChange={handleToggleFollow}
-              onLabel="Following updates"
-              offLabel="Follow club"
-              size="md"
-              badge={true}
-              count={club.followersCount || 42}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Main Content Sections */}
-      <div className="app-container py-8 space-y-10 sm:space-y-12">
-        {/* Upcoming Events Grid */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between border-b border-line pb-3">
-            <h2 className="text-xl font-semibold text-text">
-              Upcoming events ({upcomingEvents.length})
-            </h2>
-          </div>
-
-          {upcomingEvents.length === 0 ? (
-            <EmptyState
-              title="No upcoming events"
-              description={`${club.name} currently has no newly scheduled events.`}
-            />
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
-              {upcomingEvents.map((evt) => (
-                <EventCardModern key={evt.id} event={evt} />
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Executive Committee & Leadership with 3D Profile Cards */}
-        <section className="space-y-4">
-          <div className="border-b border-line pb-3 flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-semibold text-text">
-                Executive Leadership & Mentors
-              </h2>
-              <p className="text-caption text-text-2 mt-0.5">
-                Core student coordinators and faculty advisors directing {club.name}
-              </p>
-            </div>
-            <span className="hidden sm:inline-block text-caption font-mono text-text-3">
-              Tilt to inspect 3D cards
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
             {leadMembers.map((lead, idx) => (
-              <div key={idx} className="flex justify-center">
-                <ProfileCard
-                  avatarUrl={lead.photo}
-                  name={lead.name}
-                  title={lead.role}
-                  handle={`${lead.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.mesh`}
-                  status={lead.status}
-                  statusColor={lead.statusColor}
-                  contactText="Connect"
-                  onContactClick={() => {
-                    toast({
-                      title: `Connecting with ${lead.name}`,
-                      message: `Direct channel opened with ${lead.name} (${lead.role}).`,
-                      type: 'info',
-                    })
-                  }}
-                  theme="dark"
-                  radius={20}
-                  tiltStrength={15}
-                  className="w-full max-w-[300px]"
-                />
+              <div
+                key={idx}
+                className="rounded-[20px] border-2 border-ink bg-card p-6 shadow-[4px_4px_0_#151130] space-y-4 flex flex-col justify-between"
+              >
+                <div className="flex items-start gap-4">
+                  <img
+                    src={lead.photo}
+                    alt={lead.name}
+                    className="w-16 h-16 rounded-full object-cover border-2 border-ink shadow-[2px_2px_0_#151130] flex-shrink-0"
+                    loading="lazy"
+                  />
+                  <div className="space-y-1">
+                    <Sticker color="mint" size="sm" className="font-bold text-[11px] mb-1">
+                      {lead.badge}
+                    </Sticker>
+                    <h3 className="font-display font-bold text-lg text-ink leading-snug">
+                      {lead.name}
+                    </h3>
+                    <p className="text-ink-soft text-xs leading-normal">
+                      {lead.role}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t-2 border-ink/10 flex items-center justify-between">
+                  <span className="text-xs font-mono font-medium text-ink-soft">
+                    {club.name} Lead
+                  </span>
+                  <Button
+                    variant="secondary"
+                    size="compact"
+                    className="text-xs font-bold gap-1"
+                    onClick={() => {
+                      toast({
+                        title: `Contacting ${lead.name}`,
+                        message: `Connection channel opened with ${lead.name}.`,
+                        type: 'info',
+                      })
+                    }}
+                  >
+                    <EnvelopeSimple className="w-3.5 h-3.5" weight="bold" />
+                    <span>Connect</span>
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
         </section>
+      )}
 
-        {/* Past Exhibitions */}
-        {completedEvents.length > 0 && (
-          <section className="space-y-4">
-            <div className="flex items-center justify-between border-b border-line pb-3">
-              <h2 className="text-xl font-semibold text-text">
-                Past events & archives ({completedEvents.length})
-              </h2>
-            </div>
+      {/* Gallery Tab */}
+      {activeTab === 'gallery' && club.gallery && (
+        <section className="space-y-6">
+          <div className="border-b-2 border-ink/10 pb-3">
+            <h2 className="font-display font-extrabold text-2xl text-ink">
+              Photo Moments
+            </h2>
+            <p className="text-ink-soft text-sm mt-1">
+              Snapshots captured across hackathons and workshops
+            </p>
+          </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
-              {completedEvents.map((evt) => (
-                <EventCardModern key={evt.id} event={evt} />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Club Gallery Photos */}
-        {club.gallery && club.gallery.length > 0 && (
-          <section className="space-y-4">
-            <div className="border-b border-line pb-3">
-              <h2 className="text-xl font-semibold text-text">
-                Collective photo archives
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              {club.gallery.map((photo, i) => (
-                <div key={photo.id || i} className="aspect-[4/3] rounded-[10px] overflow-hidden bg-subtle border border-line">
-                  <img src={photo.url} alt={photo.caption || ''} className="w-full h-full object-cover" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {club.gallery.map((photo, i) => (
+              <div
+                key={photo.id || i}
+                className="rounded-[16px] border-2 border-ink bg-card p-3 shadow-[4px_4px_0_#151130] space-y-2"
+              >
+                <div className="aspect-[4/3] rounded-[10px] overflow-hidden border border-ink/20 bg-paper-2">
+                  <img
+                    src={photo.url}
+                    alt={photo.caption || 'Club photo'}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
                 </div>
-              ))}
-            </div>
-          </section>
-        )}
-      </div>
-    </div>
+                {photo.caption && (
+                  <p className="text-xs font-medium text-ink-soft px-1 line-clamp-2">
+                    {photo.caption}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+    </PageShell>
   )
 }

@@ -77,26 +77,49 @@ async function simulateLatency(): Promise<void> {
 // -------------------------------------------------------------
 // IN-MEMORY / LOCALSTORAGE STORE
 // -------------------------------------------------------------
+const SCHEMA_VERSION = 'v2_campus_funk_2'
+
 class MockDataStore {
-  organization: Organization = getStored('org', SEED_ORGANIZATION)
-  clubs: Organizer[] = getStored('clubs', SEED_CLUBS)
-  events: Event[] = (() => {
-    const v = getStored<string>('seed_ver', '')
-    if (v !== 'v2_champion_38') {
-      setStored('seed_ver', 'v2_champion_38')
-      setStored('events', SEED_EVENTS)
-      return SEED_EVENTS
+  organization: Organization
+  clubs: Organizer[]
+  events: Event[]
+  registrations: Registration[]
+  certificates: Certificate[]
+  announcements: Announcement[]
+  notifications: Notification[]
+  auditLogs: AuditLog[]
+  currentSession: UserSession | null
+
+  constructor() {
+    const currentVer = getStored<string>('schema_version', '')
+    if (currentVer !== SCHEMA_VERSION) {
+      // Auto-reset store on seed or schema version change (Audit F-19)
+      this.organization = SEED_ORGANIZATION
+      this.clubs = SEED_CLUBS
+      this.events = SEED_EVENTS
+      this.registrations = SEED_REGISTRATIONS
+      this.certificates = SEED_CERTIFICATES
+      this.announcements = SEED_ANNOUNCEMENTS
+      this.notifications = SEED_NOTIFICATIONS
+      this.auditLogs = SEED_AUDIT_LOGS
+      this.currentSession = SEED_DEMO_USERS[0]
+      setStored('schema_version', SCHEMA_VERSION)
+      this.save()
+    } else {
+      this.organization = getStored('org', SEED_ORGANIZATION)
+      this.clubs = getStored('clubs', SEED_CLUBS)
+      this.events = getStored('events', SEED_EVENTS)
+      this.registrations = getStored('registrations', SEED_REGISTRATIONS)
+      this.certificates = getStored('certificates', SEED_CERTIFICATES)
+      this.announcements = getStored('announcements', SEED_ANNOUNCEMENTS)
+      this.notifications = getStored('notifications', SEED_NOTIFICATIONS)
+      this.auditLogs = getStored('audit_logs', SEED_AUDIT_LOGS)
+      this.currentSession = getStored('session', SEED_DEMO_USERS[0])
     }
-    return getStored('events', SEED_EVENTS)
-  })()
-  registrations: Registration[] = getStored('registrations', SEED_REGISTRATIONS)
-  certificates: Certificate[] = getStored('certificates', SEED_CERTIFICATES)
-  announcements: Announcement[] = getStored('announcements', SEED_ANNOUNCEMENTS)
-  notifications: Notification[] = getStored('notifications', SEED_NOTIFICATIONS)
-  auditLogs: AuditLog[] = getStored('audit_logs', SEED_AUDIT_LOGS)
-  currentSession: UserSession | null = getStored('session', SEED_DEMO_USERS[0]) // Default platform admin for initial exploration
+  }
 
   save() {
+    setStored('schema_version', SCHEMA_VERSION)
     setStored('org', this.organization)
     setStored('clubs', this.clubs)
     setStored('events', this.events)
@@ -118,6 +141,7 @@ class MockDataStore {
     this.notifications = SEED_NOTIFICATIONS
     this.auditLogs = SEED_AUDIT_LOGS
     this.currentSession = SEED_DEMO_USERS[0]
+    setStored('schema_version', SCHEMA_VERSION)
     this.save()
   }
 }
@@ -581,14 +605,99 @@ export const mockRegistrationsApi: RegistrationsApi = {
     const userId = mockStore.currentSession?.id || 'usr-att'
     return mockStore.registrations.filter((r) => r.userId === userId)
   },
+
+  async cancelMyRegistration(registrationId: string): Promise<boolean> {
+    await simulateLatency()
+    const reg = mockStore.registrations.find((r) => r.id === registrationId)
+    if (!reg) return false
+    reg.status = 'cancelled'
+    const evt = mockStore.events.find((e) => e.id === reg.eventId)
+    if (evt) {
+      evt.seatsLeft += 1
+    }
+    mockStore.save()
+    return true
+  },
+
+  async joinWaitlist(eventId: string, answers = {}): Promise<Registration> {
+    await simulateLatency()
+    const evt = mockStore.events.find((e) => e.id === eventId)
+    if (!evt) throw new Error('Event not found')
+
+    const user = mockStore.currentSession || {
+      id: `usr-${Date.now()}`,
+      name: 'Aditya Narayan',
+      email: 'attendee@campus.edu',
+    }
+
+    const regId = `reg-wait-${Date.now()}`
+    const ticketCode = `WAIT-${Math.floor(100000 + Math.random() * 900000)}`
+
+    const newReg: Registration = {
+      id: regId,
+      eventId: evt.id,
+      userId: user.id,
+      userEmail: user.email,
+      userName: user.name,
+      answers,
+      status: 'waitlisted',
+      ticketCode,
+      createdAt: new Date().toISOString(),
+      eventTitle: evt.title,
+      eventSlug: evt.slug,
+      organizerName: evt.organizerName,
+      organizerColor: evt.organizerColor,
+      eventStartsAt: evt.startsAt,
+    }
+
+    mockStore.registrations.unshift(newReg)
+    mockStore.save()
+    return newReg
+  },
+
+  async getTicketPass(registrationId: string): Promise<{ token: string; status: 'intact' | 'checked_in'; otp: string; checkedInAt?: string }> {
+    await simulateLatency()
+    const reg = mockStore.registrations.find((r) => r.id === registrationId)
+    if (!reg) throw new Error('Registration not found')
+
+    const tokenPayload = {
+      v: 2,
+      ticketId: reg.id,
+      code: reg.ticketCode,
+      eventId: reg.eventId,
+      sig: `SIG_EVENTMESH_${reg.id.slice(0, 6)}_${Date.now()}`,
+    }
+    const token = btoa(JSON.stringify(tokenPayload))
+    const otp = String(
+      Math.abs(reg.ticketCode.split('').reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7) % 900000) + 100000
+    )
+
+    return {
+      token,
+      status: reg.status === 'checked_in' ? 'checked_in' : 'intact',
+      otp,
+      checkedInAt: reg.checkedInAt,
+    }
+  },
 }
 
 export const mockCheckinApi: CheckinApi = {
+  async checkinWithToken(token: string, eventId?: string): Promise<CheckinResult> {
+    await simulateLatency()
+    try {
+      const decoded = JSON.parse(atob(token))
+      const ticketCode = decoded.code || decoded.ticketId
+      return this.checkinTicket(ticketCode, eventId)
+    } catch {
+      return { success: false, message: 'Invalid QR signature or corrupted ticket payload.' }
+    }
+  },
+
   async checkinTicket(ticketCode: string, eventId?: string): Promise<CheckinResult> {
     await simulateLatency()
     const reg = mockStore.registrations.find(
       (r) =>
-        r.ticketCode.toUpperCase() === ticketCode.trim().toUpperCase() &&
+        (r.ticketCode.toUpperCase() === ticketCode.trim().toUpperCase() || r.id === ticketCode.trim()) &&
         (!eventId || r.eventId === eventId)
     )
 
@@ -599,8 +708,18 @@ export const mockCheckinApi: CheckinApi = {
     if (reg.status === 'checked_in') {
       return {
         success: false,
+        alreadyAdmitted: true,
         registration: reg,
-        message: `Ticket already checked in at ${new Date(reg.checkedInAt || '').toLocaleTimeString()}`,
+        admittedAt: reg.checkedInAt,
+        message: `Ticket already admitted at ${new Date(reg.checkedInAt || '').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+      }
+    }
+
+    if (reg.status === 'cancelled') {
+      return {
+        success: false,
+        registration: reg,
+        message: 'This registration has been cancelled by the attendee.',
       }
     }
 
@@ -612,7 +731,8 @@ export const mockCheckinApi: CheckinApi = {
     return {
       success: true,
       registration: reg,
-      message: `Checked in successfully: ${reg.userName} (${reg.eventTitle || 'Event'})`,
+      admittedAt: reg.checkedInAt,
+      message: `Admitted successfully: ${reg.userName} (${reg.eventTitle || 'Event'})`,
     }
   },
 
@@ -814,6 +934,29 @@ export const mockNotificationsApi: NotificationsApi = {
     mockStore.notifications.unshift(newNotif)
     mockStore.save()
     return newNotif
+  },
+
+  async getMyNotifications(): Promise<Notification[]> {
+    await simulateLatency()
+    return [...mockStore.notifications]
+  },
+
+  async markNotificationRead(id: string): Promise<boolean> {
+    await simulateLatency()
+    const notif = mockStore.notifications.find((n) => n.id === id)
+    if (!notif) return false
+    notif.read = true
+    mockStore.save()
+    return true
+  },
+
+  async markAllNotificationsRead(): Promise<boolean> {
+    await simulateLatency()
+    mockStore.notifications.forEach((n) => {
+      n.read = true
+    })
+    mockStore.save()
+    return true
   },
 }
 

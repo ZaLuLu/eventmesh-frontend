@@ -76,3 +76,38 @@ export function useUpdateRegistrationStatus() {
     },
   })
 }
+
+export function useCancelMyRegistration() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (registrationId: string) => {
+      if (api.registrations.cancelMyRegistration) {
+        return api.registrations.cancelMyRegistration(registrationId)
+      }
+      return Promise.resolve(true)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['registrations'] })
+      queryClient.invalidateQueries({ queryKey: ['my-registrations'] })
+      queryClient.invalidateQueries({ queryKey: ['events'] })
+    },
+  })
+}
+
+export function useJoinWaitlist() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ eventId, answers = {} }: { eventId: string; answers?: Record<string, any> }) => {
+      if (api.registrations.joinWaitlist) {
+        return api.registrations.joinWaitlist(eventId, answers)
+      }
+      return api.registrations.register({ eventId, answers })
+    },
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['registrations'] })
+      queryClient.invalidateQueries({ queryKey: ['my-registrations'] })
+      queryClient.invalidateQueries({ queryKey: ['event', res.eventId] })
+      queryClient.invalidateQueries({ queryKey: ['events'] })
+    },
+  })
+}

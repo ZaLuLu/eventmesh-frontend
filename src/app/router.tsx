@@ -231,22 +231,26 @@ export const router = createBrowserRouter([
           </Suspense>
         ),
       },
-      {
-        path: 'styleguide',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <StyleguidePage />
-          </Suspense>
-        ),
-      },
-      {
-        path: 'dev/accounts',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <DevAccountsPage />
-          </Suspense>
-        ),
-      },
+      ...(import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEV_TOOLS === 'true'
+        ? [
+            {
+              path: 'styleguide',
+              element: (
+                <Suspense fallback={<LoadingFallback />}>
+                  <StyleguidePage />
+                </Suspense>
+              ),
+            },
+            {
+              path: 'dev/accounts',
+              element: (
+                <Suspense fallback={<LoadingFallback />}>
+                  <DevAccountsPage />
+                </Suspense>
+              ),
+            },
+          ]
+        : []),
       {
         path: '*',
         element: <NotFoundPage />,

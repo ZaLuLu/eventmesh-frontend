@@ -1,32 +1,112 @@
+// Hallmark macrostructure: Catalog-Explore
 import React, { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, Link } from 'react-router-dom'
 import { useEvents } from '@/hooks/useEvents'
 import { useClubs } from '@/hooks/useClubs'
 import { Event } from '@/api'
-import { EventCardModern } from './components/EventCardModern'
-import { EventPeekDrawer } from '@/design-system/EventPeekDrawer'
-import { IndexRow } from '@/design-system/primitives/IndexRow'
-import { EmptyState } from '@/design-system/primitives/EmptyState'
+import { EventTicketCard } from '@/design-system/EventTicketCard'
+import { SectionHeader } from '@/design-system/SectionHeader'
+import { PageShell } from '@/design-system/layout/PageShell'
+import { Sticker } from '@/design-system/primitives/Sticker'
 import { Sheet } from '@/design-system/primitives/Sheet'
-import { Button } from '@/design-system/primitives/Button'
-import { Skeleton } from '@/design-system/primitives/Skeleton'
-import { formatDate } from '@/lib/dates'
+import { EmptyState } from '@/design-system/primitives/EmptyState'
+import { formatDate, formatTime, formatCurrency } from '@/lib/format'
+import { getClubTheme } from '@/design-system/clubColors'
 import {
-  Search,
+  MagnifyingGlass,
   X,
-  SlidersHorizontal,
-  LayoutGrid,
-  List,
+  Funnel,
+  GridFour,
+  ListBullets,
   Check,
-} from 'lucide-react'
+  CalendarBlank,
+  MapPin,
+  Ticket,
+} from '@/design-system/Icon'
+import { cn } from '@/lib/utils'
+
+/**
+ * Dense Luma-style Event Row for List View (Section 7.3)
+ */
+const DenseExploreRow: React.FC<{ event: Event }> = ({ event }) => {
+  const clubId = event.organizerId || (event as any).clubId || 'club-cp'
+  const clubTheme = getClubTheme(clubId)
+  const isFree = event.isFree ?? (!event.price || event.price === 0)
+  const isWaitlist = event.seatsLeft === 0 || (event as any).isWaitlist
+
+  return (
+    <article className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border-[1.5px] border-ink/15 hover:border-ink hover:shadow-offset transition-all duration-150 select-none">
+      {/* Left: Date Stamp & Particulars */}
+      <div className="flex items-start sm:items-center gap-4 min-w-0">
+        <div className="w-14 h-14 rounded-xl bg-paper-2 border border-ink/15 flex flex-col items-center justify-center flex-shrink-0 text-center font-mono">
+          <span className="text-[10px] uppercase font-bold text-cobalt tracking-wider">
+            {new Date(event.startsAt).toLocaleDateString('en-IN', { month: 'short' })}
+          </span>
+          <span className="font-display font-extrabold text-lg text-ink leading-none">
+            {new Date(event.startsAt).getDate()}
+          </span>
+        </div>
+
+        <div className="space-y-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span
+              className="w-2 h-2 rounded-full flex-shrink-0"
+              style={{ backgroundColor: clubTheme.hex }}
+              aria-hidden="true"
+            />
+            <span className="text-xs font-semibold text-ink-soft truncate">
+              {event.club?.name || event.organizerName || 'Campus Club'}
+            </span>
+            <span className="text-xs font-mono text-ink-soft/70">·</span>
+            <span className="text-xs font-mono text-ink-soft/70">
+              {formatTime(event.startsAt)}
+            </span>
+          </div>
+
+          <h3 className="font-display font-extrabold text-base sm:text-lg text-ink tracking-tight line-clamp-1 group-hover:text-cobalt transition-colors">
+            <Link to={`/events/${event.slug || event.id}`} className="focus:outline-none">
+              {event.title}
+            </Link>
+          </h3>
+
+          <div className="flex items-center gap-1.5 text-xs text-ink-soft">
+            <MapPin size={12} weight="bold" className="text-cobalt flex-shrink-0" />
+            <span className="truncate">{event.venue?.name || 'Campus Main Auditorium'}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Right: Badges & Action CTA */}
+      <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-ink/10 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <Sticker color={isFree ? 'mint' : 'mustard'} size="sm">
+            {formatCurrency(event.price)}
+          </Sticker>
+          {isWaitlist && (
+            <Sticker color="tangerine" size="sm">
+              Waitlist
+            </Sticker>
+          )}
+        </div>
+
+        <Link
+          to={`/events/${event.slug || event.id}`}
+          className="btn-funk-primary px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5"
+        >
+          <Ticket size={14} weight="bold" />
+          <span>{isWaitlist ? 'Waitlist' : 'Grab seat'}</span>
+        </Link>
+      </div>
+    </article>
+  )
+}
 
 export const ExplorePage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false)
   const [sortBy, setSortBy] = useState<'date' | 'popular' | 'title'>('date')
-  const [peekEvent, setPeekEvent] = useState<Event | null>(null)
 
   const activeCategory = searchParams.get('category') || 'ALL'
   const activeClub = searchParams.get('club') || 'ALL'
@@ -61,7 +141,6 @@ export const ExplorePage: React.FC = () => {
     } else if (sortBy === 'title') {
       result.sort((a, b) => a.title.localeCompare(b.title))
     } else {
-      // Prioritize upcoming active published events so they appear first
       result.sort((a, b) => {
         const aActive = a.status === 'published' ? 1 : 0
         const bActive = b.status === 'published' ? 1 : 0
@@ -88,7 +167,7 @@ export const ExplorePage: React.FC = () => {
   }
 
   const categories = [
-    { id: 'ALL', label: 'All categories' },
+    { id: 'ALL', label: 'All' },
     { id: 'HACKATHON', label: 'Hackathons' },
     { id: 'WORKSHOP', label: 'Workshops' },
     { id: 'TALK', label: 'Tech talks' },
@@ -102,303 +181,281 @@ export const ExplorePage: React.FC = () => {
     (freeOnly ? 1 : 0) +
     (searchQuery ? 1 : 0)
 
-  // Filter column content reusable between desktop and mobile sheet
-  const filterControls = (
-    <div className="space-y-5 text-small">
-      {/* Category Filter */}
-      <div>
-        <h4 className="font-semibold text-small text-text mb-2.5">Category</h4>
-        <div className="space-y-1">
-          {categories.map((cat) => (
+  return (
+    <PageShell className="py-8 sm:py-12 space-y-8 select-none">
+      {/* Header Block: Section Header & Instant Search Box */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-ink/10">
+        <SectionHeader
+          title="Explore campus happenings"
+          subtitle="Discover and grab seats for hackathons, technical retreats, and design salons across 9 collectives"
+          badge="Full Catalog"
+          badgeColor="sky"
+          accentWord="happenings"
+          className="mb-0"
+        />
+
+        {/* Prominent Instant Search Input */}
+        <div className="relative w-full md:max-w-md">
+          <MagnifyingGlass
+            size={18}
+            weight="bold"
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-soft pointer-events-none"
+          />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setParam('search', e.target.value)}
+            placeholder="Search by title, club, venue..."
+            className="w-full h-12 pl-11 pr-10 rounded-full bg-card border border-ink/15 focus:border-cobalt focus:ring-1 focus:ring-cobalt focus:outline-none text-sm text-ink placeholder:text-ink-soft/70 shadow-sm transition-colors"
+          />
+          {searchQuery && (
             <button
-              key={cat.id}
               type="button"
-              onClick={() => setParam('category', cat.id)}
-              className={`w-full text-left px-3 py-2 rounded-[8px] flex items-center justify-between transition-colors ${
-                activeCategory === cat.id
-                  ? 'bg-accent-soft text-accent font-semibold'
-                  : 'text-text-2 hover:bg-subtle hover:text-text'
-              }`}
+              onClick={() => setParam('search', '')}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-ink-soft hover:text-ink"
+              aria-label="Clear search"
             >
-              <span>{cat.label}</span>
-              {activeCategory === cat.id && <Check className="h-4 w-4 text-accent" />}
+              <X size={15} weight="bold" />
             </button>
-          ))}
+          )}
         </div>
       </div>
 
-      {/* Clubs Filter */}
-      <div>
-        <h4 className="font-semibold text-small text-text mb-2.5">Collective</h4>
-        <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+      {/* Sticky Horizontal Chip & Filter Bar (Replaces legacy left rail, V-08) */}
+      <div className="sticky top-16 z-30 bg-paper/95 backdrop-blur-md py-3 border-y border-ink/10 flex flex-wrap items-center justify-between gap-3">
+        {/* Left: Category Pill Chips */}
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
+          {categories.map((cat) => {
+            const isSelected = activeCategory === cat.id
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setParam('category', cat.id)}
+                className={cn(
+                  'px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shadow-sm',
+                  isSelected
+                    ? 'bg-ink text-paper shadow-offset'
+                    : 'bg-card text-ink hover:bg-paper-2 border border-ink/15'
+                )}
+              >
+                {cat.label}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Right: Club Select, Free Only, Sort, View Toggle */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Club Dropdown Filter */}
+          <select
+            value={activeClub}
+            onChange={(e) => setParam('club', e.target.value)}
+            className="h-9 px-3 bg-card border border-ink/20 rounded-full text-xs font-semibold text-ink focus:outline-none focus:border-cobalt transition-colors shadow-sm cursor-pointer"
+            aria-label="Filter by club"
+          >
+            <option value="ALL">All clubs</option>
+            {clubs.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Free Passes Only Pill */}
           <button
             type="button"
-            onClick={() => setParam('club', 'ALL')}
-            className={`w-full text-left px-3 py-2 rounded-[8px] flex items-center justify-between transition-colors ${
-              activeClub === 'ALL'
-                ? 'bg-accent-soft text-accent font-semibold'
-                : 'text-text-2 hover:bg-subtle hover:text-text'
-            }`}
+            onClick={() => setParam('free', freeOnly ? '' : 'true')}
+            className={cn(
+              'h-9 px-3 rounded-full border text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm',
+              freeOnly
+                ? 'bg-mint text-ink border-ink shadow-offset'
+                : 'bg-card text-ink border-ink/20 hover:bg-paper-2'
+            )}
+            aria-pressed={freeOnly}
           >
-            <span>All clubs</span>
-            {activeClub === 'ALL' && <Check className="h-4 w-4 text-accent" />}
+            <span>Free only</span>
+            {freeOnly && <Check size={12} weight="bold" />}
           </button>
-          {clubs.map((c) => (
+
+          {/* Sort Select */}
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as 'date' | 'popular' | 'title')}
+            className="h-9 px-3 bg-card border border-ink/20 rounded-full text-xs font-semibold text-ink focus:outline-none focus:border-cobalt transition-colors shadow-sm cursor-pointer"
+            aria-label="Sort events"
+          >
+            <option value="date">Date</option>
+            <option value="popular">Popular</option>
+            <option value="title">A-Z</option>
+          </select>
+
+          {/* View Mode Toggle */}
+          <div className="flex items-center p-0.5 bg-paper-2 border border-ink/15 rounded-full shadow-inner">
             <button
-              key={c.id}
               type="button"
-              onClick={() => setParam('club', c.id)}
-              className={`w-full text-left px-3 py-2 rounded-[8px] flex items-center justify-between transition-colors ${
-                activeClub === c.id
-                  ? 'bg-accent-soft text-accent font-semibold'
-                  : 'text-text-2 hover:bg-subtle hover:text-text'
-              }`}
+              onClick={() => setViewMode('grid')}
+              className={cn(
+                'w-8 h-8 rounded-full flex items-center justify-center transition-all',
+                viewMode === 'grid'
+                  ? 'bg-ink text-paper shadow-offset'
+                  : 'text-ink-soft hover:text-ink'
+              )}
+              aria-label="Grid view"
             >
-              <div className="flex items-center gap-2 truncate pr-2">
-                <span
-                  className="h-2.5 w-2.5 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: c.color || '#C93E27' }}
-                  aria-hidden="true"
-                />
-                <span className="truncate">{c.name}</span>
-              </div>
-              {activeClub === c.id && <Check className="h-4 w-4 text-accent flex-shrink-0" />}
+              <GridFour size={16} weight="bold" />
             </button>
-          ))}
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              className={cn(
+                'w-8 h-8 rounded-full flex items-center justify-center transition-all',
+                viewMode === 'list'
+                  ? 'bg-ink text-paper shadow-offset'
+                  : 'text-ink-soft hover:text-ink'
+              )}
+              aria-label="List view"
+            >
+              <ListBullets size={16} weight="bold" />
+            </button>
+          </div>
+
+          {/* Active Filters Clear */}
+          {activeFiltersCount > 0 && (
+            <button
+              type="button"
+              onClick={clearAllFilters}
+              className="text-xs font-bold text-cobalt hover:underline px-2"
+            >
+              Reset ({activeFiltersCount})
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Quick Toggles */}
-      <div className="pt-2 border-t border-line space-y-2">
-        <label className="flex items-center gap-2.5 cursor-pointer py-1 text-text select-none">
-          <input
-            type="checkbox"
-            checked={freeOnly}
-            onChange={(e) => setParam('free', e.target.checked ? 'true' : '')}
-            className="h-4 w-4 rounded text-accent border-line focus:ring-accent"
-          />
-          <span>Free passes only</span>
-        </label>
-      </div>
-
-      {activeFiltersCount > 0 && (
-        <button
-          type="button"
-          onClick={clearAllFilters}
-          className="w-full text-center py-2 text-small font-semibold text-accent hover:underline pt-3 border-t border-line"
-        >
-          Reset all filters ({activeFiltersCount})
-        </button>
-      )}
-    </div>
-  )
-
-  return (
-    <div className="w-full bg-bg text-text">
-      <div className="app-container py-6 sm:py-8 space-y-6">
-        {/* Header Block: Title & Search */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold text-text tracking-tight">
-              Explore events
-            </h1>
-            <p className="text-small text-text-2 mt-0.5">
-              Discover and register for technical events across collegiate clubs
-            </p>
-          </div>
-
-          {/* Search Input (48px height, 10px radius) */}
-          <div className="relative max-w-md w-full">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-text-3" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setParam('search', e.target.value)}
-              placeholder="Search by title, speaker, keyword..."
-              className="w-full h-12 pl-10 pr-9 rounded-[10px] bg-surface border border-line text-small text-text placeholder:text-text-3 focus:outline-none focus:ring-2 focus:ring-accent"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setParam('search', '')}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-3 hover:text-text p-1"
-                aria-label="Clear search"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Result Count and Sort on One Line */}
-        <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 sm:gap-4 py-2 border-y border-line">
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Mobile Filters Toggle Button */}
-            <button
-              type="button"
-              onClick={() => setIsMobileFiltersOpen(true)}
-              className="md:hidden inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[8px] bg-surface border border-line text-small font-medium text-text"
-            >
-              <SlidersHorizontal className="h-4 w-4 text-accent" />
-              <span>Filters {activeFiltersCount > 0 ? `(${activeFiltersCount})` : ''}</span>
-            </button>
-
-            <span className="text-small text-text-2 font-medium">
-              Showing <strong className="text-text font-semibold">{filteredEvents.length}</strong> events
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Sort Dropdown */}
-            <div className="flex items-center gap-1.5 sm:gap-2 text-small">
-              <span className="text-text-3 hidden sm:inline">Sort:</span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as 'date' | 'popular' | 'title')}
-                className="h-9 px-2 rounded-[8px] bg-surface border border-line text-small text-text focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer"
-              >
-                <option value="date">Date</option>
-                <option value="popular">Popular</option>
-                <option value="title">A-Z</option>
-              </select>
-            </div>
-
-            {/* Grid / List View Toggle */}
-            <div className="hidden sm:flex items-center border border-line rounded-[8px] overflow-hidden bg-surface">
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                className={`p-2 transition-colors ${
-                  viewMode === 'grid' ? 'bg-accent text-on-accent' : 'text-text-2 hover:text-text'
-                }`}
-                aria-label="Grid view"
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('list')}
-                className={`p-2 transition-colors ${
-                  viewMode === 'list' ? 'bg-accent text-on-accent' : 'text-text-2 hover:text-text'
-                }`}
-                aria-label="List view"
-              >
-                <List className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content Layout: Left Filter Column (Desktop) + Results Grid */}
-        <div className="flex items-start gap-6 lg:gap-8">
-          {/* Left Filter Column (Desktop) */}
-          <aside className="w-60 lg:w-64 flex-shrink-0 hidden md:block bg-surface border border-line rounded-panel p-4">
-            <h3 className="text-h3 font-semibold text-text mb-3">Filters</h3>
-            {filterControls}
-          </aside>
-
-          {/* Results Area */}
-          <div className="flex-1 min-w-0">
-            {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-5">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <Skeleton key={i} height="h-64" rounded="rounded-panel" />
-                ))}
-              </div>
-            ) : filteredEvents.length === 0 ? (
-              <EmptyState
-                title="No events found"
-                description="No scheduled events match your current filter parameters."
-                actionLabel="Reset all filters"
-                onAction={clearAllFilters}
+      {/* Main Results Container: Full Width, 3-column Grid or Dense Rows (V-01, V-08) */}
+      <div className="w-full">
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-80 rounded-ticket bg-card border-[1.5px] border-ink/15 animate-pulse"
               />
-            ) : viewMode === 'grid' ? (
-              /* Grids fill the row: 4 cols at 1280+, 3 at 1024, 2 at 640, 1 under 640 */
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-5">
-                <AnimatePresence mode="popLayout">
-                  {filteredEvents.map((evt, idx) => (
-                    <motion.div
-                      key={evt.id}
-                      layout
-                      initial={{ opacity: 0, y: 16 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{
-                        duration: 0.28,
-                        delay: Math.min(idx * 0.03, 0.24),
-                        ease: [0.22, 1, 0.36, 1],
-                      }}
-                    >
-                      <EventCardModern
-                        event={evt}
-                        onPeek={setPeekEvent}
-                      />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            ) : (
-              /* Clean Flat List View */
-              <div className="divide-y divide-line border border-line rounded-panel overflow-hidden bg-surface">
-                <AnimatePresence mode="popLayout">
-                  {filteredEvents.map((event, idx) => (
-                    <motion.div
-                      key={event.id}
-                      layout
-                      initial={{ opacity: 0, x: -12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, scale: 0.98 }}
-                      transition={{
-                        duration: 0.24,
-                        delay: Math.min(idx * 0.02, 0.2),
-                      }}
-                    >
-                      <IndexRow
-                        id={event.id}
-                        slug={event.slug}
-                        title={event.title}
-                        category={event.category}
-                        organizerName={event.organizerName || 'Technical Collective'}
-                        organizerColor={event.organizerColor}
-                        dateDisplay={formatDate(event.startsAt)}
-                        venueName={event.venue?.name}
-                        status={event.status}
-                        indexNumber={idx + 1}
-                      />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            )}
+            ))}
+          </div>
+        ) : filteredEvents.length === 0 ? (
+          <EmptyState
+            title="Nothing on yet. Try another club."
+            description="No scheduled events match your current filter parameters."
+            actionLabel="Clear all filters"
+            onAction={clearAllFilters}
+          />
+        ) : viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+            <AnimatePresence mode="popLayout">
+              {filteredEvents.map((evt) => (
+                <motion.div
+                  key={evt.id}
+                  layout
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                >
+                  <EventTicketCard event={evt} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <AnimatePresence mode="popLayout">
+              {filteredEvents.map((event) => (
+                <motion.div
+                  key={event.id}
+                  layout
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                >
+                  <DenseExploreRow event={event} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
+
+      {/* Mobile Filters Sheet */}
+      <Sheet
+        isOpen={isMobileFiltersOpen}
+        onClose={() => setIsMobileFiltersOpen(false)}
+        title="Filter campus events"
+      >
+        <div className="space-y-5 pt-2">
+          {/* Category */}
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-ink-soft uppercase tracking-wider block">
+              Category
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setParam('category', cat.id)}
+                  className={cn(
+                    'px-3 py-1.5 rounded-full text-xs font-semibold transition-all',
+                    activeCategory === cat.id
+                      ? 'bg-ink text-paper shadow-offset'
+                      : 'bg-card text-ink border border-ink/15'
+                  )}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Club */}
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-ink-soft uppercase tracking-wider block">
+              Club / Society
+            </span>
+            <select
+              value={activeClub}
+              onChange={(e) => setParam('club', e.target.value)}
+              className="w-full h-11 px-3 bg-card border border-ink/20 rounded-xl text-sm font-semibold text-ink"
+            >
+              <option value="ALL">All clubs</option>
+              {clubs.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="pt-4 border-t border-ink/10 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={clearAllFilters}
+              className="btn-funk-secondary w-1/2 py-2.5 text-xs font-bold uppercase"
+            >
+              Reset
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsMobileFiltersOpen(false)}
+              className="btn-funk-primary w-1/2 py-2.5 text-xs font-bold uppercase"
+            >
+              Done
+            </button>
           </div>
         </div>
-
-        {/* Mobile Filters Bottom Sheet */}
-        <Sheet
-          isOpen={isMobileFiltersOpen}
-          onClose={() => setIsMobileFiltersOpen(false)}
-          title="Filter events"
-        >
-          {filterControls}
-          <div className="pt-4 mt-4 border-t border-line">
-            <Button
-              variant="primary"
-              size="default"
-              fullWidth
-              onClick={() => setIsMobileFiltersOpen(false)}
-            >
-              Apply filters
-            </Button>
-          </div>
-        </Sheet>
-
-        {/* Event Quick Peek Drawer */}
-        <EventPeekDrawer
-          event={peekEvent}
-          isOpen={!!peekEvent}
-          onClose={() => setPeekEvent(null)}
-        />
-      </div>
-    </div>
+      </Sheet>
+    </PageShell>
   )
 }

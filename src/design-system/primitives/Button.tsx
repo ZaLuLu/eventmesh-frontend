@@ -1,9 +1,9 @@
 import React from 'react'
-import { ArrowRight, Loader2 } from 'lucide-react'
+import { ArrowRight } from '@/design-system/Icon'
 import { cn } from '@/lib/utils'
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'tertiary' | 'danger'
+  variant?: 'primary' | 'secondary' | 'tertiary' | 'danger' | 'ghost' | 'admin'
   size?: 'hero' | 'default' | 'compact' | 'admin' | 'lg' | 'md' | 'sm' | 'dense'
   surface?: 'public' | 'admin'
   onDark?: boolean
@@ -13,6 +13,12 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   fullWidth?: boolean
 }
 
+/**
+ * Campus Funk Button Primitive (Section 6.1 Specification).
+ * - Primary: Solid Ink (#151130), Paper text, pill shape. Hover turns Cobalt (#0047FF) with 2px lift and hard offset shadow.
+ * - Secondary: Card (#FFFDF8) fill with 1.5px ink border, matching hover physics.
+ * - Admin: Crisp Lime (#D4F25A) action with dark ink text.
+ */
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
@@ -31,110 +37,78 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    // Height specs: Hero 56px (h-14), Default 48px (h-12), Compact 40px (h-10), Admin 36px (h-9)
+    // Sizing scale
     const sizeClasses = {
-      hero: 'h-14 px-8 text-[15px]',
-      default: 'h-12 px-6 text-[15px]',
-      compact: 'h-10 px-4 text-small',
-      admin: 'h-9 px-3.5 text-small',
-      // Legacy aliases
-      lg: 'h-14 px-8 text-[15px]',
-      md: 'h-12 px-6 text-[15px]',
-      sm: 'h-10 px-4 text-small',
-      dense: 'h-9 px-3 text-small',
-    }[size] || 'h-12 px-6 text-[15px]'
+      hero: 'h-14 px-8 text-base font-bold',
+      default: 'h-11 px-6 text-sm font-semibold',
+      compact: 'h-9 px-4 text-xs font-semibold',
+      admin: 'h-9 px-3.5 text-xs font-semibold',
+      lg: 'h-14 px-8 text-base font-bold',
+      md: 'h-11 px-6 text-sm font-semibold',
+      sm: 'h-9 px-4 text-xs font-semibold',
+      dense: 'h-8 px-3 text-xs font-medium',
+    }[size] || 'h-11 px-6 text-sm font-semibold'
 
-    // Color variant resolution
+    // Variant styling
     const getVariantClasses = () => {
-      if (surface === 'admin') {
-        if (variant === 'primary') {
-          return 'bg-admin-accent text-white hover:bg-admin-accent'
+      if (surface === 'admin' || variant === 'admin') {
+        if (variant === 'primary' || variant === 'admin') {
+          return 'bg-lime text-ink font-bold border-none hover:bg-lime/90 hover:-translate-y-0.5 hover:shadow-[2.5px_2.5px_0_#D4F25A] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none'
         }
         if (variant === 'secondary') {
-          return 'bg-subtle text-text hover:bg-line'
-        }
-        if (variant === 'tertiary') {
-          return 'bg-transparent text-admin-accent hover:underline p-0 h-auto'
+          return 'bg-card text-ink border border-line hover:bg-paper-2 hover:-translate-y-0.5 active:translate-x-[1px] active:translate-y-[1px]'
         }
         if (variant === 'danger') {
-          return 'bg-danger text-white hover:bg-[#9B1E14]'
+          return 'bg-red-600 text-white hover:bg-red-700 active:translate-y-0.5'
         }
+        return 'bg-transparent text-paper hover:text-white hover:underline'
       }
 
-      if (onDark) {
-        // On dark rules:
-        // Primary: solid --lavender with --champion text (hover --lavender-200)
-        // Secondary: solid --champion-2 with --on-dark text
-        // Tertiary: text link in --lavender
-        switch (variant) {
-          case 'primary':
-            return 'bg-lavender text-champion hover:bg-lavender-200 focus-visible:ring-lavender'
-          case 'secondary':
-            return 'bg-champion-2 text-on-dark hover:bg-champion focus-visible:ring-lavender'
-          case 'tertiary':
-            return 'bg-transparent text-lavender hover:underline p-0 h-auto focus-visible:ring-lavender'
-          case 'danger':
-            return 'bg-danger text-white hover:bg-[#9B1E14]'
-          default:
-            return 'bg-lavender text-champion hover:bg-lavender-200'
-        }
-      }
-
-      // On light rules:
-      // Primary: solid --champion with white text
-      // Secondary: solid --lavender-100 with --champion text (hover --lavender-200)
-      // Tertiary: text link in --violet
+      // Public Surface Variants
       switch (variant) {
         case 'primary':
-          return 'bg-champion text-white hover:bg-champion-2 focus-visible:ring-violet'
+          return 'bg-ink text-paper border-none hover:bg-cobalt hover:-translate-y-0.5 hover:shadow-offset active:translate-x-[1px] active:translate-y-[1px] active:shadow-none'
         case 'secondary':
-          return 'bg-lavender-100 text-champion hover:bg-lavender-200 focus-visible:ring-violet'
-        case 'tertiary':
-          return 'bg-transparent text-violet hover:underline p-0 h-auto focus-visible:ring-violet'
+          return 'bg-card text-ink border-[1.5px] border-ink hover:bg-paper-2 hover:-translate-y-0.5 hover:shadow-offset active:translate-x-[1px] active:translate-y-[1px] active:shadow-none'
         case 'danger':
-          return 'bg-danger text-white hover:bg-[#9B1E14] focus-visible:ring-danger'
+          return 'bg-red-600 text-white border-none hover:bg-red-700 hover:-translate-y-0.5 hover:shadow-offset active:translate-x-[1px] active:translate-y-[1px]'
+        case 'ghost':
+          return 'bg-transparent text-ink border-none hover:bg-paper-2 active:bg-paper-2'
+        case 'tertiary':
         default:
-          return 'bg-champion text-white hover:bg-champion-2'
+          return 'bg-transparent text-ink border-none hover:text-cobalt hover:underline p-0 h-auto'
       }
     }
 
-    const disabledClasses =
-      disabled || loading ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
-
-    const focusRingClasses = onDark
-      ? 'focus-visible:ring-2 focus-visible:ring-lavender focus-visible:ring-offset-2 focus-visible:ring-offset-champion'
-      : 'focus-visible:ring-2 focus-visible:ring-violet focus-visible:ring-offset-2 focus-visible:ring-offset-white'
+    const isDisabled = disabled || loading
 
     return (
       <button
         ref={ref}
-        disabled={disabled || loading}
+        disabled={isDisabled}
         className={cn(
-          'group inline-flex items-center justify-center font-semibold tracking-normal rounded-full transition-colors duration-150 select-none outline-none',
+          'inline-flex items-center justify-center gap-2 select-none transition-all duration-150 rounded-full font-sans cursor-pointer',
+          fullWidth ? 'w-full' : 'w-auto',
           sizeClasses,
           getVariantClasses(),
-          focusRingClasses,
-          disabledClasses,
-          fullWidth && 'w-full',
+          isDisabled && 'opacity-50 cursor-not-allowed pointer-events-none hover:translate-y-0 hover:shadow-none',
           className
         )}
         {...props}
       >
-        <span className="inline-flex items-center gap-2">
-          {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin text-current" />
-          ) : icon ? (
-            <span className="flex-shrink-0 transition-transform duration-150 group-hover:translate-x-1">
-              {icon}
-            </span>
-          ) : null}
-
-          <span>{children}</span>
-
-          {arrow && !loading && (
-            <ArrowRight className="h-4 w-4 flex-shrink-0 transition-transform duration-150 group-hover:translate-x-1" />
-          )}
-        </span>
+        {loading ? (
+          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+        ) : (
+          icon
+        )}
+        <span>{children}</span>
+        {arrow && !loading && (
+          <ArrowRight
+            size={16}
+            weight="bold"
+            className="transition-transform group-hover:translate-x-1"
+          />
+        )}
       </button>
     )
   }

@@ -22,36 +22,48 @@ test.describe('EventMesh Core E2E Smoke Flows', () => {
     await eventRow.click()
 
     // 4. Click Register button on detail page
-    const registerBtn = page.getByRole('link', { name: /Register Now/i })
+    const registerBtn = page.locator('button, a').filter({ hasText: /Register now/i }).first()
     await expect(registerBtn).toBeVisible()
     await registerBtn.click()
 
-    // 5. Fill registration form
-    await expect(page.locator('h1')).toContainText(/Registration/i)
+    // 5. Fill registration form (email is locked to session per F-01)
+    await expect(page.locator('h1')).toContainText(/Your particulars|Registration/i)
     await page.fill('input#name, input[name="name"]', 'Arun Kumar')
-    await page.fill('input#email, input[name="email"]', 'arun@example.com')
     await page.fill('input#phone, input[name="phone"]', '+91 9876543210')
 
-    // Handle any event custom questionnaire fields if present
-    const extraInputs = page.locator('input[type="text"]:not(#name):not(#email):not(#phone):not([name="name"]):not([name="email"]):not([name="phone"])')
-    const count = await extraInputs.count()
-    for (let i = 0; i < count; i++) {
-      await extraInputs.nth(i).fill('Engineering Department')
-    }
-    const selectInputs = page.locator('select')
-    const selectCount = await selectInputs.count()
-    for (let i = 0; i < selectCount; i++) {
-      await selectInputs.nth(i).selectOption({ index: 1 })
+    // Step 1: Advance to Step 2
+    await page.getByRole('button', { name: /Continue to Details|Continue to Review/i }).click()
+
+    // Step 2: If custom questionnaire is present, fill fields and advance
+    const continueToReview = page.getByRole('button', { name: /Continue to Review/i })
+    if (await continueToReview.isVisible({ timeout: 2000 }).catch(() => false)) {
+      const extraInputs = page.locator('input[type="text"]:not(#name):not(#email):not(#phone):not([name="name"]):not([name="email"]):not([name="phone"])')
+      const count = await extraInputs.count()
+      for (let i = 0; i < count; i++) {
+        await extraInputs.nth(i).fill('Engineering Department')
+      }
+      const selectInputs = page.locator('select')
+      const selectCount = await selectInputs.count()
+      for (let i = 0; i < selectCount; i++) {
+        await selectInputs.nth(i).selectOption({ index: 1 })
+      }
+      await continueToReview.click()
     }
 
-    // 6. Submit registration
-    const submitBtn = page.getByRole('button', { name: /Complete Registration/i })
+    // Step 3: Review & Terms Agreement
+    await expect(page.locator('h1')).toContainText(/Review/i)
+    const conductCheckbox = page.locator('input#conductAgreement')
+    await expect(conductCheckbox).toBeVisible()
+    await conductCheckbox.check()
+
+    const submitBtn = page.getByRole('button', { name: /Confirm & Issue Pass/i })
+    await expect(submitBtn).toBeEnabled()
     await submitBtn.click()
 
     // 7. Verify ticket pass confirmation & QR display
     await expect(page.getByText(/Registration Confirmed/i)).toBeVisible({ timeout: 10000 })
-    await expect(page.getByText(/PASS-/i)).toBeVisible()
-    await expect(page.locator('canvas').first()).toBeVisible() // QR element
+    await expect(page.getByText(/TKT-|PASS-/i)).toBeVisible()
+    await expect(page.getByText(/SCAN AT GATE/i)).toBeVisible()
   })
 
   test('Flow B: Club admin creates and publishes event -> verified on public listing', async ({ page }) => {
@@ -103,13 +115,13 @@ test.describe('EventMesh Core E2E Smoke Flows', () => {
 
     // 2. Go to checkin portal
     await page.goto('/admin/checkin')
-    await expect(page.getByText(/Gate & Terminal Check-in/i)).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Venue Gate Check-in/i })).toBeVisible()
 
     // 3. Verify certificate portal at /verify/:id with known seed certificate
     await page.goto('/verify/TA-2026-001245')
     await expect(page.getByText(/Official Verification Record/i)).toBeVisible()
-    await expect(page.getByText(/TA-2026-001245/i)).toBeVisible()
-    await expect(page.getByText(/Status: Validated & Cryptographically Signed/i)).toBeVisible()
+    await expect(page.getByText('TA-2026-001245', { exact: true })).toBeVisible()
+    await expect(page.getByText(/VALIDATED/i)).toBeVisible()
   })
 
   test('Flow D: Multi-club isolation - Club A admin cannot access Club B data', async ({ page }) => {

@@ -38,6 +38,8 @@ export const NotificationSchema = z.object({
   channel: z.enum(['email', 'inapp']).default('email'),
   sentAt: z.string(),
   sentBy: z.string(),
+  read: z.boolean().optional(),
+  kind: z.enum(['announcement', 'reminder', 'waitlist_promoted', 'certificate_issued', 'general']).optional(),
   stats: z.object({
     recipientsCount: z.number().default(0),
     deliveredCount: z.number().default(0),

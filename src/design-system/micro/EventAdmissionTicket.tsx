@@ -2,22 +2,26 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { TearTicket } from './TearTicket'
 import { CodeSlots } from './CodeSlots'
-import { QRCode } from '@/design-system/primitives'
+import { QRCode } from '@/design-system/primitives/QRCode'
 import { formatDate } from '@/lib/dates'
+import { formatTime } from '@/lib/format'
 import {
   playGateAdmissionChime,
   playPaperTearSound,
-  playTearImpulse
+  playTearImpulse,
 } from '@/lib/sound'
 import { fireCelebrationConfetti } from '@/lib/confetti'
 import {
-  CheckCircle2,
-  Calendar,
+  CheckCircle,
+  CalendarBlank,
   MapPin,
-  Radio,
   QrCode,
-  X
-} from 'lucide-react'
+  X,
+  Ticket,
+  Scissors,
+  WarningCircle,
+} from '@phosphor-icons/react'
+import { Sticker } from '@/design-system/primitives/Sticker'
 
 export interface EventAdmissionTicketProps {
   registration: {
@@ -31,7 +35,12 @@ export interface EventAdmissionTicketProps {
     userName?: string
     userEmail?: string
     checkedInAt?: string
+    tierName?: string
+    teamName?: string
+    verificationToken?: string
   }
+  state?: 'intact' | 'checked_in'
+  demoMode?: boolean
   onAdmit?: () => void
   disabled?: boolean
   className?: string
@@ -41,23 +50,40 @@ export interface EventAdmissionTicketProps {
 
 export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
   registration,
+  state,
+  demoMode = false,
   onAdmit,
   disabled = false,
   className = '',
   floatingCanvas = false,
   onClose,
 }) => {
-  const isAlreadyAdmitted = registration.status === 'checked_in'
-  const [isLocallyTorn, setIsLocallyTorn] = useState(isAlreadyAdmitted)
+  const backendAdmitted = state ? state === 'checked_in' : registration.status === 'checked_in'
+  const [isLocallyTorn, setIsLocallyTorn] = useState(backendAdmitted)
 
-  const isTorn = isAlreadyAdmitted || isLocallyTorn
+  // Sync with prop changes
+  useEffect(() => {
+    if (backendAdmitted) {
+      setIsLocallyTorn(true)
+    }
+  }, [backendAdmitted])
+
+  const isTorn = backendAdmitted || isLocallyTorn
   const ticketCode = registration.ticketCode || `PASS-${registration.id.slice(0, 8).toUpperCase()}`
   const passSerial = registration.id.slice(0, 6).toUpperCase()
 
-  // Dynamic 6-digit gate OTP based on ticket code
+  // 6-digit gate OTP based on ticket code
   const rollingOtp = String(
     Math.abs(ticketCode.split('').reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7) % 900000) + 100000
   ).slice(0, 6)
+
+  // QR Code payload: signed token from backend or structured standard
+  const qrValue = registration.verificationToken || `EVENTMESH:${ticketCode}:${registration.id}`
+
+  // Format admission timestamp
+  const admissionTimestamp = registration.checkedInAt
+    ? formatTime(registration.checkedInAt)
+    : formatTime(new Date().toISOString())
 
   const triggerDigitalTear = () => {
     if (isTorn || disabled) return
@@ -66,7 +92,7 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
     playTearImpulse()
     setIsLocallyTorn(true)
 
-    // Gate chime & confetti when tear completes
+    // Gate chime & confetti upon scan completion
     setTimeout(() => {
       playGateAdmissionChime()
       fireCelebrationConfetti()
@@ -76,7 +102,7 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
     }, 750)
   }
 
-  // Real-time listener: Ticket tears when scanned & verified by the venue gate kiosk
+  // Real-time venue gate listener: tears when volunteer scanner hits /admin/checkin
   useEffect(() => {
     let channel: BroadcastChannel | null = null
     try {
@@ -101,7 +127,7 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
     }
   }, [registration.id, ticketCode, isTorn, disabled])
 
-  // ESC key to close floating canvas
+  // ESC key listener for floating canvas
   useEffect(() => {
     if (!floatingCanvas || !onClose) return
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -111,49 +137,60 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [floatingCanvas, onClose])
 
-  // Generous luxury dimensions for natural paper pass
+  // Dimensions for natural collegiate paper pass
   const WIDTH = 720
-  const HEIGHT = 270
-  const STUB_SIZE = 210
+  const HEIGHT = 280
+  const STUB_SIZE = 220
 
   const content = (
     <div className={`relative select-none flex flex-col items-center ${className}`}>
-      {/* Floating Canvas Ticket Stage (Pure floating pass, zero auxiliary dialogue boxes) */}
+      {/* Accessibility Status Region (F-15) */}
+      <div className="sr-only" aria-live="polite">
+        {isTorn
+          ? `Ticket validated. Admitted to ${registration.eventTitle || 'event'} at ${admissionTimestamp}.`
+          : `Ticket intact. Present QR code to venue gate volunteer.`}
+      </div>
+
+      {/* Floating Canvas Ticket Stage */}
       <div className="w-full flex justify-center py-2 overflow-visible">
         <TearTicket
           width={WIDTH}
           height={HEIGHT}
           stubSize={STUB_SIZE}
-          radius={12}
+          radius={16}
           holes={11}
-          notch={12}
+          notch={14}
           roughness={2}
           tearAngle={28}
           stretch={34}
           resistance={0.4}
           torn={isTorn}
-          disabled={disabled}
-          background="#FFFFFF" // Crisp heavy cardstock paper
+          disabled={disabled || (!demoMode && !isTorn)}
+          background="#FFFDF8" // Warm cardstock paper
           stubBackground="#0047FF" // Electric Cobalt gate stub
-          color="#0A0A0A"
-          borderColor="#E2E8F0"
-          borderWidth={1}
+          color="#151130"
+          borderColor="#151130"
+          borderWidth={1.5}
           tilt={true}
-          tiltMax={6}
-          className="shadow-[0_20px_50px_-15px_rgba(0,71,255,0.18)]"
+          tiltMax={5}
+          className="shadow-[4px_4px_0_#151130]"
           onTear={() => {
             playGateAdmissionChime()
             fireCelebrationConfetti()
             if (onAdmit) onAdmit()
           }}
           stub={
-            /* Natural Gate Stub (Direct tap / drag to tear) */
+            /* Physical Gate Stub */
             <div
-              onClick={!isTorn && !disabled ? triggerDigitalTear : undefined}
-              className={`h-full flex flex-col justify-between items-center text-center p-4 font-mono bg-[#0047FF] text-white select-none ${
-                !isTorn && !disabled ? 'cursor-pointer hover:bg-[#0037CC] transition-colors' : ''
+              onClick={demoMode && !isTorn && !disabled ? triggerDigitalTear : undefined}
+              className={`h-full flex flex-col justify-between items-center text-center p-4 font-mono bg-cobalt text-white select-none relative ${
+                demoMode && !isTorn && !disabled ? 'cursor-pointer hover:bg-[#0037CC] transition-colors' : ''
               }`}
-              title={!isTorn && !disabled ? 'Tap or drag stub to simulate venue gate check-in' : undefined}
+              title={
+                demoMode && !isTorn && !disabled
+                  ? 'Click to simulate gate check-in tear'
+                  : 'Official venue check-in stub'
+              }
             >
               {/* Stub Header */}
               <div className="w-full border-b border-white/20 pb-2 flex items-center justify-between">
@@ -161,22 +198,22 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
                   GATE STUB
                 </span>
                 <span className="text-[9px] text-white/70 font-mono">
-                  #01
+                  #{passSerial}
                 </span>
               </div>
 
-              {/* Center Pass Info & CodeSlots */}
+              {/* Center OTP & Check-in Details */}
               <div className="my-auto w-full space-y-2">
                 <div>
                   <p className="text-xs font-bold text-white tracking-wider">
-                    PASS-{passSerial}
+                    {ticketCode}
                   </p>
                   <p className="text-[10px] text-white/80 uppercase tracking-wider">
-                    GATE CHECK-IN
+                    VENUE CHECK-IN OTP
                   </p>
                 </div>
 
-                {/* 6-Digit CodeSlots */}
+                {/* 6-Digit Gate OTP Slots */}
                 <div className="flex justify-center">
                   <CodeSlots
                     value={rollingOtp}
@@ -189,17 +226,21 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
                   />
                 </div>
 
-                {/* Status Indicator on Stub */}
+                {/* Status Indicator */}
                 <div className="pt-1">
                   {isTorn ? (
-                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-white text-[#0047FF] text-[10px] font-bold tracking-wider">
-                      <CheckCircle2 className="w-3 h-3 text-[#0047FF]" />
+                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-mint text-ink text-[10px] font-bold tracking-wider rounded-full border border-ink shadow-[1px_1px_0_#151130]">
+                      <CheckCircle className="w-3.5 h-3.5" weight="bold" />
                       <span>ADMITTED ✓</span>
                     </div>
+                  ) : demoMode ? (
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-white/15 border border-white/30 text-white text-[9px] font-medium font-mono hover:bg-white/25 transition-colors rounded-full">
+                      <Scissors className="w-3 h-3" />
+                      <span>CLICK TO TEAR (DEMO)</span>
+                    </div>
                   ) : (
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-white/15 border border-white/30 text-white text-[9px] font-medium font-mono hover:bg-white/25 transition-colors">
-                      <Radio className="w-2.5 h-2.5 text-white/90" />
-                      <span>TAP / DRAG TO TEAR</span>
+                    <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-black/20 text-white/90 text-[9px] font-mono rounded-full">
+                      <span>GATE VOLUNTEER SCAN</span>
                     </div>
                   )}
                 </div>
@@ -208,71 +249,76 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
               {/* Stub Footer */}
               <div className="text-[9px] text-white/70 border-t border-dashed border-white/20 pt-2 w-full flex items-center justify-between font-mono">
                 <span>CAMPUS GATE</span>
-                <span className="font-bold text-white">{isTorn ? 'VALID' : 'ACTIVE'}</span>
+                <span className="font-bold text-white">{isTorn ? 'TORN / ADMITTED' : 'INTACT'}</span>
               </div>
             </div>
           }
         >
-          {/* Main Pass Body (Natural White Paper) */}
-          <div className="h-full p-5 sm:p-6 flex flex-col justify-between bg-white text-[#0A0A0A] select-none relative overflow-hidden">
+          {/* Main Pass Body (Natural Warm Paper #FFFDF8) */}
+          <div className="h-full p-5 sm:p-6 flex flex-col justify-between bg-card text-ink select-none relative overflow-hidden">
             {/* Top Bar */}
-            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2.5">
+            <div className="flex items-center justify-between border-b border-ink/15 pb-2.5">
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-mono uppercase px-2 py-0.5 bg-[#F8FAFC] text-[#0047FF] font-bold border border-[#E2E8F0]">
+                <span className="font-display font-black text-xs uppercase px-2 py-0.5 bg-cobalt text-white border border-ink shadow-[1px_1px_0_#151130]">
                   EVENTMESH
                 </span>
-                <span className="text-[11px] font-mono text-slate-500">
-                  GENERAL ADMISSION
+                <span className="text-xs font-mono text-ink-soft uppercase font-semibold">
+                  {registration.tierName || 'GENERAL ADMISSION'}
                 </span>
+                {registration.teamName && (
+                  <Sticker color="tangerine" size="sm" className="font-mono text-[9px]">
+                    TEAM: {registration.teamName}
+                  </Sticker>
+                )}
               </div>
 
               <div>
                 {isTorn ? (
-                  <span className="text-[11px] font-mono uppercase px-2 py-0.5 bg-emerald-50 text-emerald-700 font-bold border border-emerald-300 flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    CHECKED IN
+                  <span className="text-xs font-mono uppercase px-2.5 py-0.5 bg-mint text-ink font-bold border border-ink shadow-[1px_1px_0_#151130] flex items-center gap-1">
+                    <CheckCircle className="w-3.5 h-3.5" weight="bold" />
+                    ADMITTED
                   </span>
                 ) : (
-                  <span className="text-[11px] font-mono uppercase px-2 py-0.5 bg-[#F8FAFC] text-slate-600 font-medium border border-[#E2E8F0]">
+                  <span className="text-xs font-mono uppercase px-2 py-0.5 bg-paper text-ink font-semibold border border-ink/30">
                     PASS INTACT
                   </span>
                 )}
               </div>
             </div>
 
-            {/* Middle Section: QR Code Card + Spacious Event Details */}
+            {/* Middle Section: Integrated QR Code + Event Details */}
             <div className="flex items-center gap-6 py-2">
-              {/* Crisp Natural White QR Code Card */}
-              <div className="shrink-0 p-2 bg-white border border-[#E2E8F0] relative group shadow-sm">
+              {/* Crisp Natural Paper QR Code Card (Mandate 1: QR on ticket face) */}
+              <div className="shrink-0 p-2.5 bg-white border-1.5 border-ink relative group shadow-[2px_2px_0_#151130]">
                 <QRCode
-                  value={`EVENTMESH:${ticketCode}:${registration.id}`}
-                  size={92}
+                  value={qrValue}
+                  size={96}
                 />
               </div>
 
               {/* Event Metadata */}
-              <div className="flex-1 min-w-0 space-y-2">
-                <h3 className="font-bold text-lg sm:text-xl text-[#0A0A0A] leading-tight line-clamp-2 tracking-tight font-sans">
+              <div className="flex-1 min-w-0 space-y-1.5">
+                <h3 className="font-display font-extrabold text-lg sm:text-xl text-ink leading-tight line-clamp-2 tracking-tight">
                   {registration.eventTitle || 'Campus Flagship Event'}
                 </h3>
-                <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-slate-600">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-[#0047FF]" />
+                <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-ink-soft">
+                  <span className="inline-flex items-center gap-1.5 font-medium">
+                    <CalendarBlank className="w-3.5 h-3.5 text-cobalt" weight="bold" />
                     {formatDate(registration.eventStartsAt || registration.createdAt, 'EEE, MMM d, yyyy')}
                   </span>
-                  <span className="inline-flex items-center gap-1.5 text-slate-500">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="inline-flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-ink-soft" weight="bold" />
                     {registration.venueName || 'Main Campus Venue'}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 pt-0.5 text-xs text-slate-600">
-                  <div className="w-4 h-4 rounded-full bg-[#0047FF] text-white text-[10px] font-bold flex items-center justify-center">
+                <div className="flex items-center gap-2 pt-0.5 text-xs text-ink">
+                  <div className="w-5 h-5 rounded-full bg-cobalt text-white text-[10px] font-bold flex items-center justify-center">
                     {registration.userName ? registration.userName.charAt(0).toUpperCase() : 'S'}
                   </div>
                   <span>
-                    Attendee: <strong className="text-[#0A0A0A] font-semibold">{registration.userName || 'Aditya Narayan'}</strong>
+                    Attendee: <strong>{registration.userName || 'Aditya Narayan'}</strong>
                   </span>
-                  <span className="text-slate-400 font-mono text-[11px] border-l border-[#E2E8F0] pl-2">
+                  <span className="text-ink-soft font-mono text-[11px] border-l border-ink/20 pl-2">
                     21BCE1042
                   </span>
                 </div>
@@ -280,15 +326,15 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
             </div>
 
             {/* Bottom Bar */}
-            <div className="pt-2.5 border-t border-[#E2E8F0] flex items-center justify-between text-xs font-mono text-slate-500">
-              <span className="tracking-wide text-[#0047FF] font-bold">{ticketCode}</span>
-              <div className="flex items-center gap-1.5 text-slate-500">
-                <QrCode className="w-3.5 h-3.5 text-[#0047FF]" />
-                <span>OFFICIAL VENUE SCANNER READY</span>
+            <div className="pt-2 border-t border-ink/15 flex items-center justify-between text-xs font-mono text-ink-soft">
+              <span className="tracking-wide text-cobalt font-bold">{ticketCode}</span>
+              <div className="flex items-center gap-1.5 text-ink-soft">
+                <QrCode className="w-3.5 h-3.5 text-cobalt" weight="bold" />
+                <span>OFFICIAL GATE SCAN READY</span>
               </div>
             </div>
 
-            {/* Natural Stamped Admission Seal */}
+            {/* Natural Stamped Paper Admission Seal (Zero neon or sci-fi glow, Mandate 1) */}
             <AnimatePresence>
               {isTorn && (
                 <motion.div
@@ -302,9 +348,9 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
                   }}
                   className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
                 >
-                  <div className="px-6 py-2.5 border-2 border-[#0047FF] bg-white/95 text-[#0047FF] font-mono text-base font-black uppercase tracking-widest shadow-xl flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-[#0047FF]" />
-                    <span>ADMITTED ✓</span>
+                  <div className="px-6 py-2.5 border-3 border-cobalt bg-paper/95 text-cobalt font-display text-base font-black uppercase tracking-widest shadow-[3px_3px_0_#0047FF] flex items-center gap-2 rotate-[-5deg]">
+                    <CheckCircle className="w-5 h-5 text-cobalt" weight="bold" />
+                    <span>ADMITTED AT {admissionTimestamp}</span>
                   </div>
                 </motion.div>
               )}
@@ -312,27 +358,45 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
           </div>
         </TearTicket>
       </div>
+
+      {/* Accessible Alternative Action Button (F-15) */}
+      {demoMode && !isTorn && (
+        <div className="mt-3 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={triggerDigitalTear}
+            className="btn-funk-secondary text-xs px-3 py-1.5 flex items-center gap-1.5"
+            aria-label="Tear stub and simulate admission"
+          >
+            <Scissors className="w-3.5 h-3.5" />
+            <span>Tear stub (Demo / Accessibility fallback)</span>
+          </button>
+        </div>
+      )}
     </div>
   )
 
-  // Floating Canvas Mode (Pure floating ticket suspended in space)
+  // Floating Canvas Mode (Suspended in paper darkroom overlay)
   if (floatingCanvas) {
     return (
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 backdrop-blur-2xl bg-black/85 overflow-y-auto"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 backdrop-blur-md bg-ink/80 overflow-y-auto"
         onClick={(e) => {
           if (e.target === e.currentTarget && onClose) onClose()
         }}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Official Admission Ticket"
       >
         {/* Minimalist Floating Close Pill */}
         {onClose && (
           <button
             type="button"
             onClick={onClose}
-            className="fixed top-6 right-6 z-50 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-400 hover:text-white text-xs font-mono transition-all cursor-pointer backdrop-blur-md shadow-xl"
+            className="fixed top-6 right-6 z-50 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-paper text-ink border border-ink hover:bg-white text-xs font-mono transition-all cursor-pointer shadow-[2px_2px_0_#151130]"
           >
             <span>Close</span>
-            <kbd className="px-1.5 py-0.5 rounded bg-black/60 text-[10px] text-zinc-400">ESC</kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-ink/10 text-[10px] text-ink font-semibold">ESC</kbd>
             <X className="w-3.5 h-3.5" />
           </button>
         )}

@@ -1,91 +1,136 @@
+// Hallmark macrostructure: Catalog-Clubs
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Users } from 'lucide-react'
-import { useClubs } from '@/hooks/useClubs'
-import { Skeleton } from '@/design-system/primitives/Skeleton'
+import { Users, ArrowRight, Sparkle } from '@phosphor-icons/react'
+import { useClubs, useToggleFollowClub } from '@/hooks/useClubs'
+import { PageShell } from '@/design-system/layout/PageShell'
+import { SectionHeader } from '@/design-system/SectionHeader'
+import { Sticker } from '@/design-system/primitives/Sticker'
+import { Button } from '@/design-system/primitives/Button'
+import { BellToggle } from '@/design-system/micro/BellToggle'
+import { getClubTheme } from '@/design-system/clubColors'
+import { useToast } from '@/design-system/primitives/Toast'
 
 export const ClubsPage: React.FC = () => {
   const { data: clubs = [], isLoading } = useClubs()
+  const toggleFollowMutation = useToggleFollowClub()
+  const { toast } = useToast()
+
+  const handleToggleFollow = async (clubId: string, clubName: string) => {
+    try {
+      const isNowFollowed = await toggleFollowMutation.mutateAsync(clubId)
+      toast({
+        title: isNowFollowed ? `Subscribed to ${clubName}` : `Unfollowed ${clubName}`,
+        message: isNowFollowed
+          ? 'You will receive priority updates for workshops & hackathons.'
+          : 'You will no longer receive notification alerts from this club.',
+        type: 'info',
+      })
+    } catch {
+      toast({ title: 'Action failed', type: 'error' })
+    }
+  }
 
   return (
-    <div className="w-full bg-bg text-text pb-16">
-      {/* Header Block */}
-      <div className="border-b border-line bg-surface">
-        <div className="app-container py-6 sm:py-8">
-          <h1 className="text-2xl sm:text-3xl font-semibold text-text tracking-tight">
-            Clubs & Collectives
-          </h1>
-          <p className="text-small text-text-2 mt-0.5 max-w-xl">
-            Autonomous engineering guilds, technical societies, and creative collectives across campus
-          </p>
-        </div>
+    <PageShell className="py-8 sm:py-12 space-y-10">
+      {/* Editorial Header */}
+      <div className="space-y-4">
+        <SectionHeader
+          badge="STUDENT ORGANISATIONS"
+          badgeColor="tangerine"
+          title="Campus Clubs & Creative Studios"
+          accentWord="Clubs"
+          subtitle="9 student-run engineering guilds, open-source collectives, and creative societies. Find your community, build real projects, and join the next hackathon."
+        />
       </div>
 
-      {/* Grid of Flat Club Cards */}
-      <div className="app-container py-8">
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Skeleton key={i} height="h-52" rounded="rounded-panel" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {clubs.map((club, index) => {
-              const color = club.color || '#C93E27'
-              return (
-                <Link
-                  key={club.id}
-                  to={`/clubs/${club.slug}`}
-                  className="group flex flex-col justify-between p-6 rounded-panel bg-surface border border-line hover:border-text-3 transition-colors select-none"
-                >
-                  <div>
-                    {/* Club Header & 10px Dot */}
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2.5">
-                        {/* 10px Club Dot */}
-                        <span
-                          className="h-2.5 w-2.5 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: color }}
-                          aria-hidden="true"
-                        />
-                        <span className="text-caption font-semibold text-text-2">
-                          {club.joinMode ? club.joinMode.replace('_', ' ') : 'Collective'}
-                        </span>
-                      </div>
+      {/* Colour-Blocked Club Cards Grid */}
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div
+              key={i}
+              className="h-72 rounded-[20px] bg-paper-2 border-2 border-ink animate-pulse shadow-[4px_4px_0_#151130]"
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          {clubs.map((club) => {
+            const theme = getClubTheme(club.name)
+            const isFollowed = Boolean(club.isFollowed)
 
-                      <span className="text-caption font-mono text-text-3">
-                        #{String(index + 1).padStart(2, '0')}
-                      </span>
+            return (
+              <div
+                key={club.id}
+                className="group relative flex flex-col justify-between rounded-[20px] border-2 border-ink bg-card p-6 sm:p-7 shadow-[4px_4px_0_#151130] hover:shadow-[6px_6px_0_#151130] hover:-translate-y-1 transition-all duration-200 select-none overflow-hidden"
+              >
+                {/* Top Theme Banner Accent */}
+                <div
+                  className="absolute top-0 left-0 right-0 h-3 border-b-2 border-ink"
+                  style={{ backgroundColor: theme.hex }}
+                  aria-hidden="true"
+                />
+
+                <div className="pt-2 space-y-4">
+                  {/* Top Bar: Category / Join Mode & Bell Follow */}
+                  <div className="flex items-center justify-between gap-2">
+                    <Sticker
+                      color={theme.token}
+                      size="sm"
+                      className="font-bold tracking-wider uppercase text-[11px]"
+                    >
+                      {club.joinMode ? club.joinMode.replace('_', ' ') : 'Open Community'}
+                    </Sticker>
+
+                    <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                      <BellToggle
+                        pressed={isFollowed}
+                        onChange={() => handleToggleFollow(club.id, club.name)}
+                        size="sm"
+                        onLabel="Subscribed"
+                        offLabel="Follow"
+                        badge={false}
+                      />
                     </div>
+                  </div>
 
-                    <h2 className="text-lg font-semibold text-text group-hover:underline mb-2">
+                  {/* Club Name in Giant Bricolage Display */}
+                  <Link to={`/clubs/${club.slug}`} className="block group-hover:text-cobalt transition-colors">
+                    <h2 className="font-display font-extrabold text-2xl sm:text-3xl text-ink tracking-tight leading-tight">
                       {club.name}
                     </h2>
+                  </Link>
 
-                    <p className="text-small text-text-2 line-clamp-3 leading-relaxed mb-6">
-                      {club.about || club.whatWeDo || 'Specialized collegiate engineering collective focused on collaborative projects and workshops.'}
-                    </p>
+                  {/* Shortened description clamped to 2 lines */}
+                  <p className="text-ink-soft text-sm sm:text-base leading-relaxed line-clamp-2">
+                    {club.about || club.whatWeDo || 'Hands-on collegiate engineering and creative building collective.'}
+                  </p>
+                </div>
+
+                {/* Footer Strip: Members & CTA */}
+                <div className="pt-5 mt-4 border-t-2 border-ink/10 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-1.5 text-ink-soft text-xs sm:text-sm font-semibold">
+                    <Users className="w-4 h-4 text-ink" weight="bold" />
+                    <span>{club.followersCount || 42}+ Builders</span>
                   </div>
 
-                  {/* Footer Meta */}
-                  <div className="pt-3 border-t border-line flex items-center justify-between text-small">
-                    <div className="flex items-center gap-1.5 text-text-2">
-                      <Users className="h-4 w-4 text-text-3" />
-                      <span>{club.followersCount || 40}+ members</span>
-                    </div>
-
-                    <div className="flex items-center gap-1 font-semibold text-accent">
-                      <span>View club</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </div>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        )}
-      </div>
-    </div>
+                  <Link to={`/clubs/${club.slug}`}>
+                    <Button
+                      variant="secondary"
+                      size="compact"
+                      className="text-xs font-bold gap-1 group-hover:bg-ink group-hover:text-paper transition-colors"
+                    >
+                      <span>Explore</span>
+                      <ArrowRight className="w-3.5 h-3.5" weight="bold" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </PageShell>
   )
 }

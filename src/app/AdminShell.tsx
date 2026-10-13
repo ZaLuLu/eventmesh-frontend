@@ -1,29 +1,33 @@
 import React, { useState } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard,
-  CalendarDays,
+  SquaresFour,
+  CalendarCheck,
   Users,
   QrCode,
-  Award,
+  Certificate as CertificateIcon,
   Megaphone,
-  BellRing,
-  Building2,
+  Bell,
+  Buildings,
   Image as ImageIcon,
   ShieldCheck,
-  BarChart3,
-  History,
-  Settings,
-  LogOut,
-  ExternalLink,
-  Menu,
+  ChartBar,
+  ClockCounterClockwise,
+  GearSix,
+  SignOut,
+  ArrowSquareOut,
+  List,
   X,
   CheckSquare,
-} from 'lucide-react'
+  FileText,
+} from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { useOrg } from '@/hooks/useOrg'
 import { ToastContainer } from '@/design-system/primitives/Toast'
+import { ForbiddenPage } from './ForbiddenPage'
+import { ErrorBoundary } from './ErrorBoundary'
+import { OfflineBanner } from '@/components/OfflineBanner'
 
 export const AdminShell: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -35,156 +39,168 @@ export const AdminShell: React.FC = () => {
 
   // Guard: if user is not authorized for admin
   if (!canAccessAdmin()) {
-    return (
-      <div className="min-h-screen bg-bg text-text flex flex-col items-center justify-center p-6 text-center">
-        <div className="max-w-md w-full bg-surface border border-line p-8 rounded-panel space-y-4">
-          <span className="text-caption font-semibold text-danger">
-            403 · Access forbidden
-          </span>
-          <h2 className="text-h2 font-semibold text-text">Administrative restraint</h2>
-          <p className="text-small text-text-2">
-            You do not possess valid administrative privileges to access the EventMesh console.
-            Please sign in with an organizer, staff, or volunteer identity.
-          </p>
-          <div className="pt-2 flex flex-col gap-2">
-            <Link
-              to="/admin/login"
-              className="w-full bg-accent text-on-accent py-2.5 rounded-btn text-small font-semibold text-center hover:bg-accent-hover transition-colors"
-            >
-              Sign In to Console
-            </Link>
-            <Link
-              to="/"
-              className="w-full border border-line bg-surface py-2.5 rounded-btn text-small font-semibold text-center hover:bg-subtle transition-colors"
-            >
-              Return to Public Site
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
+    return <ForbiddenPage />
   }
 
-  // Define nav links filtered by role
   const isVolunteer = role === 'volunteer'
   const isOrgOrPlatformAdmin = role === 'org_admin' || role === 'platform_admin'
 
-  const navItems = [
-    { label: 'Dashboard', path: '/admin', icon: <LayoutDashboard className="h-4 w-4" />, show: !isVolunteer },
-    { label: 'Events', path: '/admin/events', icon: <CalendarDays className="h-4 w-4" />, show: !isVolunteer },
-    { label: 'Registrations', path: '/admin/registrations', icon: <Users className="h-4 w-4" />, show: !isVolunteer },
-    { label: 'Check-in Desk', path: '/admin/checkin', icon: <QrCode className="h-4 w-4" />, show: can('checkin') },
-    { label: 'Certificates', path: '/admin/certificates', icon: <Award className="h-4 w-4" />, show: can('generate_certificates') },
-    { label: 'Announcements', path: '/admin/announcements', icon: <Megaphone className="h-4 w-4" />, show: can('send_announcements') },
-    { label: 'Audience Dispatch', path: '/admin/notifications', icon: <BellRing className="h-4 w-4" />, show: can('send_notifications') },
-    { label: 'Club Profile', path: '/admin/club', icon: <Building2 className="h-4 w-4" />, show: can('edit_club_profile') },
-    { label: 'Gallery Archive', path: '/admin/gallery', icon: <ImageIcon className="h-4 w-4" />, show: !isVolunteer },
-    // Org Admin specific
-    { label: 'Clubs Overview', path: '/admin/clubs', icon: <Building2 className="h-4 w-4" />, show: isOrgOrPlatformAdmin },
-    { label: 'Approvals Queue', path: '/admin/approvals', icon: <CheckSquare className="h-4 w-4" />, show: isOrgOrPlatformAdmin },
-    { label: 'Roles & Staff', path: '/admin/roles', icon: <ShieldCheck className="h-4 w-4" />, show: isOrgOrPlatformAdmin },
-    { label: 'Analytics', path: '/admin/analytics', icon: <BarChart3 className="h-4 w-4" />, show: isOrgOrPlatformAdmin },
-    { label: 'Audit Trail', path: '/admin/audit', icon: <History className="h-4 w-4" />, show: isOrgOrPlatformAdmin },
-    { label: 'Settings & Labels', path: '/admin/settings', icon: <Settings className="h-4 w-4" />, show: isOrgOrPlatformAdmin },
-  ].filter((item) => item.show)
+  // 4 Plain Headings (Section 7.8)
+  const navSections = [
+    {
+      heading: 'Run events',
+      items: [
+        { label: 'Dashboard', path: '/admin', icon: <SquaresFour className="w-4 h-4" weight="bold" />, show: !isVolunteer, exact: true },
+        { label: 'Events', path: '/admin/events', icon: <CalendarCheck className="w-4 h-4" weight="bold" />, show: !isVolunteer },
+        { label: 'Registrations', path: '/admin/registrations', icon: <Users className="w-4 h-4" weight="bold" />, show: !isVolunteer },
+        { label: 'Check-in Desk', path: '/admin/checkin', icon: <QrCode className="w-4 h-4" weight="bold" />, show: can('checkin') },
+      ],
+    },
+    {
+      heading: 'People',
+      items: [
+        { label: 'Club Profile', path: '/admin/club', icon: <Buildings className="w-4 h-4" weight="bold" />, show: can('edit_club_profile') },
+        { label: 'Clubs Overview', path: '/admin/clubs', icon: <Buildings className="w-4 h-4" weight="bold" />, show: isOrgOrPlatformAdmin },
+        { label: 'Approvals Queue', path: '/admin/approvals', icon: <CheckSquare className="w-4 h-4" weight="bold" />, show: isOrgOrPlatformAdmin },
+        { label: 'Roles & Staff', path: '/admin/roles', icon: <ShieldCheck className="w-4 h-4" weight="bold" />, show: isOrgOrPlatformAdmin },
+      ],
+    },
+    {
+      heading: 'Communicate',
+      items: [
+        { label: 'Announcements', path: '/admin/announcements', icon: <Megaphone className="w-4 h-4" weight="bold" />, show: can('send_announcements') },
+        { label: 'Audience Dispatch', path: '/admin/notifications', icon: <Bell className="w-4 h-4" weight="bold" />, show: can('send_notifications') },
+        { label: 'Certificates', path: '/admin/certificates', icon: <CertificateIcon className="w-4 h-4" weight="bold" />, show: can('generate_certificates') },
+      ],
+    },
+    {
+      heading: 'Settings',
+      items: [
+        { label: 'Analytics', path: '/admin/analytics', icon: <ChartBar className="w-4 h-4" weight="bold" />, show: isOrgOrPlatformAdmin },
+        { label: 'Audit Trail', path: '/admin/audit', icon: <ClockCounterClockwise className="w-4 h-4" weight="bold" />, show: isOrgOrPlatformAdmin },
+        { label: 'Gallery Archive', path: '/admin/gallery', icon: <ImageIcon className="w-4 h-4" weight="bold" />, show: !isVolunteer },
+        { label: 'Settings & Labels', path: '/admin/settings', icon: <GearSix className="w-4 h-4" weight="bold" />, show: isOrgOrPlatformAdmin },
+      ],
+    },
+  ]
 
-  const activeClubName = session?.clubName || (session?.role === 'org_admin' ? 'All Clubs' : 'Federation')
+  const activeClubName = session?.clubName || (session?.role === 'org_admin' ? 'All Campus Clubs' : 'Campus Federation')
 
   return (
-    <div className="min-h-screen bg-bg text-text font-body flex flex-col admin-scope">
-      {/* 1. Permanent 28px Top Strip */}
-      <div className="h-7 bg-[#0B131B] text-white/80 px-4 flex items-center justify-between text-caption border-b border-white/10 select-none z-50">
-        <div className="flex items-center gap-2 truncate">
-          <span className="font-semibold text-white tracking-wider">ADMIN CONSOLE</span>
-          <span className="opacity-40">·</span>
-          <span>{organization?.name || 'Technical Association'}</span>
-          <span className="opacity-40">·</span>
+    <div className="min-h-screen bg-[#0F0D1F] text-[#F6F1E7] font-body flex flex-col admin-scope antialiased selection:bg-[#D4F25A] selection:text-[#0F0D1F]">
+      <OfflineBanner />
+
+      {/* Top Console Strip */}
+      <header className="h-8 bg-[#090814] text-[#F6F1E7]/80 px-4 flex items-center justify-between text-xs border-b border-white/10 select-none z-50">
+        <div className="flex items-center gap-2.5 truncate">
+          <span className="font-display font-bold text-[#D4F25A] tracking-wider text-[11px] uppercase">
+            ADMIN CONSOLE
+          </span>
+          <span className="opacity-30">·</span>
+          <span className="truncate">{organization?.name || 'Technical Association'}</span>
+          <span className="opacity-30">·</span>
           <div className="inline-flex items-center gap-1.5 text-white">
             {session?.clubColor && (
               <span
-                className="inline-block h-2.5 w-2.5 rounded-full flex-shrink-0"
+                className="inline-block h-2 w-2 rounded-full flex-shrink-0"
                 style={{ backgroundColor: session.clubColor }}
               />
             )}
-            <span className="font-semibold">{activeClubName}</span>
+            <span className="font-bold text-xs truncate">{activeClubName}</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 flex-shrink-0">
-          <span className="text-caption bg-accent px-2 py-0.5 text-on-accent rounded font-medium">
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <span className="text-[11px] bg-[#D4F25A] text-[#0F0D1F] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
             {session?.role?.replace('_', ' ')}
           </span>
           <Link
             to="/"
-            className="text-white/80 hover:text-white inline-flex items-center gap-1 transition-colors"
+            className="text-white/70 hover:text-[#D4F25A] inline-flex items-center gap-1 transition-colors text-xs font-semibold"
           >
-            <span>Public website</span>
-            <ExternalLink className="h-3 w-3" />
+            <span>Public Site</span>
+            <ArrowSquareOut className="w-3.5 h-3.5" weight="bold" />
           </Link>
         </div>
-      </div>
+      </header>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* 2. Admin Sidebar */}
+        {/* Admin Sidebar */}
         <aside
-          className={`fixed inset-y-7 left-0 z-40 w-64 bg-sidebar text-white border-r border-white/10 flex flex-col transition-transform duration-200 md:static md:translate-x-0 ${
+          className={`fixed inset-y-8 left-0 z-40 w-64 bg-[#141226] text-[#F6F1E7] border-r border-white/10 flex flex-col transition-transform duration-200 md:static md:translate-x-0 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          {/* Sidebar Header (56px) */}
+          {/* Sidebar Header */}
           <div className="h-14 px-4 border-b border-white/10 flex items-center justify-between flex-shrink-0">
             <div>
-              <h1 className="text-small font-semibold text-white">
-                Console Core
+              <h1 className="font-display font-extrabold text-sm text-white tracking-wide">
+                EventMesh Studio
               </h1>
-              <p className="text-caption text-white/50">
-                Federation management
+              <p className="text-[11px] text-white/50">
+                Operations & Access Terminal
               </p>
             </div>
             <button
               type="button"
               onClick={() => setSidebarOpen(false)}
               className="md:hidden text-white/70 hover:text-white p-1"
+              aria-label="Close sidebar"
             >
-              <X className="h-5 w-5" />
+              <X className="w-5 h-5" weight="bold" />
             </button>
           </div>
 
-          {/* Navigation Links */}
-          <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
-            {navItems.map((item) => {
-              const isActive =
-                item.path === '/admin'
-                  ? location.pathname === '/admin'
-                  : location.pathname.startsWith(item.path)
+          {/* Grouped Nav Items */}
+          <nav className="flex-1 overflow-y-auto p-3 space-y-5 scrollbar-none">
+            {navSections.map((section) => {
+              const visibleItems = section.items.filter((i) => i.show)
+              if (visibleItems.length === 0) return null
 
               return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-btn text-small font-medium transition-colors ${
-                    isActive
-                      ? 'bg-accent text-on-accent'
-                      : 'text-white/70 hover:bg-white/5 hover:text-white'
-                  }`}
-                >
-                  <span className={isActive ? 'text-on-accent' : 'text-white/50'}>
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </Link>
+                <div key={section.heading} className="space-y-1">
+                  <h3 className="px-3 text-[10px] font-mono font-extrabold text-white/40 uppercase tracking-widest">
+                    {section.heading}
+                  </h3>
+                  <div className="space-y-0.5 pt-1">
+                    {visibleItems.map((item) => {
+                      const isActive = item.exact
+                        ? location.pathname === item.path
+                        : item.path === '/admin'
+                        ? location.pathname === '/admin'
+                        : location.pathname.startsWith(item.path)
+
+                      return (
+                        <Link
+                          key={item.path}
+                          to={item.path}
+                          onClick={() => setSidebarOpen(false)}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-[10px] text-xs font-bold transition-all ${
+                            isActive
+                              ? 'bg-[#D4F25A] text-[#0F0D1F] shadow-[2px_2px_0_#000000]'
+                              : 'text-white/70 hover:bg-white/5 hover:text-white'
+                          }`}
+                        >
+                          <span className={isActive ? 'text-[#0F0D1F]' : 'text-white/60'}>
+                            {item.icon}
+                          </span>
+                          <span>{item.label}</span>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </div>
               )
             })}
           </nav>
 
           {/* User Profile & Sign Out Footer */}
-          <div className="p-3 border-t border-white/10 bg-black/20 flex items-center justify-between gap-3">
+          <div className="p-3 border-t border-white/10 bg-[#0C0A19] flex items-center justify-between gap-3">
             <div className="truncate">
-              <p className="text-small font-medium text-white truncate">
+              <p className="text-xs font-bold text-white truncate">
                 {session?.name}
               </p>
-              <p className="text-caption text-white/50 truncate font-mono">
+              <p className="text-[11px] text-white/40 truncate font-mono">
                 {session?.email}
               </p>
             </div>
@@ -195,35 +211,48 @@ export const AdminShell: React.FC = () => {
                 await logout()
                 navigate('/')
               }}
-              className="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-btn transition-colors"
+              className="p-1.5 text-white/60 hover:text-[#D4F25A] hover:bg-white/10 rounded-[8px] transition-colors"
               title="Sign Out"
+              aria-label="Sign out"
             >
-              <LogOut className="h-4 w-4" />
+              <SignOut className="w-4 h-4" weight="bold" />
             </button>
           </div>
         </aside>
 
-        {/* 3. Main Console Workspace */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-bg">
-          {/* Mobile Header Bar (56px) */}
-          <div className="md:hidden h-14 bg-surface border-b border-line px-4 flex items-center justify-between flex-shrink-0">
+        {/* Main Console Workspace */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-[#0F0D1F] relative">
+          {/* Subtle Dot Grid Background Pattern (Allowed in Admin per Section 3 & 6.3) */}
+          <div
+            className="absolute inset-0 opacity-[0.03] pointer-events-none"
+            style={{
+              backgroundImage: 'radial-gradient(#F6F1E7 1px, transparent 1px)',
+              backgroundSize: '20px 20px',
+            }}
+            aria-hidden="true"
+          />
+
+          {/* Mobile Header Bar */}
+          <div className="md:hidden h-14 bg-[#141226] border-b border-white/10 px-4 flex items-center justify-between flex-shrink-0 z-30">
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}
-              className="p-2 border border-line rounded-btn text-text"
+              className="p-2 border border-white/20 rounded-[8px] text-white"
               aria-label="Open sidebar"
             >
-              <Menu className="h-5 w-5" />
+              <List className="w-5 h-5" weight="bold" />
             </button>
-            <span className="text-small font-semibold text-text">
+            <span className="text-xs font-bold text-white truncate max-w-[200px]">
               {activeClubName}
             </span>
           </div>
 
           {/* Content Pane */}
-          <div className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-            <Outlet />
-          </div>
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto relative z-10">
+            <ErrorBoundary>
+              <Outlet />
+            </ErrorBoundary>
+          </main>
         </div>
       </div>
 

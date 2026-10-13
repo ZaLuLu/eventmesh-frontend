@@ -8,14 +8,14 @@ describe('Button primitive', () => {
     const btn = screen.getByRole('button', { name: /Register Now/i })
     expect(btn).toBeInTheDocument()
     expect(btn).toHaveClass('font-semibold')
-    expect(btn).toHaveClass('tracking-normal')
+    expect(btn).toHaveClass('bg-ink')
   })
 
   it('applies disabled state when disabled prop is provided', () => {
     render(<Button disabled>Disabled Action</Button>)
     const btn = screen.getByRole('button', { name: /Disabled Action/i })
     expect(btn).toBeDisabled()
-    expect(btn).toHaveClass('opacity-40')
+    expect(btn).toHaveClass('opacity-50')
   })
 
   it('renders loading indicator while preserving label', () => {
@@ -28,6 +28,6 @@ describe('Button primitive', () => {
   it('renders admin surface styling properly', () => {
     render(<Button surface="admin" variant="primary">Admin Action</Button>)
     const btn = screen.getByRole('button', { name: /Admin Action/i })
-    expect(btn).toHaveClass('hover:bg-admin-accent')
+    expect(btn).toHaveClass('bg-lime')
   })
 })

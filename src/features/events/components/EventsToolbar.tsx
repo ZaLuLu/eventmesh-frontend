@@ -1,18 +1,13 @@
 import React, { useState } from 'react'
-import { motion } from 'framer-motion'
 import {
-  Search,
+  MagnifyingGlass,
   X,
-  Calendar,
-  LayoutGrid,
-  List,
-  SlidersHorizontal,
-  ArrowUpDown,
+  CalendarBlank,
+  GridFour,
+  ListBullets,
   Check,
-} from 'lucide-react'
-import { ToggleGroup, ToggleGroupItem } from '@/design-system/primitives/ToggleGroup'
+} from '@/design-system/Icon'
 import { Popover, PopoverTrigger, PopoverContent } from '@/design-system/primitives/Popover'
-import { Select } from '@/design-system/primitives/Select'
 import { TextMorph } from 'torph/react'
 import { cn } from '@/lib/utils'
 
@@ -68,41 +63,41 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
   const [datePopoverOpen, setDatePopoverOpen] = useState(false)
 
   const selectedDateLabel =
-    DATE_OPTIONS.find((d) => d.id === dateFilter)?.label || 'ANY DATE'
+    DATE_OPTIONS.find((d) => d.id === dateFilter)?.label || 'Any date'
 
   return (
     <div
       className={cn(
-        'sticky top-16 z-30 bg-white/95 backdrop-blur-md border-b border-[#E2E8F0] py-3.5 select-none transition-all',
+        'sticky top-16 z-30 bg-paper/95 backdrop-blur-md border-b border-ink/10 py-3.5 select-none transition-all',
         className
       )}
     >
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 space-y-3">
-        {/* Row 1: Blueprint Kicker, Search, Quick Filters & Layout Switcher */}
+      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 space-y-3">
+        {/* Row 1: Search, Date Filter, Free Toggle, View Switcher */}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* Search Box (Delicate Hairline Input) */}
+          {/* Search Box */}
           <div className="relative flex-1 min-w-[220px] max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+            <MagnifyingGlass size={16} weight="bold" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-soft pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchQueryChange(e.target.value)}
               placeholder="Search catalog by title, venue, or host club..."
-              className="w-full h-9 pl-8 pr-8 bg-[#F8FAFC] border border-[#E2E8F0] focus:border-[#0047FF] focus:outline-none text-xs font-mono text-[#0A0A0A] placeholder:text-slate-400 transition-colors"
+              className="w-full h-10 pl-9 pr-9 bg-card border border-ink/15 rounded-full focus:border-cobalt focus:ring-1 focus:ring-cobalt focus:outline-none text-xs sm:text-sm text-ink placeholder:text-ink-soft/70 shadow-sm transition-colors"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => onSearchQueryChange('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-[#0A0A0A]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-ink-soft hover:text-ink"
                 aria-label="Clear search input"
               >
-                <X className="w-3.5 h-3.5" />
+                <X size={14} weight="bold" />
               </button>
             )}
           </div>
 
-          {/* Controls: Date Filter, Free Only, Sort, Grid/List */}
+          {/* Controls: Date, Free Only, View Switcher */}
           <div className="flex items-center gap-2 flex-wrap">
             {/* Date Popover */}
             <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
@@ -110,18 +105,18 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
                 <button
                   type="button"
                   className={cn(
-                    'h-9 px-3 border text-xs font-mono flex items-center gap-1.5 transition-colors',
+                    'h-9 px-3 rounded-full border text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm',
                     dateFilter !== 'all'
-                      ? 'bg-[#0047FF]/10 text-[#0047FF] border-[#0047FF] font-semibold'
-                      : 'bg-[#F8FAFC] text-slate-700 hover:text-[#0047FF] border-[#E2E8F0] hover:border-[#0047FF]'
+                      ? 'bg-cobalt text-white border-cobalt'
+                      : 'bg-card text-ink border-ink/20 hover:bg-paper-2'
                   )}
                   aria-label="Filter events by date"
                 >
-                  <Calendar className="w-3.5 h-3.5 text-[#0047FF]" />
-                  <span className="uppercase">{selectedDateLabel}</span>
+                  <CalendarBlank size={14} weight="bold" />
+                  <span>{selectedDateLabel}</span>
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-48 p-1.5 bg-white border border-[#E2E8F0] text-xs font-mono shadow-xl z-50">
+              <PopoverContent align="end" className="w-48 p-1 bg-card border border-ink/15 rounded-2xl shadow-offset text-xs z-50">
                 <div className="space-y-0.5">
                   {DATE_OPTIONS.map((opt) => (
                     <button
@@ -132,81 +127,83 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
                         setDatePopoverOpen(false)
                       }}
                       className={cn(
-                        'w-full text-left px-2.5 py-1.5 text-xs font-mono flex items-center justify-between transition-colors',
+                        'w-full flex items-center justify-between px-3 py-2 rounded-xl text-left font-medium transition-colors',
                         dateFilter === opt.id
-                          ? 'bg-[#0047FF]/10 text-[#0047FF] font-semibold border-l-2 border-[#0047FF]'
-                          : 'text-slate-700 hover:bg-[#F8FAFC] hover:text-[#0A0A0A]'
+                          ? 'bg-paper-2 text-cobalt font-bold'
+                          : 'text-ink hover:bg-paper-2'
                       )}
                     >
-                      <span className="uppercase">{opt.label}</span>
-                      {dateFilter === opt.id && <Check className="w-3 h-3 text-[#0047FF]" />}
+                      <span>{opt.label}</span>
+                      {dateFilter === opt.id && <Check size={14} weight="bold" className="text-cobalt" />}
                     </button>
                   ))}
                 </div>
               </PopoverContent>
             </Popover>
 
-            {/* Free Events Toggle */}
+            {/* Free Events Pill Toggle */}
             <button
               type="button"
               onClick={() => onFreeOnlyChange(!freeOnly)}
               className={cn(
-                'h-9 px-3 border text-xs font-mono flex items-center gap-1.5 transition-all',
+                'h-9 px-3 rounded-full border text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm',
                 freeOnly
-                  ? 'bg-[#0047FF]/10 text-[#0047FF] border-[#0047FF] font-semibold'
-                  : 'bg-[#F8FAFC] text-slate-700 hover:text-[#0A0A0A] border-[#E2E8F0] hover:border-[#0047FF]'
+                  ? 'bg-mint text-ink border-ink shadow-offset'
+                  : 'bg-card text-ink border-ink/20 hover:bg-paper-2'
               )}
               aria-pressed={freeOnly}
             >
-              <span>FREE ONLY</span>
-              {freeOnly && <Check className="w-3 h-3 text-[#0047FF]" />}
+              <span>Free only</span>
+              {freeOnly && <Check size={12} weight="bold" />}
             </button>
 
             {/* Sort Select */}
-            <div className="w-36 hidden sm:block">
-              <select
-                value={sortBy}
-                onChange={(e) => onSortByChange(e.target.value)}
-                className="w-full h-9 px-2.5 bg-[#F8FAFC] text-slate-800 border border-[#E2E8F0] hover:border-[#0047FF] text-xs font-mono focus:outline-none focus:border-[#0047FF] transition-colors uppercase cursor-pointer"
-              >
-                <option value="date-asc" className="bg-white text-slate-900">SOONEST</option>
-                <option value="newest" className="bg-white text-slate-900">NEWEST</option>
-                <option value="popularity" className="bg-white text-slate-900">POPULARITY</option>
-              </select>
-            </div>
-
-            {/* Segmented Grid / List View Toggle */}
-            <ToggleGroup
-              type="single"
-              value={viewMode}
-              onValueChange={(val) => val && onViewModeChange(val as 'grid' | 'list')}
-              className="border border-[#E2E8F0] p-0.5 bg-[#F8FAFC]"
+            <select
+              value={sortBy}
+              onChange={(e) => onSortByChange(e.target.value)}
+              className="h-9 px-3 bg-card border border-ink/20 rounded-full text-xs font-semibold text-ink focus:outline-none focus:border-cobalt transition-colors shadow-sm cursor-pointer"
+              aria-label="Sort events by"
             >
-              <ToggleGroupItem
-                value="grid"
+              <option value="date-asc">Soonest</option>
+              <option value="date-desc">Latest</option>
+              <option value="popular">Most popular</option>
+            </select>
+
+            {/* View Mode Toggle: Grid / List */}
+            <div className="flex items-center p-0.5 bg-paper-2 border border-ink/15 rounded-full shadow-inner">
+              <button
+                type="button"
+                onClick={() => onViewModeChange('grid')}
+                className={cn(
+                  'w-8 h-8 rounded-full flex items-center justify-center transition-all',
+                  viewMode === 'grid'
+                    ? 'bg-ink text-paper shadow-offset'
+                    : 'text-ink-soft hover:text-ink'
+                )}
                 aria-label="Grid view"
-                className="w-7 h-7 data-[state=on]:bg-[#0047FF] data-[state=on]:text-white text-slate-500"
               >
-                <LayoutGrid className="w-3.5 h-3.5" />
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                value="list"
+                <GridFour size={16} weight="bold" />
+              </button>
+              <button
+                type="button"
+                onClick={() => onViewModeChange('list')}
+                className={cn(
+                  'w-8 h-8 rounded-full flex items-center justify-center transition-all',
+                  viewMode === 'list'
+                    ? 'bg-ink text-paper shadow-offset'
+                    : 'text-ink-soft hover:text-ink'
+                )}
                 aria-label="List view"
-                className="w-7 h-7 data-[state=on]:bg-[#0047FF] data-[state=on]:text-white text-slate-500"
               >
-                <List className="w-3.5 h-3.5" />
-              </ToggleGroupItem>
-            </ToggleGroup>
+                <ListBullets size={16} weight="bold" />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Row 2: Category Drafting Tabs & Index Counter */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-[#E2E8F0]">
-          {/* Category Tabs with Architectural Underlines */}
-          <div
-            className="flex items-center gap-1 overflow-x-auto scrollbar-none py-0.5 -mx-2 px-2"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
+        {/* Row 2: Category Chips & Results Counter */}
+        <div className="flex items-center justify-between gap-3 pt-1 border-t border-ink/10 overflow-x-auto scrollbar-none">
+          <div className="flex items-center gap-1.5 flex-nowrap py-0.5">
             {CATEGORIES.map((cat) => {
               const isSelected = category === cat.id
               return (
@@ -215,32 +212,24 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
                   type="button"
                   onClick={() => onCategoryChange(cat.id)}
                   className={cn(
-                    'relative h-8 px-3 text-xs font-mono uppercase tracking-wider whitespace-nowrap transition-colors duration-150 select-none flex-shrink-0 flex items-center',
+                    'px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all',
                     isSelected
-                      ? 'text-[#0047FF] font-semibold'
-                      : 'text-slate-500 hover:text-[#0A0A0A]'
+                      ? 'bg-ink text-paper shadow-offset'
+                      : 'bg-card text-ink-soft hover:text-ink hover:bg-paper-2 border border-ink/10'
                   )}
                 >
-                  <span className="relative z-10">{cat.label}</span>
-                  {isSelected && (
-                    <motion.div
-                      layoutId="activeCategoryUnderline"
-                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#0047FF] z-0"
-                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                    />
-                  )}
+                  {cat.label}
                 </button>
               )
             })}
           </div>
 
-          {/* Morphing Result Counter */}
-          <div className="flex items-center gap-1.5 text-xs font-mono text-slate-500 flex-shrink-0">
-            <span className="text-slate-500">INDEXED:</span>
-            <span className="text-[#0047FF] font-semibold min-w-[20px] inline-flex justify-center">
+          <div className="text-xs font-mono text-ink-soft whitespace-nowrap hidden sm:flex items-center gap-1 flex-shrink-0">
+            <span>Showing</span>
+            <span className="font-bold text-ink">
               <TextMorph>{String(totalCount)}</TextMorph>
             </span>
-            <span>{totalCount === 1 ? 'EVENT' : 'EVENTS'}</span>
+            <span>events</span>
           </div>
         </div>
       </div>

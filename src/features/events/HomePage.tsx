@@ -1,14 +1,18 @@
+// Hallmark macrostructure: LandingPage
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, Link } from 'react-router-dom'
 import { usePromotedEvents, useNewestEvents } from '@/hooks/useEvents'
 import { api, Event, PaginatedResult } from '@/api'
-import { PromoCarousel } from './components/PromoCarousel'
+import { PromotedTicketStack } from './components/PromotedTicketStack'
 import { NewEventsRail } from './components/NewEventsRail'
+import { ClubsStrip } from './components/ClubsStrip'
+import { TicketLifecycleTeaser } from './components/TicketLifecycleTeaser'
 import { EventsToolbar } from './components/EventsToolbar'
 import { EventsDiscoveryView } from './components/EventsDiscoveryView'
-import { CampusRadarFeed } from './components/CampusRadarFeed'
-import { SubcultureTracks } from './components/SubcultureTracks'
-import { CampusAdmissionPasses } from './components/CampusAdmissionPasses'
+import { Marquee } from '@/design-system/Marquee'
+import { SectionHeader } from '@/design-system/SectionHeader'
+import { Sticker } from '@/design-system/primitives/Sticker'
+import { Ticket, ArrowDown, Sparkle } from '@/design-system/Icon'
 
 export const HomePage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -65,9 +69,9 @@ export const HomePage: React.FC = () => {
     [setSearchParams]
   )
 
-  // 3. Top Half & Bottom Half Data
+  // 3. Promoted & Newest Data
   const { data: promoted = [] } = usePromotedEvents()
-  const { data: newestData, isLoading: isNewestLoading } = useNewestEvents({ limit: 8 })
+  const { data: newestData, isLoading: isNewestLoading } = useNewestEvents({ limit: 6 })
   const newestEvents = useMemo(() => newestData?.items || [], [newestData?.items])
 
   // 4. Discovery Events: Cursor Pagination & Filter Fetching
@@ -77,7 +81,6 @@ export const HomePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false)
 
-  // Fetch initial page on filter change
   useEffect(() => {
     let isCancelled = false
     setIsLoading(true)
@@ -120,7 +123,6 @@ export const HomePage: React.FC = () => {
     }
   }, [category, searchQuery, dateFilter, freeOnly, sortBy])
 
-  // Fetch next page
   const handleLoadMore = async () => {
     if (!nextCursor || isLoadingMore) return
     setIsLoadingMore(true)
@@ -149,7 +151,7 @@ export const HomePage: React.FC = () => {
     } finally {
       setIsLoadingMore(false)
     }
-  };
+  }
 
   const handleResetFilters = () => {
     setSearchParams(
@@ -163,40 +165,151 @@ export const HomePage: React.FC = () => {
   }
 
   return (
-    <div className="w-full bg-[#FFFFFF] bg-blueprint-grid text-[#0A0A0A] min-h-screen flex flex-col relative overflow-x-hidden selection:bg-[#0047FF] selection:text-white">
-
+    <div className="w-full bg-paper text-ink min-h-screen flex flex-col select-none">
       {/* ==============================================================
-          ACT 1: THE MAINSTAGE PORTAL (Flagship Promoted Exhibition)
+          HERO ACT: TOP HALF PROMOTIONS (Page Directives 7.1 directive 2)
+          Kills V-08 (no blue slab, no curved marquee).
           ============================================================== */}
-      <PromoCarousel events={promoted} />
+      <section className="relative w-full pt-8 pb-12 sm:pt-14 sm:pb-20 border-b border-ink/10 overflow-hidden">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+            {/* Left Headline Stage */}
+            <div className="lg:col-span-7 space-y-6 text-left">
+              {/* Funky Sticker Tag */}
+              <div className="flex items-center gap-2">
+                <Sticker color="mustard" size="sm" tilt={-2} icon={<Sparkle size={13} weight="fill" />}>
+                  Campus Season 2026
+                </Sticker>
+                <span className="text-xs font-mono font-semibold text-ink-soft">
+                  ✦ Two-tap RSVP · Verified Identity
+                </span>
+              </div>
+
+              {/* Giant Display Headline */}
+              <h1 className="font-display font-black text-[clamp(2.75rem,7vw,5.5rem)] leading-[0.95] tracking-tight text-ink">
+                Where student ideas make{' '}
+                <span className="font-accent italic text-cobalt font-normal">
+                  noise.
+                </span>
+              </h1>
+
+              {/* Subcopy */}
+              <p className="text-base sm:text-lg text-ink-soft max-w-xl leading-relaxed">
+                Handcrafted hackathons, algorithmic sprints, and design salons from autonomous campus collectives. Grab a seat in two taps.
+              </p>
+
+              {/* Primary Action Buttons */}
+              <div className="flex flex-wrap items-center gap-3.5 pt-2">
+                <a
+                  href="#discovery"
+                  className="btn-funk-primary px-6 py-3 text-sm font-bold uppercase tracking-wider flex items-center gap-2"
+                >
+                  <span>Browse events</span>
+                  <ArrowDown size={15} weight="bold" />
+                </a>
+
+                <Link
+                  to="/attendee/dashboard"
+                  className="btn-funk-secondary px-6 py-3 text-sm font-bold uppercase tracking-wider flex items-center gap-2"
+                >
+                  <Ticket size={16} weight="bold" className="text-cobalt" />
+                  <span>My tickets & badge</span>
+                </Link>
+              </div>
+
+              {/* Subtle Trust Micro-bar */}
+              <div className="pt-4 flex items-center gap-6 text-xs font-mono text-ink-soft border-t border-ink/10">
+                <div>
+                  <span className="font-bold text-ink">9</span> student societies
+                </div>
+                <span>·</span>
+                <div>
+                  <span className="font-bold text-ink">100%</span> verified attendees
+                </div>
+                <span>·</span>
+                <div>
+                  <span className="font-bold text-ink">Zero</span> neon slop
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Draggable Promoted Ticket Stack (Section 7.1 directive 2) */}
+            <div className="lg:col-span-5 flex justify-center lg:justify-end">
+              <PromotedTicketStack events={promoted} />
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ==============================================================
-          ACT 2: THE LIVING CAMPUS RADAR (Happening Today across Venues)
+          LIVE MARQUEE TICKER STRIP (Page Directives 7.1 directive 3)
           ============================================================== */}
-      <CampusRadarFeed />
+      <Marquee
+        items={[
+          { text: 'Grand Turing Hackathon 2026', badge: 'This Saturday' },
+          { text: '3 Seats Remaining in Algo Sprint', highlight: true },
+          { text: 'Zero-Day CTF Registration Open', badge: 'Active' },
+          { text: 'DevCraft Architecture Retreat Next Week', badge: 'Free with Pass' },
+          { text: 'Physical Ticket Stubs Tear Only at Venue Gate', highlight: true },
+          { text: 'Cryptographic QR Verification Token on Ticket Face' },
+        ]}
+        speed={32}
+        variant="mustard"
+      />
 
       {/* ==============================================================
-          ACT 3: CURATED SUBCULTURE TRACKS (Editorial Chapters)
-          ============================================================== */}
-      <SubcultureTracks events={newestEvents} />
-
-      {/* ==============================================================
-          ACT 4: CAMPUS ADMISSION & PASS TIERS (Tactile Paper Pass)
-          ============================================================== */}
-      <CampusAdmissionPasses />
-
-      {/* ==============================================================
-          ACT 5: NEW ADDITIONS RAIL
+          NEWEST RELEASES SECTION (3-col EventTicketCard grid, directive 4)
           ============================================================== */}
       <NewEventsRail events={newestEvents} isLoading={isNewestLoading} />
 
       {/* ==============================================================
-          ALL-EVENTS DISCOVERY SECTION
-          Sticky toolbar with category chips, date popover, Free toggle,
-          sort select, segmented Grid/List toggle, and morphing counter.
+          CLUBS STRIP SECTION (Color-blocked tiles, directive 6)
           ============================================================== */}
-      <section id="discovery" aria-label="Explore all events" className="w-full bg-transparent py-8 sm:py-12 border-t border-[#E2E8F0]">
-        {/* Sticky Toolbar */}
+      <section className="w-full py-12 sm:py-16 border-t border-ink/10 bg-paper-2">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+          <SectionHeader
+            title="Autonomous clubs & societies"
+            subtitle="Follow student engineering guilds, design salons, and open source societies for priority registration access"
+            sticker="9 Collectives"
+            stickerColor="lavender"
+            accentWord="societies"
+          />
+          <ClubsStrip />
+        </div>
+      </section>
+
+      {/* ==============================================================
+          TICKET LIFECYCLE TEASER (Directive 7 & F-07)
+          Replaces fictional admission matrix.
+          ============================================================== */}
+      <section className="w-full py-12 sm:py-16 border-t border-ink/10 bg-paper">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+          <SectionHeader
+            title="How your ticket works"
+            subtitle="Authentic natural paper tickets that remain intact until physical gate volunteer check-in"
+            sticker="Gate Check-In"
+            stickerColor="mint"
+            accentWord="works"
+          />
+          <TicketLifecycleTeaser />
+        </div>
+      </section>
+
+      {/* ==============================================================
+          ALL-EVENTS DISCOVERY CATALOG (Directive 5)
+          ============================================================== */}
+      <section id="discovery" aria-label="Explore all events" className="w-full py-10 sm:py-16 border-t border-ink/10 bg-paper">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+          <SectionHeader
+            title="Explore all campus happenings"
+            subtitle="Filter by category, search by venue, or toggle list view for high-density browsing"
+            sticker="Full Catalog"
+            stickerColor="sky"
+            accentWord="happenings"
+          />
+        </div>
+
+        {/* Sticky Filter Toolbar */}
         <EventsToolbar
           category={category}
           onCategoryChange={(cat) => updateParam('category', cat)}
@@ -214,7 +327,7 @@ export const HomePage: React.FC = () => {
         />
 
         {/* Discovery View Grid / List with Motion layout animations */}
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
           <EventsDiscoveryView
             events={discoveryEvents}
             viewMode={viewMode}

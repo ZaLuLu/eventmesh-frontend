@@ -1,9 +1,9 @@
 import React, { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, ArrowRight, Sparkles } from 'lucide-react'
+import { CaretLeft, CaretRight, ArrowRight } from '@/design-system/Icon'
 import { Event } from '@/api/contracts'
-import { EventCard } from '@/design-system/EventCard'
-import { EventPeekDrawer } from '@/design-system/EventPeekDrawer'
+import { EventTicketCard } from '@/design-system/EventTicketCard'
+import { SectionHeader } from '@/design-system/SectionHeader'
 import { EventCardSkeleton } from '@/design-system/primitives/Skeleton'
 import { cn } from '@/lib/utils'
 
@@ -13,116 +13,91 @@ export interface NewEventsRailProps {
   className?: string
 }
 
+/**
+ * NewEventsRail: Physical EventTicketCard grid/rail with genuine perforations and PosterArt.
+ * Kills V-02, V-03, and V-04.
+ */
 export const NewEventsRail: React.FC<NewEventsRailProps> = ({
   events,
   isLoading = false,
   className,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null)
-  const [peekEvent, setPeekEvent] = useState<Event | null>(null)
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (!scrollRef.current) return
-    const offset = direction === 'left' ? -360 : 360
+    const offset = direction === 'left' ? -380 : 380
     scrollRef.current.scrollBy({ left: offset, behavior: 'smooth' })
   }
 
   return (
     <section
       aria-label="New Events"
-      className={cn(
-        'relative w-full py-12 sm:py-16 select-none',
-        className
-      )}
+      className={cn('relative w-full py-10 sm:py-14 select-none', className)}
     >
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        {/* Unboxed Chapter Header */}
-        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pb-6 border-b border-[#E2E8F0] mb-8">
-          <div>
-            <span className="text-xs font-mono text-[#0047FF] font-semibold tracking-wider block mb-1">
-              04 // RECENT RELEASES
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#0A0A0A] tracking-tight font-sans">
-              Recently Published Across Campus
-            </h2>
-          </div>
+      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        {/* Section Header with Campus Funk Display Typography */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-ink/10 mb-8">
+          <SectionHeader
+            title="Newest across campus"
+            subtitle="Freshly scheduled hackathons, design salons, and technical symposia"
+            sticker="New Drops"
+            stickerColor="mint"
+            accentWord="campus"
+          />
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <Link
               to="/explore?sort=newest"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0047FF] hover:text-[#0037CC] transition-colors"
+              className="inline-flex items-center gap-1.5 text-sm font-bold text-cobalt hover:text-ink transition-colors"
             >
-              <span>See all newest</span>
-              <ArrowRight className="w-4 h-4" />
+              <span>See all events</span>
+              <ArrowRight size={14} weight="bold" />
             </Link>
 
-            {/* Architectural Drafting Scroll Navigation */}
-            <div className="hidden sm:flex items-center gap-2">
+            {/* Scroll Navigation */}
+            <div className="hidden sm:flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => handleScroll('left')}
                 aria-label="Scroll new events left"
-                className="w-8 h-8 border border-[#E2E8F0] bg-[#F8FAFC] text-slate-600 hover:text-[#0047FF] hover:border-[#0047FF] flex items-center justify-center transition-colors cursor-pointer"
+                className="w-9 h-9 rounded-full border border-ink/20 bg-card text-ink hover:bg-paper-2 flex items-center justify-center transition-colors cursor-pointer shadow-sm active:translate-y-0.5"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <CaretLeft size={16} weight="bold" />
               </button>
 
               <button
                 type="button"
                 onClick={() => handleScroll('right')}
                 aria-label="Scroll new events right"
-                className="w-8 h-8 border border-[#E2E8F0] bg-[#F8FAFC] text-slate-600 hover:text-[#0047FF] hover:border-[#0047FF] flex items-center justify-center transition-colors cursor-pointer"
+                className="w-9 h-9 rounded-full border border-ink/20 bg-card text-ink hover:bg-paper-2 flex items-center justify-center transition-colors cursor-pointer shadow-sm active:translate-y-0.5"
               >
-                <ChevronRight className="w-4 h-4" />
+                <CaretRight size={16} weight="bold" />
               </button>
             </div>
           </div>
         </div>
 
-        {/* Horizontal Snap Rail Container */}
+        {/* 3-Column Responsive Grid on Desktop / Snap Rail on Mobile (Section 7.1 directive 4) */}
         <div
           ref={scrollRef}
-          className="flex gap-5 sm:gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-4 pt-1 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7"
         >
           {isLoading ? (
-            // Skeleton state
-            Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex-[0_0_280px] sm:flex-[0_0_320px] lg:flex-[0_0_330px] snap-start"
-              >
-                <EventCardSkeleton />
-              </div>
+            Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-80 rounded-ticket bg-card border-[1.5px] border-ink/15 animate-pulse" />
             ))
           ) : events.length === 0 ? (
-            <div className="w-full py-12 text-center text-ink-muted text-[14px]">
-              No new events published yet. Check back soon!
+            <div className="col-span-full py-12 text-center text-ink-soft text-sm">
+              Nothing on yet. Try checking back tomorrow!
             </div>
           ) : (
-            events.map((event) => (
-              <div
-                key={event.id}
-                className="flex-[0_0_280px] sm:flex-[0_0_320px] lg:flex-[0_0_330px] snap-start transition-transform duration-200"
-              >
-                <EventCard
-                  event={event}
-                  variant="stacked"
-                  aspectRatio="5/4"
-                  onPeek={setPeekEvent}
-                />
-              </div>
+            events.slice(0, 6).map((event) => (
+              <EventTicketCard key={event.id} event={event} />
             ))
           )}
         </div>
       </div>
-
-      {/* Interactive Quick-Preview Peek Drawer */}
-      <EventPeekDrawer
-        event={peekEvent}
-        isOpen={Boolean(peekEvent)}
-        onClose={() => setPeekEvent(null)}
-      />
     </section>
   )
 }

@@ -117,7 +117,7 @@ export const EventCard: React.FC<EventCardProps> = ({
             )}
             {isFree ? (
               <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-300 text-[11px] font-semibold">
-                FREE
+                Free
               </span>
             ) : (
               <span className="px-1.5 py-0.5 bg-white/95 text-[#0A0A0A] border border-[#E2E8F0] text-[11px] font-semibold">
@@ -381,7 +381,7 @@ export const EventCard: React.FC<EventCardProps> = ({
                 )}
                 {isFree ? (
                   <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-300 text-[11px] font-semibold">
-                    FREE
+                    Free
                   </span>
                 ) : (
                   <span className="px-1.5 py-0.5 bg-white/95 text-[#0A0A0A] border border-[#E2E8F0] text-[11px] font-semibold">

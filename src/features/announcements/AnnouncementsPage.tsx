@@ -1,20 +1,30 @@
+// Hallmark macrostructure: Feed-Announcements
 import React, { useState } from 'react'
-import { Pin } from 'lucide-react'
+import {
+  PushPin,
+  Megaphone,
+  Clock,
+  WarningCircle,
+  CheckCircle,
+  Info,
+  CalendarCheck,
+} from '@phosphor-icons/react'
 import { useAnnouncements } from '@/hooks/useAnnouncements'
-import { Chip } from '@/design-system/primitives/Chip'
-import { formatDate } from '@/lib/dates'
-import { Skeleton } from '@/design-system/primitives/Skeleton'
-import { EmptyState } from '@/design-system/primitives/EmptyState'
+import { PageShell } from '@/design-system/layout/PageShell'
+import { SectionHeader } from '@/design-system/SectionHeader'
+import { Sticker } from '@/design-system/primitives/Sticker'
+import { formatDate } from '@/lib/format'
+import { getClubTheme } from '@/design-system/clubColors'
 
 export const AnnouncementsPage: React.FC = () => {
   const [selectedKind, setSelectedKind] = useState('all')
   const { data: announcements = [], isLoading } = useAnnouncements()
 
   const kinds = [
-    { id: 'all', label: 'All notices' },
+    { id: 'all', label: 'All Notices' },
     { id: 'notice', label: 'Notices' },
     { id: 'deadline', label: 'Deadlines' },
-    { id: 'event_change', label: 'Schedule changes' },
+    { id: 'event_change', label: 'Schedule Changes' },
     { id: 'result', label: 'Results' },
     { id: 'general', label: 'General' },
   ]
@@ -24,92 +34,167 @@ export const AnnouncementsPage: React.FC = () => {
     return true
   })
 
-  return (
-    <div className="w-full bg-bg text-text pb-16">
-      {/* Header Banner */}
-      <div className="border-b border-line bg-surface">
-        <div className="app-container py-6 sm:py-8 space-y-4">
-          <div>
-            <span className="text-caption font-semibold text-accent block mb-1">
-              Official broadcasts
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-semibold text-text tracking-tight">
-              Announcements & Notices
-            </h1>
-            <p className="text-small text-text-2 mt-0.5 max-w-xl">
-              Communications, application deadlines, room updates, and results from campus collectives.
-            </p>
-          </div>
+  const pinnedAnnouncements = filtered.filter((a) => a.pinned)
+  const regularAnnouncements = filtered.filter((a) => !a.pinned)
 
-          {/* Filter Chips */}
-          <div className="flex flex-wrap items-center gap-2 pt-2">
-            {kinds.map((k) => (
-              <Chip
-                key={k.id}
-                label={k.label}
-                size="sm"
-                active={selectedKind === k.id}
-                onClick={() => setSelectedKind(k.id)}
-              />
-            ))}
-          </div>
+  const getKindBadge = (kind: string) => {
+    switch (kind) {
+      case 'deadline':
+        return { color: 'tangerine' as const, label: 'Deadline', icon: <Clock className="w-3.5 h-3.5" weight="bold" /> }
+      case 'event_change':
+        return { color: 'pink' as const, label: 'Schedule Update', icon: <WarningCircle className="w-3.5 h-3.5" weight="bold" /> }
+      case 'result':
+        return { color: 'mint' as const, label: 'Results Released', icon: <CheckCircle className="w-3.5 h-3.5" weight="bold" /> }
+      default:
+        return { color: 'sky' as const, label: 'Official Notice', icon: <Info className="w-3.5 h-3.5" weight="bold" /> }
+    }
+  }
+
+  return (
+    <PageShell className="py-8 sm:py-12 space-y-8">
+      {/* Header */}
+      <div className="space-y-4">
+        <SectionHeader
+          badge="CAMPUS DISPATCH"
+          badgeColor="mustard"
+          title="Announcements & Bulletins"
+          accentWord="Bulletins"
+          subtitle="Official broadcasts, team deadlines, venue relocations, and competition results posted directly by campus club leads."
+        />
+
+        {/* Filter Chips Bar */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none pt-2">
+          {kinds.map((k) => (
+            <button
+              key={k.id}
+              type="button"
+              onClick={() => setSelectedKind(k.id)}
+              className={`px-4 py-2 rounded-full text-xs font-bold flex-shrink-0 transition-all border-2 border-ink ${
+                selectedKind === k.id
+                  ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
+                  : 'bg-card text-ink-soft hover:text-ink hover:bg-paper-2'
+              }`}
+            >
+              {k.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Announcements List */}
-      <div className="app-container py-8 space-y-4">
+      {/* Pinned Announcements Band */}
+      {pinnedAnnouncements.length > 0 && (
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <PushPin className="w-4 h-4 text-ink" weight="fill" />
+            <span className="font-display font-extrabold text-sm uppercase tracking-wider text-ink">
+              Pinned Announcements
+            </span>
+          </div>
+
+          <div className="space-y-4">
+            {pinnedAnnouncements.map((item) => {
+              const badge = getKindBadge(item.kind)
+              const theme = getClubTheme(item.organizerName)
+
+              return (
+                <div
+                  key={item.id}
+                  className="rounded-[20px] border-2 border-ink bg-[#F2B84B]/20 border-l-[8px] border-l-[#F2B84B] p-6 shadow-[4px_4px_0_#151130] space-y-3"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Sticker color="mustard" size="sm" icon={<PushPin className="w-3.5 h-3.5" weight="fill" />}>
+                        Pinned
+                      </Sticker>
+                      <Sticker color={badge.color} size="sm" icon={badge.icon}>
+                        {badge.label}
+                      </Sticker>
+                      {item.organizerName && (
+                        <Sticker color={theme.token} size="sm">
+                          {item.organizerName}
+                        </Sticker>
+                      )}
+                    </div>
+
+                    <span className="text-xs font-mono font-bold text-ink-soft">
+                      {formatDate(item.publishedAt, 'medium')}
+                    </span>
+                  </div>
+
+                  <h3 className="font-display font-extrabold text-xl sm:text-2xl text-ink leading-snug">
+                    {item.title}
+                  </h3>
+
+                  <p className="text-ink-soft text-sm sm:text-base leading-relaxed whitespace-pre-line">
+                    {item.body}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Regular Feed List */}
+      <section className="space-y-4">
         {isLoading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} height="h-32" rounded="rounded-panel" />
+              <div
+                key={i}
+                className="h-36 rounded-[18px] bg-paper-2 border-2 border-ink animate-pulse shadow-[4px_4px_0_#151130]"
+              />
             ))}
           </div>
-        ) : filtered.length === 0 ? (
-          <EmptyState
-            title="No notices found"
-            description="There are currently no active announcements matching this filter."
-          />
+        ) : regularAnnouncements.length === 0 && pinnedAnnouncements.length === 0 ? (
+          <div className="rounded-[20px] border-2 border-ink bg-card p-12 text-center space-y-3 shadow-[4px_4px_0_#151130]">
+            <Megaphone className="w-10 h-10 text-ink-soft mx-auto" weight="duotone" />
+            <h3 className="font-display font-bold text-xl text-ink">No announcements found</h3>
+            <p className="text-ink-soft text-sm">
+              There are currently no active announcements matching this filter category.
+            </p>
+          </div>
         ) : (
-          filtered.map((item) => (
-            <div
-              key={item.id}
-              className="rounded-panel border border-line bg-surface p-6 space-y-2.5"
-            >
-              <div className="flex flex-wrap items-center gap-2.5 text-small">
-                {item.pinned && (
-                  <span className="inline-flex items-center gap-1 bg-accent-soft text-accent px-2.5 py-0.5 rounded-full font-semibold text-caption">
-                    <Pin className="h-3.5 w-3.5" />
-                    <span>Pinned</span>
-                  </span>
-                )}
-                <span className="px-2.5 py-0.5 rounded-full bg-subtle text-text-2 font-medium text-caption border border-line">
-                  {item.kind.replace('_', ' ')}
-                </span>
-                {item.organizerName && (
-                  <span className="text-text-2 flex items-center gap-1.5 font-medium">
-                    <span
-                      className="inline-block h-2.5 w-2.5 rounded-full"
-                      style={{ backgroundColor: item.organizerColor || '#C93E27' }}
-                      aria-hidden="true"
-                    />
-                    <span>{item.organizerName}</span>
-                  </span>
-                )}
-                <span className="text-line">·</span>
-                <span className="text-text-3 text-caption">{formatDate(item.publishedAt, 'MMM d, yyyy')}</span>
-              </div>
+          <div className="space-y-4">
+            {regularAnnouncements.map((item) => {
+              const badge = getKindBadge(item.kind)
+              const theme = getClubTheme(item.organizerName)
 
-              <h3 className="font-semibold text-lg text-text">
-                {item.title}
-              </h3>
+              return (
+                <div
+                  key={item.id}
+                  className="rounded-[20px] border-2 border-ink bg-card p-6 shadow-[4px_4px_0_#151130] space-y-3 hover:shadow-[6px_6px_0_#151130] transition-shadow"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Sticker color={badge.color} size="sm" icon={badge.icon}>
+                        {badge.label}
+                      </Sticker>
+                      {item.organizerName && (
+                        <Sticker color={theme.token} size="sm">
+                          {item.organizerName}
+                        </Sticker>
+                      )}
+                    </div>
 
-              <p className="text-small text-text-2 leading-relaxed whitespace-pre-line max-w-4xl">
-                {item.body}
-              </p>
-            </div>
-          ))
+                    <span className="text-xs font-mono font-bold text-ink-soft">
+                      {formatDate(item.publishedAt, 'medium')}
+                    </span>
+                  </div>
+
+                  <h3 className="font-display font-extrabold text-xl text-ink leading-snug">
+                    {item.title}
+                  </h3>
+
+                  <p className="text-ink-soft text-sm sm:text-base leading-relaxed whitespace-pre-line">
+                    {item.body}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
         )}
-      </div>
-    </div>
+      </section>
+    </PageShell>
   )
 }

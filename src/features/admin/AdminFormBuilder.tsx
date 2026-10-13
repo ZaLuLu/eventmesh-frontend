@@ -16,7 +16,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Trash2, Settings2, Eye } from 'lucide-react'
+import { DotsSixVertical, Trash, Gear, Eye } from '@phosphor-icons/react'
 import { FormField, FormFieldType } from '@/api'
 import { Field } from '@/design-system/primitives/Field'
 import { FormRenderer } from '../registration/FormRenderer'
@@ -58,7 +58,7 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({
             className="cursor-grab active:cursor-grabbing p-1 text-text-3 hover:text-text"
             aria-label="Drag to reorder field"
           >
-            <GripVertical className="h-4 w-4" />
+            <DotsSixVertical className="w-4 h-4" weight="bold" />
           </button>
 
           <div className="flex items-baseline gap-2 truncate">
@@ -83,7 +83,7 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({
             className="p-1.5 text-text-3 hover:text-text rounded-btn transition-colors"
             title="Configure Field"
           >
-            <Settings2 className="h-4 w-4" />
+            <Gear className="w-4 h-4" weight="bold" />
           </button>
           <button
             type="button"
@@ -91,7 +91,7 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({
             className="p-1.5 text-text-3 hover:text-danger rounded-btn transition-colors"
             title="Delete Field"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash className="w-4 h-4" weight="bold" />
           </button>
         </div>
       </div>
@@ -220,7 +220,7 @@ export const AdminFormBuilder: React.FC<AdminFormBuilderProps> = ({
           onClick={() => setShowPreview(!showPreview)}
           className="flex items-center gap-1.5 px-3 py-1.5 border border-line rounded-btn text-small font-medium hover:bg-subtle text-text transition-colors"
         >
-          <Eye className="h-4 w-4" />
+          <Eye className="w-4 h-4" weight="bold" />
           <span>{showPreview ? 'Hide Preview' : 'Live Preview'}</span>
         </button>
       </div>
@@ -233,7 +233,7 @@ export const AdminFormBuilder: React.FC<AdminFormBuilderProps> = ({
             <span className="text-caption font-semibold text-text mr-1">
               + Add Field:
             </span>
-            {(['text', 'select', 'checkbox', 'longtext', 'email', 'phone', 'number'] as FormFieldType[]).map(
+            {(['text', 'longtext', 'select', 'multiselect', 'checkbox', 'url', 'file', 'email', 'phone', 'number'] as FormFieldType[]).map(
               (type) => (
                 <button
                   key={type}

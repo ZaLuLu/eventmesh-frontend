@@ -1,22 +1,23 @@
+// Hallmark macrostructure: PageHeader / Navigation
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
-  Search,
-  MapPin,
-  ChevronDown,
-  LayoutDashboard,
-  LogOut,
+  MagnifyingGlass,
   Ticket,
-  Menu,
-  X,
-  Calendar,
   Compass,
   Users,
-  Sparkles,
-} from 'lucide-react'
+  CalendarBlank,
+  Sparkle,
+  List,
+  SignOut,
+  Gauge,
+  CaretDown,
+} from '@/design-system/Icon'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
-import { Button } from '@/design-system/primitives/Button'
+import { hasMultipleCampuses, APP_CONFIG, CampusLocation } from '@/config/appConfig'
+import { SoundToggleButton } from '@/design-system/SoundProvider'
+import { NotificationInbox } from '@/features/notifications/NotificationInbox'
 import { Sheet } from '@/design-system/primitives/Sheet'
 import { cn } from '@/lib/utils'
 
@@ -24,226 +25,221 @@ interface PublicHeaderProps {
   onSearchOpen: () => void
 }
 
-const CITIES = ['Main Campus · Bangalore', 'North Campus · Delhi', 'Tech Hub · Hyderabad', 'West Pavilion · Mumbai']
-
 export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
   const location = useLocation()
   const { session, isAuthenticated, logout } = useAuth()
   const { canAccessAdmin } = usePermission()
 
   const [isScrolled, setIsScrolled] = useState(false)
-  const [isCityOpen, setIsCityOpen] = useState(false)
-  const [selectedCity, setSelectedCity] = useState(CITIES[0])
   const [isAccountOpen, setIsAccountOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [selectedCampus, setSelectedCampus] = useState(APP_CONFIG.campuses[0]?.name || 'Main Campus')
+  const [isCampusOpen, setIsCampusOpen] = useState(false)
 
-  const isLanding = location.pathname === '/'
-
-  // Listen to window scroll on landing page to switch transparent on-dark -> solid white
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 40) {
-        setIsScrolled(true)
-      } else {
-        setIsScrolled(false)
-      }
+      setIsScrolled(window.scrollY > 20)
     }
-
-    // Initial check
     handleScroll()
-
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Header style variations
-  const isTransparent = isLanding && !isScrolled
-
   const navLinks = [
-    { label: 'Explore', path: '/explore', icon: <Compass className="w-4 h-4" /> },
-    { label: 'Clubs', path: '/clubs', icon: <Users className="w-4 h-4" /> },
-    { label: 'Calendar', path: '/calendar', icon: <Calendar className="w-4 h-4" /> },
-    { label: 'About', path: '/about', icon: <Sparkles className="w-4 h-4" /> },
+    { label: 'Explore', path: '/explore', icon: <Compass size={16} weight="bold" /> },
+    { label: 'Clubs', path: '/clubs', icon: <Users size={16} weight="bold" /> },
+    { label: 'Calendar', path: '/calendar', icon: <CalendarBlank size={16} weight="bold" /> },
+    { label: 'About', path: '/about', icon: <Sparkle size={16} weight="bold" /> },
   ]
 
   return (
     <>
       <header
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 h-14 bg-white/95 backdrop-blur-md text-[#0A0A0A] border-b border-[#E2E8F0] select-none transition-colors'
+          'fixed top-0 left-0 right-0 z-50 h-16 bg-paper/90 backdrop-blur-md select-none transition-all duration-200',
+          isScrolled
+            ? 'border-b border-ink/10 shadow-[0_4px_12px_rgba(21,17,48,0.04)]'
+            : 'border-b border-transparent'
         )}
       >
-        <div className="max-w-[1440px] mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 font-mono">
-          {/* Left: Brand Logo & Campus Selector */}
+        <div className="max-w-[1320px] mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
+          {/* Left: Brand Wordmark */}
           <div className="flex items-center gap-3 sm:gap-6 flex-shrink-0">
             <Link
               to="/"
-              className="flex items-center gap-2.5 group focus:outline-none"
+              className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cobalt rounded-lg"
               aria-label="EventMesh Home"
             >
-              {/* Electric Cobalt Monogram Mark */}
-              <div className="w-7 h-7 bg-[#0047FF] text-white flex items-center justify-center font-bold text-xs tracking-wider transition-opacity group-hover:opacity-90">
+              {/* Tactile Stamp Icon */}
+              <div className="w-8 h-8 rounded-full bg-ink text-paper flex items-center justify-center font-display font-black text-xs shadow-offset transition-transform duration-200 group-hover:-rotate-6 group-hover:bg-cobalt">
                 EM
               </div>
-              <span className="font-mono text-sm sm:text-base font-bold tracking-widest text-[#0A0A0A] uppercase">
-                EventMesh
+              <span className="font-display font-extrabold text-xl tracking-tight text-ink flex items-baseline">
+                Event
+                <span className="font-accent italic text-cobalt font-normal text-2xl -ml-0.5 mr-0.5">
+                  M
+                </span>
+                esh
               </span>
             </Link>
 
-            {/* City / Campus Selector */}
-            <div className="relative hidden md:block">
-              <button
-                type="button"
-                onClick={() => setIsCityOpen(!isCityOpen)}
-                className="flex items-center gap-1.5 px-2.5 py-1 bg-[#F8FAFC] hover:bg-[#F1F5F9] text-slate-700 hover:text-[#0A0A0A] border border-[#E2E8F0] hover:border-[#0047FF]/50 text-xs transition-colors"
-                aria-label="Select campus or city"
-                aria-expanded={isCityOpen}
-              >
-                <MapPin className="w-3 h-3 text-[#0047FF]" />
-                <span className="truncate max-w-[160px] uppercase">{selectedCity.split('·')[0].trim()}</span>
-                <ChevronDown className="w-3 h-3 opacity-70" />
-              </button>
+            {/* Campus Switcher: Only displayed if multiple campuses are configured (F-09) */}
+            {hasMultipleCampuses() && (
+              <div className="relative hidden md:block">
+                <button
+                  type="button"
+                  onClick={() => setIsCampusOpen(!isCampusOpen)}
+                  className="flex items-center gap-1.5 px-3 py-1 bg-paper-2 hover:bg-paper text-ink border border-ink/15 rounded-full text-xs font-medium transition-colors"
+                  aria-expanded={isCampusOpen}
+                >
+                  <span className="truncate max-w-[140px]">{selectedCampus}</span>
+                  <CaretDown size={12} weight="bold" />
+                </button>
 
-              {isCityOpen && (
-                <div className="absolute left-0 mt-2 w-56 bg-white border border-[#E2E8F0] shadow-xl py-1 z-50 text-xs">
-                  <div className="px-3 py-1 font-semibold text-slate-400 uppercase tracking-wider text-[11px] border-b border-[#E2E8F0]">
-                    CAMPUS LOCATIONS
+                {isCampusOpen && (
+                  <div className="absolute left-0 mt-2 w-48 bg-card border border-ink/15 rounded-xl shadow-offset py-1 z-50 text-xs">
+                    {APP_CONFIG.campuses.map((campus: CampusLocation) => (
+                      <button
+                        key={campus.id}
+                        onClick={() => {
+                          setSelectedCampus(campus.name)
+                          setIsCampusOpen(false)
+                        }}
+                        className={cn(
+                          'w-full text-left px-3 py-2 flex items-center justify-between hover:bg-paper-2 transition-colors',
+                          selectedCampus === campus.name ? 'font-bold text-cobalt' : 'text-ink'
+                        )}
+                      >
+                        <span>{campus.name}</span>
+                        {selectedCampus === campus.name && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-cobalt" />
+                        )}
+                      </button>
+                    ))}
                   </div>
-                  {CITIES.map((city) => (
-                    <button
-                      key={city}
-                      onClick={() => {
-                        setSelectedCity(city)
-                        setIsCityOpen(false)
-                      }}
-                      className={cn(
-                        'w-full text-left px-3 py-1.5 text-xs flex items-center justify-between transition-colors',
-                        selectedCity === city
-                          ? 'text-[#0047FF] font-semibold bg-[#0047FF]/10 border-l-2 border-[#0047FF]'
-                          : 'text-slate-700 hover:bg-[#F8FAFC] hover:text-[#0A0A0A]'
-                      )}
-                    >
-                      <span className="uppercase">{city}</span>
-                      {selectedCity === city && <span className="w-1.5 h-1.5 bg-[#0047FF]" />}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Middle: ⌘K Command Search Trigger */}
-          <div className="flex-1 max-w-sm mx-auto hidden lg:block">
+          {/* Middle: Navigation Links */}
+          <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+            {navLinks.map((link) => {
+              const isActive = location.pathname.startsWith(link.path)
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={cn(
+                    'px-3.5 py-1.5 rounded-full text-sm font-medium transition-all duration-150',
+                    isActive
+                      ? 'bg-ink text-paper font-semibold shadow-offset'
+                      : 'text-ink/80 hover:text-ink hover:bg-paper-2'
+                  )}
+                >
+                  {link.label}
+                </Link>
+              )
+            })}
+          </nav>
+
+          {/* Right: Search, Sound, Notifications, My Tickets, Auth */}
+          <div className="flex items-center gap-2 sm:gap-2.5 flex-shrink-0">
+            {/* Quick Search Button */}
             <button
               type="button"
               onClick={onSearchOpen}
-              className="w-full h-8 flex items-center justify-between px-3 bg-[#F8FAFC] hover:bg-[#F1F5F9] text-slate-500 hover:text-[#0A0A0A] border border-[#E2E8F0] hover:border-[#0047FF]/50 text-xs transition-colors text-left"
+              className="hidden lg:flex items-center gap-2 h-9 px-3 bg-paper-2 hover:bg-paper text-ink/70 hover:text-ink border border-ink/15 rounded-full text-xs transition-colors"
+              aria-label="Search catalog"
             >
-              <div className="flex items-center gap-2 min-w-0">
-                <Search className="w-3.5 h-3.5 flex-shrink-0 text-slate-400" />
-                <span className="truncate">Search catalog (symposiums, hackathons...)</span>
-              </div>
-              <kbd className="px-1.5 py-0.5 text-[11px] bg-white border border-[#E2E8F0] text-slate-500">
+              <MagnifyingGlass size={14} weight="bold" className="text-ink/60" />
+              <span className="text-xs">Search...</span>
+              <kbd className="px-1.5 py-0.5 text-[10px] bg-card border border-ink/15 rounded text-ink/70 font-mono">
                 ⌘K
               </kbd>
             </button>
-          </div>
 
-          {/* Right: Navigation, Host Event & Account */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 text-xs">
-            {/* Desktop Nav Links */}
-            <nav className="hidden md:flex items-center gap-3 mr-2">
-              {navLinks.map((link) => {
-                const isActive = location.pathname.startsWith(link.path)
-                return (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    className={cn(
-                      'py-1 text-xs uppercase tracking-wider transition-colors',
-                      isActive
-                        ? 'text-[#0047FF] font-semibold border-b-2 border-[#0047FF]'
-                        : 'text-slate-600 hover:text-[#0047FF]'
-                    )}
-                  >
-                    {link.label}
-                  </Link>
-                )
-              })}
-            </nav>
-
-            {/* Mobile / Tablet Search Icon */}
+            {/* Mobile / Tablet search icon */}
             <button
               type="button"
               onClick={onSearchOpen}
-              className="lg:hidden p-1.5 text-slate-600 hover:text-[#0A0A0A] transition-colors"
-              aria-label="Search"
+              className="lg:hidden p-2 text-ink/80 hover:text-ink hover:bg-paper-2 rounded-full transition-colors"
+              aria-label="Search events"
             >
-              <Search className="w-4 h-4" />
+              <MagnifyingGlass size={18} weight="bold" />
             </button>
 
-            {/* Host Event / Admin Dashboard Button */}
-            {canAccessAdmin() ? (
+            {/* Sound Toggle Button (F-14) */}
+            <SoundToggleButton />
+
+            {/* Notification Inbox Popover (F-04) */}
+            <NotificationInbox />
+
+            {/* My Tickets Pill (Section 7.1) */}
+            <Link
+              to="/attendee/dashboard"
+              className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-card hover:bg-paper-2 text-ink font-semibold text-xs border border-ink shadow-offset hover:-translate-y-0.5 active:translate-y-0 transition-all"
+              aria-label="My tickets"
+            >
+              <Ticket size={15} weight="bold" className="text-cobalt" />
+              <span>My tickets</span>
+            </Link>
+
+            {/* Host Event / Dashboard Link */}
+            {canAccessAdmin() && (
               <Link
                 to="/admin"
-                className="hidden sm:inline-flex items-center gap-1.5 h-8 px-3 bg-[#F8FAFC] text-[#0047FF] hover:bg-[#EFF4FF] border border-[#E2E8F0] hover:border-[#0047FF] text-xs font-semibold uppercase transition-colors"
+                className="hidden xl:inline-flex items-center gap-1.5 h-9 px-3 rounded-full bg-lime text-ink font-semibold text-xs border border-ink shadow-offset hover:-translate-y-0.5 active:translate-y-0 transition-all"
               >
-                <LayoutDashboard className="w-3 h-3" />
-                <span>Dashboard</span>
-              </Link>
-            ) : (
-              <Link
-                to="/admin/events/new"
-                className="hidden sm:inline-flex items-center gap-1.5 h-8 px-3 bg-[#F8FAFC] text-slate-700 hover:text-[#0047FF] border border-[#E2E8F0] hover:border-[#0047FF] text-xs uppercase transition-colors"
-              >
-                <span>Host event</span>
+                <Gauge size={14} weight="bold" />
+                <span>Admin</span>
               </Link>
             )}
 
-            {/* Account Menu / Sign In */}
+            {/* User Account / Sign In */}
             {isAuthenticated ? (
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setIsAccountOpen(!isAccountOpen)}
-                  className="flex items-center gap-1.5 h-8 px-2 bg-[#F8FAFC] border border-[#E2E8F0] text-slate-700 hover:border-[#0047FF] text-xs transition-colors"
+                  className="flex items-center gap-1.5 h-9 px-2 bg-paper-2 hover:bg-paper border border-ink/15 rounded-full text-ink text-xs transition-colors"
                   aria-label="Account menu"
                   aria-expanded={isAccountOpen}
                 >
-                  <div className="w-5 h-5 bg-[#0047FF] text-white flex items-center justify-center font-bold text-[11px]">
+                  <div className="w-6 h-6 rounded-full bg-cobalt text-white flex items-center justify-center font-display font-bold text-xs">
                     {(session?.name || 'U')[0].toUpperCase()}
                   </div>
-                  <ChevronDown className="w-3 h-3 opacity-70" />
+                  <CaretDown size={12} weight="bold" className="opacity-70" />
                 </button>
 
                 {isAccountOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white border border-[#E2E8F0] shadow-xl py-1 z-50 text-slate-800 text-xs">
-                    <div className="px-3 py-2 border-b border-[#E2E8F0]">
-                      <p className="font-semibold text-[#0A0A0A] truncate">{session?.name}</p>
-                      <p className="text-slate-500 truncate text-[11px]">{session?.email}</p>
+                  <div className="absolute right-0 mt-2 w-56 bg-card border border-ink/15 rounded-2xl shadow-offset py-1.5 z-50 text-xs">
+                    <div className="px-3.5 py-2 border-b border-ink/10">
+                      <p className="font-bold text-ink truncate">{session?.name}</p>
+                      <p className="text-ink-soft truncate text-[11px] font-mono">{session?.email}</p>
                     </div>
 
                     <Link
                       to="/attendee/dashboard"
                       onClick={() => setIsAccountOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2 text-slate-700 hover:text-[#0047FF] hover:bg-[#EFF4FF] transition-colors"
+                      className="flex items-center gap-2 px-3.5 py-2 text-ink hover:text-cobalt hover:bg-paper-2 transition-colors font-medium"
                     >
-                      <Ticket className="w-3.5 h-3.5 text-[#0047FF]" />
-                      <span>My tickets & credentials</span>
+                      <Ticket size={14} weight="bold" className="text-cobalt" />
+                      <span>My tickets & ID badge</span>
                     </Link>
 
                     {canAccessAdmin() && (
                       <Link
                         to="/admin"
                         onClick={() => setIsAccountOpen(false)}
-                        className="flex items-center gap-2 px-3 py-2 text-slate-700 hover:text-[#0047FF] hover:bg-[#EFF4FF] transition-colors"
+                        className="flex items-center gap-2 px-3.5 py-2 text-ink hover:text-cobalt hover:bg-paper-2 transition-colors font-medium"
                       >
-                        <LayoutDashboard className="w-3.5 h-3.5 text-[#0047FF]" />
-                        <span>Admin dashboard</span>
+                        <Gauge size={14} weight="bold" className="text-cobalt" />
+                        <span>Admin console</span>
                       </Link>
                     )}
 
-                    <div className="border-t border-[#E2E8F0] my-1" />
+                    <div className="border-t border-ink/10 my-1" />
 
                     <button
                       type="button"
@@ -251,9 +247,9 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                         setIsAccountOpen(false)
                         logout()
                       }}
-                      className="w-full text-left flex items-center gap-2 px-3 py-2 text-rose-600 hover:bg-rose-50 transition-colors"
+                      className="w-full text-left flex items-center gap-2 px-3.5 py-2 text-rose-600 hover:bg-rose-50 transition-colors font-medium"
                     >
-                      <LogOut className="w-3.5 h-3.5" />
+                      <SignOut size={14} weight="bold" />
                       <span>Sign out</span>
                     </button>
                   </div>
@@ -262,20 +258,20 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             ) : (
               <Link
                 to="/login"
-                className="h-8 px-4 bg-[#0047FF] hover:bg-[#0037CC] text-white font-semibold text-xs uppercase tracking-wider inline-flex items-center justify-center transition-colors shadow-sm"
+                className="h-9 px-4 bg-ink text-paper hover:bg-cobalt rounded-full font-semibold text-xs tracking-wide inline-flex items-center justify-center shadow-offset hover:-translate-y-0.5 active:translate-y-0 transition-all"
               >
                 Sign in
               </Link>
             )}
 
-            {/* Mobile Hamburger Menu Toggle */}
+            {/* Mobile Hamburger Toggle */}
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden p-1.5 text-slate-600 hover:text-[#0A0A0A] transition-colors"
+              className="md:hidden p-2 text-ink hover:text-cobalt rounded-full transition-colors"
               aria-label="Open mobile navigation menu"
             >
-              <Menu className="w-5 h-5" />
+              <List size={22} weight="bold" />
             </button>
           </div>
         </div>
@@ -285,31 +281,31 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
       <Sheet
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
-        title="EventMesh Navigation"
-        subtitle="Explore campus symposiums, hackathons & clubs"
+        title="EventMesh"
+        subtitle="Campus events & club culture"
       >
         <div className="space-y-6 pt-2">
-          {/* Search Trigger */}
+          {/* Quick Search */}
           <button
             type="button"
             onClick={() => {
               setIsMobileMenuOpen(false)
               onSearchOpen()
             }}
-            className="w-full h-11 flex items-center justify-between px-4 rounded-[14px] bg-surface-sunken border border-line text-ink-muted text-[14px]"
+            className="w-full h-11 flex items-center justify-between px-4 rounded-xl bg-paper-2 border border-ink/15 text-ink-soft text-sm"
           >
             <div className="flex items-center gap-2">
-              <Search className="w-4 h-4" />
+              <MagnifyingGlass size={16} weight="bold" />
               <span>Search events & clubs...</span>
             </div>
-            <kbd className="px-2 py-0.5 rounded text-[12px] bg-surface border border-line font-mono">
+            <kbd className="px-2 py-0.5 rounded text-xs bg-card border border-ink/15 font-mono">
               ⌘K
             </kbd>
           </button>
 
           {/* Nav links */}
           <div className="space-y-1">
-            <span className="text-[13px] font-semibold text-ink-muted uppercase tracking-wider block px-2 mb-1">
+            <span className="text-xs font-bold text-ink-soft uppercase tracking-wider block px-2 mb-1">
               Browse
             </span>
             {navLinks.map((link) => (
@@ -317,7 +313,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                 key={link.path}
                 to={link.path}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-[12px] text-[15px] font-medium text-ink hover:bg-lavender/30 transition-colors"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-base font-medium text-ink hover:bg-paper-2 transition-colors"
               >
                 {link.icon}
                 <span>{link.label}</span>
@@ -325,59 +321,33 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             ))}
           </div>
 
-          {/* Campus selection */}
-          <div className="space-y-1 pt-2 border-t border-line">
-            <span className="text-[13px] font-semibold text-ink-muted uppercase tracking-wider block px-2 mb-1">
-              Campus
-            </span>
-            {CITIES.map((city) => (
-              <button
-                key={city}
-                onClick={() => {
-                  setSelectedCity(city)
-                  setIsMobileMenuOpen(false)
-                }}
-                className={cn(
-                  'w-full text-left px-3 py-2 rounded-[12px] text-[14px] flex items-center justify-between',
-                  selectedCity === city
-                    ? 'text-champion font-semibold bg-lavender/30'
-                    : 'text-ink hover:bg-surface-sunken'
-                )}
-              >
-                <span>{city}</span>
-                {selectedCity === city && <span className="w-1.5 h-1.5 rounded-full bg-champion" />}
-              </button>
-            ))}
-          </div>
-
           {/* Actions */}
-          <div className="pt-4 border-t border-line space-y-2">
-            {isAuthenticated ? (
-              <>
-                <Link
-                  to="/attendee/dashboard"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="w-full h-11 rounded-full border border-line text-ink font-semibold text-[14px] flex items-center justify-center gap-2"
-                >
-                  <Ticket className="w-4 h-4 text-champion" />
-                  <span>My tickets & passes</span>
-                </Link>
-                {canAccessAdmin() && (
-                  <Link
-                    to="/admin"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="w-full h-11 rounded-full bg-lavender text-champion font-semibold text-[14px] flex items-center justify-center gap-2"
-                  >
-                    <LayoutDashboard className="w-4 h-4" />
-                    <span>Admin Dashboard</span>
-                  </Link>
-                )}
-              </>
-            ) : (
+          <div className="pt-4 border-t border-ink/10 space-y-2">
+            <Link
+              to="/attendee/dashboard"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-full h-11 rounded-full border border-ink bg-card text-ink font-semibold text-sm flex items-center justify-center gap-2 shadow-offset"
+            >
+              <Ticket size={16} weight="bold" className="text-cobalt" />
+              <span>My tickets & ID badge</span>
+            </Link>
+
+            {canAccessAdmin() && (
+              <Link
+                to="/admin"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full h-11 rounded-full bg-lime text-ink font-semibold text-sm flex items-center justify-center gap-2 border border-ink shadow-offset"
+              >
+                <Gauge size={16} weight="bold" />
+                <span>Admin Console</span>
+              </Link>
+            )}
+
+            {!isAuthenticated && (
               <Link
                 to="/login"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="w-full h-11 rounded-full bg-champion text-white font-semibold text-[14px] flex items-center justify-center"
+                className="w-full h-11 rounded-full bg-ink text-paper font-semibold text-sm flex items-center justify-center shadow-offset"
               >
                 Sign in to EventMesh
               </Link>
