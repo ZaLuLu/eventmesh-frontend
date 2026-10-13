@@ -1,71 +1,67 @@
 export const TOKENS = {
-  // Electric Cobalt & Paper White Reference Tokens
-  champion: '#0047FF',
-  champion2: '#0037CC',
-  lavender: '#EFF4FF',
-  lavender100: '#F5F8FF',
-  lavender200: '#E0EBFF',
-  lavender300: '#C2D6FF',
-  violet: '#0047FF',
-  violetHover: '#0037CC',
+  // Iris & Amethyst Accent Reference Tokens
+  champion: '#6366F1',
+  champion2: '#4F46E5',
+  lavender: '#E0E2FD',
+  lavender100: '#F0F2FF',
+  lavender200: '#E0E2FD',
+  lavender300: '#C7CEFA',
+  violet: '#6366F1',
+  violetHover: '#4F46E5',
 
-  // Canvas & Surfaces (Campus Funk Paper & Card Tokens)
-  bg: '#F6F1E7',
-  surface: '#FFFDF8',
-  subtle: '#EFE8D9',
-  line: '#E2DBD0',
+  // Canvas & Surfaces (Iris Obsidian Alabaster Tokens)
+  bg: '#FAF9FC',
+  surface: '#FEFEFF',
+  subtle: '#F3F1F8',
+  line: '#E8E5EE',
 
-  // Text (Deep Ink & Soft Ink)
-  text: '#151130',
-  text2: '#4A4668',
-  text3: '#6B6885',
-  onDark: '#F6F1E7',
-  onDark2: '#C8BEFA',
+  // Text (Deep Amethyst Ink)
+  text: '#14111D',
+  text2: '#6B6578',
+  text3: '#9D96AC',
+  onDark: '#F4F2F8',
+  onDark2: '#9D96AC',
 
-  // Status
-  success: '#16A34A',
-  warning: '#D97706',
-  danger: '#DC2626',
-  verified: '#0047FF',
+  // Status Signals
+  success: '#10B981',
+  warning: '#F59E0B',
+  danger: '#EF4444',
+  verified: '#6366F1',
 
-  // Accent Mappings: Electric Cobalt Blue
-  accent: '#0047FF',
-  accentHover: '#0037CC',
-  accentSoft: 'rgba(0, 71, 255, 0.08)',
+  // Accent Mappings: Electric Iris
+  accent: '#6366F1',
+  accentHover: '#4F46E5',
+  accentSoft: 'rgba(99, 102, 241, 0.08)',
   onAccent: '#FFFFFF',
 
-  // Shadow (Crisp physical offset elevation, zero blur)
-  cardShadow: '3px 3px 0 #151130',
-  floatingShadow: '5px 5px 0 #151130',
+  // Shadows: Subtle Ambient Elevation (Zero cartoon offset shadows)
+  cardShadow: '0 2px 8px -1px rgba(20, 17, 29, 0.05)',
+  floatingShadow: '0 8px 30px -4px rgba(20, 17, 29, 0.08)',
 
-  // Border Radii
-  radiusSmall: '8px',
-  radiusInput: '14px',
-  radiusPanel: '18px',
-  radiusCardInner: '22px',
-  radiusCardRow: '24px',
-  radiusCardOuter: '28px',
+  // Border Radii: Modernist Refined
+  radiusSmall: '6px',
+  radiusInput: '10px',
+  radiusPanel: '14px',
+  radiusCardInner: '12px',
+  radiusCardRow: '14px',
+  radiusCardOuter: '16px',
   radiusPill: '9999px',
 
-  // Admin Scope (Obsidian Studio + Lime)
-  adminBg: '#0F0D1F',
-  adminSurface: '#181530',
-  adminSidebar: '#0F0D1F',
-  adminAccent: '#D4F25A',
-  adminAccentHover: '#BCE23E',
-  adminLine: '#2D2852',
-  adminSubtle: '#1F1B3E',
+  // Admin Scope: Obsidian Amethyst
+  adminBg: '#0D0B12',
+  adminSurface: '#16131F',
+  adminSidebar: '#0D0B12',
+  adminAccent: '#818CF8',
+  adminAccentHover: '#A5B4FC',
+  adminLine: '#292338',
+  adminSubtle: '#1C1827',
 
-  // Curated Club Palettes
+  // Curated Club Palettes (Harmonious Modern-Minimal Palette)
   curatedPalettes: [
-    { name: 'Lavender Tonic', hex: '#C8BEFA' },
-    { name: 'Royal Violet', hex: '#5B47D6' },
-    { name: 'Champion Dark', hex: '#151130' },
-    { name: 'Emerald', hex: '#1E7A4C' },
-    { name: 'Terracotta', hex: '#C66A4A' },
-    { name: 'Deep Sage', hex: '#6F8468' },
-    { name: 'Deep Teal', hex: '#17645F' },
-    { name: 'Crimson', hex: '#B42318' },
-    { name: 'Amber Ochre', hex: '#A85F00' },
-  ],
+    { bg: '#FAF9FC', border: '#E8E5EE', text: '#14111D', accent: '#6366F1', hex: '#6366F1', label: 'Iris Minimal', name: 'Iris Minimal' },
+    { bg: '#0D0B12', border: '#292338', text: '#F4F2F8', accent: '#818CF8', hex: '#818CF8', label: 'Obsidian Noir', name: 'Obsidian Noir' },
+    { bg: '#F6F5F9', border: '#E2DFEC', text: '#1B1726', accent: '#7C3AED', hex: '#7C3AED', label: 'Royal Violet', name: 'Royal Violet' },
+    { bg: '#F8F9FA', border: '#E5E7EB', text: '#111827', accent: '#2563EB', hex: '#2563EB', label: 'Cobalt Slate', name: 'Cobalt Slate' },
+    { bg: '#F0FDF4', border: '#DCFCE7', text: '#14532D', accent: '#10B981', hex: '#10B981', label: 'Emerald Mint', name: 'Emerald Mint' },
+  ]
 } as const

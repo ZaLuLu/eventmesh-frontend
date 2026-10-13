@@ -1,4 +1,4 @@
-// Hallmark macrostructure: LandingPage
+// Hallmark macrostructure: Ecosystem Index / Option B Seamless Architecture
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { usePromotedEvents, useNewestEvents } from '@/hooks/useEvents'
@@ -6,13 +6,10 @@ import { api, Event, PaginatedResult } from '@/api'
 import { PromotedTicketStack } from './components/PromotedTicketStack'
 import { NewEventsRail } from './components/NewEventsRail'
 import { ClubsStrip } from './components/ClubsStrip'
-import { TicketLifecycleTeaser } from './components/TicketLifecycleTeaser'
 import { EventsToolbar } from './components/EventsToolbar'
 import { EventsDiscoveryView } from './components/EventsDiscoveryView'
-import { Marquee } from '@/design-system/Marquee'
 import { SectionHeader } from '@/design-system/SectionHeader'
-import { Sticker } from '@/design-system/primitives/Sticker'
-import { Ticket, ArrowDown, Sparkle } from '@/design-system/Icon'
+import { Ticket, ArrowDown } from '@/design-system/Icon'
 
 export const HomePage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -51,27 +48,9 @@ export const HomePage: React.FC = () => {
   const freeOnly = searchParams.get('free') === 'true'
   const sortBy = searchParams.get('sort') || 'date-asc'
 
-  const updateParam = useCallback(
-    (key: string, val: string) => {
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev)
-          if (!val || val === 'all' || val === 'false') {
-            next.delete(key)
-          } else {
-            next.set(key, val)
-          }
-          return next
-        },
-        { replace: true }
-      )
-    },
-    [setSearchParams]
-  )
-
   // 3. Promoted & Newest Data
   const { data: promoted = [] } = usePromotedEvents()
-  const { data: newestData, isLoading: isNewestLoading } = useNewestEvents({ limit: 6 })
+  const { data: newestData, isLoading: isNewestLoading } = useNewestEvents({ limit: 5 })
   const newestEvents = useMemo(() => newestData?.items || [], [newestData?.items])
 
   // 4. Discovery Events: Cursor Pagination & Filter Fetching
@@ -165,75 +144,73 @@ export const HomePage: React.FC = () => {
   }
 
   return (
-    <div className="w-full bg-paper text-ink min-h-screen flex flex-col select-none">
+    <div className="w-full bg-[var(--color-paper)] text-[var(--color-ink)] min-h-screen flex flex-col select-none">
       {/* ==============================================================
-          HERO ACT: TOP HALF PROMOTIONS (Page Directives 7.1 directive 2)
-          Kills V-08 (no blue slab, no curved marquee).
+          HERO ACT: TWO-COLUMN BORDERLESS SHOWCASE
+          Clean typography + Featured Artwork Stage
           ============================================================== */}
-      <section className="relative w-full pt-8 pb-12 sm:pt-14 sm:pb-20 border-b border-ink/10 overflow-hidden">
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative w-full pt-8 pb-16 sm:pt-14 sm:pb-24 border-b border-line/60 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             {/* Left Headline Stage */}
             <div className="lg:col-span-7 space-y-6 text-left">
-              {/* Funky Sticker Tag */}
+              {/* Live Signal Indicator */}
               <div className="flex items-center gap-2">
-                <Sticker color="mustard" size="sm" tilt={-2}>
-                  Campus Season 2026
-                </Sticker>
-                <span className="text-xs font-mono font-semibold text-ink-soft">
-                  Two-tap RSVP · Verified Identity
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="font-mono text-xs uppercase tracking-wider text-accent font-medium">
+                  Autumn Season 2026 · Verified Collectives
                 </span>
               </div>
 
-              {/* Giant Display Headline (Gate 38a: Strictly Roman) */}
-              <h1 className="font-display font-black text-[clamp(2.75rem,7vw,5.5rem)] leading-[0.95] tracking-tight text-ink">
+              {/* Upright Roman Headline (Gate 38a) */}
+              <h1 className="font-sans font-semibold text-4xl sm:text-6xl tracking-tight text-ink leading-[1.05]">
                 Where student ideas make{' '}
-                <span className="font-accent text-cobalt not-italic font-normal">
+                <span className="text-accent">
                   noise.
                 </span>
               </h1>
 
               {/* Subcopy */}
-              <p className="text-base sm:text-lg text-ink-soft max-w-xl leading-relaxed">
+              <p className="text-base sm:text-lg text-ink-soft max-w-lg leading-relaxed">
                 Handcrafted hackathons, algorithmic sprints, and design salons from autonomous campus collectives. Grab a seat in two taps.
               </p>
 
               {/* Primary Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3.5 pt-2">
+              <div className="flex flex-wrap items-center gap-3 pt-2">
                 <a
                   href="#discovery"
-                  className="btn-funk-primary px-6 py-3 text-sm font-bold uppercase tracking-wider flex items-center gap-2"
+                  className="inline-flex items-center gap-2 h-11 px-6 rounded-full bg-ink text-paper hover:bg-accent hover:text-white text-sm font-medium transition-colors"
                 >
-                  <span>Browse events</span>
-                  <ArrowDown size={15} weight="bold" />
+                  <span>Browse sessions</span>
+                  <ArrowDown size={14} weight="bold" />
                 </a>
 
                 <Link
                   to="/attendee/dashboard"
-                  className="btn-funk-secondary px-6 py-3 text-sm font-bold uppercase tracking-wider flex items-center gap-2"
+                  className="inline-flex items-center gap-2 h-11 px-6 rounded-full bg-surface-subtle hover:bg-accent-soft text-ink hover:text-accent border border-line text-sm font-medium transition-colors"
                 >
-                  <Ticket size={16} weight="bold" className="text-cobalt" />
-                  <span>My tickets & badge</span>
+                  <Ticket size={15} weight="bold" className="text-accent" />
+                  <span>My tickets</span>
                 </Link>
               </div>
 
-              {/* Subtle Trust Micro-bar */}
-              <div className="pt-4 flex items-center gap-6 text-xs font-mono text-ink-soft border-t border-ink/10">
+              {/* Honest Metadata Line (Gate 46) */}
+              <div className="pt-6 flex items-center gap-6 text-xs font-mono text-ink-muted border-t border-line/60">
                 <div>
-                  <span className="font-bold text-ink">9</span> student societies
+                  <span className="font-semibold text-ink">5</span> flagship sessions
                 </div>
                 <span>·</span>
                 <div>
-                  <span className="font-bold text-ink">100%</span> verified attendees
+                  <span className="font-semibold text-ink">100%</span> verified student rsvp
                 </div>
                 <span>·</span>
                 <div>
-                  <span className="font-bold text-ink">Zero</span> neon slop
+                  <span className="font-semibold text-ink">Zero</span> container slop
                 </div>
               </div>
             </div>
 
-            {/* Right: Draggable Promoted Ticket Stack (Section 7.1 directive 2) */}
+            {/* Right: Featured Showcase Card */}
             <div className="lg:col-span-5 flex justify-center lg:justify-end">
               <PromotedTicketStack events={promoted} />
             </div>
@@ -242,92 +219,87 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* ==============================================================
-          LIVE MARQUEE TICKER STRIP (Page Directives 7.1 directive 3)
+          SECTION 1: NEWEST ACROSS CAMPUS
           ============================================================== */}
-      <Marquee
-        items={[
-          { text: 'Grand Turing Hackathon 2026', badge: 'This Saturday' },
-          { text: '3 Seats Remaining in Algo Sprint', highlight: true },
-          { text: 'Zero-Day CTF Registration Open', badge: 'Active' },
-          { text: 'DevCraft Architecture Retreat Next Week', badge: 'Free with Pass' },
-          { text: 'Physical Ticket Stubs Tear Only at Venue Gate', highlight: true },
-          { text: 'Cryptographic QR Verification Token on Ticket Face' },
-        ]}
-        speed={32}
-        variant="mustard"
-      />
+      <section className="relative w-full py-14 sm:py-20 border-b border-line/60">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <NewEventsRail events={newestEvents} isLoading={isNewestLoading} />
+        </div>
+      </section>
 
       {/* ==============================================================
-          NEWEST RELEASES SECTION (3-col EventTicketCard grid, directive 4)
+          SECTION 2: CAMPUS COLLECTIVES
           ============================================================== */}
-      <NewEventsRail events={newestEvents} isLoading={isNewestLoading} />
-
-      {/* ==============================================================
-          CLUBS STRIP SECTION (Color-blocked tiles, directive 6)
-          ============================================================== */}
-      <section className="w-full py-12 sm:py-16 border-t border-ink/10 bg-paper-2">
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <section className="relative w-full py-14 sm:py-20 border-b border-line/60 bg-surface-subtle/30">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
           <SectionHeader
-            title="Autonomous clubs & societies"
-            subtitle="Follow student engineering guilds, design salons, and open source societies for priority registration access"
-            sticker="9 Collectives"
-            stickerColor="lavender"
-            accentWord="societies"
+            title="Campus Collectives"
+            subtitle="Autonomous student guilds, research labs, and design studios organizing this season."
+            badge="Societies"
+            action={
+              <Link
+                to="/clubs"
+                className="text-xs font-semibold text-accent hover:underline inline-flex items-center gap-1 font-mono uppercase tracking-wider"
+              >
+                <span>View all clubs</span>
+              </Link>
+            }
           />
           <ClubsStrip />
         </div>
       </section>
 
       {/* ==============================================================
-          TICKET LIFECYCLE TEASER (Directive 7 & F-07)
-          Replaces fictional admission matrix.
+          SECTION 3: DISCOVERY DIRECTORY & FILTER TOOLBAR
           ============================================================== */}
-      <section className="w-full py-12 sm:py-16 border-t border-ink/10 bg-paper">
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <section id="discovery" className="relative w-full py-14 sm:py-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
           <SectionHeader
-            title="How your ticket works"
-            subtitle="Authentic natural paper tickets that remain intact until physical gate volunteer check-in"
-            sticker="Gate Check-In"
-            stickerColor="mint"
-            accentWord="works"
+            title="All Sessions & Workshops"
+            subtitle="Filter by category, timing, or search for specific technologies."
+            badge="Directory"
           />
-          <TicketLifecycleTeaser />
-        </div>
-      </section>
 
-      {/* ==============================================================
-          ALL-EVENTS DISCOVERY CATALOG (Directive 5)
-          ============================================================== */}
-      <section id="discovery" aria-label="Explore all events" className="w-full py-10 sm:py-16 border-t border-ink/10 bg-paper">
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 mb-6">
-          <SectionHeader
-            title="Explore all campus happenings"
-            subtitle="Filter by category, search by venue, or toggle list view for high-density browsing"
-            sticker="Full Catalog"
-            stickerColor="sky"
-            accentWord="happenings"
+          <EventsToolbar
+            category={category}
+            onCategoryChange={(val) => {
+              const next = new URLSearchParams(searchParams)
+              if (val === 'all') next.delete('category')
+              else next.set('category', val)
+              setSearchParams(next, { replace: true })
+            }}
+            searchQuery={searchQuery}
+            onSearchQueryChange={(val) => {
+              const next = new URLSearchParams(searchParams)
+              if (!val) next.delete('q')
+              else next.set('q', val)
+              setSearchParams(next, { replace: true })
+            }}
+            dateFilter={dateFilter}
+            onDateFilterChange={(val) => {
+              const next = new URLSearchParams(searchParams)
+              if (val === 'all') next.delete('date')
+              else next.set('date', val)
+              setSearchParams(next, { replace: true })
+            }}
+            freeOnly={freeOnly}
+            onFreeOnlyChange={(val) => {
+              const next = new URLSearchParams(searchParams)
+              if (!val) next.delete('free')
+              else next.set('free', 'true')
+              setSearchParams(next, { replace: true })
+            }}
+            sortBy={sortBy}
+            onSortByChange={(val) => {
+              const next = new URLSearchParams(searchParams)
+              next.set('sort', val)
+              setSearchParams(next, { replace: true })
+            }}
+            viewMode={viewMode}
+            onViewModeChange={handleViewModeChange}
+            totalCount={totalCount}
           />
-        </div>
 
-        {/* Sticky Filter Toolbar */}
-        <EventsToolbar
-          category={category}
-          onCategoryChange={(cat) => updateParam('category', cat)}
-          searchQuery={searchQuery}
-          onSearchQueryChange={(q) => updateParam('q', q)}
-          dateFilter={dateFilter}
-          onDateFilterChange={(d) => updateParam('date', d)}
-          freeOnly={freeOnly}
-          onFreeOnlyChange={(f) => updateParam('free', f ? 'true' : '')}
-          sortBy={sortBy}
-          onSortByChange={(s) => updateParam('sort', s)}
-          viewMode={viewMode}
-          onViewModeChange={handleViewModeChange}
-          totalCount={totalCount}
-        />
-
-        {/* Discovery View Grid / List with Motion layout animations */}
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
           <EventsDiscoveryView
             events={discoveryEvents}
             viewMode={viewMode}

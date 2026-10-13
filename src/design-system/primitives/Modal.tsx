@@ -43,40 +43,40 @@ export const Modal: React.FC<ModalProps> = ({
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop: Solid tactile ink wash, zero synthetic blur (Gate 7 & Mandate 3) */}
+          {/* Backdrop: Frosted ambient wash */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
             onClick={onClose}
-            className={`fixed inset-0 ${isDark ? 'bg-black/80' : 'bg-ink/50'}`}
+            className={`fixed inset-0 backdrop-blur-md ${isDark ? 'bg-black/70' : 'bg-black/30'}`}
             aria-hidden="true"
           />
 
-          {/* Modal surface: Tactile object with hard offset shadow */}
+          {/* Modal surface: Modern-minimal floating surface */}
           <motion.div
             role="dialog"
             aria-modal="true"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, scale: 0.98, y: 4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.98, y: 4 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
             className={`relative z-10 w-full ${maxWidth} max-h-[90vh] overflow-y-auto ${
               isDark
-                ? 'bg-[#181530] text-[#F6F1E7] border-2 border-[#2D2852] shadow-[5px_5px_0_var(--lime)]'
-                : 'bg-card text-ink border-2 border-ink shadow-[5px_5px_0_var(--ink)]'
-            } rounded-2xl p-6 sm:p-8 flex flex-col gap-6`}
+                ? 'bg-[#16131F] text-[#F4F2F8] border border-[#292338]'
+                : 'bg-card text-ink border border-line shadow-xl'
+            } rounded-2xl p-6 sm:p-7 flex flex-col gap-6`}
           >
-            <div className={`flex items-start justify-between gap-4 border-b ${isDark ? 'border-[#2D2852]' : 'border-ink/15'} pb-4`}>
+            <div className={`flex items-start justify-between gap-4 border-b ${isDark ? 'border-[#292338]' : 'border-line'} pb-4`}>
               <div>
                 {subtitle && (
-                  <span className={`font-mono text-xs font-semibold uppercase tracking-wider block mb-1 ${isDark ? 'text-indigo-300' : 'text-ink-soft'}`}>
+                  <span className={`font-mono text-xs uppercase tracking-wider block mb-1 ${isDark ? 'text-accent' : 'text-accent'}`}>
                     {subtitle}
                   </span>
                 )}
                 {title && (
-                  <h3 className={`font-display font-extrabold text-xl sm:text-2xl tracking-tight ${isDark ? 'text-white' : 'text-ink'}`}>
+                  <h3 className={`font-sans font-semibold text-xl tracking-tight ${isDark ? 'text-white' : 'text-ink'}`}>
                     {title}
                   </h3>
                 )}
@@ -85,10 +85,10 @@ export const Modal: React.FC<ModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className={`p-2 rounded-lg border transition-colors duration-150 ${
+                className={`p-1.5 rounded-full transition-colors duration-150 ${
                   isDark
-                    ? 'border-[#2D2852] hover:bg-white/10 text-slate-300 hover:text-white'
-                    : 'border-ink/20 hover:bg-paper-2 text-ink hover:text-cobalt'
+                    ? 'hover:bg-white/10 text-zinc-400 hover:text-white'
+                    : 'hover:bg-surface-subtle text-ink-soft hover:text-ink'
                 }`}
                 aria-label="Close modal"
               >

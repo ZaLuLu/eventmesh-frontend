@@ -1,11 +1,11 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { BookmarkSimple, MapPin, CalendarBlank, Users } from '@/design-system/Icon'
+import { BookmarkSimple, MapPin, CalendarBlank, Users, ArrowUpRight } from '@/design-system/Icon'
 import { PosterArt } from './visuals/PosterArt'
-import { Sticker } from './primitives/Sticker'
 import { formatDate, formatTime, formatCurrency } from '@/lib/format'
 import { getClubTheme } from './clubColors'
 import { Event } from '@/api'
+import { cn } from '@/lib/utils'
 
 export interface EventTicketCardProps {
   event: Event
@@ -15,10 +15,9 @@ export interface EventTicketCardProps {
 }
 
 /**
- * EventTicketCard: Core Campus Funk Ticket-Object Component
- * Renders an event as a physical perforated ticket stub with genuine bite notches,
- * price/free stickers, generative PosterArt, and 2-tap RSVP access.
- * Kills V-02, V-04, and V-07.
+ * EventTicketCard: Option B Seamless Borderless Art Plate
+ * Clean photographic plate with zero cartoon outlines, zero bite notches,
+ * and razor-sharp Geist + JetBrains Mono typographic hierarchy.
  */
 export const EventTicketCard: React.FC<EventTicketCardProps> = ({
   event,
@@ -30,8 +29,8 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
   const clubTheme = getClubTheme(clubId)
   const isFree = event.isFree ?? (!event.price || event.price === 0)
   const isWaitlist = event.seatsLeft === 0 || (event as any).isWaitlist
-  const attendeesCount = event.capacity ? Math.max(0, event.capacity - (event.seatsLeft ?? 0)) : 24
   const seatsLeft = event.seatsLeft
+
   const hasCustomCover = Boolean(
     event.poster &&
     !event.poster.includes('placeholder') &&
@@ -41,16 +40,23 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
 
   return (
     <article
-      className={`group relative flex flex-col bg-card border-[1.5px] border-ink rounded-ticket overflow-hidden shadow-offset transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-offset-lg select-none ${className}`}
+      className={cn(
+        'group relative flex flex-col rounded-2xl bg-card transition-all duration-200 hover:bg-surface-subtle/60 p-2.5 -m-2.5 select-none',
+        className
+      )}
     >
-      {/* 1. TOP COVER / POSTER STAGE */}
-      <div className="relative w-full h-48 sm:h-52 overflow-hidden bg-paper-2 border-b border-ink">
+      {/* 1. PHOTOGRAPHIC ART PLATE (16:10 aspect, borderless) */}
+      <Link
+        to={`/events/${event.slug || event.id}`}
+        className="relative w-full aspect-[16/10] overflow-hidden rounded-xl bg-surface-subtle"
+        tabIndex={-1}
+      >
         {hasCustomCover ? (
           <img
             src={event.poster}
             alt={event.title}
             loading="lazy"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
           />
         ) : (
           <PosterArt
@@ -58,118 +64,89 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
             title={event.title}
             category={event.category}
             clubId={clubId}
-            aspectRatio="video"
           />
         )}
 
-        {/* Top Floating Badge Bar */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 z-10 pointer-events-none">
-          <div className="flex items-center gap-1.5 pointer-events-auto">
-            <Sticker
-              color={isFree ? 'mint' : 'mustard'}
-              size="sm"
-              tilt={-2}
-            >
-              {formatCurrency(event.price)}
-            </Sticker>
-            {isWaitlist && (
-              <Sticker color="tangerine" size="sm" tilt={2}>
-                Waitlist
-              </Sticker>
-            )}
-            {seatsLeft !== null && seatsLeft > 0 && seatsLeft <= 15 && (
-              <Sticker color="pink" size="sm">
-                {seatsLeft} left
-              </Sticker>
-            )}
-          </div>
-
-          {/* Bookmark Button */}
-          {onBookmark && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                onBookmark(event.id)
-              }}
-              aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark event'}
-              className="pointer-events-auto p-1.5 rounded-full bg-card/90 border border-ink text-ink hover:bg-cobalt hover:text-white transition-colors shadow-[1px_1px_0_var(--ink)]"
-            >
-              <BookmarkSimple
-                size={16}
-                weight={isBookmarked ? 'fill' : 'bold'}
-              />
-            </button>
+        {/* Minimal Category Pill (Top Left) */}
+        <div className="absolute top-3 left-3 flex items-center gap-1.5">
+          <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-black/60 text-white backdrop-blur-md uppercase tracking-wider">
+            {event.category || 'Event'}
+          </span>
+          {isFree && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/90 text-white backdrop-blur-md">
+              Free
+            </span>
           )}
         </div>
-      </div>
 
-      {/* 2. PHYSICAL PERFORATION LINE WITH BITE NOTCHES */}
-      <div className="relative flex items-center justify-between h-4 bg-card -my-2 z-20">
-        <div className="w-4 h-4 rounded-full bg-paper border-r-[1.5px] border-ink -ml-2.5 flex-shrink-0" />
-        <div className="flex-1 border-t-[1.5px] border-dashed border-ink/40 mx-2" />
-        <div className="w-4 h-4 rounded-full bg-paper border-l-[1.5px] border-ink -mr-2.5 flex-shrink-0" />
-      </div>
-
-      {/* 3. TICKET BODY / PARTICULARS */}
-      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4">
-        <div className="space-y-2">
-          {/* Club Chip & Date Row */}
-          <div className="flex items-center justify-between gap-2 text-xs font-mono">
-            <span
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-bold text-xs uppercase border"
-              style={{
-                backgroundColor: clubTheme.color,
-                color: clubTheme.textColor,
-                borderColor: '#151130',
-              }}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-current" />
-              {(event as any).organizer?.name || clubTheme.name}
-            </span>
-
-            <span className="text-ink-soft font-semibold flex items-center gap-1">
-              <CalendarBlank size={13} weight="bold" />
-              {formatDate(event.startsAt, 'compact')}
-            </span>
-          </div>
-
-          {/* Title in Title Case Display Font */}
-          <h3 className="font-display font-extrabold text-lg sm:text-xl text-ink leading-snug line-clamp-2 group-hover:text-cobalt transition-colors">
-            <Link
-              to={`/events/${event.slug || event.id}`}
-              className="focus:outline-none focus-visible:underline"
-            >
-              {event.title}
-            </Link>
-          </h3>
-
-          {/* Venue with Tooltip wrapping */}
-          <div
-            className="flex items-center gap-1.5 text-xs text-ink-soft"
-            title={event.venue?.name || 'Campus Main Auditorium'}
+        {/* Minimal Bookmark Button (Top Right) */}
+        {onBookmark && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onBookmark(event.id)
+            }}
+            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-md flex items-center justify-center transition-colors"
+            aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark event'}
           >
-            <MapPin size={14} weight="bold" className="text-cobalt flex-shrink-0" />
-            <span className="truncate">
-              {event.venue?.name || 'Campus Main Auditorium'}
-            </span>
-          </div>
+            <BookmarkSimple
+              size={15}
+              weight={isBookmarked ? 'fill' : 'bold'}
+              className={isBookmarked ? 'text-accent' : 'text-white'}
+            />
+          </button>
+        )}
+      </Link>
+
+      {/* 2. METADATA STACK (Zero borders, pure typographic flow) */}
+      <div className="pt-3.5 pb-1 px-1 flex flex-col flex-1 gap-2">
+        {/* Date & Time in JetBrains Mono */}
+        <div className="flex items-center justify-between text-xs font-mono text-accent">
+          <span>{formatDate(event.startsAt)}</span>
+          <span className="text-ink-muted">{formatTime(event.startsAt)}</span>
         </div>
 
-        {/* 4. BOTTOM ACTION & ATTENDEE BAR */}
-        <div className="pt-3 border-t border-ink/15 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5 text-xs font-mono font-medium text-ink-soft">
-            <Users size={14} weight="bold" className="text-ink/60" />
-            <span>{attendeesCount} going</span>
+        {/* Event Title */}
+        <Link to={`/events/${event.slug || event.id}`} className="focus:outline-none">
+          <h3 className="font-sans font-semibold text-base sm:text-lg text-ink group-hover:text-accent transition-colors line-clamp-1 leading-snug">
+            {event.title}
+          </h3>
+        </Link>
+
+        {/* Subtitle / Description */}
+        {event.subtitle && (
+          <p className="text-xs text-ink-soft line-clamp-1 leading-relaxed">
+            {event.subtitle}
+          </p>
+        )}
+
+        {/* Venue & Host Club */}
+        <div className="mt-auto pt-2 flex items-center justify-between text-xs text-ink-muted">
+          <div className="flex items-center gap-1.5 truncate pr-2">
+            <span
+              className="w-2 h-2 rounded-full flex-shrink-0"
+              style={{ backgroundColor: clubTheme.hex || 'var(--accent)' }}
+            />
+            <span className="truncate font-medium text-ink-soft">
+              {event.organizerName || 'Campus Society'}
+            </span>
           </div>
 
-          <Link
-            to={`/events/${event.slug || event.id}`}
-            className="btn-funk-primary px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider"
-          >
-            {isWaitlist ? 'Waitlist' : 'Grab seat'}
-          </Link>
+          {/* Pricing / Capacity indicator */}
+          <div className="flex items-center gap-2 font-mono text-[11px] flex-shrink-0">
+            {seatsLeft !== undefined && (
+              <span className={seatsLeft <= 10 ? 'text-amber-600 font-semibold' : 'text-ink-muted'}>
+                {seatsLeft} seats
+              </span>
+            )}
+            <ArrowUpRight
+              size={14}
+              weight="bold"
+              className="text-ink-muted group-hover:text-accent group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+            />
+          </div>
         </div>
       </div>
     </article>

@@ -3,11 +3,10 @@ import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import { Event } from '@/api/contracts'
 import { EventTicketCard } from '@/design-system/EventTicketCard'
-import { Sticker } from '@/design-system/primitives/Sticker'
 import { EmptyState } from '@/design-system/primitives/EmptyState'
 import { formatDate, formatTime, formatCurrency } from '@/lib/format'
 import { getClubTheme } from '@/design-system/clubColors'
-import { MapPin, Ticket, ArrowDown } from '@/design-system/Icon'
+import { MapPin, Ticket, ArrowDown, ArrowUpRight } from '@/design-system/Icon'
 import { cn } from '@/lib/utils'
 
 export interface EventsDiscoveryViewProps {
@@ -22,77 +21,76 @@ export interface EventsDiscoveryViewProps {
 }
 
 /**
- * Luma-style dense list row for EventMesh catalog (Section 7.3).
+ * Modern-Minimal dense list row for EventMesh catalog.
  */
 const DenseEventRow: React.FC<{ event: Event }> = ({ event }) => {
   const clubId = event.organizerId || (event as any).clubId || 'club-cp'
   const clubTheme = getClubTheme(clubId)
   const isFree = event.isFree ?? (!event.price || event.price === 0)
-  const isWaitlist = event.seatsLeft === 0 || (event as any).isWaitlist
 
   return (
-    <article className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border-[1.5px] border-ink/15 hover:border-ink hover:shadow-offset transition-[border-color,box-shadow] duration-150 select-none">
+    <article className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3.5 rounded-xl bg-card hover:bg-surface-subtle/70 transition-colors duration-150 select-none border border-line/60">
       {/* Left: Date Block & Main Details */}
-      <div className="flex items-start sm:items-center gap-4 min-w-0">
+      <div className="flex items-start sm:items-center gap-3.5 min-w-0">
         {/* Date Stamp Block */}
-        <div className="w-14 h-14 rounded-xl bg-paper-2 border border-ink/15 flex flex-col items-center justify-center flex-shrink-0 text-center font-mono">
-          <span className="text-xs uppercase font-bold text-cobalt tracking-wider">
+        <div className="w-12 h-12 rounded-xl bg-surface-subtle flex flex-col items-center justify-center flex-shrink-0 text-center font-mono">
+          <span className="text-[10px] uppercase font-bold text-accent tracking-wider">
             {new Date(event.startsAt).toLocaleDateString('en-IN', { month: 'short' })}
           </span>
-          <span className="font-display font-extrabold text-lg text-ink leading-none">
+          <span className="font-sans font-bold text-base text-ink leading-none">
             {new Date(event.startsAt).getDate()}
           </span>
         </div>
 
         {/* Text info */}
-        <div className="space-y-1 min-w-0">
+        <div className="space-y-0.5 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span
               className="w-2 h-2 rounded-full flex-shrink-0"
-              style={{ backgroundColor: clubTheme.hex }}
+              style={{ backgroundColor: clubTheme.hex || 'var(--accent)' }}
               aria-hidden="true"
             />
-            <span className="text-xs font-semibold text-ink-soft truncate">
+            <span className="text-xs font-medium text-ink-soft truncate">
               {event.club?.name || event.organizerName || 'Campus Club'}
             </span>
-            <span className="text-xs font-mono text-ink-soft/70">·</span>
-            <span className="text-xs font-mono text-ink-soft/70">
+            <span className="text-xs font-mono text-ink-muted">·</span>
+            <span className="text-xs font-mono text-ink-muted">
               {formatTime(event.startsAt)}
             </span>
           </div>
 
-          <h3 className="font-display font-extrabold text-base sm:text-lg text-ink tracking-tight line-clamp-1 group-hover:text-cobalt transition-colors">
-            <Link to={`/events/${event.slug || event.id}`} className="focus:outline-none">
+          <Link to={`/events/${event.slug || event.id}`} className="focus:outline-none block">
+            <h4 className="font-sans font-semibold text-base text-ink group-hover:text-accent transition-colors truncate">
               {event.title}
-            </Link>
-          </h3>
+            </h4>
+          </Link>
 
-          <div className="flex items-center gap-1.5 text-xs text-ink-soft">
-            <MapPin size={12} weight="bold" className="text-cobalt flex-shrink-0" />
-            <span className="truncate">{event.venue?.name || 'Campus Main Auditorium'}</span>
+          <div className="flex items-center gap-1.5 text-xs text-ink-muted">
+            <MapPin size={12} weight="bold" className="text-accent flex-shrink-0" />
+            <span className="truncate">{event.venue?.name || 'Campus Venue'}</span>
           </div>
         </div>
       </div>
 
-      {/* Right: Badges & Action CTA */}
-      <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-ink/10 flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <Sticker color={isFree ? 'mint' : 'mustard'} size="sm">
-            {formatCurrency(event.price)}
-          </Sticker>
-          {isWaitlist && (
-            <Sticker color="tangerine" size="sm">
-              Waitlist
-            </Sticker>
+      {/* Right: Capacity, Pricing, Action */}
+      <div className="flex items-center justify-between sm:justify-end gap-3 flex-shrink-0 border-t sm:border-t-0 border-line/40 pt-2 sm:pt-0">
+        <div className="text-left sm:text-right font-mono text-xs">
+          <span className="font-semibold text-ink">
+            {isFree ? 'Free' : formatCurrency(event.price)}
+          </span>
+          {event.seatsLeft !== undefined && (
+            <p className="text-[11px] text-ink-muted">
+              {event.seatsLeft} left
+            </p>
           )}
         </div>
 
         <Link
           to={`/events/${event.slug || event.id}`}
-          className="btn-funk-primary px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5"
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-subtle hover:bg-accent text-ink hover:text-white font-medium text-xs transition-colors"
         >
-          <Ticket size={14} weight="bold" />
-          <span>{isWaitlist ? 'Waitlist' : 'Grab seat'}</span>
+          <span>View</span>
+          <ArrowUpRight size={12} weight="bold" />
         </Link>
       </div>
     </article>
@@ -109,33 +107,37 @@ export const EventsDiscoveryView: React.FC<EventsDiscoveryViewProps> = ({
   onResetFilters,
   className,
 }) => {
-  if (isLoading && (!events || events.length === 0)) {
+  if (isLoading && events.length === 0) {
     return (
-      <div className={cn('w-full py-8', className)}>
-        {viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-80 rounded-ticket bg-card border-[1.5px] border-ink/15 animate-pulse" />
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-20 rounded-2xl bg-card border border-ink/15 animate-pulse" />
-            ))}
-          </div>
+      <div
+        className={cn(
+          'w-full',
+          viewMode === 'grid'
+            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8'
+            : 'flex flex-col gap-3',
+          className
         )}
+      >
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            className={cn(
+              'bg-surface-subtle animate-pulse rounded-2xl',
+              viewMode === 'grid' ? 'h-80' : 'h-20'
+            )}
+          />
+        ))}
       </div>
     )
   }
 
-  if (!isLoading && events.length === 0) {
+  if (events.length === 0) {
     return (
-      <div className="w-full py-16">
+      <div className="py-16 text-center">
         <EmptyState
-          title="Nothing on yet. Try another club."
-          description="Try clearing your category or date filters, or searching with broader keywords."
-          actionLabel="Clear all filters"
+          title="No events found"
+          description="Try adjusting your filter criteria or search keyword to discover campus events."
+          actionLabel="Clear filters"
           onAction={onResetFilters}
         />
       </div>
@@ -143,56 +145,52 @@ export const EventsDiscoveryView: React.FC<EventsDiscoveryViewProps> = ({
   }
 
   return (
-    <div className={cn('w-full py-8', className)}>
-      <motion.div layout className="w-full">
+    <div className={cn('w-full flex flex-col gap-8', className)}>
+      <AnimatePresence mode="wait">
         {viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
-            <AnimatePresence mode="popLayout">
-              {events.map((event) => (
-                <motion.div
-                  key={event.id}
-                  layout
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96 }}
-                  transition={{ duration: 0.25, ease: 'easeOut' }}
-                >
-                  <EventTicketCard event={event} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+          <motion.div
+            key="grid"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
+          >
+            {events.map((evt) => (
+              <EventTicketCard key={evt.id} event={evt} />
+            ))}
+          </motion.div>
         ) : (
-          <div className="flex flex-col gap-3">
-            <AnimatePresence mode="popLayout">
-              {events.map((event) => (
-                <motion.div
-                  key={event.id}
-                  layout
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.2, ease: 'easeOut' }}
-                >
-                  <DenseEventRow event={event} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+          <motion.div
+            key="list"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="flex flex-col gap-2.5 max-w-4xl mx-auto w-full"
+          >
+            {events.map((evt) => (
+              <DenseEventRow key={evt.id} event={evt} />
+            ))}
+          </motion.div>
         )}
-      </motion.div>
+      </AnimatePresence>
 
-      {/* Load More Button */}
+      {/* Infinite Scroll / Load More Action */}
       {hasMore && (
-        <div className="flex justify-center pt-10 pb-6">
+        <div className="pt-6 flex justify-center">
           <button
             type="button"
             onClick={onLoadMore}
             disabled={isLoadingMore}
-            className="btn-funk-secondary px-8 py-3 text-xs font-bold uppercase tracking-wider flex items-center gap-2"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-surface-subtle hover:bg-accent-soft text-ink hover:text-accent border border-line text-xs font-semibold tracking-wider uppercase transition-colors disabled:opacity-50"
           >
-            <ArrowDown size={14} weight="bold" className={isLoadingMore ? 'animate-bounce' : ''} />
-            <span>{isLoadingMore ? 'Loading more...' : 'Load more events'}</span>
+            {isLoadingMore ? (
+              <span className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <ArrowDown size={14} weight="bold" />
+            )}
+            <span>{isLoadingMore ? 'Loading sessions...' : 'Load more sessions'}</span>
           </button>
         </div>
       )}

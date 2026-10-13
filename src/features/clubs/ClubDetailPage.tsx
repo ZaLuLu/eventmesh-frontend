@@ -1,23 +1,18 @@
-// Hallmark macrostructure: Profile-Club
 import React, { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
   Users,
   CaretRight,
-  Sparkle,
   CalendarCheck,
   EnvelopeSimple,
-  Image as ImageIcon,
-  CheckCircle,
 } from '@phosphor-icons/react'
 import { useClub, useToggleFollowClub } from '@/hooks/useClubs'
 import { useEvents } from '@/hooks/useEvents'
 import { PageShell } from '@/design-system/layout/PageShell'
-import { Sticker } from '@/design-system/primitives/Sticker'
+import { Badge } from '@/design-system/primitives/Badge'
 import { Button } from '@/design-system/primitives/Button'
 import { EventTicketCard } from '@/design-system/EventTicketCard'
 import { BellToggle } from '@/design-system/micro/BellToggle'
-import { getClubTheme } from '@/design-system/clubColors'
 import { useToast } from '@/design-system/primitives/Toast'
 
 export const ClubDetailPage: React.FC = () => {
@@ -32,7 +27,7 @@ export const ClubDetailPage: React.FC = () => {
   if (isLoading || !club) {
     return (
       <PageShell className="py-12">
-        <div className="h-64 rounded-[20px] bg-paper-2 border-2 border-ink animate-pulse shadow-[4px_4px_0_#151130]" />
+        <div className="h-64 rounded-3xl bg-surface-subtle animate-pulse" />
       </PageShell>
     )
   }
@@ -40,8 +35,6 @@ export const ClubDetailPage: React.FC = () => {
   const events = clubEventsData?.items || []
   const upcomingEvents = events.filter((e) => e.status !== 'completed' && e.status !== 'archived')
   const pastEvents = events.filter((e) => e.status === 'completed')
-
-  const theme = getClubTheme(club.name)
 
   const fallbackLeads = [
     {
@@ -96,79 +89,73 @@ export const ClubDetailPage: React.FC = () => {
   return (
     <PageShell className="py-6 sm:py-10 space-y-8">
       {/* Short Sentence-Case Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-ink-soft">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs sm:text-sm font-normal text-ink-soft">
         <Link to="/" className="hover:text-ink transition-colors">Home</Link>
-        <CaretRight className="w-3.5 h-3.5 text-ink-soft/60" weight="bold" />
+        <CaretRight className="w-3.5 h-3.5 text-ink-soft/40" />
         <Link to="/clubs" className="hover:text-ink transition-colors">Clubs</Link>
-        <CaretRight className="w-3.5 h-3.5 text-ink-soft/60" weight="bold" />
-        <span className="text-ink truncate">{club.name}</span>
+        <CaretRight className="w-3.5 h-3.5 text-ink-soft/40" />
+        <span className="text-ink font-medium truncate">{club.name}</span>
       </nav>
 
-      {/* Header Band in Club Theme Color */}
-      <header className="relative rounded-[24px] border-2 border-ink bg-card shadow-[6px_6px_0_#151130] overflow-hidden">
-        {/* Top Header Theme Color Strip */}
-        <div
-          className="h-16 sm:h-24 border-b-2 border-ink w-full relative"
-          style={{ backgroundColor: theme.hex }}
-        >
-          <div className="absolute right-4 top-4 flex items-center gap-2">
-            <Sticker color={theme.token} size="sm" className="font-bold uppercase tracking-wider text-[11px] bg-card text-ink">
-              Official Collective
-            </Sticker>
+      {/* Header Band */}
+      <header className="relative rounded-3xl bg-surface-subtle/40 p-6 sm:p-8 space-y-6">
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+          <div className="space-y-3 max-w-3xl">
+            <div className="flex items-center gap-2">
+              <Badge variant="neutral" size="sm" className="uppercase tracking-wider text-[10px]">
+                Official Collective
+              </Badge>
+              <Badge variant="iris" size="sm">
+                {club.joinMode ? club.joinMode.replace('_', ' ') : 'Open Membership'}
+              </Badge>
+            </div>
+
+            <h1 className="font-display font-semibold text-3xl sm:text-5xl text-ink tracking-tight leading-none">
+              {club.name}
+            </h1>
+
+            <p className="text-ink-soft text-base leading-relaxed font-normal">
+              {club.about || club.whatWeDo || 'Collegiate builder community focused on technical workshops, hackathons, and open projects.'}
+            </p>
+
+            {/* Details Row */}
+            <div className="flex flex-wrap items-center gap-3 pt-2 text-xs font-mono text-ink-soft">
+              <span className="flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-primary" weight="bold" />
+                {club.followersCount || 42}+ Members
+              </span>
+              <span>·</span>
+              <span className="flex items-center gap-1.5">
+                <CalendarCheck className="w-3.5 h-3.5 text-primary" weight="bold" />
+                {events.length} Events Total
+              </span>
+            </div>
           </div>
-        </div>
 
-        {/* Club Details Block */}
-        <div className="p-6 sm:p-8 space-y-6">
-          <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-            <div className="space-y-3 max-w-3xl">
-              <h1 className="font-display font-extrabold text-3xl sm:text-5xl text-ink tracking-tight leading-none">
-                {club.name}
-              </h1>
-
-              <p className="text-ink-soft text-base sm:text-lg leading-relaxed">
-                {club.about || club.whatWeDo || 'Collegiate builder community focused on technical workshops, hackathons, and open projects.'}
-              </p>
-
-              {/* Sticker Row */}
-              <div className="flex flex-wrap items-center gap-2.5 pt-2">
-                <Sticker color={theme.token} size="md" icon={<Users className="w-4 h-4" weight="bold" />}>
-                  {club.followersCount || 42}+ Members
-                </Sticker>
-                <Sticker color="mustard" size="md" icon={<CalendarCheck className="w-4 h-4" weight="bold" />}>
-                  {events.length} Events Total
-                </Sticker>
-                <Sticker color="mint" size="md">
-                  {club.joinMode ? club.joinMode.replace('_', ' ') : 'Open Membership'}
-                </Sticker>
-              </div>
-            </div>
-
-            {/* Subscribe Action */}
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <BellToggle
-                pressed={Boolean(club.isFollowed)}
-                onChange={handleToggleFollow}
-                onLabel="Subscribed"
-                offLabel="Follow Club"
-                size="md"
-                badge={true}
-                count={club.followersCount || 42}
-              />
-            </div>
+          {/* Subscribe Action */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <BellToggle
+              pressed={Boolean(club.isFollowed)}
+              onChange={handleToggleFollow}
+              onLabel="Subscribed"
+              offLabel="Follow Club"
+              size="md"
+              badge={true}
+              count={club.followersCount || 42}
+            />
           </div>
         </div>
       </header>
 
       {/* Tabs Navigation Bar */}
-      <div className="flex items-center gap-2 border-b-2 border-ink/15 pb-2">
+      <div className="flex items-center gap-1.5 border-b border-line/30 pb-2">
         <button
           type="button"
           onClick={() => setActiveTab('events')}
-          className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
+          className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
             activeTab === 'events'
-              ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
-              : 'bg-card border-2 border-ink/20 text-ink-soft hover:text-ink hover:border-ink'
+              ? 'bg-ink text-surface shadow-xs'
+              : 'text-ink-soft hover:text-ink hover:bg-surface-subtle/60'
           }`}
         >
           Events ({events.length})
@@ -177,10 +164,10 @@ export const ClubDetailPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('team')}
-          className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
+          className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
             activeTab === 'team'
-              ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
-              : 'bg-card border-2 border-ink/20 text-ink-soft hover:text-ink hover:border-ink'
+              ? 'bg-ink text-surface shadow-xs'
+              : 'text-ink-soft hover:text-ink hover:bg-surface-subtle/60'
           }`}
         >
           Organizers ({leadMembers.length})
@@ -190,10 +177,10 @@ export const ClubDetailPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('gallery')}
-            className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
+            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
               activeTab === 'gallery'
-                ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
-                : 'bg-card border-2 border-ink/20 text-ink-soft hover:text-ink hover:border-ink'
+                ? 'bg-ink text-surface shadow-xs'
+                : 'text-ink-soft hover:text-ink hover:bg-surface-subtle/60'
             }`}
           >
             Gallery ({club.gallery.length})
@@ -213,8 +200,8 @@ export const ClubDetailPage: React.FC = () => {
             </div>
 
             {upcomingEvents.length === 0 ? (
-              <div className="rounded-[20px] border-2 border-ink bg-card p-8 sm:p-12 text-center space-y-3 shadow-[4px_4px_0_#151130]">
-                <p className="font-display font-bold text-xl text-ink">
+              <div className="rounded-3xl bg-surface-subtle/30 p-8 sm:p-12 text-center space-y-3">
+                <p className="font-display font-medium text-lg text-ink">
                   No upcoming events right now
                 </p>
                 <p className="text-ink-soft text-sm max-w-md mx-auto">
@@ -233,13 +220,13 @@ export const ClubDetailPage: React.FC = () => {
           {/* Past Events */}
           {pastEvents.length > 0 && (
             <section className="space-y-6 pt-4">
-              <div className="flex items-center justify-between border-b-2 border-ink/10 pb-3">
-                <h2 className="font-display font-bold text-xl text-ink-soft">
+              <div className="flex items-center justify-between border-b border-line/20 pb-3">
+                <h2 className="font-display font-medium text-lg text-ink-soft">
                   Past Events ({pastEvents.length})
                 </h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 opacity-90">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 opacity-80">
                 {pastEvents.map((evt) => (
                   <EventTicketCard key={evt.id} event={evt} />
                 ))}
@@ -252,11 +239,11 @@ export const ClubDetailPage: React.FC = () => {
       {/* Team / Organizers Tab */}
       {activeTab === 'team' && (
         <section className="space-y-6">
-          <div className="border-b-2 border-ink/10 pb-3">
-            <h2 className="font-display font-extrabold text-2xl text-ink">
+          <div className="border-b border-line/20 pb-3">
+            <h2 className="font-display font-medium text-xl text-ink">
               Core Leadership & Mentors
             </h2>
-            <p className="text-ink-soft text-sm mt-1">
+            <p className="text-ink-soft text-xs mt-1">
               Student coordinators and faculty mentors running {club.name}
             </p>
           </div>
@@ -265,20 +252,20 @@ export const ClubDetailPage: React.FC = () => {
             {leadMembers.map((lead, idx) => (
               <div
                 key={idx}
-                className="rounded-[20px] border-2 border-ink bg-card p-6 shadow-[4px_4px_0_#151130] space-y-4 flex flex-col justify-between"
+                className="rounded-3xl bg-surface-subtle/30 p-6 space-y-4 flex flex-col justify-between"
               >
                 <div className="flex items-start gap-4">
                   <img
                     src={lead.photo}
                     alt={lead.name}
-                    className="w-16 h-16 rounded-full object-cover border-2 border-ink shadow-[2px_2px_0_#151130] flex-shrink-0"
+                    className="w-14 h-14 rounded-full object-cover flex-shrink-0"
                     loading="lazy"
                   />
                   <div className="space-y-1">
-                    <Sticker color="mint" size="sm" className="font-bold text-[11px] mb-1">
+                    <Badge variant="neutral" size="sm" className="mb-1">
                       {lead.badge}
-                    </Sticker>
-                    <h3 className="font-display font-bold text-lg text-ink leading-snug">
+                    </Badge>
+                    <h3 className="font-display font-medium text-base text-ink leading-snug">
                       {lead.name}
                     </h3>
                     <p className="text-ink-soft text-xs leading-normal">
@@ -287,14 +274,14 @@ export const ClubDetailPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="pt-3 border-t-2 border-ink/10 flex items-center justify-between">
-                  <span className="text-xs font-mono font-medium text-ink-soft">
+                <div className="pt-3 border-t border-line/20 flex items-center justify-between">
+                  <span className="text-xs font-mono text-ink-soft">
                     {club.name} Lead
                   </span>
                   <Button
                     variant="secondary"
                     size="compact"
-                    className="text-xs font-bold gap-1"
+                    className="text-xs font-normal gap-1"
                     onClick={() => {
                       toast({
                         title: `Contacting ${lead.name}`,
@@ -303,7 +290,7 @@ export const ClubDetailPage: React.FC = () => {
                       })
                     }}
                   >
-                    <EnvelopeSimple className="w-3.5 h-3.5" weight="bold" />
+                    <EnvelopeSimple className="w-3.5 h-3.5" />
                     <span>Connect</span>
                   </Button>
                 </div>
@@ -316,11 +303,11 @@ export const ClubDetailPage: React.FC = () => {
       {/* Gallery Tab */}
       {activeTab === 'gallery' && club.gallery && (
         <section className="space-y-6">
-          <div className="border-b-2 border-ink/10 pb-3">
-            <h2 className="font-display font-extrabold text-2xl text-ink">
+          <div className="border-b border-line/20 pb-3">
+            <h2 className="font-display font-medium text-xl text-ink">
               Photo Moments
             </h2>
-            <p className="text-ink-soft text-sm mt-1">
+            <p className="text-ink-soft text-xs mt-1">
               Snapshots captured across hackathons and workshops
             </p>
           </div>
@@ -329,9 +316,9 @@ export const ClubDetailPage: React.FC = () => {
             {club.gallery.map((photo, i) => (
               <div
                 key={photo.id || i}
-                className="rounded-[16px] border-2 border-ink bg-card p-3 shadow-[4px_4px_0_#151130] space-y-2"
+                className="rounded-2xl bg-surface-subtle/30 p-3 space-y-2"
               >
-                <div className="aspect-[4/3] rounded-[10px] overflow-hidden border border-ink/20 bg-paper-2">
+                <div className="aspect-[4/3] rounded-xl overflow-hidden bg-surface-subtle">
                   <img
                     src={photo.url}
                     alt={photo.caption || 'Club photo'}
@@ -340,7 +327,7 @@ export const ClubDetailPage: React.FC = () => {
                   />
                 </div>
                 {photo.caption && (
-                  <p className="text-xs font-medium text-ink-soft px-1 line-clamp-2">
+                  <p className="text-xs text-ink-soft px-1 line-clamp-2">
                     {photo.caption}
                   </p>
                 )}

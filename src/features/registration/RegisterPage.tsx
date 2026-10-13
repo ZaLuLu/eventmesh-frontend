@@ -1,4 +1,3 @@
-// Hallmark macrostructure: Stepper-Form
 import React, { useState, useEffect } from 'react'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
 import confetti from 'canvas-confetti'
@@ -8,13 +7,12 @@ import { useRegister, useMyRegistrations, useCancelMyRegistration, useJoinWaitli
 import { PageShell } from '@/design-system/layout/PageShell'
 import { Button } from '@/design-system/primitives/Button'
 import { Field } from '@/design-system/primitives/Field'
-import { Sticker } from '@/design-system/primitives/Sticker'
+import { Badge } from '@/design-system/primitives/Badge'
 import { QRCode } from '@/design-system/primitives/QRCode'
 import { FormRenderer } from './FormRenderer'
 import { formatDate, formatTime, formatCurrency } from '@/lib/format'
 import { Registration } from '@/api'
 import { downloadICS } from '@/lib/ics'
-import { getClubTheme } from '@/design-system/clubColors'
 import { useToast } from '@/design-system/primitives/Toast'
 import { Icon } from '@/design-system/Icon'
 import { appConfig } from '@/config/appConfig'
@@ -105,7 +103,6 @@ export const RegisterPage: React.FC = () => {
     )
   }
 
-  const clubTheme = getClubTheme(event.organizerId || event.club?.id || '')
   const selectedTier = searchParams.get('tier') || 'tier-standard'
   const isSoldOut = event.seatsLeft <= 0
   const isTeamEvent = Boolean(event.features?.team)
@@ -326,31 +323,27 @@ export const RegisterPage: React.FC = () => {
       {createdRegistration ? (
         <div className="max-w-2xl mx-auto space-y-6 text-center">
           <div className="space-y-2">
-            <Sticker color="mint" className="text-xs" tilt={0}>
+            <Badge variant="success" size="sm">
               {createdRegistration.status === 'waitlisted' ? 'Waitlist Confirmed' : 'Registration Confirmed'}
-            </Sticker>
-            <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-ink tracking-tight">
+            </Badge>
+            <h1 className="font-display text-3xl sm:text-4xl font-semibold text-ink tracking-tight">
               {createdRegistration.status === 'waitlisted' ? 'Added to Waitlist' : "You're in! Pass is ready."}
             </h1>
             <p className="text-sm text-ink-soft max-w-lg mx-auto">
               {createdRegistration.status === 'waitlisted'
                 ? "Your waitlist position is reserved. You'll receive a push notification if a seat is promoted."
-                : 'Your intact entry ticket is issued. Present this QR code to the gate volunteer for check-in scan.'}
+                : 'Your entry ticket is issued. Present this QR code to the gate volunteer for check-in scan.'}
             </p>
           </div>
 
-          {/* Physical Ticket Object: Perforated paper look, scannable QR on ticket face, zero neon (Mandate 1) */}
-          <div className="bg-card border-2 border-ink rounded-[20px] p-6 sm:p-8 text-left shadow-offset relative overflow-hidden">
-            {/* Notched stub bite marks */}
-            <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-paper border border-ink" />
-            <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-paper border border-ink" />
-
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink/15 pb-4">
+          {/* Minimal Digital Pass Ticket Object */}
+          <div className="bg-surface-subtle/40 rounded-3xl p-6 sm:p-8 text-left relative overflow-hidden">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line/20 pb-4">
               <div className="flex items-center gap-2">
-                <Sticker color={clubTheme.token as any} className="text-xs" tilt={0}>
+                <Badge variant="neutral" size="sm">
                   {event.organizerName || event.club?.name || 'Campus Club'}
-                </Sticker>
-                <span className="text-xs font-bold text-ink-soft">
+                </Badge>
+                <span className="text-xs font-medium text-ink-soft">
                   {isTeamEvent ? `Team: ${teamName}` : 'Individual Entry'}
                 </span>
               </div>
@@ -440,15 +433,15 @@ export const RegisterPage: React.FC = () => {
                   <span className="text-xs font-bold uppercase tracking-wider text-ink-soft block">
                     Step {currentStep} of 3
                   </span>
-                  <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-ink tracking-tight">
+                  <h1 className="font-display text-2xl sm:text-3xl font-semibold text-ink tracking-tight">
                     {currentStep === 1 && 'Your particulars'}
                     {currentStep === 2 && (isTeamEvent ? 'Team collective & questionnaire' : 'Session questions')}
                     {currentStep === 3 && 'Review & confirm pass'}
                   </h1>
                 </div>
-                <Sticker color={clubTheme.token as any} className="text-xs" tilt={0}>
+                <Badge variant="neutral" size="sm">
                   {event.organizerName || 'Campus'}
-                </Sticker>
+                </Badge>
               </div>
 
               {/* Step indicator progress bar */}
@@ -798,20 +791,20 @@ export const RegisterPage: React.FC = () => {
 
           {/* Right Column: Sticky Order Summary (380px) (V-06) */}
           <div className="lg:col-span-4">
-            <div className="sticky top-24 bg-card border border-ink/15 rounded-[20px] p-6 space-y-5 shadow-sm">
-              <h3 className="font-display text-lg font-bold text-ink border-b border-ink/10 pb-3">
+            <div className="sticky top-28 bg-surface-subtle/40 rounded-3xl p-6 space-y-5">
+              <h3 className="font-display text-base font-medium text-ink border-b border-line/20 pb-3">
                 Order summary
               </h3>
 
               <div className="flex items-start gap-3.5">
-                <div className="w-16 h-16 rounded-[12px] bg-paper-2 border border-ink/15 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                  <Icon name="Ticket" size={28} className="text-cobalt" />
+                <div className="w-14 h-14 rounded-xl bg-surface overflow-hidden flex-shrink-0 flex items-center justify-center">
+                  <Icon name="Ticket" size={24} className="text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <Sticker color={clubTheme.token as any} className="text-[10px] mb-1" tilt={0}>
+                  <Badge variant="neutral" size="sm" className="text-[10px] mb-1">
                     {event.organizerName || 'Campus Club'}
-                  </Sticker>
-                  <h4 className="font-bold text-sm text-ink line-clamp-2 leading-tight">{event.title}</h4>
+                  </Badge>
+                  <h4 className="font-medium text-sm text-ink line-clamp-2 leading-tight">{event.title}</h4>
                 </div>
               </div>
 

@@ -1,4 +1,4 @@
-// Hallmark macrostructure: PublicShell
+// Hallmark macrostructure: PublicShell / Option B Seamless Architecture
 import React, { useState } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { House, Compass, Users, Ticket, User } from '@/design-system/Icon'
@@ -16,42 +16,40 @@ export const PublicShell: React.FC = () => {
   const location = useLocation()
   const { isAuthenticated } = useAuth()
 
-  const isLanding = location.pathname === '/'
-
   const mobileTabs = [
-    { label: 'Home', path: '/', icon: <House size={20} weight="bold" /> },
-    { label: 'Explore', path: '/explore', icon: <Compass size={20} weight="bold" /> },
-    { label: 'Clubs', path: '/clubs', icon: <Users size={20} weight="bold" /> },
-    { label: 'Tickets', path: '/attendee/dashboard', icon: <Ticket size={20} weight="bold" /> },
+    { label: 'Home', path: '/', icon: <House size={18} weight="bold" /> },
+    { label: 'Explore', path: '/explore', icon: <Compass size={18} weight="bold" /> },
+    { label: 'Clubs', path: '/clubs', icon: <Users size={18} weight="bold" /> },
+    { label: 'Tickets', path: '/attendee/dashboard', icon: <Ticket size={18} weight="bold" /> },
     {
       label: isAuthenticated ? 'Profile' : 'Sign in',
       path: isAuthenticated ? '/attendee/dashboard' : '/login',
-      icon: <User size={20} weight="bold" />,
+      icon: <User size={18} weight="bold" />,
     },
   ]
 
   return (
-    <div className="min-h-screen bg-paper text-ink flex flex-col font-sans">
-      {/* Offline Status Detector (F-13) */}
+    <div className="min-h-screen bg-[var(--color-paper)] text-[var(--color-ink)] flex flex-col font-sans selection:bg-accent/20 selection:text-accent">
+      {/* Offline Status Detector */}
       <OfflineBanner />
 
-      {/* Campus Funk Public Header */}
+      {/* Modern-Minimal Floating Header */}
       <PublicHeader onSearchOpen={() => setIsSearchOpen(true)} />
 
-      {/* Main Content Area */}
-      <main className={cn('flex-1 pb-16 lg:pb-0', !isLanding && 'pt-16')}>
+      {/* Main Content Area: generous breathing room for floating pill */}
+      <main className="flex-1 pt-20 sm:pt-24 pb-16 lg:pb-0">
         <ErrorBoundary>
           <Outlet />
         </ErrorBoundary>
       </main>
 
-      {/* Useful Links & Giant Wordmark Footer (V-05) */}
+      {/* Minimal Inline Footer */}
       <PublicFooter />
 
       {/* Mobile Bottom Navigation Bar */}
       <nav
         aria-label="Mobile Bottom Navigation"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t border-ink/10 px-2 py-1.5 flex items-center justify-around select-none shadow-[0_-4px_12px_rgba(21,17,48,0.06)]"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--color-paper)]/90 backdrop-blur-xl border-t border-[var(--color-line)] px-2 py-1.5 flex items-center justify-around select-none shadow-sm"
       >
         {mobileTabs.map((tab) => {
           const isActive =
@@ -65,12 +63,12 @@ export const PublicShell: React.FC = () => {
               className={cn(
                 'flex flex-col items-center justify-center py-1 px-3 transition-colors',
                 isActive
-                  ? 'text-cobalt font-bold'
+                  ? 'text-accent font-semibold'
                   : 'text-ink-soft hover:text-ink'
               )}
             >
               {tab.icon}
-              <span className="text-xs mt-0.5 tracking-tight">{tab.label}</span>
+              <span className="text-[11px] mt-0.5 tracking-tight font-sans">{tab.label}</span>
             </Link>
           )
         })}

@@ -14,10 +14,9 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 /**
- * Campus Funk Button Primitive (Section 6.1 Specification).
- * - Primary: Solid Ink (#151130), Paper text, pill shape. Hover turns Cobalt (#0047FF) with 2px lift and hard offset shadow.
- * - Secondary: Card (#FFFDF8) fill with 1.5px ink border, matching hover physics.
- * - Admin: Crisp Lime (#D4F25A) action with dark ink text.
+ * Modern-Minimal Button Primitive.
+ * Precision, restraint, and subtle micro-elevation.
+ * Zero cartoon offset shadows, zero chunky comic strokes.
  */
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
@@ -39,74 +38,71 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     // Sizing scale
     const sizeClasses = {
-      hero: 'h-14 px-8 text-base font-bold',
-      default: 'h-11 px-6 text-sm font-semibold',
-      compact: 'h-9 px-4 text-xs font-semibold',
-      admin: 'h-9 px-3.5 text-xs font-semibold',
-      lg: 'h-14 px-8 text-base font-bold',
-      md: 'h-11 px-6 text-sm font-semibold',
-      sm: 'h-9 px-4 text-xs font-semibold',
-      dense: 'h-8 px-3 text-xs font-medium',
-    }[size] || 'h-11 px-6 text-sm font-semibold'
+      hero: 'h-12 px-7 text-base font-medium',
+      default: 'h-10 px-5 text-sm font-medium',
+      compact: 'h-8 px-3.5 text-xs font-medium',
+      admin: 'h-8 px-3 text-xs font-medium',
+      lg: 'h-12 px-7 text-base font-medium',
+      md: 'h-10 px-5 text-sm font-medium',
+      sm: 'h-8 px-3.5 text-xs font-medium',
+      dense: 'h-7 px-2.5 text-xs font-medium',
+    }[size] || 'h-10 px-5 text-sm font-medium'
 
     // Variant styling
     const getVariantClasses = () => {
       if (surface === 'admin' || variant === 'admin') {
         if (variant === 'primary' || variant === 'admin') {
-          return 'bg-lime text-ink font-bold border-none hover:bg-lime/90 hover:-translate-y-0.5 hover:shadow-[2.5px_2.5px_0_#D4F25A] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none'
+          return 'bg-accent text-white font-medium border-0 hover:bg-accent-hover transition-colors'
         }
         if (variant === 'secondary') {
-          return 'bg-card text-ink border border-line hover:bg-paper-2 hover:-translate-y-0.5 active:translate-x-[1px] active:translate-y-[1px]'
+          return 'bg-card text-ink border border-line hover:bg-surface-subtle transition-colors'
         }
         if (variant === 'danger') {
-          return 'bg-red-600 text-white hover:bg-red-700 active:translate-y-0.5'
+          return 'bg-red-600 text-white hover:bg-red-700 transition-colors'
         }
-        return 'bg-transparent text-paper hover:text-white hover:underline'
+        return 'bg-transparent text-ink-soft hover:text-ink transition-colors'
       }
 
       // Public Surface Variants
       switch (variant) {
         case 'primary':
-          return 'bg-ink text-paper border-none hover:bg-cobalt hover:-translate-y-0.5 hover:shadow-offset active:translate-x-[1px] active:translate-y-[1px] active:shadow-none'
+          return 'bg-ink text-paper border-0 hover:bg-accent hover:text-white transition-colors'
         case 'secondary':
-          return 'bg-card text-ink border-[1.5px] border-ink hover:bg-paper-2 hover:-translate-y-0.5 hover:shadow-offset active:translate-x-[1px] active:translate-y-[1px] active:shadow-none'
-        case 'danger':
-          return 'bg-red-600 text-white border-none hover:bg-red-700 hover:-translate-y-0.5 hover:shadow-offset active:translate-x-[1px] active:translate-y-[1px]'
-        case 'ghost':
-          return 'bg-transparent text-ink border-none hover:bg-paper-2 active:bg-paper-2'
+          return 'bg-surface-subtle text-ink border border-line hover:border-accent hover:text-accent transition-colors'
         case 'tertiary':
+        case 'ghost':
+          return 'bg-transparent text-ink-soft hover:text-ink hover:bg-surface-subtle transition-colors'
+        case 'danger':
+          return 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white transition-colors'
         default:
-          return 'bg-transparent text-ink border-none hover:text-cobalt hover:underline p-0 h-auto'
+          return 'bg-ink text-paper border-0 hover:bg-accent hover:text-white transition-colors'
       }
     }
-
-    const isDisabled = disabled || loading
 
     return (
       <button
         ref={ref}
-        disabled={isDisabled}
+        disabled={disabled || loading}
         className={cn(
-          'inline-flex items-center justify-center gap-2 select-none transition-[transform,background-color,border-color,color,box-shadow] duration-150 rounded-full font-sans cursor-pointer',
-          fullWidth ? 'w-full' : 'w-auto',
+          'inline-flex items-center justify-center gap-2 rounded-full font-sans tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none transition-transform duration-150 active:scale-[0.98]',
+          fullWidth && 'w-full',
           sizeClasses,
           getVariantClasses(),
-          isDisabled && 'opacity-50 cursor-not-allowed pointer-events-none hover:translate-y-0 hover:shadow-none',
           className
         )}
         {...props}
       >
         {loading ? (
-          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+          <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
         ) : (
-          icon
+          icon && <span className="flex-shrink-0">{icon}</span>
         )}
         <span>{children}</span>
         {arrow && !loading && (
           <ArrowRight
-            size={16}
+            size={size === 'hero' || size === 'lg' ? 16 : 14}
             weight="bold"
-            className="transition-transform group-hover:translate-x-1"
+            className="transition-transform duration-150 group-hover:translate-x-0.5"
           />
         )}
       </button>

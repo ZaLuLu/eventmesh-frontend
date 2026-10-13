@@ -1,5 +1,3 @@
-@import '@fontsource-variable/bricolage-grotesque';
-@import '@fontsource/instrument-serif/400-italic.css';
 @import '@fontsource/jetbrains-mono/400.css';
 @import '@fontsource/jetbrains-mono/600.css';
 
@@ -16,76 +14,84 @@
 @tailwind utilities;
 
 /* ==========================================================================
-   EVENTMESH v2 — "CAMPUS FUNK" DESIGN TOKENS & SYSTEM BASELINE
-   Identity: Warm Tactile Paper + Electric Cobalt + Bold Collegiate Funk
+   EVENTMESH — HALLMARK MODERN-MINIMAL DESIGN TOKENS
+   Identity: Seamless Borderless Architecture · Iris Obsidian Palette
+   Genre: modern-minimal · Theme: custom-iris-obsidian
    Floored by Hallmark 57 Anti-Slop Gates
    ========================================================================== */
 
 :root {
-  /* Public Paper & Ink Tokens */
-  --paper: #F6F1E7;
-  --paper-2: #EFE8D9;
-  --card: #FFFDF8;
-  --ink: #151130;
-  --ink-soft: #4A4668;
-  --ink-muted: #6B6885;
-  --line: #E2DBD0;
+  /* Alabaster Iris Light Canvas (oklch 295° tint) */
+  --paper: #FAF9FC;
+  --paper-2: #F3F1F8;
+  --card: #FEFEFF;
+  --surface-subtle: #F3F1F8;
+  --surface-float: #FEFEFF;
 
-  /* Accent Mappings */
-  --cobalt: #0047FF;
-  --cobalt-hover: #0037CC;
-  --lavender: #C8BEFA;
+  /* Amethyst Ink Scale */
+  --ink: #14111D;
+  --ink-soft: #6B6578;
+  --ink-muted: #9D96AC;
+  --ink-faint: #B5AFC0;
+  --line: #E8E5EE;
 
-  /* Sticker Palette */
-  --pink: #FF5C8A;
-  --mint: #7FD8B8;
-  --mustard: #F2B84B;
-  --tangerine: #FF6B35;
-  --sky: #8EC5FF;
-  --lime: #D4F25A;
+  /* Signal Accents: Royal Iris (<=3% viewport presence) */
+  --accent: #6366F1;
+  --accent-hover: #4F46E5;
+  --accent-soft: rgba(99, 102, 241, 0.08);
+  --cobalt: #6366F1;
+  --cobalt-hover: #4F46E5;
+  --lavender: #E0E2FD;
 
-  /* Status Colors */
-  --success: #16A34A;
-  --warning: #D97706;
-  --danger: #DC2626;
+  /* Status Signals */
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
 
-  /* Compatibility Semantic Mappings */
+  /* Semantic Compatibility Variables */
   --bg: var(--paper);
   --surface: var(--card);
   --surface-raised: var(--paper-2);
   --text: var(--ink);
   --text-2: var(--ink-soft);
   --text-3: var(--ink-muted);
-  --accent: var(--cobalt);
-  --accent-hover: var(--cobalt-hover);
-  --admin-accent: var(--lime);
-
-  /* Club Default */
-  --club: var(--cobalt);
+  --club: var(--accent);
+  --admin-accent: var(--accent);
 }
 
 /* ==========================================================================
-   ADMIN PALETTE SCOPE (Dedicated dark studio world)
+   OBSIDIAN AMETHYST DARK & ADMIN PALETTE
    ========================================================================== */
+.dark,
 .admin-scope,
 [data-theme="admin"] {
-  --paper: #0F0D1F;
-  --paper-2: #141126;
-  --card: #181530;
-  --bg: #0F0D1F;
-  --surface: #181530;
-  --surface-raised: #201D3D;
-  --ink: #F6F1E7;
-  --ink-soft: #C8BEFA;
-  --ink-muted: #8D87B0;
-  --text: #F6F1E7;
-  --text-2: #C8BEFA;
-  --text-3: #8D87B0;
-  --line: #2D2852;
-  --accent: #D4F25A;
-  --accent-hover: #BFDE47;
-  --admin-accent: #D4F25A;
-  --sidebar: #120F24;
+  --paper: #0D0B12;
+  --paper-2: #16131F;
+  --card: #16131F;
+  --surface-subtle: #16131F;
+  --surface-float: #201B2E;
+
+  --ink: #F4F2F8;
+  --ink-soft: #9D96AC;
+  --ink-muted: #6B6578;
+  --ink-faint: #443E54;
+  --line: #292338;
+
+  --accent: #818CF8;
+  --accent-hover: #A5B4FC;
+  --accent-soft: rgba(129, 140, 248, 0.12);
+  --cobalt: #818CF8;
+  --cobalt-hover: #A5B4FC;
+  --lavender: #201B2E;
+
+  --bg: var(--paper);
+  --surface: var(--card);
+  --surface-raised: var(--paper-2);
+  --text: var(--ink);
+  --text-2: var(--ink-soft);
+  --text-3: var(--ink-muted);
+  --admin-accent: var(--accent);
+  --sidebar: #0D0B12;
 }
 
 /* Document Base (Gate 34: overflow-x: clip on html and body) */
@@ -107,99 +113,111 @@ body {
   overflow-x: clip;
 }
 
-/* Navigation Offset Token (Gate 56: Secondary sticky docking) */
-:root {
-  --banner-height: 4rem;
-}
-
 /* Typography Floors & Display Rules (Gate 38a: Display & Accent always roman) */
-h1, h2, h3, .font-display {
-  font-family: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', system-ui, sans-serif;
+h1, h2, h3, h4, h5, h6, .font-display {
+  font-family: 'Geist', system-ui, sans-serif;
   font-style: normal;
+  letter-spacing: -0.025em;
 }
 
-.font-accent {
-  font-family: 'Instrument Serif', serif;
-  font-style: normal;
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-feature-settings: 'tnum' 1;
 }
 
-/* Focus Visible: 2px Cobalt ring with 2px paper offset (Gate 39) */
+/* Focus Visible: 2px Iris ring with 2px offset (Gate 39) */
 :focus-visible {
-  outline: 2px solid var(--cobalt);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-.admin-scope :focus-visible,
-[data-theme="admin"] :focus-visible {
-  outline-color: var(--lime);
-}
-
 /* ==========================================================================
-   CAMPUS FUNK BUTTON UTILITIES (Section 6.1)
+   MODERN-MINIMAL BUTTON UTILITIES (Option B: Seamless & Precise)
    ========================================================================== */
-.btn-funk-primary {
+.btn-minimal-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
   background-color: var(--ink);
   color: var(--paper);
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 0.875rem;
   border: none;
   cursor: pointer;
-  transition: transform 150ms cubic-bezier(0.2, 0.8, 0.2, 1),
-              background-color 150ms cubic-bezier(0.2, 0.8, 0.2, 1),
-              box-shadow 150ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: background-color 150ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              transform 150ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              opacity 150ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.btn-funk-primary:hover {
-  background-color: var(--cobalt);
-  transform: translateY(-2px);
-  box-shadow: 3px 3px 0 var(--ink);
+.btn-minimal-primary:hover {
+  background-color: var(--accent);
+  color: #FFFFFF;
+  transform: translateY(-1px);
 }
 
-.btn-funk-primary:active {
-  transform: translate(1px, 1px);
-  box-shadow: none;
+.btn-minimal-primary:active {
+  transform: translateY(0);
 }
 
-.btn-funk-secondary {
+.btn-minimal-secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
-  background-color: var(--card);
+  background-color: var(--surface-subtle);
   color: var(--ink);
-  font-weight: 600;
-  border: 1.5px solid var(--ink);
+  font-weight: 500;
+  font-size: 0.875rem;
+  border: 1px solid var(--line);
   cursor: pointer;
-  transition: transform 150ms cubic-bezier(0.2, 0.8, 0.2, 1),
-              background-color 150ms cubic-bezier(0.2, 0.8, 0.2, 1),
-              box-shadow 150ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: background-color 150ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 150ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              transform 150ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.btn-funk-secondary:hover {
-  background-color: var(--paper-2);
-  transform: translateY(-2px);
-  box-shadow: 3px 3px 0 var(--ink);
+.btn-minimal-secondary:hover {
+  background-color: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
 }
 
-.btn-funk-secondary:active {
-  transform: translate(1px, 1px);
-  box-shadow: none;
+.btn-minimal-secondary:active {
+  transform: translateY(0);
 }
 
-/* Hard Offset Shadows (Anti-Slop: Zero Gaussian Blur) */
+/* Legacy aliases mapped cleanly to minimal */
+.btn-funk-primary {
+  @apply btn-minimal-primary;
+}
+
+.btn-funk-secondary {
+  @apply btn-minimal-secondary;
+}
+
+/* Clean borderless hover surface */
+.hover-surface-lift {
+  transition: background-color 200ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.hover-surface-lift:hover {
+  background-color: var(--surface-subtle);
+  transform: translateY(-1px);
+}
+
+/* Subtle ambient elevation (Gate 47: No cartoon offset shadows) */
+.shadow-soft {
+  box-shadow: 0 4px 20px -2px rgba(20, 17, 29, 0.05);
+}
+
 .shadow-offset {
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: 0 2px 8px -1px rgba(20, 17, 29, 0.06);
 }
 
 .shadow-offset-lg {
-  box-shadow: 5px 5px 0 var(--ink);
-}
-
-.shadow-offset-lime {
-  box-shadow: 3px 3px 0 var(--lime);
+  box-shadow: 0 8px 30px -4px rgba(20, 17, 29, 0.08);
 }
 
 /* Accessibility: Respect prefers-reduced-motion across the entire app */

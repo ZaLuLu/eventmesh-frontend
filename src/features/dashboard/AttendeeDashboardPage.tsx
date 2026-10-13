@@ -1,4 +1,3 @@
-// Hallmark macrostructure: Dashboard-Bento
 import React, { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { jsPDF } from 'jspdf'
@@ -21,7 +20,7 @@ import { useMyCertificates } from '@/hooks/useCertificates'
 import { useClubs } from '@/hooks/useClubs'
 import { useAuth } from '@/hooks/useAuth'
 import { PageShell } from '@/design-system/layout/PageShell'
-import { Sticker } from '@/design-system/primitives/Sticker'
+import { Badge } from '@/design-system/primitives/Badge'
 import { Button } from '@/design-system/primitives/Button'
 import { formatDate } from '@/lib/dates'
 import { Registration, Certificate } from '@/api'
@@ -202,13 +201,13 @@ export const AttendeeDashboardPage: React.FC = () => {
   if (!isAuthenticated) {
     return (
       <PageShell className="py-16">
-        <div className="max-w-md mx-auto bg-card border-2 border-ink rounded-[16px] p-8 text-center space-y-4 shadow-[4px_4px_0_#151130]">
-          <h2 className="font-display font-extrabold text-2xl text-ink">Sign in required</h2>
+        <div className="max-w-md mx-auto bg-surface-subtle/40 rounded-3xl p-8 text-center space-y-4">
+          <h2 className="font-display font-semibold text-2xl text-ink tracking-tight">Sign in required</h2>
           <p className="text-sm text-ink-soft">
             Sign in to access your digital entry passes, official credentials, and followed clubs.
           </p>
           <Link to="/login" className="inline-block pt-2">
-            <button type="button" className="btn-funk-primary px-6 py-2.5">
+            <button type="button" className="btn-minimal-primary px-6 py-2.5">
               Sign in with Campus SSO
             </button>
           </Link>
@@ -223,48 +222,48 @@ export const AttendeeDashboardPage: React.FC = () => {
   return (
     <PageShell className="py-6 sm:py-8 space-y-8">
       {/* ========================================================================= */}
-      {/* PROFILE BENTO HEADER (Mandate 2: 3D Lanyard beside Student Info)          */}
+      {/* PROFILE BENTO HEADER                                                      */}
       {/* ========================================================================= */}
-      <section className="bg-card border-2 border-ink rounded-[20px] p-6 sm:p-8 shadow-[4px_4px_0_#151130]">
+      <section className="bg-surface-subtle/30 rounded-3xl p-6 sm:p-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           {/* Left Column (7 cols): Academic Profile Bento */}
           <div className="lg:col-span-7 space-y-6">
-            {/* Header Sticker Chips */}
+            {/* Header Chips */}
             <div className="flex flex-wrap items-center gap-2">
-              <Sticker color="ink" size="sm" className="font-mono text-xs">
-                CAMPUS IDENTITY
-              </Sticker>
-              <Sticker color="mint" size="sm" className="font-mono text-xs font-bold">
-                VERIFIED PASSHOLDER ✓
-              </Sticker>
+              <Badge variant="neutral" size="sm">
+                Campus Identity
+              </Badge>
+              <Badge variant="iris" size="sm">
+                Verified Passholder
+              </Badge>
             </div>
 
             {/* Student Name & Email */}
             <div>
-              <h1 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl text-ink tracking-tight leading-tight">
+              <h1 className="font-display font-semibold text-3xl sm:text-4xl text-ink tracking-tight leading-tight">
                 {studentData.name}
               </h1>
-              <p className="font-mono text-sm text-ink-soft mt-1">
+              <p className="font-mono text-xs text-ink-soft mt-1">
                 {studentData.email}
               </p>
             </div>
 
             {/* Academic Info Bento Tiles */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
               {/* Registration Number Tile with Copy */}
-              <div className="p-4 rounded-[12px] bg-paper border-1.5 border-ink/20 flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-surface/80 flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-mono uppercase tracking-wider text-ink-soft font-semibold">
-                    REGISTRATION NUMBER
+                  <p className="text-[10px] font-mono uppercase tracking-wider text-ink-soft/70">
+                    Registration Number
                   </p>
-                  <p className="font-mono font-black text-lg text-ink mt-0.5">
+                  <p className="font-mono font-medium text-base text-ink mt-0.5">
                     {studentData.registrationNumber}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={handleCopyRegNo}
-                  className="p-2 rounded-md border border-ink/20 hover:border-ink hover:bg-card text-ink transition-colors"
+                  className="p-1.5 rounded-md hover:bg-surface-subtle text-ink-soft hover:text-ink transition-colors"
                   title="Copy registration number"
                   aria-label="Copy registration number"
                 >
@@ -277,11 +276,11 @@ export const AttendeeDashboardPage: React.FC = () => {
               </div>
 
               {/* Program & Semester Tile */}
-              <div className="p-4 rounded-[12px] bg-paper border-1.5 border-ink/20">
-                <p className="text-[10px] font-mono uppercase tracking-wider text-ink-soft font-semibold">
-                  DEGREE & BRANCH
+              <div className="p-4 rounded-xl bg-surface/80">
+                <p className="text-[10px] font-mono uppercase tracking-wider text-ink-soft/70">
+                  Degree & Branch
                 </p>
-                <p className="font-bold text-ink text-sm truncate mt-0.5">
+                <p className="font-medium text-ink text-sm truncate mt-0.5">
                   {studentData.degreeBranch}
                 </p>
                 <p className="font-mono text-[11px] text-ink-soft mt-0.5">
@@ -292,32 +291,32 @@ export const AttendeeDashboardPage: React.FC = () => {
 
             {/* Metric Summary Counters */}
             <div className="flex flex-wrap items-center gap-3 pt-1">
-              <div className="px-4 py-2.5 rounded-[12px] bg-paper border-1.5 border-ink/20 text-center min-w-[100px] flex-1 sm:flex-none">
-                <p className="font-display font-black text-2xl text-ink">{activePasses.length}</p>
-                <p className="text-xs font-mono text-ink-soft">Active Passes</p>
+              <div className="px-4 py-2.5 rounded-xl bg-surface/80 text-center min-w-[100px] flex-1 sm:flex-none">
+                <p className="font-display font-medium text-2xl text-ink font-mono">{activePasses.length}</p>
+                <p className="text-[11px] text-ink-soft">Active Passes</p>
               </div>
-              <div className="px-4 py-2.5 rounded-[12px] bg-paper border-1.5 border-ink/20 text-center min-w-[100px] flex-1 sm:flex-none">
-                <p className="font-display font-black text-2xl text-emerald-700">
+              <div className="px-4 py-2.5 rounded-xl bg-surface/80 text-center min-w-[100px] flex-1 sm:flex-none">
+                <p className="font-display font-medium text-2xl text-emerald-600 dark:text-emerald-400 font-mono">
                   {attendedPasses.length}
                 </p>
-                <p className="text-xs font-mono text-ink-soft">Admitted at Gate</p>
+                <p className="text-[11px] text-ink-soft">Admitted at Gate</p>
               </div>
-              <div className="px-4 py-2.5 rounded-[12px] bg-paper border-1.5 border-ink/20 text-center min-w-[100px] flex-1 sm:flex-none">
-                <p className="font-display font-black text-2xl text-ink">{certificates.length}</p>
-                <p className="text-xs font-mono text-ink-soft">Credentials</p>
+              <div className="px-4 py-2.5 rounded-xl bg-surface/80 text-center min-w-[100px] flex-1 sm:flex-none">
+                <p className="font-display font-medium text-2xl text-ink font-mono">{certificates.length}</p>
+                <p className="text-[11px] text-ink-soft">Credentials</p>
               </div>
             </div>
           </div>
 
-          {/* Right Column (5 cols): 3D Physics Lanyard ID Badge (Mandate 2 & F-15) */}
+          {/* Right Column (5 cols): 3D Physics Lanyard ID Badge */}
           <div className="lg:col-span-5 flex flex-col items-center">
-            {/* 3D vs 2D View Switcher Controls (F-15 Accessibility) */}
+            {/* 3D vs 2D View Switcher Controls */}
             <div className="w-full flex items-center justify-between pb-3 px-2">
-              <span className="text-[11px] font-mono font-bold uppercase text-ink-soft tracking-wider flex items-center gap-1.5">
-                <IdentificationCard className="w-4 h-4 text-cobalt" weight="bold" />
+              <span className="text-[11px] font-mono font-medium uppercase text-ink-soft/70 tracking-wider flex items-center gap-1.5">
+                <IdentificationCard className="w-4 h-4 text-primary" weight="bold" />
                 OFFICIAL ID BADGE
               </span>
-              <div className="inline-flex rounded-full bg-paper p-1 border border-ink/20 text-xs font-mono">
+              <div className="inline-flex rounded-full bg-surface p-1 text-xs font-mono">
                 <button
                   type="button"
                   onClick={() => setBadgeViewMode('3d')}
@@ -404,19 +403,21 @@ export const AttendeeDashboardPage: React.FC = () => {
       {/* ========================================================================= */}
       <section className="space-y-6">
         {/* Tab Header Controls */}
-        <div className="flex flex-wrap items-center gap-2 border-b-2 border-ink pb-3">
+        <div className="flex flex-wrap items-center gap-2 border-b border-line/30 pb-3">
           <button
             type="button"
             onClick={() => setActiveTab('passes')}
-            className={`px-4 py-2 rounded-full font-display font-bold text-sm transition-colors flex items-center gap-2 ${
+            className={`px-4 py-1.5 rounded-full font-medium text-xs transition-all flex items-center gap-2 ${
               activeTab === 'passes'
-                ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
-                : 'bg-paper text-ink hover:bg-card'
+                ? 'bg-ink text-surface shadow-xs'
+                : 'text-ink-soft hover:text-ink hover:bg-surface-subtle/60'
             }`}
           >
-            <Ticket className="w-4 h-4" weight="bold" />
+            <Ticket className="w-3.5 h-3.5" weight="bold" />
             <span>My Tickets</span>
-            <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-xs font-mono">
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+              activeTab === 'passes' ? 'bg-surface/20 text-surface' : 'bg-surface-subtle text-ink-soft'
+            }`}>
               {registrations.length}
             </span>
           </button>
@@ -424,15 +425,17 @@ export const AttendeeDashboardPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('certificates')}
-            className={`px-4 py-2 rounded-full font-display font-bold text-sm transition-colors flex items-center gap-2 ${
+            className={`px-4 py-1.5 rounded-full font-medium text-xs transition-all flex items-center gap-2 ${
               activeTab === 'certificates'
-                ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
-                : 'bg-paper text-ink hover:bg-card'
+                ? 'bg-ink text-surface shadow-xs'
+                : 'text-ink-soft hover:text-ink hover:bg-surface-subtle/60'
             }`}
           >
-            <CertificateIcon className="w-4 h-4" weight="bold" />
+            <CertificateIcon className="w-3.5 h-3.5" weight="bold" />
             <span>Certificates</span>
-            <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-xs font-mono">
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+              activeTab === 'certificates' ? 'bg-surface/20 text-surface' : 'bg-surface-subtle text-ink-soft'
+            }`}>
               {certificates.length}
             </span>
           </button>
@@ -440,15 +443,17 @@ export const AttendeeDashboardPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('clubs')}
-            className={`px-4 py-2 rounded-full font-display font-bold text-sm transition-colors flex items-center gap-2 ${
+            className={`px-4 py-1.5 rounded-full font-medium text-xs transition-all flex items-center gap-2 ${
               activeTab === 'clubs'
-                ? 'bg-ink text-paper shadow-[2px_2px_0_#151130]'
-                : 'bg-paper text-ink hover:bg-card'
+                ? 'bg-ink text-surface shadow-xs'
+                : 'text-ink-soft hover:text-ink hover:bg-surface-subtle/60'
             }`}
           >
-            <GraduationCap className="w-4 h-4" weight="bold" />
+            <GraduationCap className="w-3.5 h-3.5" weight="bold" />
             <span>Followed Clubs</span>
-            <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-xs font-mono">
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+              activeTab === 'clubs' ? 'bg-surface/20 text-surface' : 'bg-surface-subtle text-ink-soft'
+            }`}>
               {followedClubs.length}
             </span>
           </button>
@@ -458,16 +463,16 @@ export const AttendeeDashboardPage: React.FC = () => {
         {activeTab === 'passes' && (
           <div>
             {regsLoading ? (
-              <p className="text-sm font-mono text-ink-soft">Loading tickets...</p>
+              <p className="text-xs font-mono text-ink-soft">Loading tickets...</p>
             ) : registrations.length === 0 ? (
-              <div className="bg-card border-2 border-ink rounded-[16px] p-8 text-center space-y-3 shadow-[4px_4px_0_#151130]">
-                <h3 className="font-display font-bold text-xl text-ink">No active passes yet</h3>
+              <div className="bg-surface-subtle/30 rounded-3xl p-10 text-center space-y-3">
+                <h3 className="font-display font-medium text-lg text-ink">No active passes yet</h3>
                 <p className="text-sm text-ink-soft max-w-sm mx-auto">
                   You haven't reserved seats for upcoming events. Browse campus collectives to grab a pass.
                 </p>
                 <div className="pt-2">
                   <Link to="/explore">
-                    <button type="button" className="btn-funk-primary px-5 py-2 text-sm">
+                    <button type="button" className="btn-minimal-primary px-5 py-2 text-xs">
                       Explore events
                     </button>
                   </Link>
@@ -495,10 +500,10 @@ export const AttendeeDashboardPage: React.FC = () => {
         {activeTab === 'certificates' && (
           <div>
             {certsLoading ? (
-              <p className="text-sm font-mono text-ink-soft">Loading certificates...</p>
+              <p className="text-xs font-mono text-ink-soft">Loading certificates...</p>
             ) : certificates.length === 0 ? (
-              <div className="bg-card border-2 border-ink rounded-[16px] p-8 text-center space-y-3 shadow-[4px_4px_0_#151130]">
-                <h3 className="font-display font-bold text-xl text-ink">No credentials issued yet</h3>
+              <div className="bg-surface-subtle/30 rounded-3xl p-10 text-center space-y-3">
+                <h3 className="font-display font-medium text-lg text-ink">No credentials issued yet</h3>
                 <p className="text-sm text-ink-soft max-w-sm mx-auto">
                   Certificates are automatically minted upon verified attendance at hackathons and workshops.
                 </p>
@@ -508,20 +513,20 @@ export const AttendeeDashboardPage: React.FC = () => {
                 {certificates.map((cert) => (
                   <div
                     key={cert.id}
-                    className="bg-card border-2 border-ink rounded-[16px] p-5 space-y-4 shadow-[3px_3px_0_#151130]"
+                    className="bg-surface-subtle/30 hover:bg-surface-subtle/60 rounded-2xl p-5 space-y-4 transition-colors"
                   >
-                    <div className="flex items-center justify-between border-b border-ink/15 pb-2.5">
+                    <div className="flex items-center justify-between border-b border-line/20 pb-3">
                       <div className="flex items-center gap-2">
-                        <CertificateIcon className="h-5 w-5 text-cobalt" weight="bold" />
-                        <span className="font-display font-bold text-sm text-ink">Credential</span>
+                        <CertificateIcon className="h-4 w-4 text-primary" weight="bold" />
+                        <span className="font-medium text-xs text-ink uppercase tracking-wider">Credential</span>
                       </div>
-                      <span className="font-mono text-xs text-ink-soft font-semibold">
+                      <span className="font-mono text-xs text-ink-soft">
                         {cert.certificateId}
                       </span>
                     </div>
 
                     <div>
-                      <h4 className="font-display font-bold text-base text-ink leading-snug">
+                      <h4 className="font-display font-medium text-base text-ink leading-snug">
                         {cert.eventTitle}
                       </h4>
                       <p className="text-xs text-ink-soft mt-1">
@@ -529,17 +534,17 @@ export const AttendeeDashboardPage: React.FC = () => {
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2 pt-2 border-t border-ink/15">
+                    <div className="flex items-center gap-2 pt-2 border-t border-line/20">
                       <button
                         type="button"
-                        className="btn-funk-primary flex-1 py-1.5 text-xs flex items-center justify-center gap-1.5"
+                        className="btn-minimal-primary flex-1 py-1.5 text-xs flex items-center justify-center gap-1.5"
                         onClick={() => downloadCertificatePDF(cert)}
                       >
-                        <DownloadSimple className="h-4 w-4" weight="bold" />
+                        <DownloadSimple className="h-3.5 w-3.5" weight="bold" />
                         <span>Download PDF</span>
                       </button>
                       <Link to={`/verify/${cert.certificateId}`}>
-                        <button type="button" className="btn-funk-secondary text-xs px-3 py-1.5">
+                        <button type="button" className="btn-minimal-secondary text-xs px-3 py-1.5">
                           Verify
                         </button>
                       </Link>
@@ -555,14 +560,14 @@ export const AttendeeDashboardPage: React.FC = () => {
         {activeTab === 'clubs' && (
           <div>
             {followedClubs.length === 0 ? (
-              <div className="bg-card border-2 border-ink rounded-[16px] p-8 text-center space-y-3 shadow-[4px_4px_0_#151130]">
-                <h3 className="font-display font-bold text-xl text-ink">No followed clubs</h3>
+              <div className="bg-surface-subtle/30 rounded-3xl p-10 text-center space-y-3">
+                <h3 className="font-display font-medium text-lg text-ink">No followed clubs</h3>
                 <p className="text-sm text-ink-soft max-w-sm mx-auto">
                   Follow campus collectives to receive immediate updates about their new workshops and flagship gatherings.
                 </p>
                 <div className="pt-2">
                   <Link to="/clubs">
-                    <button type="button" className="btn-funk-primary px-5 py-2 text-sm">
+                    <button type="button" className="btn-minimal-primary px-5 py-2 text-xs">
                       Explore clubs
                     </button>
                   </Link>
@@ -574,20 +579,20 @@ export const AttendeeDashboardPage: React.FC = () => {
                   <Link
                     key={club.id}
                     to={`/clubs/${club.slug}`}
-                    className="flex items-center gap-3 p-4 rounded-[14px] bg-card border-2 border-ink hover:shadow-[3px_3px_0_#151130] transition-[box-shadow,transform]"
+                    className="flex items-center gap-3 p-4 rounded-2xl bg-surface-subtle/30 hover:bg-surface-subtle/60 transition-colors"
                   >
                     <span
-                      className="h-4 w-4 rounded-full border border-ink flex-shrink-0"
-                      style={{ backgroundColor: club.color || '#0047FF' }}
+                      className="h-3.5 w-3.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: club.color || '#6366F1' }}
                       aria-hidden="true"
                     />
                     <div className="min-w-0 flex-1">
-                      <h4 className="font-display font-bold text-sm text-ink truncate">{club.name}</h4>
+                      <h4 className="font-medium text-sm text-ink truncate">{club.name}</h4>
                       <p className="text-xs text-ink-soft truncate">
                         {club.joinMode ? club.joinMode.replace('_', ' ') : 'Campus Collective'}
                       </p>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-ink-soft" />
+                    <ArrowRight className="w-3.5 h-3.5 text-ink-soft" />
                   </Link>
                 ))}
               </div>

@@ -1,4 +1,4 @@
-// Hallmark macrostructure: Catalog-Explore
+// Hallmark macrostructure: Catalog-Explore / Option B Seamless Architecture
 import React, { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useSearchParams, Link } from 'react-router-dom'
@@ -8,7 +8,6 @@ import { Event } from '@/api'
 import { EventTicketCard } from '@/design-system/EventTicketCard'
 import { SectionHeader } from '@/design-system/SectionHeader'
 import { PageShell } from '@/design-system/layout/PageShell'
-import { Sticker } from '@/design-system/primitives/Sticker'
 import { Sheet } from '@/design-system/primitives/Sheet'
 import { EmptyState } from '@/design-system/primitives/EmptyState'
 import { formatDate, formatTime, formatCurrency } from '@/lib/format'
@@ -23,11 +22,12 @@ import {
   CalendarBlank,
   MapPin,
   Ticket,
+  ArrowUpRight,
 } from '@/design-system/Icon'
 import { cn } from '@/lib/utils'
 
 /**
- * Dense Luma-style Event Row for List View (Section 7.3)
+ * Modern-Minimal Dense Row for List View
  */
 const DenseExploreRow: React.FC<{ event: Event }> = ({ event }) => {
   const clubId = event.organizerId || (event as any).clubId || 'club-cp'
@@ -36,66 +36,66 @@ const DenseExploreRow: React.FC<{ event: Event }> = ({ event }) => {
   const isWaitlist = event.seatsLeft === 0 || (event as any).isWaitlist
 
   return (
-    <article className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border-[1.5px] border-ink/15 hover:border-ink hover:shadow-offset transition-[border-color,box-shadow] duration-150 select-none">
+    <article className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-card border border-line hover:border-accent/30 hover:bg-surface-subtle/50 transition-colors select-none">
       {/* Left: Date Stamp & Particulars */}
       <div className="flex items-start sm:items-center gap-4 min-w-0">
-        <div className="w-14 h-14 rounded-xl bg-paper-2 border border-ink/15 flex flex-col items-center justify-center flex-shrink-0 text-center font-mono">
-          <span className="text-xs uppercase font-bold text-cobalt tracking-wider">
+        <div className="w-12 h-12 rounded-xl bg-surface-subtle flex flex-col items-center justify-center flex-shrink-0 text-center font-mono">
+          <span className="text-[10px] uppercase font-bold text-accent tracking-wider">
             {new Date(event.startsAt).toLocaleDateString('en-IN', { month: 'short' })}
           </span>
-          <span className="font-display font-extrabold text-lg text-ink leading-none">
+          <span className="font-sans font-bold text-base text-ink leading-none">
             {new Date(event.startsAt).getDate()}
           </span>
         </div>
 
-        <div className="space-y-1 min-w-0">
+        <div className="space-y-0.5 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span
               className="w-2 h-2 rounded-full flex-shrink-0"
-              style={{ backgroundColor: clubTheme.hex }}
+              style={{ backgroundColor: clubTheme.hex || 'var(--accent)' }}
               aria-hidden="true"
             />
-            <span className="text-xs font-semibold text-ink-soft truncate">
+            <span className="text-xs font-medium text-ink-soft truncate">
               {event.club?.name || event.organizerName || 'Campus Club'}
             </span>
-            <span className="text-xs font-mono text-ink-soft/70">·</span>
-            <span className="text-xs font-mono text-ink-soft/70">
+            <span className="text-xs font-mono text-ink-muted">·</span>
+            <span className="text-xs font-mono text-ink-muted">
               {formatTime(event.startsAt)}
             </span>
           </div>
 
-          <h3 className="font-display font-extrabold text-base sm:text-lg text-ink tracking-tight line-clamp-1 group-hover:text-cobalt transition-colors">
+          <h3 className="font-sans font-semibold text-base text-ink tracking-tight line-clamp-1 group-hover:text-accent transition-colors">
             <Link to={`/events/${event.slug || event.id}`} className="focus:outline-none">
               {event.title}
             </Link>
           </h3>
 
-          <div className="flex items-center gap-1.5 text-xs text-ink-soft">
-            <MapPin size={12} weight="bold" className="text-cobalt flex-shrink-0" />
+          <div className="flex items-center gap-1.5 text-xs text-ink-muted">
+            <MapPin size={12} weight="bold" className="text-accent flex-shrink-0" />
             <span className="truncate">{event.venue?.name || 'Campus Main Auditorium'}</span>
           </div>
         </div>
       </div>
 
       {/* Right: Badges & Action CTA */}
-      <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-ink/10 flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <Sticker color={isFree ? 'mint' : 'mustard'} size="sm">
-            {formatCurrency(event.price)}
-          </Sticker>
-          {isWaitlist && (
-            <Sticker color="tangerine" size="sm">
-              Waitlist
-            </Sticker>
+      <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-line/60 flex-shrink-0">
+        <div className="text-left sm:text-right font-mono text-xs">
+          <span className="font-semibold text-ink">
+            {isFree ? 'Free' : formatCurrency(event.price)}
+          </span>
+          {event.seatsLeft !== undefined && (
+            <p className="text-[11px] text-ink-muted">
+              {event.seatsLeft} left
+            </p>
           )}
         </div>
 
         <Link
           to={`/events/${event.slug || event.id}`}
-          className="btn-funk-primary px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5"
+          className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-ink text-paper hover:bg-accent hover:text-white font-medium text-xs transition-colors"
         >
-          <Ticket size={14} weight="bold" />
-          <span>{isWaitlist ? 'Waitlist' : 'Grab seat'}</span>
+          <span>{isWaitlist ? 'Waitlist' : 'RSVP'}</span>
+          <ArrowUpRight size={12} weight="bold" />
         </Link>
       </div>
     </article>
@@ -184,47 +184,45 @@ export const ExplorePage: React.FC = () => {
   return (
     <PageShell className="py-8 sm:py-12 space-y-8 select-none">
       {/* Header Block: Section Header & Instant Search Box */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-ink/10">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-line/60">
         <SectionHeader
-          title="Explore campus happenings"
-          subtitle="Discover and grab seats for hackathons, technical retreats, and design salons across 9 collectives"
-          badge="Full Catalog"
-          badgeColor="sky"
-          accentWord="happenings"
+          title="Explore Campus Sessions"
+          subtitle="Discover and reserve seats for hackathons, engineering masterclasses, and design retreats."
+          badge="Live Index"
           className="mb-0"
         />
 
         {/* Prominent Instant Search Input */}
-        <div className="relative w-full md:max-w-md">
+        <div className="relative w-full md:max-w-xs">
           <MagnifyingGlass
-            size={18}
+            size={16}
             weight="bold"
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-soft pointer-events-none"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-muted pointer-events-none"
           />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setParam('search', e.target.value)}
-            placeholder="Search by title, club, venue..."
-            className="w-full h-12 pl-11 pr-10 rounded-full bg-card border border-ink/15 focus:border-cobalt focus:ring-1 focus:ring-cobalt focus:outline-none text-sm text-ink placeholder:text-ink-soft/70 shadow-sm transition-colors"
+            placeholder="Search sessions..."
+            className="w-full h-10 pl-9 pr-8 bg-card border border-line rounded-full focus:border-accent focus:outline-none text-xs text-ink placeholder:text-ink-muted transition-colors shadow-sm"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setParam('search', '')}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-ink-soft hover:text-ink"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-ink-muted hover:text-ink"
               aria-label="Clear search"
             >
-              <X size={15} weight="bold" />
+              <X size={13} weight="bold" />
             </button>
           )}
         </div>
       </div>
 
-      {/* Sticky Horizontal Chip & Filter Bar (Replaces legacy left rail, V-08) */}
-      <div className="sticky top-16 z-30 bg-paper/95 backdrop-blur-md py-3 border-y border-ink/10 flex flex-wrap items-center justify-between gap-3">
-        {/* Left: Category Pill Chips */}
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
+      {/* Filter Strip & View Controls */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        {/* Category Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
           {categories.map((cat) => {
             const isSelected = activeCategory === cat.id
             return (
@@ -233,10 +231,10 @@ export const ExplorePage: React.FC = () => {
                 type="button"
                 onClick={() => setParam('category', cat.id)}
                 className={cn(
-                  'px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-[color,background-color,border-color,box-shadow] shadow-sm',
+                  'px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors',
                   isSelected
-                    ? 'bg-ink text-paper shadow-offset'
-                    : 'bg-card text-ink hover:bg-paper-2 border border-ink/15'
+                    ? 'bg-ink text-paper'
+                    : 'bg-card text-ink-soft hover:text-ink hover:bg-surface-subtle border border-line'
                 )}
               >
                 {cat.label}
@@ -245,217 +243,102 @@ export const ExplorePage: React.FC = () => {
           })}
         </div>
 
-        {/* Right: Club Select, Free Only, Sort, View Toggle */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Club Dropdown Filter */}
-          <select
-            value={activeClub}
-            onChange={(e) => setParam('club', e.target.value)}
-            className="h-9 px-3 bg-card border border-ink/20 rounded-full text-xs font-semibold text-ink focus:outline-none focus:border-cobalt transition-colors shadow-sm cursor-pointer"
-            aria-label="Filter by club"
-          >
-            <option value="ALL">All clubs</option>
-            {clubs.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-
-          {/* Free Passes Only Pill */}
+        {/* Right Tools: Free only, Sort, Grid/List view */}
+        <div className="flex items-center gap-2.5 flex-wrap">
           <button
             type="button"
             onClick={() => setParam('free', freeOnly ? '' : 'true')}
             className={cn(
-              'h-9 px-3 rounded-full border text-xs font-semibold flex items-center gap-1.5 transition-[color,background-color,border-color,box-shadow] shadow-sm',
+              'h-8 px-3 rounded-full text-xs font-medium flex items-center gap-1.5 transition-colors border',
               freeOnly
-                ? 'bg-mint text-ink border-ink shadow-offset'
-                : 'bg-card text-ink border-ink/20 hover:bg-paper-2'
+                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                : 'bg-card text-ink border-line hover:bg-surface-subtle'
             )}
-            aria-pressed={freeOnly}
           >
             <span>Free only</span>
-            {freeOnly && <Check size={12} weight="bold" />}
+            {freeOnly && <Check size={11} weight="bold" />}
           </button>
 
-          {/* Sort Select */}
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as 'date' | 'popular' | 'title')}
-            className="h-9 px-3 bg-card border border-ink/20 rounded-full text-xs font-semibold text-ink focus:outline-none focus:border-cobalt transition-colors shadow-sm cursor-pointer"
-            aria-label="Sort events"
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="h-8 px-3 bg-card border border-line rounded-full text-xs font-medium text-ink focus:outline-none focus:border-accent transition-colors cursor-pointer"
           >
-            <option value="date">Date</option>
-            <option value="popular">Popular</option>
-            <option value="title">A-Z</option>
+            <option value="date">Soonest</option>
+            <option value="popular">Most popular</option>
+            <option value="title">Alphabetical</option>
           </select>
 
-          {/* View Mode Toggle */}
-          <div className="flex items-center p-0.5 bg-paper-2 border border-ink/15 rounded-full shadow-inner">
+          {/* Grid / List Switcher */}
+          <div className="flex items-center p-0.5 bg-surface-subtle rounded-full border border-line">
             <button
               type="button"
               onClick={() => setViewMode('grid')}
               className={cn(
-                'w-8 h-8 rounded-full flex items-center justify-center transition-[color,background-color,box-shadow]',
-                viewMode === 'grid'
-                  ? 'bg-ink text-paper shadow-offset'
-                  : 'text-ink-soft hover:text-ink'
+                'w-7 h-7 rounded-full flex items-center justify-center transition-colors',
+                viewMode === 'grid' ? 'bg-card text-ink shadow-sm' : 'text-ink-muted hover:text-ink'
               )}
               aria-label="Grid view"
             >
-              <GridFour size={16} weight="bold" />
+              <GridFour size={14} weight="bold" />
             </button>
             <button
               type="button"
               onClick={() => setViewMode('list')}
               className={cn(
-                'w-8 h-8 rounded-full flex items-center justify-center transition-[color,background-color,box-shadow]',
-                viewMode === 'list'
-                  ? 'bg-ink text-paper shadow-offset'
-                  : 'text-ink-soft hover:text-ink'
+                'w-7 h-7 rounded-full flex items-center justify-center transition-colors',
+                viewMode === 'list' ? 'bg-card text-ink shadow-sm' : 'text-ink-muted hover:text-ink'
               )}
               aria-label="List view"
             >
-              <ListBullets size={16} weight="bold" />
+              <ListBullets size={14} weight="bold" />
             </button>
           </div>
-
-          {/* Active Filters Clear */}
-          {activeFiltersCount > 0 && (
-            <button
-              type="button"
-              onClick={clearAllFilters}
-              className="text-xs font-bold text-cobalt hover:underline px-2"
-            >
-              Reset ({activeFiltersCount})
-            </button>
-          )}
         </div>
       </div>
 
-      {/* Main Results Container: Full Width, 3-column Grid or Dense Rows (V-01, V-08) */}
-      <div className="w-full">
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-80 rounded-ticket bg-card border-[1.5px] border-ink/15 animate-pulse"
-              />
-            ))}
-          </div>
-        ) : filteredEvents.length === 0 ? (
+      {/* Main Events Catalog Area */}
+      {isLoading ? (
+        <div
+          className={cn(
+            'w-full',
+            viewMode === 'grid'
+              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8'
+              : 'flex flex-col gap-3'
+          )}
+        >
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              className={cn(
+                'bg-surface-subtle animate-pulse rounded-2xl',
+                viewMode === 'grid' ? 'h-72' : 'h-18'
+              )}
+            />
+          ))}
+        </div>
+      ) : filteredEvents.length === 0 ? (
+        <div className="py-16 text-center">
           <EmptyState
-            title="Nothing on yet. Try another club."
-            description="No scheduled events match your current filter parameters."
-            actionLabel="Clear all filters"
+            title="No matching events found"
+            description="Try loosening your filters or resetting your search keyword."
+            actionLabel="Reset all filters"
             onAction={clearAllFilters}
           />
-        ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
-            <AnimatePresence mode="popLayout">
-              {filteredEvents.map((evt) => (
-                <motion.div
-                  key={evt.id}
-                  layout
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96 }}
-                  transition={{ duration: 0.25, ease: 'easeOut' }}
-                >
-                  <EventTicketCard event={evt} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3">
-            <AnimatePresence mode="popLayout">
-              {filteredEvents.map((event) => (
-                <motion.div
-                  key={event.id}
-                  layout
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.2, ease: 'easeOut' }}
-                >
-                  <DenseExploreRow event={event} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        )}
-      </div>
-
-      {/* Mobile Filters Sheet */}
-      <Sheet
-        isOpen={isMobileFiltersOpen}
-        onClose={() => setIsMobileFiltersOpen(false)}
-        title="Filter campus events"
-      >
-        <div className="space-y-5 pt-2">
-          {/* Category */}
-          <div className="space-y-2">
-            <span className="text-xs font-bold text-ink-soft uppercase tracking-wider block">
-              Category
-            </span>
-            <div className="flex flex-wrap gap-1.5">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setParam('category', cat.id)}
-                  className={cn(
-                    'px-3 py-1.5 rounded-full text-xs font-semibold transition-[color,background-color,border-color,box-shadow]',
-                    activeCategory === cat.id
-                      ? 'bg-ink text-paper shadow-offset'
-                      : 'bg-card text-ink border border-ink/15'
-                  )}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Club */}
-          <div className="space-y-2">
-            <span className="text-xs font-bold text-ink-soft uppercase tracking-wider block">
-              Club / Society
-            </span>
-            <select
-              value={activeClub}
-              onChange={(e) => setParam('club', e.target.value)}
-              className="w-full h-11 px-3 bg-card border border-ink/20 rounded-xl text-sm font-semibold text-ink"
-            >
-              <option value="ALL">All clubs</option>
-              {clubs.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="pt-4 border-t border-ink/10 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={clearAllFilters}
-              className="btn-funk-secondary w-1/2 py-2.5 text-xs font-bold uppercase"
-            >
-              Reset
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsMobileFiltersOpen(false)}
-              className="btn-funk-primary w-1/2 py-2.5 text-xs font-bold uppercase"
-            >
-              Done
-            </button>
-          </div>
         </div>
-      </Sheet>
+      ) : viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          {filteredEvents.map((evt) => (
+            <EventTicketCard key={evt.id} event={evt} />
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2.5 max-w-4xl mx-auto w-full">
+          {filteredEvents.map((evt) => (
+            <DenseExploreRow key={evt.id} event={evt} />
+          ))}
+        </div>
+      )}
     </PageShell>
   )
 }
