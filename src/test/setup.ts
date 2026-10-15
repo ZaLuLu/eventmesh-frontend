@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom'
+import { vi } from 'vitest'
 
 // Mock matchMedia for testing environments
 Object.defineProperty(window, 'matchMedia', {
@@ -17,3 +18,8 @@ Object.defineProperty(window, 'matchMedia', {
 
 // Mock scrollTo
 window.scrollTo = () => {}
+
+// Mock canvas-confetti in jsdom environment
+vi.mock('canvas-confetti', () => ({
+  default: vi.fn(),
+}))
