@@ -108,9 +108,9 @@ export const RecommendedEventsShelf: React.FC<RecommendedEventsShelfProps> = ({
                     className="h-full w-full object-cover object-center transform transition-transform duration-500 group-hover:scale-105"
                   />
 
-                  {/* Top Category Badge */}
-                  <div className="absolute top-2.5 left-2.5">
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-black/60 backdrop-blur-md text-white border border-white/20">
+                  {/* Top Category Badge (100% Solid Opaque) */}
+                  <div className="absolute top-2.5 left-2.5 z-10">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-card text-ink border border-line shadow-xs">
                       {event.category || 'Event'}
                     </span>
                   </div>

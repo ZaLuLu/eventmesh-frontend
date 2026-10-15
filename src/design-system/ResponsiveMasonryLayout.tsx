@@ -101,8 +101,8 @@ export const ResponsiveMasonryLayout: React.FC<ResponsiveMasonryLayoutProps> = (
                     </div>
                   )}
 
-                  {/* Category Pill Tag */}
-                  <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-ink/80 text-white text-[10px] font-mono uppercase tracking-wider border border-white/10">
+                  {/* Category Pill Tag (100% Solid Opaque) */}
+                  <div className="absolute top-2.5 left-2.5 z-10 px-2.5 py-1 rounded-full bg-card text-ink text-[10px] font-mono font-bold uppercase tracking-wider border border-line shadow-xs">
                     {event.category || 'Session'}
                   </div>
                 </div>

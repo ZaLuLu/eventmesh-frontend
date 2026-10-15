@@ -59,18 +59,18 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
           />
         )}
 
-        {/* Category Pill Tag */}
-        <span className="absolute left-2.5 top-2.5 rounded-full bg-card/90 backdrop-blur-xs px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-ink border border-line/40 shadow-xs">
+        {/* Category Pill Tag (100% Solid Opaque) */}
+        <span className="absolute left-2.5 top-2.5 z-10 rounded-full bg-card px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-ink border border-line shadow-xs">
           {event.category || 'Event'}
         </span>
 
-        {/* Bookmark Trigger */}
+        {/* Bookmark Trigger (100% Solid Opaque) */}
         {onBookmark && (
           <button
             type="button"
             onClick={() => onBookmark(event.id)}
             aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark event'}
-            className="absolute right-2.5 top-2.5 grid h-8 w-8 place-items-center rounded-full bg-card/90 backdrop-blur-xs text-ink hover:text-accent border border-line/40 shadow-xs transition-colors"
+            className="absolute right-2.5 top-2.5 z-10 grid h-8 w-8 place-items-center rounded-full bg-card text-ink hover:text-accent border border-line shadow-xs transition-colors"
           >
             <BookmarkSimple size={15} weight={isBookmarked ? 'fill' : 'regular'} />
           </button>

@@ -349,7 +349,7 @@ export const EventCard: React.FC<EventCardProps> = ({
             <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none z-10 font-mono text-xs">
               <div className="flex items-center gap-1.5 flex-wrap pointer-events-auto">
                 {isPromoted && (
-                  <span className="px-2.5 py-1 rounded-full bg-card/90 text-accent border border-line/40 font-mono font-bold text-[10px] tracking-wider uppercase shadow-xs">
+                  <span className="px-2.5 py-1 rounded-full bg-card text-accent border border-line font-mono font-bold text-[10px] tracking-wider uppercase shadow-xs">
                     PROMOTED
                   </span>
                 )}
@@ -363,7 +363,7 @@ export const EventCard: React.FC<EventCardProps> = ({
                     Free
                   </span>
                 ) : (
-                  <span className="px-2.5 py-1 rounded-full bg-card/90 text-ink border border-line/40 text-[10px] font-mono font-medium shadow-xs">
+                  <span className="px-2.5 py-1 rounded-full bg-card text-ink border border-line text-[10px] font-mono font-medium shadow-xs">
                     {formatPrice(event)}
                   </span>
                 )}
@@ -376,7 +376,7 @@ export const EventCard: React.FC<EventCardProps> = ({
                     onClick={handlePeekClick}
                     title="Quick Preview"
                     aria-label="Quick preview event"
-                    className="w-7 h-7 rounded-full flex items-center justify-center bg-card/90 border border-line/40 text-ink hover:text-accent hover:border-accent transition-colors shadow-xs"
+                    className="w-7 h-7 rounded-full flex items-center justify-center bg-card border border-line text-ink hover:text-accent hover:border-accent transition-colors shadow-xs"
                   >
                     <Eye className="w-3.5 h-3.5" />
                   </button>
@@ -389,7 +389,7 @@ export const EventCard: React.FC<EventCardProps> = ({
                     'w-7 h-7 rounded-full flex items-center justify-center border transition-colors duration-150 shadow-xs',
                     isBookmarked
                       ? 'bg-accent/15 text-accent border-accent'
-                      : 'bg-card/90 text-ink-soft border-line/40 hover:text-accent hover:border-accent'
+                      : 'bg-card text-ink-soft border-line hover:text-accent hover:border-accent'
                   )}
                 >
                   <BookmarkSimple className={cn('w-3.5 h-3.5', isBookmarked && 'fill-accent')} />

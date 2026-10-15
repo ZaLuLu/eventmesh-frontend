@@ -217,8 +217,8 @@ export const LiquidGlassCarousel: React.FC<LiquidGlassCarouselProps> = ({
                     {activeEvent.title}
                   </div>
                 )}
-                {/* Organic Category Tag Overlay */}
-                <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-ink/80 text-white text-[10px] font-mono uppercase tracking-wider backdrop-blur-none border border-white/10">
+                {/* Category Tag Overlay (100% Solid Opaque) */}
+                <div className="absolute top-3 left-3 z-10 px-3 py-1 rounded-full bg-card text-ink text-[10px] font-mono font-bold uppercase tracking-wider border border-line shadow-xs">
                   {activeEvent.category || 'Featured'}
                 </div>
               </div>
