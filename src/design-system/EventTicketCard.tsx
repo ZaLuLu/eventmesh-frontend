@@ -103,26 +103,32 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
         )}
 
         {/* Split Utility Dock */}
-        <div className="mt-auto flex items-end justify-between gap-2 border-t border-line pt-3 text-xs">
+        <div className="mt-auto flex items-end justify-between gap-3 border-t border-line/60 pt-3 text-xs">
           <div className="min-w-0 space-y-1 font-mono text-ink-soft text-[11px]">
             <p className="flex items-center gap-1.5 truncate">
-              <CalendarBlank size={13} className="shrink-0 text-ink-muted" aria-hidden="true" />
+              <CalendarBlank size={13} className="shrink-0 text-accent" aria-hidden="true" />
               <span>{formatDate(event.startsAt)} · {formatTime(event.startsAt)}</span>
             </p>
             <p className="flex items-center gap-1.5 truncate">
               <MapPin size={13} className="shrink-0 text-ink-muted" aria-hidden="true" />
               <span className="truncate">{event.venue?.name || (event.isOnline ? 'Online' : 'Venue TBA')}</span>
             </p>
-            <p className="font-semibold text-ink">
-              {soldOut ? 'Sold out' : event.seatsLeft != null && event.seatsLeft <= 14 ? `${event.seatsLeft} passes left` : price}
+            <p className="font-semibold text-ink pt-0.5">
+              {soldOut ? (
+                <span className="text-red-500 font-bold uppercase tracking-wider text-[10px]">Sold Out</span>
+              ) : event.seatsLeft != null && event.seatsLeft <= 14 ? (
+                <span className="text-accent font-semibold">{event.seatsLeft} passes left</span>
+              ) : (
+                price
+              )}
             </p>
           </div>
 
           <EventLink
             event={event}
-            className="shrink-0 rounded-full bg-accent px-4 py-1.5 font-mono text-xs font-semibold text-white hover:bg-accent-hover active:scale-[0.98] transition-all shadow-xs"
+            className="btn-minimal-primary shrink-0 px-4 py-1.5 text-xs font-mono font-medium shadow-xs"
           >
-            {event.kind === 'imported' ? 'Book ↗' : 'Book +'}
+            {event.kind === 'imported' ? 'Inspect ↗' : 'View Pass'}
           </EventLink>
         </div>
       </div>

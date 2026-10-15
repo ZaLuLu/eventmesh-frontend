@@ -224,13 +224,13 @@ export const CalendarPage: React.FC = () => {
       {/* View Mode: Month Grid */}
       {viewMode === 'month' && (
         <div className="space-y-6">
-          <div className="rounded-[20px] border-2 border-ink bg-card shadow-[6px_6px_0_#151130] overflow-hidden">
+          <div className="rounded-3xl border border-line bg-card shadow-xs overflow-hidden">
             {/* Day Header Row */}
-            <div className="grid grid-cols-7 border-b-2 border-ink bg-paper-2">
+            <div className="grid grid-cols-7 border-b border-line bg-paper-2">
               {daysOfWeek.map((day) => (
                 <div
                   key={day}
-                  className="py-3 text-center font-display font-bold text-xs sm:text-sm text-ink border-r-2 border-ink last:border-r-0"
+                  className="py-3 text-center font-mono font-semibold text-xs text-ink-soft border-r border-line last:border-r-0"
                 >
                   {day}
                 </div>
@@ -244,7 +244,7 @@ export const CalendarPage: React.FC = () => {
                   return (
                     <div
                       key={`empty-${idx}`}
-                      className="min-h-[90px] sm:min-h-[110px] p-2 bg-paper border-r-2 border-b-2 border-ink/15 last:border-r-0"
+                      className="min-h-[90px] sm:min-h-[115px] p-2 bg-paper/50 border-r border-b border-line/50 last:border-r-0"
                     />
                   )
                 }
@@ -257,12 +257,12 @@ export const CalendarPage: React.FC = () => {
                   <div
                     key={`day-${day}`}
                     onClick={() => setSelectedDay(day)}
-                    className={`min-h-[90px] sm:min-h-[110px] p-2 sm:p-2.5 border-r-2 border-b-2 border-ink/15 cursor-pointer transition-colors flex flex-col justify-between select-none ${
+                    className={`min-h-[90px] sm:min-h-[115px] p-2.5 border-r border-b border-line/60 cursor-pointer transition-all flex flex-col justify-between select-none ${
                       isSelected
-                        ? 'bg-lavender/30 ring-2 ring-inset ring-ink'
+                        ? 'bg-accent/5 ring-1 ring-inset ring-accent'
                         : hasEvents
-                        ? 'hover:bg-paper-2 bg-card'
-                        : 'hover:bg-paper bg-card'
+                        ? 'hover:bg-surface-subtle'
+                        : 'hover:bg-paper-2/60'
                     }`}
                   >
                     <div className="flex items-center justify-between">

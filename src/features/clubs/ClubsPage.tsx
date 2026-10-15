@@ -50,7 +50,7 @@ export const ClubsPage: React.FC = () => {
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
               key={i}
-              className="h-72 rounded-3xl bg-surface-subtle animate-pulse"
+              className="h-64 rounded-3xl bg-surface-subtle animate-pulse"
             />
           ))}
         </div>
@@ -58,22 +58,28 @@ export const ClubsPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {displayClubs.map((club) => {
             const isFollowed = Boolean(club.isFollowed)
+            const initials = club.name.slice(0, 2).toUpperCase()
 
             return (
               <div
                 key={club.id}
-                className="group relative flex flex-col justify-between rounded-3xl bg-surface-subtle hover:bg-surface-subtle p-6 sm:p-7 transition-all duration-200 select-none overflow-hidden"
+                className="group relative flex flex-col justify-between rounded-3xl border border-line bg-card hover:border-accent/40 p-6 sm:p-7 transition-all duration-300 hover:-translate-y-0.5 shadow-xs hover:shadow-md select-none overflow-hidden"
               >
                 <div className="space-y-4">
-                  {/* Top Bar: Category / Join Mode & Bell Follow */}
-                  <div className="flex items-center justify-between gap-2">
-                    <Badge
-                      variant="neutral"
-                      size="sm"
-                      className="tracking-wider uppercase text-[10px]"
-                    >
-                      {club.joinMode ? club.joinMode.replace('_', ' ') : 'Open Community'}
-                    </Badge>
+                  {/* Top Bar: Society Monogram & Bell Follow Pill */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-accent-soft text-accent font-bold font-mono text-xs flex items-center justify-center border border-accent/20">
+                        {initials}
+                      </div>
+                      <Badge
+                        variant="neutral"
+                        size="sm"
+                        className="tracking-wider uppercase text-[10px] font-mono"
+                      >
+                        {club.joinMode ? club.joinMode.replace('_', ' ') : 'Open Collective'}
+                      </Badge>
+                    </div>
 
                     <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                       <BellToggle
@@ -88,27 +94,31 @@ export const ClubsPage: React.FC = () => {
                   </div>
 
                   {/* Club Name */}
-                  <Link to={`/clubs/${club.slug}`} className="block group-hover:text-primary transition-colors">
-                    <h2 className="font-display font-medium text-xl sm:text-2xl text-ink tracking-tight leading-tight">
+                  <Link to={`/clubs/${club.slug}`} className="block group-hover:text-accent transition-colors">
+                    <h2 className="font-display font-bold text-xl sm:text-2xl text-ink tracking-tight leading-tight">
                       {club.name}
                     </h2>
                   </Link>
 
                   {/* Shortened description */}
-                  <p className="text-ink-soft text-sm leading-relaxed line-clamp-2">
+                  <p className="text-ink-soft text-xs sm:text-sm leading-relaxed line-clamp-2">
                     {club.about || club.whatWeDo || 'Hands-on collegiate engineering and creative building collective.'}
                   </p>
                 </div>
 
-                {/* Footer Strip: Members & CTA */}
-                <div className="pt-5 mt-6 border-t border-line/20 flex items-center justify-between gap-3">
+                {/* Footer Strip: Members & Minimalist Explore Action */}
+                <div className="pt-4 mt-6 border-t border-line/60 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-1.5 text-ink-soft text-xs font-mono">
-                    <Users className="w-4 h-4 text-primary" weight="bold" />
-                    <span>{club.followersCount == null ? 'Followers unavailable' : `${club.followersCount} followers`}</span>
+                    <Users className="w-3.5 h-3.5 text-accent" weight="bold" />
+                    <span>{club.followersCount == null ? 'Followers unavailable' : `${club.followersCount} members`}</span>
                   </div>
 
-                  <Link to={`/clubs/${club.slug}`} className="inline-flex min-h-11 items-center gap-2 rounded-input border border-line bg-card px-3 text-sm font-medium text-ink hover:border-accent">
-                    Explore <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  <Link
+                    to={`/clubs/${club.slug}`}
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-ink group-hover:text-accent transition-colors"
+                  >
+                    <span>View collective</span>
+                    <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
                   </Link>
                 </div>
               </div>

@@ -31,57 +31,62 @@ export const AboutPage: React.FC = () => {
   return (
     <div className="w-full bg-bg text-text min-h-screen pb-16">
       {/* Header Banner */}
-      <div className="border-b border-line pb-8 pt-8">
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-          <span className="text-caption font-semibold text-accent block mb-1">
-            Organization profile
+      <div className="border-b border-line/60 pb-10 pt-10 bg-paper-2">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-3">
+          <span className="font-mono text-xs font-semibold uppercase tracking-widest text-accent block">
+            Organization Profile · Federation of Autonomous Societies
           </span>
-          <h1 className="text-h1 font-semibold text-text">
+          <h1 className="text-3xl sm:text-4xl font-bold font-display tracking-tight text-ink">
             {organization.name}
           </h1>
-          <p className="text-body text-text-2 max-w-2xl mt-1">
+          <p className="text-sm sm:text-base text-ink-soft max-w-2xl leading-relaxed">
             {organization.tagline}
           </p>
         </div>
       </div>
 
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-12">
         {/* Vision & Mission Grid */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="rounded-panel border border-line bg-surface p-6 sm:p-8 space-y-3">
-            <div className="flex items-center gap-2 text-caption font-semibold text-accent">
-              <Eye className="h-4 w-4" />
-              <span>Foundational vision</span>
+          <div className="rounded-3xl border border-line bg-card p-6 sm:p-8 space-y-3 shadow-xs">
+            <div className="flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-accent">
+              <Eye className="h-4 w-4" weight="bold" />
+              <span>Foundational Vision</span>
             </div>
-            <p className="text-h2 font-semibold text-text leading-snug">
+            <p className="text-lg sm:text-xl font-bold font-display text-ink leading-snug">
               {organization.vision}
             </p>
           </div>
 
-          <div className="rounded-panel border border-line bg-surface p-6 sm:p-8 space-y-3">
-            <div className="flex items-center gap-2 text-caption font-semibold text-accent">
-              <Target className="h-4 w-4" />
-              <span>Core mission</span>
+          <div className="rounded-3xl border border-line bg-card p-6 sm:p-8 space-y-3 shadow-xs">
+            <div className="flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-accent">
+              <Target className="h-4 w-4" weight="bold" />
+              <span>Core Mission</span>
             </div>
-            <p className="text-body text-text-2 leading-relaxed">
+            <p className="text-xs sm:text-sm text-ink-soft leading-relaxed">
               {organization.mission}
             </p>
           </div>
         </section>
 
         {/* Core Objectives */}
-        <section className="rounded-panel border border-line bg-surface p-6 sm:p-8 space-y-6">
-          <h2 className="text-h2 font-semibold text-text">
-            Core objectives & directives
-          </h2>
+        <section className="rounded-3xl border border-line bg-card p-6 sm:p-8 space-y-6 shadow-xs">
+          <div>
+            <h2 className="text-xl font-bold font-display text-ink">
+              Core Objectives & Directives
+            </h2>
+            <p className="text-xs text-ink-soft mt-1">
+              Guiding institutional principles across competitive clubs and labs
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {organization.objectives.map((obj, idx) => (
-              <div key={idx} className="p-4 rounded-panel border border-line bg-subtle space-y-2">
-                <span className="w-6 h-6 rounded-full bg-accent-soft text-accent text-caption font-semibold flex items-center justify-center">
-                  {idx + 1}
+              <div key={idx} className="p-5 rounded-2xl border border-line/60 bg-paper-2 space-y-2.5">
+                <span className="w-7 h-7 rounded-full bg-accent text-white text-xs font-mono font-bold flex items-center justify-center shadow-xs">
+                  0{idx + 1}
                 </span>
-                <p className="text-small text-text-2 leading-relaxed">{obj}</p>
+                <p className="text-xs sm:text-sm text-ink-soft leading-relaxed">{obj}</p>
               </div>
             ))}
           </div>
