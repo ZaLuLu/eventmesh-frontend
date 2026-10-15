@@ -195,7 +195,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* 5. Streamlined Filter Toolbar & Search Bar directly scoping the Discovery Directory */}
-      <section aria-label="Search events" className="sticky top-16 z-30 border-b border-line bg-paper/95 backdrop-blur-md py-3 shadow-xs">
+      <section aria-label="Search events" className="relative z-10 border-b border-line bg-paper py-5">
         <div className="mx-auto max-w-7xl space-y-3 px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
