@@ -1,0 +1,46 @@
+[
+  {
+    "file": "src/api/adapters/http/index.ts",
+    "baselineErrors": 6
+  },
+  {
+    "file": "src/design-system/ThemeToggle.tsx",
+    "baselineErrors": 3
+  },
+  {
+    "file": "src/design-system/ResponsiveMasonryLayout.tsx",
+    "baselineErrors": 0
+  },
+  {
+    "file": "src/design-system/micro/CodeSlots.tsx",
+    "baselineErrors": 0
+  },
+  {
+    "file": "src/design-system/micro/EventAdmissionTicket.tsx",
+    "baselineErrors": 1
+  },
+  {
+    "file": "src/design-system/micro/TearTicket.tsx",
+    "baselineErrors": 2
+  },
+  {
+    "file": "src/design-system/primitives/Command.tsx",
+    "baselineErrors": 1
+  },
+  {
+    "file": "src/design-system/ui/command.tsx",
+    "baselineErrors": 2
+  },
+  {
+    "file": "src/lib/avatars.ts",
+    "baselineErrors": 2
+  },
+  {
+    "file": "src/lib/confetti.ts",
+    "baselineErrors": 1
+  },
+  {
+    "file": "src/lib/sound.ts",
+    "baselineErrors": 4
+  }
+]

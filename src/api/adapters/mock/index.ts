@@ -541,7 +541,7 @@ export const mockRegistrationsApi: RegistrationsApi = {
     if (!evt) throw new Error('Event not found')
 
     // Decrement seatsLeft
-    if (evt.seatsLeft > 0) {
+    if (evt.seatsLeft != null && evt.seatsLeft > 0) {
       evt.seatsLeft -= 1
     }
 
@@ -562,7 +562,7 @@ export const mockRegistrationsApi: RegistrationsApi = {
       userName: user.name,
       answers: payload.answers,
       team: payload.team,
-      status: evt.seatsLeft <= 0 && evt.waitlistEnabled ? 'waitlisted' : 'registered',
+      status: evt.seatsLeft === 0 && evt.waitlistEnabled ? 'waitlisted' : 'registered',
       ticketCode,
       createdAt: new Date().toISOString(),
       eventTitle: evt.title,
@@ -632,7 +632,7 @@ export const mockRegistrationsApi: RegistrationsApi = {
     if (!reg) return false
     reg.status = 'cancelled'
     const evt = mockStore.events.find((e) => e.id === reg.eventId)
-    if (evt) {
+    if (evt && evt.seatsLeft != null) {
       evt.seatsLeft += 1
     }
     mockStore.save()

@@ -1,3 +1,5 @@
+import { EventLink } from './EventLink'
+import { eventPriceLabel } from '@/lib/eventPresentation'
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { BookmarkSimple, CheckCircle, MapPin } from '@/design-system/Icon'
@@ -14,10 +16,9 @@ export interface EventTicketCardProps {
 }
 
 export const EventTicketCard: React.FC<EventTicketCardProps> = ({ event, onBookmark, isBookmarked = false, className = '' }) => {
-  const href = '/events/' + (event.slug || event.id)
   const host = event.club?.name || event.organizerName || 'Organizer'
   const soldOut = event.seatsLeft === 0
-  const price = event.isFree || !event.price ? 'Free' : '₹' + event.price
+  const price = eventPriceLabel(event)
   return (
     <article className={cn('group flex min-w-0 flex-col rounded-panel border border-line bg-card p-3 transition-colors hover:border-line-strong', className)}>
       <div className="relative aspect-[16/10] overflow-hidden rounded-poster bg-surface-subtle">
@@ -27,11 +28,12 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({ event, onBookm
       </div>
       <div className="flex flex-1 flex-col px-1 pb-1 pt-4">
         <div className="flex min-w-0 items-center gap-1.5 text-xs text-ink-soft"><span className="truncate">{host}</span>{event.club?.verified && <CheckCircle size={14} weight="fill" className="shrink-0 text-success" aria-label="Verified organizer" />}</div>
-        <h3 className="mt-1 line-clamp-2 text-lg font-semibold leading-snug text-ink"><Link to={href} className="hover:text-accent">{event.title}</Link></h3>
+        <h3 className="mt-1 line-clamp-2 text-lg font-semibold leading-snug text-ink"><EventLink event={event} className="hover:text-accent">{event.title}</EventLink></h3>
+        {event.kind === 'imported' && <p className="mt-1 text-xs text-ink-soft">On {event.provider || 'event provider'}</p>}
         {event.subtitle && <p className="mt-1 line-clamp-2 text-sm text-ink-soft">{event.subtitle}</p>}
         <div className="mt-auto flex items-end justify-between gap-2 border-t border-line pt-3 text-xs">
           <div className="min-w-0 space-y-1 font-mono text-ink-soft"><p>{formatDate(event.startsAt)} · {formatTime(event.startsAt)}</p><p className="flex items-center gap-1 truncate"><MapPin size={12} aria-hidden="true" />{event.venue?.name || 'Venue to be announced'}</p><p className="text-ink">{soldOut ? 'Sold out' : event.seatsLeft != null && event.seatsLeft <= 14 ? event.seatsLeft + ' passes left' : price}</p></div>
-          <Link to={href} className="shrink-0 rounded-full bg-ink px-3 py-2 font-semibold text-paper hover:bg-accent hover:text-white active:scale-[0.98]">{soldOut ? 'View' : 'Book +'}</Link>
+          <EventLink event={event} className="shrink-0 rounded-input bg-ink px-3 py-2 font-semibold text-paper hover:bg-accent hover:text-on-accent active:scale-[0.98]">{event.kind === 'imported' ? 'View event' : 'Details'}</EventLink>
         </div>
       </div>
     </article>

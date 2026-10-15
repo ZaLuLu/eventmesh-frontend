@@ -1,17 +1,18 @@
+import { PRESENTATION } from '@/config/presentation'
 // EventMesh campus programme and discovery
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import { usePromotedEvents, useNewestEvents } from '@/hooks/useEvents'
+import { usePromotedEvents } from '@/hooks/useEvents'
 import { api, Event, PaginatedResult } from '@/api'
-import { ResponsiveMasonryLayout } from '@/design-system/ResponsiveMasonryLayout'
 import { CinematicHeroStage } from './components/CinematicHeroStage'
-import { RecommendedEventsShelf } from './components/RecommendedEventsShelf'
-import { EventTicketCard } from '@/design-system/EventTicketCard'
 import { ClubsStrip } from './components/ClubsStrip'
 import { EventsToolbar } from './components/EventsToolbar'
 import { EventsDiscoveryView } from './components/EventsDiscoveryView'
 import { SectionHeader } from '@/design-system/SectionHeader'
 import { ArrowRight } from '@/design-system/Icon'
+
+const LegacyRecommendations = lazy(() => import('./components/RecommendedEventsShelf').then((module) => ({ default: module.RecommendedEventsShelf })))
+const LegacyMasonry = lazy(() => import('@/design-system/ResponsiveMasonryLayout').then((module) => ({ default: module.ResponsiveMasonryLayout })))
 
 export const HomePage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -52,8 +53,6 @@ export const HomePage: React.FC = () => {
 
   // 3. Promoted & Newest Data
   const { data: promoted = [] } = usePromotedEvents()
-  const { data: newestData, isLoading: isNewestLoading } = useNewestEvents({ limit: 8 })
-  const newestEvents = useMemo(() => newestData?.items || [], [newestData?.items])
 
   // 4. Discovery Events: Cursor Pagination & Filter Fetching
   const [discoveryEvents, setDiscoveryEvents] = useState<Event[]>([])
@@ -61,6 +60,7 @@ export const HomePage: React.FC = () => {
   const [nextCursor, setNextCursor] = useState<string | undefined>(undefined)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false)
+  const [loadMoreError, setLoadMoreError] = useState(false)
   const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
@@ -113,6 +113,7 @@ export const HomePage: React.FC = () => {
   const handleLoadMore = async () => {
     if (!nextCursor || isLoadingMore) return
     setIsLoadingMore(true)
+    setLoadMoreError(false)
     try {
       const res: PaginatedResult<Event> = api.events.list
         ? await api.events.list({
@@ -134,7 +135,7 @@ export const HomePage: React.FC = () => {
       setDiscoveryEvents((prev) => [...prev, ...(res.items || [])])
       setNextCursor(res.nextCursor)
     } catch (err) {
-      console.error('Failed to load more events:', err)
+      setLoadMoreError(true)
     } finally {
       setIsLoadingMore(false)
     }
@@ -155,27 +156,17 @@ export const HomePage: React.FC = () => {
     <div className="w-full bg-paper text-ink min-h-screen flex flex-col select-none">
       <CinematicHeroStage events={promoted.length > 0 ? promoted : discoveryEvents} />
 
-      {/* BookMyShow Style Recommended Shows / Events Poster Rail */}
-      <RecommendedEventsShelf
-        events={promoted.length > 0 ? promoted : discoveryEvents}
-        title="Recommended Events"
-        subtitle="Curated campus exhibitions, hackathons, and championship competitions"
-        seeAllLink="/explore"
-      />
+      {!PRESENTATION.enterpriseDiscovery && <Suspense fallback={null}>
+        <LegacyRecommendations events={promoted.length ? promoted : discoveryEvents} />
+        <LegacyMasonry events={discoveryEvents.slice(0, 8)} />
+      </Suspense>}
 
-      {/* Campus Sessions & Productions Responsive Masonry Layout */}
-      <ResponsiveMasonryLayout
-        events={newestEvents.length > 0 ? newestEvents : discoveryEvents.slice(0, 8)}
-        title="Happening on Campus"
-        subtitle="Regular club sessions, technical workshops, and daily campus activities"
-      />
-
-      <section aria-label="Search events" className="sticky top-16 z-30 border-b border-line bg-paper py-4">
+      <section aria-label="Search events" className="border-b border-line bg-paper py-4">
         <div className="mx-auto max-w-7xl space-y-5 px-4 sm:px-6">
           <SectionHeader
-            title="Explore All Events & Sessions"
-            subtitle="Filter by category, timing, or search for specific technologies."
-            badge="CAMPUS DIRECTORY"
+            title="Explore events"
+            subtitle="Search by title, category or date."
+            badge="DISCOVER"
           />
 
           <nav aria-label="Browse events by date" className="flex flex-wrap gap-2">
@@ -228,14 +219,31 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* ==============================================================
+          SECTION 3: DISCOVERY DIRECTORY & FILTER TOOLBAR
+          ============================================================== */}
+      <section id="discovery" className="relative w-full py-10 sm:py-16 bg-paper">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
+          {loadError ? <p role="alert" className="rounded-panel border border-line bg-card p-6 text-center text-ink-soft">Events could not be loaded. Please refresh to try again.</p> : <EventsDiscoveryView
+            events={discoveryEvents}
+            viewMode={viewMode}
+            isLoading={isLoading}
+            isLoadingMore={isLoadingMore}
+            hasMore={Boolean(nextCursor)}
+            onLoadMore={handleLoadMore}
+            onResetFilters={handleResetFilters}
+          />}
+          {loadMoreError && <p role="alert" className="text-sm text-danger">More events could not be loaded. <button type="button" className="underline" onClick={handleLoadMore}>Try again</button></p>}
+        </div>
+      </section>
+      {/* ==============================================================
           SECTION 2: CAMPUS COLLECTIVES & SOCIETIES
           ============================================================== */}
       <section className="relative w-full py-10 sm:py-14 border-b border-line bg-paper-2">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
           <SectionHeader
-            title="Campus Collectives & Societies"
-            subtitle="Autonomous student guilds, competitive programming labs, and creative code studios."
-            badge="TOP SOCIETIES"
+            title="Meet the organizers"
+            subtitle="Discover the organizations behind the events."
+            badge="ORGANIZERS"
             action={
               <Link
                 to="/clubs"
@@ -250,22 +258,7 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* ==============================================================
-          SECTION 3: DISCOVERY DIRECTORY & FILTER TOOLBAR
-          ============================================================== */}
-      <section id="discovery" className="relative w-full py-10 sm:py-16 bg-paper">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
-          {loadError ? <p role="alert" className="rounded-panel border border-line bg-card p-6 text-center text-ink-soft">Events could not be loaded. Please refresh to try again.</p> : <EventsDiscoveryView
-            events={discoveryEvents}
-            viewMode={viewMode}
-            isLoading={isLoading}
-            isLoadingMore={isLoadingMore}
-            hasMore={Boolean(nextCursor)}
-            onLoadMore={handleLoadMore}
-            onResetFilters={handleResetFilters}
-          />}
-        </div>
-      </section>
+
     </div>
   )
 }

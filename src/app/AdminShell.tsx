@@ -27,6 +27,8 @@ import { useOrg } from '@/hooks/useOrg'
 import { ToastContainer } from '@/design-system/primitives/Toast'
 import { ForbiddenPage } from './ForbiddenPage'
 import { ErrorBoundary } from './ErrorBoundary'
+import { Modal } from '@/design-system/primitives/Modal'
+import { ThemeToggle } from '@/design-system/ThemeToggle'
 import { OfflineBanner } from '@/components/OfflineBanner'
 
 export const AdminShell: React.FC = () => {
@@ -69,7 +71,7 @@ export const AdminShell: React.FC = () => {
       heading: 'Communicate',
       items: [
         { label: 'Announcements', path: '/admin/announcements', icon: <Megaphone className="w-4 h-4" weight="bold" />, show: can('send_announcements') },
-        { label: 'Audience Dispatch', path: '/admin/notifications', icon: <Bell className="w-4 h-4" weight="bold" />, show: can('send_notifications') },
+        { label: 'Notifications', path: '/admin/notifications', icon: <Bell className="w-4 h-4" weight="bold" />, show: can('send_notifications') },
         { label: 'Certificates', path: '/admin/certificates', icon: <CertificateIcon className="w-4 h-4" weight="bold" />, show: can('generate_certificates') },
       ],
     },
@@ -84,71 +86,20 @@ export const AdminShell: React.FC = () => {
     },
   ]
 
-  const activeClubName = session?.clubName || (session?.role === 'org_admin' ? 'All Campus Clubs' : 'Campus Federation')
+  const activeClubName = session?.clubName || organization?.name || 'Organization'
 
-  return (
-    <div className="min-h-screen bg-paper text-ink font-body flex flex-col admin-scope antialiased selection:bg-accent selection:text-white">
-      <OfflineBanner />
-
-      {/* Top Console Strip */}
-      <header className="h-8 bg-paper text-[var(--color-ink)]/80 px-4 flex items-center justify-between text-xs border-b border-white/10 select-none z-50">
-        <div className="flex items-center gap-2.5 truncate">
-          <span className="font-display font-bold text-[var(--color-accent)] tracking-wider text-[11px] uppercase">
-            ADMIN CONSOLE
-          </span>
-          <span className="opacity-30">·</span>
-          <span className="truncate">{organization?.name || 'Technical Association'}</span>
-          <span className="opacity-30">·</span>
-          <div className="inline-flex items-center gap-1.5 text-white">
-            {session?.clubColor && (
-              <span
-                className="inline-block h-2 w-2 rounded-full flex-shrink-0"
-                style={{ backgroundColor: session.clubColor }}
-              />
-            )}
-            <span className="font-bold text-xs truncate">{activeClubName}</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 flex-shrink-0">
-          <span className="text-[11px] bg-[var(--color-accent)] text-[var(--color-canvas)] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-            {session?.role?.replace('_', ' ')}
-          </span>
-          <Link
-            to="/"
-            className="text-white/70 hover:text-[var(--color-accent)] inline-flex items-center gap-1 transition-colors text-xs font-semibold"
-          >
-            <span>Public Site</span>
-            <ArrowSquareOut className="w-3.5 h-3.5" weight="bold" />
-          </Link>
-        </div>
-      </header>
-
-      <div className="flex-1 flex overflow-hidden">
-        {/* Admin Sidebar */}
-        <aside
-          className={`fixed inset-y-8 left-0 z-40 w-64 bg-card text-[var(--color-ink)] border-r border-white/10 flex flex-col transition-transform duration-200 md:static md:translate-x-0 ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
-        >
+  const sidebarContent = <>
           {/* Sidebar Header */}
-          <div className="h-14 px-4 border-b border-white/10 flex items-center justify-between flex-shrink-0">
+          <div className="h-14 px-4 border-b border-line flex items-center justify-between flex-shrink-0">
             <div>
-              <h1 className="font-display font-extrabold text-sm text-white tracking-wide">
+              <h1 className="font-display font-extrabold text-sm text-ink tracking-wide">
                 EventMesh Studio
               </h1>
-              <p className="text-[11px] text-white/50">
-                Operations & Access Terminal
+              <p className="text-xs text-ink-muted">
+                Event operations
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setSidebarOpen(false)}
-              className="md:hidden text-white/70 hover:text-white p-1"
-              aria-label="Close sidebar"
-            >
-              <X className="w-5 h-5" weight="bold" />
-            </button>
+
           </div>
 
           {/* Grouped Nav Items */}
@@ -159,7 +110,7 @@ export const AdminShell: React.FC = () => {
 
               return (
                 <div key={section.heading} className="space-y-1">
-                  <h3 className="px-3 text-[10px] font-mono font-extrabold text-white/40 uppercase tracking-widest">
+                  <h3 className="px-3 text-xs font-mono font-extrabold text-ink-muted uppercase tracking-widest">
                     {section.heading}
                   </h3>
                   <div className="space-y-0.5 pt-1">
@@ -174,14 +125,15 @@ export const AdminShell: React.FC = () => {
                         <Link
                           key={item.path}
                           to={item.path}
+                          aria-current={isActive ? 'page' : undefined}
                           onClick={() => setSidebarOpen(false)}
-                          className={`flex items-center gap-3 px-3 py-2 rounded-[10px] text-xs font-bold transition-colors ${
+                          className={`flex items-center gap-3 px-3 py-2 rounded-input text-sm font-medium transition-colors ${
                             isActive
-                              ? 'bg-[var(--color-accent)] text-[var(--color-canvas)] shadow-sm'
-                              : 'text-white/70 hover:bg-white/5 hover:text-white'
+                              ? 'bg-[var(--color-accent)] text-on-accent shadow-sm'
+                              : 'text-ink-soft hover:bg-surface-subtle hover:text-ink'
                           }`}
                         >
-                          <span className={isActive ? 'text-[var(--color-canvas)]' : 'text-white/60'}>
+                          <span className={isActive ? 'text-on-accent' : 'text-ink-soft'}>
                             {item.icon}
                           </span>
                           <span>{item.label}</span>
@@ -195,12 +147,12 @@ export const AdminShell: React.FC = () => {
           </nav>
 
           {/* User Profile & Sign Out Footer */}
-          <div className="p-3 border-t border-white/10 bg-paper-2 flex items-center justify-between gap-3">
+          <div className="p-3 border-t border-line bg-paper-2 flex items-center justify-between gap-3">
             <div className="truncate">
-              <p className="text-xs font-bold text-white truncate">
+              <p className="text-xs font-bold text-ink truncate">
                 {session?.name}
               </p>
-              <p className="text-[11px] text-white/40 truncate font-mono">
+              <p className="text-xs text-ink-muted truncate font-mono">
                 {session?.email}
               </p>
             </div>
@@ -211,38 +163,79 @@ export const AdminShell: React.FC = () => {
                 await logout()
                 navigate('/')
               }}
-              className="p-1.5 text-white/60 hover:text-[var(--color-accent)] hover:bg-white/10 rounded-[8px] transition-colors"
+              className="p-1.5 text-ink-soft hover:text-[var(--color-accent)] hover:bg-surface-subtle rounded-[8px] transition-colors"
               title="Sign Out"
               aria-label="Sign out"
             >
               <SignOut className="w-4 h-4" weight="bold" />
             </button>
           </div>
+
+  </>
+
+  return (
+    <div className="min-h-screen bg-paper text-ink font-body flex flex-col admin-scope antialiased selection:bg-accent selection:text-on-accent">
+      <OfflineBanner />
+
+      {/* Top Console Strip */}
+      <header className="min-h-11 gap-2 bg-paper text-ink-soft px-4 flex items-center justify-between text-xs border-b border-line select-none z-50">
+        <div className="flex items-center gap-2.5 truncate">
+          <span className="font-display font-bold text-[var(--color-accent)] tracking-wider text-xs uppercase">
+            ADMIN CONSOLE
+          </span>
+          <span className="opacity-30">·</span>
+          <span className="truncate">{organization?.name || 'Organization'}</span>
+          <span className="opacity-30">·</span>
+          <div className="inline-flex items-center gap-1.5 text-ink">
+            {session?.clubColor && (
+              <span
+                className="inline-block h-2 w-2 rounded-full flex-shrink-0"
+                style={{ backgroundColor: session.clubColor }}
+              />
+            )}
+            <span className="font-bold text-xs truncate">{activeClubName}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <ThemeToggle />
+          <span className="text-xs bg-[var(--color-accent)] text-on-accent px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+            {session?.role?.replace('_', ' ')}
+          </span>
+          <Link
+            to="/"
+            className="text-ink-soft hover:text-[var(--color-accent)] inline-flex items-center gap-1 transition-colors text-xs font-semibold"
+          >
+            <span className="hidden sm:inline">Public site</span>
+            <ArrowSquareOut className="w-3.5 h-3.5" weight="bold" />
+          </Link>
+        </div>
+      </header>
+
+      <div className="flex-1 flex overflow-hidden">
+        {/* Admin Sidebar */}
+        <aside className="hidden w-64 shrink-0 flex-col border-r border-line bg-card md:flex">
+          {sidebarContent}
         </aside>
+        <Modal isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} title="Navigation" placement="left" surface="admin">
+          {sidebarContent}
+        </Modal>
+
 
         {/* Main Console Workspace */}
         <div className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-[var(--color-canvas)] relative">
-          {/* Subtle Dot Grid Background Pattern (Allowed in Admin per Section 3 & 6.3) */}
-          <div
-            className="absolute inset-0 opacity-[0.03] pointer-events-none"
-            style={{
-              backgroundImage: 'radial-gradient(var(--color-ink) 1px, transparent 1px)',
-              backgroundSize: '20px 20px',
-            }}
-            aria-hidden="true"
-          />
-
           {/* Mobile Header Bar */}
-          <div className="md:hidden h-14 bg-card border-b border-white/10 px-4 flex items-center justify-between flex-shrink-0 z-30">
+          <div className="md:hidden h-14 bg-card border-b border-line px-4 flex items-center justify-between flex-shrink-0 z-30">
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}
-              className="p-2 border border-white/20 rounded-[8px] text-white"
+              className="p-2 border border-line-strong rounded-[8px] text-ink"
               aria-label="Open sidebar"
+              aria-expanded={sidebarOpen}
             >
               <List className="w-5 h-5" weight="bold" />
             </button>
-            <span className="text-xs font-bold text-white truncate max-w-[200px]">
+            <span className="text-xs font-bold text-ink truncate max-w-[200px]">
               {activeClubName}
             </span>
           </div>

@@ -30,4 +30,19 @@ describe('ICS Calendar Export Utility', () => {
     expect(removeSpy).toHaveBeenCalled()
     expect(mockRevokeUrl).toHaveBeenCalledWith('blob:test-url')
   })
+  it('exports an event with an unknown end time without inventing an end', () => {
+    const NativeBlob = global.Blob
+    let content = ''
+    const blobSpy = vi.spyOn(global, 'Blob').mockImplementation((parts, options) => {
+      content = (parts || []).join('')
+      return new NativeBlob(parts, options)
+    })
+    global.URL.createObjectURL = vi.fn().mockReturnValue('blob:test-url')
+    global.URL.revokeObjectURL = vi.fn()
+    downloadICS({ title: 'Community event', startsAt: '2026-11-03T18:00:00Z', endsAt: '' })
+    expect(content).toContain('DTSTART:20261103T180000Z')
+    expect(content).not.toContain('DTEND:')
+    blobSpy.mockRestore()
+  })
+
 })

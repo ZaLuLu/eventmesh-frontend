@@ -42,7 +42,7 @@ export const AdminDashboardPage: React.FC = () => {
             Overview dashboard
           </span>
           <h1 className="text-h2 font-semibold text-text">
-            {session?.clubName || 'Federation Control'}
+            {session?.clubName || 'Overview'}
           </h1>
           <p className="text-small text-text-2 mt-0.5">
             Signed in as {session?.name} ({role?.replace('_', ' ')})
@@ -109,7 +109,7 @@ export const AdminDashboardPage: React.FC = () => {
             Registrations over time (past 7 days)
           </h2>
           <span className="text-caption text-text-3">
-            Total velocity
+            Registration count
           </span>
         </div>
 
@@ -138,7 +138,7 @@ export const AdminDashboardPage: React.FC = () => {
       <div className="p-5 bg-surface border border-line rounded-panel space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-line">
           <h2 className="text-h3 font-semibold text-text">
-            Recent programming activity
+            Recent events
           </h2>
           <Link to="/admin/events" className="text-small text-accent hover:underline font-medium">
             View All Events →

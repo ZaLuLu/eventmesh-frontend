@@ -1,0 +1,301 @@
+[
+  {
+    "name": "detail",
+    "width": 1440,
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodes": [
+          {
+            "target": [
+              ".text-emerald-600.dark\\:text-emerald-400.font-mono"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 3.76 (foreground color: #059669, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".text-ink-muted:nth-child(3)"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.37 (foreground color: #786f9c, background color: #faf8ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".text-ink-muted.gap-2.text-xs > .font-mono.text-\\[11px\\]"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.37 (foreground color: #786f9c, background color: #faf8ff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".gap-5 > .text-ink-muted"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.37 (foreground color: #786f9c, background color: #faf8ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "registration",
+    "width": 1440,
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodes": [
+          {
+            "target": [
+              ".text-ink-muted:nth-child(3)"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.37 (foreground color: #786f9c, background color: #faf8ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".font-mono.text-\\[11px\\]"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.37 (foreground color: #786f9c, background color: #faf8ff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".gap-5 > .text-ink-muted"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.37 (foreground color: #786f9c, background color: #faf8ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "label",
+        "impact": "critical",
+        "nodes": [
+          {
+            "target": [
+              "#email"
+            ],
+            "summary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "dashboard",
+    "width": 1440,
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodes": [
+          {
+            "target": [
+              ".lg\\:col-span-5 > .text-ink-muted"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.37 (foreground color: #786f9c, background color: #faf8ff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".text-ink-muted:nth-child(3)"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.37 (foreground color: #786f9c, background color: #faf8ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".text-ink-muted.gap-2.text-xs > .text-\\[11px\\].font-mono"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.37 (foreground color: #786f9c, background color: #faf8ff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".gap-5 > .text-ink-muted"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.37 (foreground color: #786f9c, background color: #faf8ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "checkin",
+    "width": 1440,
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodes": [
+          {
+            "target": [
+              ".font-display.text-\\[var\\(--color-accent\\)\\].tracking-wider"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.01 (foreground color: #8b5cf6, background color: #faf8ff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".gap-1\\.5.inline-flex.text-white > .truncate.font-bold.text-xs"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.05 (foreground color: #ffffff, background color: #faf8ff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".flex-shrink-0.gap-3.items-center > .gap-1 > span"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.03 (foreground color: #fefdff, background color: #faf8ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".bg-paper-2 > .truncate > .text-white"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.14 (foreground color: #ffffff, background color: #f3edfd, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "registrations",
+    "width": 1440,
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodes": [
+          {
+            "target": [
+              ".font-display.tracking-wider.uppercase"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.01 (foreground color: #8b5cf6, background color: #faf8ff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".inline-flex.gap-1\\.5.items-center > .truncate"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.05 (foreground color: #ffffff, background color: #faf8ff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".gap-1 > span"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.03 (foreground color: #fefdff, background color: #faf8ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".truncate > .truncate.text-white"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.14 (foreground color: #ffffff, background color: #f3edfd, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "select-name",
+        "impact": "critical",
+        "nodes": [
+          {
+            "target": [
+              ".hover\\:bg-white\\/\\[0\\.02\\]:nth-child(1) > .text-right > .justify-end.gap-2.items-center > select"
+            ],
+            "summary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+          },
+          {
+            "target": [
+              ".hover\\:bg-white\\/\\[0\\.02\\]:nth-child(2) > .text-right > .justify-end.gap-2.items-center > select"
+            ],
+            "summary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+          },
+          {
+            "target": [
+              ".hover\\:bg-white\\/\\[0\\.02\\]:nth-child(3) > .text-right > .justify-end.gap-2.items-center > select"
+            ],
+            "summary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+          },
+          {
+            "target": [
+              ".hover\\:bg-white\\/\\[0\\.02\\]:nth-child(4) > .text-right > .justify-end.gap-2.items-center > select"
+            ],
+            "summary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "clubs",
+    "width": 1440,
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodes": [
+          {
+            "target": [
+              ".text-ink-muted:nth-child(3)"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.37 (foreground color: #786f9c, background color: #faf8ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".text-\\[11px\\].font-mono"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.37 (foreground color: #786f9c, background color: #faf8ff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              ".gap-5 > .text-ink-muted"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 4.37 (foreground color: #786f9c, background color: #faf8ff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "target-size",
+        "impact": "serious",
+        "nodes": [
+          {
+            "target": [
+              ".pt-5.mt-6.border-line\\/20 > a[href$=\"cp-club\"]"
+            ],
+            "summary": "Fix any of the following:\n  Target has insufficient size because it is partially obscured (smallest space is 69.9px by 4px, should be at least 24px by 24px)\n  Target has insufficient space to its closest neighbors. Safe clickable space has a diameter of 4px instead of at least 24px."
+          },
+          {
+            "target": [
+              ".pt-5.mt-6.border-line\\/20 > a[href$=\"aionai\"]"
+            ],
+            "summary": "Fix any of the following:\n  Target has insufficient size because it is partially obscured (smallest space is 69.9px by 4px, should be at least 24px by 24px)\n  Target has insufficient space to its closest neighbors. Safe clickable space has a diameter of 4px instead of at least 24px."
+          },
+          {
+            "target": [
+              ".pt-5.mt-6.border-line\\/20 > a[href$=\"birds\"]"
+            ],
+            "summary": "Fix any of the following:\n  Target has insufficient size because it is partially obscured (smallest space is 69.9px by 4px, should be at least 24px by 24px)\n  Target has insufficient space to its closest neighbors. Safe clickable space has a diameter of 4px instead of at least 24px."
+          },
+          {
+            "target": [
+              ".pt-5.mt-6.border-line\\/20 > a[href$=\"devcraft\"]"
+            ],
+            "summary": "Fix any of the following:\n  Target has insufficient size because it is partially obscured (smallest space is 69.9px by 4px, should be at least 24px by 24px)\n  Target has insufficient space to its closest neighbors. Safe clickable space has a diameter of 4px instead of at least 24px."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "filterInitialFocus": "<button type=\"button\" aria-label=\"Close filters\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" fill=\"currentColor\" viewBox=\"0 0 256 256\"><path d=\"M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z\"></path></svg></button>"
+  },
+  {
+    "homeSections": [
+      {
+        "text": "Recommended Events",
+        "y": 473
+      },
+      {
+        "text": "Happening on Campus",
+        "y": 906
+      },
+      {
+        "text": "Explore All Events & Sessions",
+        "y": 5570
+      },
+      {
+        "text": "Campus Collectives & Societies",
+        "y": 6007
+      }
+    ]
+  }
+]

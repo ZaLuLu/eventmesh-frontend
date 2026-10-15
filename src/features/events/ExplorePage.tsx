@@ -1,3 +1,4 @@
+import { Modal } from '@/design-system/primitives/Modal'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
@@ -82,7 +83,7 @@ export const ExplorePage: React.FC = () => {
 
   const filterRail = (
     <div className="space-y-6">
-      <fieldset><legend className="mb-2 text-sm font-semibold text-ink">When</legend><div className="flex flex-wrap gap-2">{dates.map((item) => <button key={item.value} type="button" onClick={() => setParam('date', item.value)} aria-pressed={date === item.value} className={cn('rounded-lg border px-3 py-2 text-xs', date === item.value ? 'border-accent bg-accent text-white' : 'border-line bg-card text-ink-soft hover:border-line-strong')}>{item.label}</button>)}</div></fieldset>
+      <fieldset><legend className="mb-2 text-sm font-semibold text-ink">When</legend><div className="flex flex-wrap gap-2">{dates.map((item) => <button key={item.value} type="button" onClick={() => setParam('date', item.value)} aria-pressed={date === item.value} className={cn('rounded-lg border px-3 py-2 text-xs', date === item.value ? 'border-accent bg-accent text-on-accent' : 'border-line bg-card text-ink-soft hover:border-line-strong')}>{item.label}</button>)}</div></fieldset>
       <fieldset><legend className="mb-2 text-sm font-semibold text-ink">Category</legend><div className="space-y-1">{categories.map((item) => <button key={item.value} type="button" onClick={() => setParam('category', item.value)} aria-pressed={category === item.value} className={cn('block w-full rounded-lg px-3 py-2 text-left text-sm', category === item.value ? 'bg-accent-soft font-semibold text-accent' : 'text-ink-soft hover:bg-surface-subtle')}>{item.label}</button>)}</div></fieldset>
       {campuses.length > 0 && <label className="block text-sm font-semibold text-ink">Campus<select value={campus} onChange={(event) => setParam('institution', event.target.value)} className="mt-2 w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink"><option value="ALL">All campuses</option>{campuses.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}</select></label>}
       {clubs.length > 0 && <label className="block text-sm font-semibold text-ink">Club<select value={club} onChange={(event) => setParam('club', event.target.value)} className="mt-2 w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink"><option value="ALL">All clubs</option>{clubs.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>}
@@ -97,15 +98,18 @@ export const ExplorePage: React.FC = () => {
         <div><p className="font-mono text-xs uppercase tracking-widest text-accent">Event index</p><h1 className="mt-2 text-3xl font-semibold text-ink sm:text-4xl">Explore events</h1><p className="mt-2 text-sm text-ink-soft">Find an event by date, club, category, or campus.</p></div>
         <div className="relative w-full md:max-w-sm"><MagnifyingGlass size={17} className="absolute left-3 top-3 text-ink-muted" aria-hidden="true" /><input value={query} onChange={(event) => setParam('search', event.target.value)} placeholder="Search events" aria-label="Search events" className="h-11 w-full rounded-lg border border-line bg-card pl-10 pr-3 text-sm text-ink" /></div>
       </div>
-      <button type="button" onClick={() => setMobileFilters(true)} className="mb-5 rounded-lg border border-line bg-card px-4 py-2 text-sm font-medium text-ink md:hidden">Filters</button>
-      {mobileFilters && <div className="fixed inset-0 z-[60] bg-ink/40 md:hidden"><div role="dialog" aria-modal="true" aria-label="Event filters" className="absolute inset-y-0 right-0 w-[min(90vw,360px)] overflow-y-auto bg-card p-6"><div className="mb-6 flex items-center justify-between"><h2 className="text-lg font-semibold">Filters</h2><button type="button" onClick={() => setMobileFilters(false)} aria-label="Close filters"><X size={20} /></button></div>{filterRail}<button type="button" onClick={() => setMobileFilters(false)} className="mt-6 w-full rounded-full bg-accent px-4 py-3 font-medium text-white">Show {events.length} events</button></div></div>}
-      <div className="grid gap-8 md:grid-cols-[280px_minmax(0,1fr)]">
-        <aside aria-label="Event filters" className="hidden self-start rounded-panel border border-line bg-card p-5 md:sticky md:top-24 md:block">{filterRail}</aside>
+      <button type="button" onClick={() => setMobileFilters(true)} className="mb-5 rounded-lg border border-line bg-card px-4 py-2 text-sm font-medium text-ink lg:hidden">Filters</button>
+      <Modal isOpen={mobileFilters} onClose={() => setMobileFilters(false)} title="Event filters">
+        {filterRail}
+        <button type="button" onClick={() => setMobileFilters(false)} className="mt-6 w-full rounded-input bg-accent px-4 py-3 font-medium text-on-accent">Show {events.length} events</button>
+      </Modal>
+      <div className="grid gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
+        <aside aria-label="Event filters" className="hidden self-start rounded-panel border border-line bg-card p-5 lg:sticky lg:top-24 lg:block">{filterRail}</aside>
         <div className="min-w-0">
           <div className="mb-5 flex items-center justify-between gap-3"><p className="font-mono text-xs text-ink-muted">{isLoading ? 'Loading events' : events.length + ' events'}</p><label className="text-xs text-ink-soft">Sort <select value={sort} onChange={(event) => setParam('sort', event.target.value)} className="ml-2 rounded-lg border border-line bg-card px-2 py-1.5 text-ink"><option value="date">Soonest</option><option value="title">Title</option></select></label></div>
           {isLoading ? <div className="grid gap-5 sm:grid-cols-2">{Array.from({ length: 4 }).map((_, index) => <div key={index} className="h-72 animate-pulse rounded-panel bg-surface-subtle" />)}</div> :
-            isError ? <div className="rounded-panel border border-line bg-card p-10 text-center"><h2 className="text-lg font-semibold text-ink">Events could not be loaded</h2><button type="button" onClick={() => refetch()} className="mt-3 rounded-full bg-accent px-4 py-2 text-sm font-medium text-white">Try again</button></div> :
-            events.length ? <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{events.map((event) => <EventTicketCard key={event.id} event={event} />)}</div> :
+            isError ? <div className="rounded-panel border border-line bg-card p-10 text-center"><h2 className="text-lg font-semibold text-ink">Events could not be loaded</h2><button type="button" onClick={() => refetch()} className="mt-3 rounded-full bg-accent px-4 py-2 text-sm font-medium text-on-accent">Try again</button></div> :
+            events.length ? <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{events.map((event) => <EventTicketCard key={event.id} event={event} />)}</div> :
             <div className="rounded-panel border border-line bg-card p-10 text-center"><h2 className="text-lg font-semibold text-ink">No events match these filters</h2><p className="mt-2 text-sm text-ink-soft">Try another date or category.</p></div>}
         </div>
       </div>

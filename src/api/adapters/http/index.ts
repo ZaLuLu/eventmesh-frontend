@@ -1,3 +1,4 @@
+import { eventDestination } from '@/lib/eventPresentation'
 import {
   EventsApi,
   EventsAdminApi,
@@ -142,8 +143,9 @@ export const httpEventsApi: EventsApi = {
     try {
       const event = await requestJson<EventRead | VisibleEventRead>(`${V1}/events/${slug}`)
       return normalizeBackendEvent(event)
-    } catch {
-      return null
+    } catch (error) {
+      if ((error as ApiError).code === 'HTTP_404' || (error as ApiError).code === 'NOT_FOUND') return null
+      throw error
     }
   },
 
@@ -151,8 +153,9 @@ export const httpEventsApi: EventsApi = {
     try {
       const event = await requestJson<EventRead | VisibleEventRead>(`${V1}/events/${id}`)
       return normalizeBackendEvent(event)
-    } catch {
-      return null
+    } catch (error) {
+      if ((error as ApiError).code === 'HTTP_404' || (error as ApiError).code === 'NOT_FOUND') return null
+      throw error
     }
   },
 
@@ -315,7 +318,7 @@ export const httpEventsAdminApi: EventsAdminApi = {
         is_free: event.isFree !== false && (!event.price || event.price === 0),
         price_cents: event.price ? Math.round(event.price * 100) : 0,
         currency: 'INR',
-        capacity: event.capacity || 100,
+        capacity: event.capacity ?? null,
         registration_required: true,
       }),
     })
@@ -852,9 +855,9 @@ export const httpSearchApi: SearchApi = {
           title: e.title,
           subtitle: e.city || e.venue || undefined,
           category: 'events' as const,
-          url: `/events/${e.slug}`,
-          badge: e.category,
-        })),
+          url: eventDestination(normalizeBackendEvent(e)) || '',
+          badge: e.provider || e.category || undefined,
+        })).filter((event) => event.url),
         clubs: [],
         announcements: [],
       }

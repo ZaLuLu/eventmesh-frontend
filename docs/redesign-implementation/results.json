@@ -1,0 +1,173 @@
+{
+  "results": [
+    {
+      "name": "home",
+      "width": 320,
+      "scroll": 320,
+      "theme": "light",
+      "admin": null
+    },
+    {
+      "name": "explore",
+      "width": 320,
+      "scroll": 320,
+      "theme": "light",
+      "admin": null
+    },
+    {
+      "name": "admin",
+      "width": 320,
+      "scroll": 320,
+      "theme": "light",
+      "admin": {
+        "paper": "#F7F8FA",
+        "canvas": "#F7F8FA",
+        "ink": "#17202B"
+      }
+    },
+    {
+      "name": "home",
+      "width": 375,
+      "scroll": 375,
+      "theme": "light",
+      "admin": null
+    },
+    {
+      "name": "explore",
+      "width": 375,
+      "scroll": 375,
+      "theme": "light",
+      "admin": null
+    },
+    {
+      "name": "admin",
+      "width": 375,
+      "scroll": 375,
+      "theme": "light",
+      "admin": {
+        "paper": "#F7F8FA",
+        "canvas": "#F7F8FA",
+        "ink": "#17202B"
+      }
+    },
+    {
+      "name": "home",
+      "width": 414,
+      "scroll": 414,
+      "theme": "light",
+      "admin": null
+    },
+    {
+      "name": "explore",
+      "width": 414,
+      "scroll": 414,
+      "theme": "light",
+      "admin": null
+    },
+    {
+      "name": "admin",
+      "width": 414,
+      "scroll": 414,
+      "theme": "light",
+      "admin": {
+        "paper": "#F7F8FA",
+        "canvas": "#F7F8FA",
+        "ink": "#17202B"
+      }
+    },
+    {
+      "name": "home",
+      "width": 768,
+      "scroll": 768,
+      "theme": "light",
+      "admin": null
+    },
+    {
+      "name": "explore",
+      "width": 768,
+      "scroll": 768,
+      "theme": "light",
+      "admin": null
+    },
+    {
+      "name": "admin",
+      "width": 768,
+      "scroll": 768,
+      "theme": "light",
+      "admin": {
+        "paper": "#F7F8FA",
+        "canvas": "#F7F8FA",
+        "ink": "#17202B"
+      }
+    },
+    {
+      "name": "home",
+      "width": 1024,
+      "scroll": 1024,
+      "theme": "light",
+      "admin": null
+    },
+    {
+      "name": "explore",
+      "width": 1024,
+      "scroll": 1024,
+      "theme": "light",
+      "admin": null
+    },
+    {
+      "name": "admin",
+      "width": 1024,
+      "scroll": 1024,
+      "theme": "light",
+      "admin": {
+        "paper": "#F7F8FA",
+        "canvas": "#F7F8FA",
+        "ink": "#17202B"
+      }
+    },
+    {
+      "name": "home",
+      "width": 1440,
+      "scroll": 1440,
+      "theme": "light",
+      "admin": null
+    },
+    {
+      "name": "explore",
+      "width": 1440,
+      "scroll": 1440,
+      "theme": "light",
+      "admin": null
+    },
+    {
+      "name": "admin",
+      "width": 1440,
+      "scroll": 1440,
+      "theme": "light",
+      "admin": {
+        "paper": "#F7F8FA",
+        "canvas": "#F7F8FA",
+        "ink": "#17202B"
+      }
+    }
+  ],
+  "errors": [],
+  "axe": [
+    {
+      "route": "/",
+      "violations": []
+    },
+    {
+      "route": "/explore",
+      "violations": []
+    },
+    {
+      "route": "/admin",
+      "violations": []
+    },
+    {
+      "route": "/admin/analytics",
+      "violations": []
+    }
+  ]
+}

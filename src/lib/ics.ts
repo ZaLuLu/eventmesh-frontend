@@ -19,7 +19,7 @@ function formatDateToICS(isoString: string): string {
 
 export function downloadICS(event: CalendarEventPayload) {
   const start = formatDateToICS(event.startsAt)
-  const end = formatDateToICS(event.endsAt)
+  const end = event.endsAt ? formatDateToICS(event.endsAt) : undefined
   const location = [event.venueName, event.venueAddress].filter(Boolean).join(', ')
 
   const icsLines = [
@@ -32,7 +32,7 @@ export function downloadICS(event: CalendarEventPayload) {
     `UID:${Date.now()}@eventmesh.xyz`,
     `DTSTAMP:${formatDateToICS(new Date().toISOString())}`,
     `DTSTART:${start}`,
-    `DTEND:${end}`,
+    ...(end ? [`DTEND:${end}`] : []),
     `SUMMARY:${event.title.replace(/\n/g, ' ')}`,
     `DESCRIPTION:${(event.description || '').replace(/\n/g, '\\n')}`,
     `LOCATION:${location}`,

@@ -4,6 +4,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router-dom'
 import { router } from './app/router'
 import './index.css'
+import '../tokens.css'
+import { applyTheme, getInitialTheme } from './design-system/ThemeToggle'
+
+applyTheme(getInitialTheme())
 
 const queryClient = new QueryClient({
   defaultOptions: {

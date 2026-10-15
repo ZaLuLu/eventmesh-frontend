@@ -1,5 +1,8 @@
 'use client'
 
+import { EventLink } from '@/design-system/EventLink'
+import { eventPriceLabel } from '@/lib/eventPresentation'
+
 import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { CheckCircle, CalendarBlank, MapPin, ArrowUpRight } from '@/design-system/Icon'
@@ -107,14 +110,14 @@ export const ResponsiveMasonryLayout: React.FC<ResponsiveMasonryLayoutProps> = (
                 {/* 2. Typographic Core */}
                 <div className="mt-3.5 px-1 space-y-1.5">
                   <div className="flex items-center gap-1.5 text-xs text-ink-muted font-mono">
-                    <span className="truncate">{event.organizerName || 'Campus Club'}</span>
+                    <span className="truncate">{event.organizerName || 'Organizer'}</span>
                     <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" weight="fill" />
                   </div>
 
                   <h3 className="text-base sm:text-lg font-semibold tracking-tight text-ink font-display line-clamp-2 leading-snug">
-                    <Link to={`/events/${event.slug || event.id}`} className="hover:text-accent transition-colors">
+                    <EventLink event={event} className="hover:text-accent transition-colors">
                       {event.title}
-                    </Link>
+                    </EventLink>
                   </h3>
 
                   <p className="line-clamp-2 text-xs text-ink-soft leading-relaxed">
@@ -137,12 +140,12 @@ export const ResponsiveMasonryLayout: React.FC<ResponsiveMasonryLayoutProps> = (
                     )}
                   </div>
 
-                  <Link
-                    to={`/events/${event.slug || event.id}`}
+                  <EventLink
+                    event={event}
                     className="flex-shrink-0 px-3.5 py-1.5 rounded-full bg-surface-subtle hover:bg-accent text-ink hover:text-white border border-line hover:border-accent text-xs font-medium font-mono transition-all active:scale-95"
                   >
                     RSVP +
-                  </Link>
+                  </EventLink>
                 </div>
               </article>
             )

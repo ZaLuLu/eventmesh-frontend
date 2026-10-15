@@ -1,9 +1,10 @@
+import { eventPriceLabel } from '@/lib/eventPresentation'
 // Hallmark macrostructure: Cover Stage & Sticky Checkout Dock
 import React, { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { useEvent } from '@/hooks/useEvents'
-import { useRegister, useMyRegistrations, useCancelMyRegistration, useJoinWaitlist } from '@/hooks/useRegistrations'
+import { useMyRegistrations, useCancelMyRegistration, useJoinWaitlist } from '@/hooks/useRegistrations'
 import { useAuth } from '@/hooks/useAuth'
 import { PageShell } from '@/design-system/layout/PageShell'
 import { PosterArt } from '@/design-system/visuals/PosterArt'
@@ -29,8 +30,7 @@ export const EventDetailPage: React.FC = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
   const { data: event, isLoading, error } = useEvent(slug || '')
-  const { session, switchDemoAccount } = useAuth()
-  const registerMutation = useRegister()
+  const { session } = useAuth()
   const { data: myRegistrations = [] } = useMyRegistrations()
   const cancelMutation = useCancelMyRegistration()
   const waitlistMutation = useJoinWaitlist()
@@ -40,55 +40,6 @@ export const EventDetailPage: React.FC = () => {
   const [selectedTierId, setSelectedTierId] = useState('tier-standard')
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [waitlistSuccess, setWaitlistSuccess] = useState(false)
-  const [isOneTapSubmitting, setIsOneTapSubmitting] = useState(false)
-
-  const handleOneTapRegister = async () => {
-    if (!event) return
-    setIsOneTapSubmitting(true)
-    try {
-      if (!session) {
-        await switchDemoAccount({ role: 'attendee' })
-      }
-      const attendeeName = session?.name || 'Aarav Sharma'
-      const attendeeEmail = session?.email || 'attendee@campus.edu'
-      const payload = {
-        eventId: event.id,
-        answers: {
-          phone: '+91 98450 12345',
-          regNumber: 'ENG-2024-8891',
-          branch: 'Computer Science & Engineering',
-          ticketTier: event.isFree ? 'Free Pass' : 'Standard Pass',
-        },
-        team: event.features?.team
-          ? {
-              teamName: `${event.title.split(' ')[0]} Devs`,
-              leaderName: attendeeName,
-              leaderEmail: attendeeEmail,
-              members: [
-                { name: attendeeName, email: attendeeEmail, role: 'Lead' },
-                { name: 'Rhea Sen', email: 'rhea@campus.edu', role: 'Engineer' }
-              ],
-            }
-          : undefined,
-      }
-      await registerMutation.mutateAsync(payload)
-      toast({
-        title: 'Instant Pass Issued! 🎉',
-        message: 'Your registration is confirmed. Opening your dashboard…',
-        type: 'success',
-      })
-      navigate('/attendee/dashboard')
-    } catch (err: any) {
-      toast({
-        title: 'Registration Error',
-        message: err.message || 'Could not auto-register pass',
-        type: 'error'
-      })
-    } finally {
-      setIsOneTapSubmitting(false)
-    }
-  }
-
   if (isLoading) {
     return (
       <PageShell className="py-12">
@@ -112,12 +63,12 @@ export const EventDetailPage: React.FC = () => {
           <div className="w-16 h-16 rounded-2xl bg-surface-subtle border border-line/40 flex items-center justify-center mx-auto text-ink-soft">
             <Icon name="CalendarBlank" size={28} />
           </div>
-          <h2 className="font-display text-2xl font-semibold tracking-tight text-ink">Event not found</h2>
+          <h2 className="font-display text-2xl font-semibold tracking-tight text-ink">{error ? 'Event could not be loaded' : 'Event not found'}</h2>
           <p className="text-ink-soft text-sm">
-            This campus event may have concluded, been archived, or moved to another link.
+            This event is unavailable or could not be found.
           </p>
           <Link to="/explore">
-            <Button variant="secondary" size="compact">Explore campus happenings</Button>
+            <Button variant="secondary" size="compact">Explore events</Button>
           </Link>
         </div>
       </PageShell>
@@ -125,9 +76,9 @@ export const EventDetailPage: React.FC = () => {
   }
 
   const shareMeta = buildShareMeta(event)
-  const isRegistrationOpen = event.status === 'published' || event.status === 'live'
-  const isSoldOut = event.seatsLeft <= 0
-  const registeredCount = Math.max(0, (event.capacity || 100) - (event.seatsLeft || 0))
+  const isRegistrationOpen = event.registrationState ? event.registrationState === 'open' : event.status === 'published' || event.status === 'live'
+  const isSoldOut = event.registrationState ? event.registrationState === 'full' : event.seatsLeft === 0
+  const registeredCount = event.capacity != null && event.seatsLeft != null ? Math.max(0, event.capacity - event.seatsLeft) : null
 
   // Check if current user is already registered for this event
   const existingReg = myRegistrations.find((r) => r.eventId === event.id && r.status !== 'cancelled')
@@ -322,7 +273,7 @@ export const EventDetailPage: React.FC = () => {
               </Badge>
             )}
             <Badge variant={event.isFree ? 'success' : 'iris'} size="sm">
-              {event.isFree ? 'Free pass' : formatCurrency(event.price || 0)}
+              {eventPriceLabel(event)}
             </Badge>
             {event.features?.certificate && (
               <Badge variant="neutral" size="sm">
@@ -557,7 +508,7 @@ export const EventDetailPage: React.FC = () => {
               <div className="bg-card border border-line rounded-panel p-6 sm:p-8 space-y-4">
                 <h3 className="font-display text-lg font-medium text-ink">Organizer contact</h3>
                 <div className="space-y-3 text-sm">
-                  <p className="font-medium text-ink text-base">{event.organizerName || 'Lead Club Coordinator'}</p>
+                  <p className="font-medium text-ink text-base">{event.organizerName || 'Organizer'}</p>
                   {event.contact?.email && (
                     <div className="flex items-center gap-2 text-ink-soft">
                       <Icon name="Envelope" size={16} />
@@ -584,11 +535,11 @@ export const EventDetailPage: React.FC = () => {
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[11px] font-medium uppercase tracking-wider text-ink-soft/70">Admission Pass</span>
                   <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400 font-mono">
-                    {event.isFree ? 'Free' : formatCurrency(event.price || 0)}
+                    {eventPriceLabel(event)}
                   </span>
                 </div>
                 <h3 className="font-display text-xl font-semibold tracking-tight text-ink">
-                  {isRegistrationOpen ? 'Reserve seat' : 'Registration closed'}
+                  {event.registrationState === 'not_required' ? 'No registration required' : isRegistrationOpen ? 'Reserve a place' : 'Registration closed'}
                 </h3>
               </div>
 
@@ -597,13 +548,13 @@ export const EventDetailPage: React.FC = () => {
                 <div className="flex items-center justify-between text-xs text-ink-soft">
                   <span>Available capacity</span>
                   <span className="font-mono text-ink">
-                    {isSoldOut ? 'Sold out' : `${event.seatsLeft} / ${event.capacity} left`}
+                    {isSoldOut ? 'Sold out' : event.seatsLeft == null ? 'Availability not provided' : `${event.seatsLeft} remaining`}
                   </span>
                 </div>
-                <div className="h-1.5 w-full rounded-full bg-surface overflow-hidden">
+                <div hidden={registeredCount == null || !event.capacity} className="h-1.5 w-full rounded-full bg-surface overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all ${isSoldOut ? 'bg-amber-500' : 'bg-primary'}`}
-                    style={{ width: `${Math.min(100, Math.round((registeredCount / (event.capacity || 100)) * 100))}%` }}
+                    style={{ width: `${Math.min(100, Math.round(((registeredCount ?? 0) / (event.capacity || 1)) * 100))}%` }}
                   />
                 </div>
               </div>
@@ -630,7 +581,7 @@ export const EventDetailPage: React.FC = () => {
                         <div className="flex items-center justify-between">
                           <span className="font-medium text-sm text-ink">{tier.name}</span>
                           <span className="text-xs font-mono font-medium text-ink">
-                            {tier.price === 0 ? 'Free' : formatCurrency(tier.price)}
+                            {eventPriceLabel(event)}
                           </span>
                         </div>
                         <p className="text-xs text-ink-soft mt-0.5 line-clamp-1">{tier.description}</p>
@@ -723,18 +674,10 @@ export const EventDetailPage: React.FC = () => {
                     >
                       Register now
                     </Button>
-                    <button
-                      type="button"
-                      onClick={handleOneTapRegister}
-                      disabled={isOneTapSubmitting}
-                      className="w-full py-2.5 px-3 rounded-xl border border-accent/40 bg-accent/10 hover:bg-accent/20 text-accent font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-[0.99]"
-                    >
-                      <span>⚡ 1-Tap Quick Pass (Testing)</span>
-                    </button>
                   </div>
                 ) : (
                   <Button variant="secondary" size="default" fullWidth disabled>
-                    Registration closed
+                    {event.registrationState === 'not_required' ? 'No registration required' : 'Registration closed'}
                   </Button>
                 )}
               </div>
@@ -765,10 +708,10 @@ export const EventDetailPage: React.FC = () => {
       <div className="lg:hidden fixed bottom-14 left-0 right-0 z-30 bg-card border-t border-line px-4 py-3 flex items-center justify-between gap-4 shadow-lg">
         <div className="min-w-0">
           <span className="text-[11px] font-mono text-primary block truncate">
-            {isSoldOut ? 'Waitlist open' : `${event.seatsLeft} seats left`}
+            {isSoldOut ? 'Waitlist open' : event.seatsLeft == null ? 'See event details' : `${event.seatsLeft} seats left`}
           </span>
           <span className="text-sm font-medium text-ink truncate block">
-            {event.isFree ? 'Free pass' : formatCurrency(event.price || 0)}
+            {eventPriceLabel(event)}
           </span>
         </div>
 
@@ -787,14 +730,6 @@ export const EventDetailPage: React.FC = () => {
           </Button>
         ) : isRegistrationOpen ? (
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleOneTapRegister}
-              disabled={isOneTapSubmitting}
-              className="py-2 px-3 rounded-full border border-accent/40 bg-accent/10 text-accent font-semibold text-xs whitespace-nowrap"
-            >
-              ⚡ 1-Tap
-            </button>
             <Button
               variant="primary"
               size="compact"
@@ -804,7 +739,7 @@ export const EventDetailPage: React.FC = () => {
             </Button>
           </div>
         ) : (
-          <Button variant="secondary" size="compact" disabled>Closed</Button>
+          <Button variant="secondary" size="compact" disabled>{event.registrationState === 'not_required' ? 'No registration needed' : 'Closed'}</Button>
         )}
       </div>
     </>

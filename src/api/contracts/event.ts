@@ -4,6 +4,9 @@ import { FormFieldSchema } from './formSchema'
 export const EventStatusSchema = z.enum([
   'draft',
   'submitted',
+  'preview',
+  'pending_review',
+  'hidden',
   'in_review',
   'published',
   'registration_closed',
@@ -86,8 +89,8 @@ export const EventSchema = z.object({
   startsAt: z.string(), // ISO string
   endsAt: z.string(), // ISO string
   eligibility: z.string().default('Open to all registered members'),
-  capacity: z.number().int().positive(),
-  seatsLeft: z.number().int().nonnegative(),
+  capacity: z.number().int().positive().nullable(),
+  seatsLeft: z.number().int().nonnegative().nullable(),
   waitlistEnabled: z.boolean().default(true),
   registrationOpensAt: z.string(),
   registrationClosesAt: z.string(),
@@ -118,6 +121,13 @@ export const EventSchema = z.object({
   isFree: z.boolean().optional(),
   isOnline: z.boolean().optional(),
   price: z.number().optional(),
+  kind: z.enum(['native', 'imported']).optional(),
+  sourceUrl: z.string().nullable().optional(),
+  provider: z.string().nullable().optional(),
+  sources: z.array(z.string()).optional(),
+  currency: z.string().nullable().optional(),
+  timezone: z.string().nullable().optional(),
+  registrationState: z.enum(['open', 'full', 'closed', 'not_required']).optional(),
   promotion: z
     .object({
       label: z.enum(['Promoted', 'Featured']),
@@ -155,30 +165,35 @@ export type Event = z.infer<typeof EventSchema>
 export interface VisibleEventRead {
   kind: 'native' | 'imported'
   id: string
-  slug: string
+  slug: string | null
   title: string
-  description: string
+  description: string | null
   image_url: string | null
   start_time: string // ISO-8601
-  end_time: string // ISO-8601
-  timezone: string
+  end_time: string | null // ISO-8601
+  timezone: string | null
   city: string | null
   venue: string | null
-  is_online: boolean
+  is_online?: boolean
   is_free: boolean
   price_cents: number | null
   currency: string | null
-  category: string
+  category: string | null
   url: string | null // Click-through URL for imported events
   provider: string | null
   sources: string[]
-  organization: {
+  organization_id?: string | null
+  organization_name?: string | null
+  organization_slug?: string | null
+  institution_name?: string | null
+  institution_slug?: string | null
+  organization?: {
     id: string
     name: string
     slug: string
     logo_url: string | null
   } | null
-  institution: {
+  institution?: {
     id: string
     name: string
     slug: string
@@ -194,21 +209,21 @@ export interface EventRead {
   id: string
   slug: string
   title: string
-  description: string
+  description: string | null
   status: 'draft' | 'submitted' | 'published' | 'cancelled' | 'archived' | string
   event_type: string
-  visibility: 'draft' | 'preview' | 'published' | 'hidden' | 'archived'
-  audience_type: 'open' | 'institution_only'
+  visibility: string
+  audience_type: 'public' | 'open' | 'institution_only'
   start_time: string
-  end_time: string
-  timezone: string
+  end_time: string | null
+  timezone: string | null
   venue_name: string | null
   venue_address: string | null
   city: string | null
   country: string | null
   latitude: number | null
   longitude: number | null
-  is_online: boolean
+  is_online?: boolean
   is_free: boolean
   price_cents: number | null
   currency: string | null
@@ -217,13 +232,18 @@ export interface EventRead {
   registration_closes_at: string | null
   cover_image_url: string | null
   refund_policy: string | null
-  organization: {
+  organization_id?: string | null
+  organization_name?: string | null
+  organization_slug?: string | null
+  institution_name?: string | null
+  institution_slug?: string | null
+  organization?: {
     id: string
     name: string
     slug: string
     logo_url?: string | null
   }
-  institution: {
+  institution?: {
     id: string
     name: string
     slug: string
@@ -256,80 +276,62 @@ export interface EventBrowseResponse {
  * Converts a backend VisibleEventRead or EventRead into the frontend UI Event shape
  */
 export function normalizeBackendEvent(item: VisibleEventRead | EventRead): Event {
-  const isDetail = 'registration_state' in item
-  const imageUrl = isDetail
-    ? (item as EventRead).cover_image_url
-    : (item as VisibleEventRead).image_url
-
-  const venueName = isDetail
-    ? (item as EventRead).venue_name
-    : (item as VisibleEventRead).venue
-
-  const spotsLeft = isDetail
-    ? (item as EventRead).spots_remaining ?? 50
-    : 50
-
-  const capacityVal = isDetail
-    ? (item as EventRead).capacity ?? 100
-    : 100
+  const detail = 'registration_state' in item ? item : undefined
+  const browse = 'kind' in item ? item : undefined
+  const orgId = item.organization_id || item.organization?.id || ''
+  const orgName = item.organization_name || item.organization?.name || undefined
+  const imageUrl = detail?.cover_image_url || browse?.image_url
+  const status = EventStatusSchema.safeParse(detail?.status || 'published')
+  const isOnline = item.is_online ?? (detail ? detail.event_type === 'online' : undefined)
 
   return {
     id: item.id,
-    slug: item.slug,
-    orgId: item.organization?.id || 'org-1',
-    organizerId: item.organization?.id || 'org-1',
+    slug: item.slug || '',
+    kind: browse?.kind || 'native',
+    sourceUrl: browse?.url,
+    provider: browse?.provider,
+    sources: browse?.sources,
+    currency: item.currency,
+    timezone: item.timezone,
+    registrationState: detail?.registration_state,
+    orgId,
+    organizerId: orgId,
     title: item.title,
-    subtitle: item.organization?.name,
-    category: ('category' in item ? item.category : (item as EventRead).event_type) || 'General',
-    type: 'workshop',
-    tags: [item.city || 'Live', item.is_online ? 'Online' : 'In-Person'],
-    description: item.description,
-    poster: imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80',
+    subtitle: orgName,
+    category: browse?.category || detail?.event_type || 'General',
+    type: 'other',
+    tags: [item.city, isOnline ? 'Online' : undefined].filter((tag): tag is string => Boolean(tag)),
+    description: item.description || '',
+    poster: imageUrl || '',
     banner: imageUrl || undefined,
     venue: {
-      name: venueName || item.city || 'Main Hall',
-      address: isDetail ? (item as EventRead).venue_address || undefined : undefined,
+      name: detail?.venue_name || browse?.venue || item.city || '',
+      address: detail?.venue_address || undefined,
     },
-    startsAt: item.start_time,
-    endsAt: item.end_time,
-    eligibility: item.audience_type === 'institution_only' ? 'Institution Members Only' : 'Open to All',
-    capacity: capacityVal,
-    seatsLeft: spotsLeft,
-    waitlistEnabled: false,
-    registrationOpensAt: item.start_time,
-    registrationClosesAt: isDetail ? (item as EventRead).registration_closes_at || item.start_time : item.start_time,
-    schedule: [],
-    people: [],
-    rules: [],
-    contact: {
-      name: item.organization?.name || 'Organizer',
-      email: 'events@eventmesh.org',
-    },
-    features: {
-      certificate: false,
-      checkin: true,
-      paid: !item.is_free,
-      team: false,
-    },
+    startsAt: item.start_time || '',
+    endsAt: item.end_time || '',
+    eligibility: item.audience_type === 'institution_only' ? 'Institution members only' : 'Open to all',
+    capacity: detail?.capacity ?? null,
+    seatsLeft: detail?.spots_remaining ?? null,
+    waitlistEnabled: detail?.registration_state === 'full',
+    registrationOpensAt: '',
+    registrationClosesAt: detail?.registration_closes_at || '',
+    schedule: [], people: [], rules: [],
+    contact: { name: orgName || '', email: '' },
+    features: { certificate: false, checkin: !browse || browse.kind === 'native', paid: !item.is_free, team: false },
     formSchema: [],
-    status: isDetail ? (((item as EventRead).status || (item as EventRead).visibility) as any) : 'published',
-    results: [],
-    photos: [],
-    organizerName: item.organization?.name,
-    organizerColor: '#1A73E8',
+    // Unknown service states must not imply that registration is open.
+    status: status.success ? status.data : 'registration_closed',
+    results: [], photos: [],
+    organizerName: orgName,
+    organizerColor: 'var(--color-accent)',
     isSignature: false,
     isFree: item.is_free,
-    price: (item.price_cents || 0) / 100,
-    isOnline: item.is_online,
+    price: item.price_cents == null ? undefined : item.price_cents / 100,
+    isOnline,
     registrationsCount: 0,
-    institutionName: ('institution' in item && item.institution?.name) || (item as any).institution_name || undefined,
-    institutionSlug: ('institution' in item && item.institution?.slug) || (item as any).institution_slug || undefined,
-    club: {
-      id: item.organization?.id || (item as any).organization_id || 'org-1',
-      name: item.organization?.name || (item as any).organization_name || 'Campus Club',
-      color: '#0047FF',
-      verified: true,
-    },
+    institutionName: item.institution_name || item.institution?.name || undefined,
+    institutionSlug: item.institution_slug || item.institution?.slug || undefined,
+    club: orgName ? { id: orgId, name: orgName, color: 'var(--color-accent)', verified: false } : undefined,
   }
 }
-

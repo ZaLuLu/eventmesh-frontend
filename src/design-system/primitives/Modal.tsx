@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react'
-import { motion, AnimatePresence } from 'motion/react'
+import React, { useId, useRef } from 'react'
+import * as Dialog from '@radix-ui/react-dialog'
 import { X } from '@phosphor-icons/react'
 
 export interface ModalProps {
@@ -10,96 +10,50 @@ export interface ModalProps {
   children: React.ReactNode
   maxWidth?: string
   surface?: 'public' | 'admin' | 'dark'
+  placement?: 'center' | 'bottom' | 'left'
 }
 
+/** Compatibility wrapper: existing callers gain naming, focus containment and restoration. */
 export const Modal: React.FC<ModalProps> = ({
-  isOpen,
-  onClose,
-  title,
-  subtitle,
-  children,
-  maxWidth = 'max-w-xl',
-  surface = 'public',
+  isOpen, onClose, title, subtitle, children, maxWidth = 'max-w-xl',
+  surface = 'public', placement = 'center',
 }) => {
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose()
-      }
-    }
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-      window.addEventListener('keydown', handleKeyDown)
-    }
-    return () => {
-      document.body.style.overflow = ''
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isOpen, onClose])
-
-  const isDark = surface === 'dark' || surface === 'admin'
-
+  const descriptionId = useId()
+  const returnFocus = useRef<HTMLElement | null>(null)
+  const position = placement === 'left'
+    ? 'inset-y-0 left-0 w-[min(90vw,320px)] rounded-none'
+    : placement === 'bottom'
+      ? 'bottom-0 left-1/2 -translate-x-1/2 w-full max-h-[90dvh] rounded-t-[var(--radius-dialog)]'
+      : 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-h-[90dvh] rounded-[var(--radius-dialog)]'
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop: Frosted ambient wash */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            onClick={onClose}
-            className={`fixed inset-0 ${isDark ? 'bg-black/75' : 'bg-black/45'}`}
-            aria-hidden="true"
-          />
-
-          {/* Modal surface: Modern-minimal floating surface */}
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            initial={{ opacity: 0, scale: 0.98, y: 4 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.98, y: 4 }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
-            className={`relative z-10 w-full ${maxWidth} max-h-[90vh] overflow-y-auto ${
-              isDark
-                ? 'bg-[#16131F] text-[#F4F2F8] border border-[#292338]'
-                : 'bg-card text-ink border border-line shadow-xl'
-            } rounded-2xl p-6 sm:p-7 flex flex-col gap-6`}
-          >
-            <div className={`flex items-start justify-between gap-4 border-b ${isDark ? 'border-[#292338]' : 'border-line'} pb-4`}>
-              <div>
-                {subtitle && (
-                  <span className={`font-mono text-xs uppercase tracking-wider block mb-1 ${isDark ? 'text-accent' : 'text-accent'}`}>
-                    {subtitle}
-                  </span>
-                )}
-                {title && (
-                  <h3 className={`font-sans font-semibold text-xl tracking-tight ${isDark ? 'text-white' : 'text-ink'}`}>
-                    {title}
-                  </h3>
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={onClose}
-                className={`p-1.5 rounded-full transition-colors duration-150 ${
-                  isDark
-                    ? 'hover:bg-white/10 text-zinc-400 hover:text-white'
-                    : 'hover:bg-surface-subtle text-ink-soft hover:text-ink'
-                }`}
-                aria-label="Close modal"
-              >
-                <X size={18} weight="bold" />
-              </button>
+    <Dialog.Root open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-[var(--color-backdrop)]" />
+        <Dialog.Content
+          data-theme={surface === 'dark' ? 'dark' : undefined}
+          aria-describedby={subtitle ? descriptionId : undefined}
+          onOpenAutoFocus={() => { returnFocus.current = document.activeElement as HTMLElement }}
+          onCloseAutoFocus={(event) => {
+            // Controlled callers generally have an external trigger, not Dialog.Trigger.
+            if (returnFocus.current?.isConnected) {
+              event.preventDefault()
+              returnFocus.current.focus()
+            }
+          }}
+          className={`fixed z-50 ${position} ${maxWidth} overflow-y-auto border border-line bg-card p-5 text-ink shadow-floating sm:p-6`}
+        >
+          <div className="mb-5 flex items-start justify-between gap-4 border-b border-line pb-4">
+            <div className="min-w-0">
+              <Dialog.Title className={title ? 'text-lg font-semibold' : 'sr-only'}>{title || 'Dialog'}</Dialog.Title>
+              {subtitle && <Dialog.Description id={descriptionId} className="mt-1 text-sm text-ink-soft">{subtitle}</Dialog.Description>}
             </div>
-
-            <div className="flex-1 overflow-y-auto">{children}</div>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+            <Dialog.Close className="flex h-11 w-11 shrink-0 items-center justify-center rounded-input text-ink-soft hover:bg-surface-subtle" aria-label="Close dialog">
+              <X size={20} aria-hidden="true" />
+            </Dialog.Close>
+          </div>
+          {children}
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   )
 }

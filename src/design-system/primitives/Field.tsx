@@ -28,10 +28,13 @@ export const Field = React.forwardRef<
     },
     ref
   ) => {
-    const inputId = id || (label ? `field-${label.toLowerCase().replace(/\s+/g, '-')}` : undefined)
+    const generatedId = React.useId()
+    const inputId = id || generatedId
+    const descriptionId = `${inputId}-description`
+    const describedBy = [props['aria-describedby'], (error || helpText) && descriptionId].filter(Boolean).join(' ') || undefined
 
     // 48px height, --surface with 1px --line, radius 10px, focus = 2px --accent outline
-    const baseInputClasses = `w-full bg-surface text-text font-normal border border-line rounded-[10px] px-3.5 transition-colors duration-150 placeholder:text-text-3 text-small focus:outline-none focus:ring-2 ${
+    const baseInputClasses = `w-full bg-surface text-text font-normal border border-line-strong rounded-input px-3.5 transition-colors duration-150 placeholder:text-text-3 text-small focus:outline-none focus:ring-2 ${
       error
         ? 'border-danger focus:ring-danger'
         : surface === 'admin'
@@ -61,6 +64,8 @@ export const Field = React.forwardRef<
             required={required}
             className={`${baseInputClasses} py-3 resize-y ${className}`}
             {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
+            aria-describedby={describedBy}
+            aria-invalid={error ? true : props['aria-invalid']}
           />
         ) : (
           <input
@@ -69,15 +74,17 @@ export const Field = React.forwardRef<
             required={required}
             className={`${baseInputClasses} h-12 ${className}`}
             {...props}
+            aria-describedby={describedBy}
+            aria-invalid={error ? true : props['aria-invalid']}
           />
         )}
 
         {helpText && !error && (
-          <p className="text-caption text-text-2 mt-0.5">{helpText}</p>
+          <p id={descriptionId} className="text-caption text-text-2 mt-0.5">{helpText}</p>
         )}
 
         {error && (
-          <p className="text-caption font-medium text-danger mt-0.5">
+          <p id={descriptionId} className="text-caption font-medium text-danger mt-0.5">
             {error}
           </p>
         )}

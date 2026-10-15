@@ -1,3 +1,5 @@
+import { EventLink } from '@/design-system/EventLink'
+import { eventPriceLabel } from '@/lib/eventPresentation'
 import React, { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Event } from '@/api/contracts/event'
@@ -42,15 +44,7 @@ export const RecommendedEventsShelf: React.FC<RecommendedEventsShelfProps> = ({
     if (event.tags && event.tags.length > 0) {
       return event.tags[0]
     }
-    const badges = [
-      '★ 9.4/10 · 1.2k votes',
-      '⚡ 85% Seats Filled',
-      '🏆 ₹1,50,000 Pool',
-      '★ 9.1/10 · Popular',
-      '🔥 Trending on Campus',
-      '✨ Verified Production',
-    ]
-    return badges[idx % badges.length]
+    return event.category || 'Event'
   }
 
   return (
@@ -101,9 +95,9 @@ export const RecommendedEventsShelf: React.FC<RecommendedEventsShelfProps> = ({
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {events.map((event, idx) => (
-              <Link
+              <EventLink
                 key={event.id || idx}
-                to={`/events/${event.slug}`}
+                event={event}
                 className="group flex-shrink-0 w-[44%] sm:w-[30%] md:w-[22%] lg:w-[18.2%] snap-start focus:outline-hidden"
               >
                 {/* 2:3 Aspect Ratio Card Poster Frame */}
@@ -141,7 +135,7 @@ export const RecommendedEventsShelf: React.FC<RecommendedEventsShelfProps> = ({
                     </span>
                   </div>
                 </div>
-              </Link>
+              </EventLink>
             ))}
           </div>
 

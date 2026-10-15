@@ -30,11 +30,14 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     },
     ref
   ) => {
-    const inputId = id || (label ? `select-${label.toLowerCase().replace(/\s+/g, '-')}` : undefined)
+    const generatedId = React.useId()
+    const inputId = id || generatedId
+    const descriptionId = `${inputId}-description`
+    const describedBy = [props['aria-describedby'], (error || helpText) && descriptionId].filter(Boolean).join(' ') || undefined
 
     const baseClasses = cn(
-      'w-full h-11 bg-surface text-text text-small pl-3.5 pr-10 border border-line rounded-input appearance-none transition-colors duration-150 cursor-pointer outline-none',
-      'focus:ring-2 focus:ring-violet focus:border-violet',
+      'w-full h-11 bg-surface text-text text-small pl-3.5 pr-10 border border-line-strong rounded-input appearance-none transition-colors duration-150 cursor-pointer outline-none',
+      'focus:ring-2 focus:ring-accent focus:border-accent',
       error && 'border-danger focus:ring-danger focus:border-danger',
       surface === 'admin' && 'focus:ring-admin-accent focus:border-admin-accent',
       props.disabled && 'opacity-40 cursor-not-allowed bg-subtle'
@@ -61,6 +64,8 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             required={required}
             className={cn(baseClasses, className)}
             {...props}
+            aria-describedby={describedBy}
+            aria-invalid={error ? true : props['aria-invalid']}
           >
             {options.map((opt) => (
               <option key={opt.value} value={opt.value} className="bg-surface text-text">
@@ -75,9 +80,9 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         </div>
 
         {error ? (
-          <p className="text-caption text-danger">{error}</p>
+          <p id={descriptionId} className="text-caption text-danger">{error}</p>
         ) : helpText ? (
-          <p className="text-caption text-text-3">{helpText}</p>
+          <p id={descriptionId} className="text-caption text-text-3">{helpText}</p>
         ) : null}
       </div>
     )

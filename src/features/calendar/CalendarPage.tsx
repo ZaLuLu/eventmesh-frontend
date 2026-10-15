@@ -1,3 +1,5 @@
+import { EventLink } from '@/design-system/EventLink'
+import { eventDestination } from '@/lib/eventPresentation'
 // Hallmark macrostructure: Calendar-Schedule
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -84,6 +86,7 @@ export const CalendarPage: React.FC = () => {
   }
 
   const handleExportICS = (event: Event) => {
+    const destination = eventDestination(event)
     downloadICS({
       title: event.title,
       description: event.description,
@@ -91,7 +94,7 @@ export const CalendarPage: React.FC = () => {
       endsAt: event.endsAt,
       venueName: event.venue?.name,
       venueAddress: event.venue?.address,
-      url: window.location.origin + `/events/${event.slug}`,
+      url: destination ? new URL(destination, window.location.origin).href : undefined,
     })
     toast({
       title: 'Calendar event downloaded',
@@ -373,7 +376,7 @@ export const CalendarPage: React.FC = () => {
 
                           <div className="flex items-center gap-1.5 text-xs text-ink-soft">
                             <MapPin className="w-3.5 h-3.5 text-ink flex-shrink-0" weight="bold" />
-                            <span className="truncate">{event.venue?.name || 'Campus Venue'}</span>
+                            <span className="truncate">{event.venue?.name || 'Venue to be announced'}</span>
                           </div>
                         </div>
 
@@ -388,7 +391,7 @@ export const CalendarPage: React.FC = () => {
                             <span>.ICS</span>
                           </Button>
 
-                          <Link to={`/events/${event.slug}`}>
+                          <EventLink event={event}>
                             <Button
                               variant="primary"
                               size="compact"
@@ -397,7 +400,7 @@ export const CalendarPage: React.FC = () => {
                               <span>View Event</span>
                               <ArrowRight className="w-3.5 h-3.5" weight="bold" />
                             </Button>
-                          </Link>
+                          </EventLink>
                         </div>
                       </div>
                     )
@@ -472,7 +475,7 @@ export const CalendarPage: React.FC = () => {
                       <span>Add .ics</span>
                     </Button>
 
-                    <Link to={`/events/${event.slug}`}>
+                    <EventLink event={event}>
                       <Button
                         variant="primary"
                         size="compact"
@@ -481,7 +484,7 @@ export const CalendarPage: React.FC = () => {
                         <span>Details</span>
                         <ArrowRight className="w-3.5 h-3.5" weight="bold" />
                       </Button>
-                    </Link>
+                    </EventLink>
                   </div>
                 </div>
               )

@@ -52,7 +52,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const getVariantClasses = () => {
       if (surface === 'admin' || variant === 'admin') {
         if (variant === 'primary' || variant === 'admin') {
-          return 'bg-accent text-white font-medium border-0 hover:bg-accent-hover transition-colors'
+          return 'bg-accent text-on-accent font-medium border-0 hover:bg-accent-hover transition-colors'
         }
         if (variant === 'secondary') {
           return 'bg-card text-ink border border-line hover:bg-surface-subtle transition-colors'
@@ -66,25 +66,27 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       // Public Surface Variants
       switch (variant) {
         case 'primary':
-          return 'bg-ink text-paper border-0 hover:bg-accent hover:text-white transition-colors'
+          return 'bg-ink text-paper border-0 hover:bg-accent hover:text-on-accent transition-colors'
         case 'secondary':
           return 'bg-surface-subtle text-ink border border-line hover:border-accent hover:text-accent transition-colors'
         case 'tertiary':
         case 'ghost':
           return 'bg-transparent text-ink-soft hover:text-ink hover:bg-surface-subtle transition-colors'
         case 'danger':
-          return 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white transition-colors'
+          return 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-on-accent transition-colors'
         default:
-          return 'bg-ink text-paper border-0 hover:bg-accent hover:text-white transition-colors'
+          return 'bg-ink text-paper border-0 hover:bg-accent hover:text-on-accent transition-colors'
       }
     }
 
     return (
       <button
         ref={ref}
+        type="button"
+        aria-busy={loading || undefined}
         disabled={disabled || loading}
         className={cn(
-          'inline-flex items-center justify-center gap-2 rounded-full font-sans tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none transition-transform duration-150 active:scale-[0.98]',
+          'inline-flex items-center justify-center gap-2 rounded-input font-sans tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none transition-colors duration-150',
           fullWidth && 'w-full',
           sizeClasses,
           getVariantClasses(),

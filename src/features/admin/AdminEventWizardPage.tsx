@@ -68,7 +68,7 @@ export const AdminEventWizardPage: React.FC = () => {
   ])
 
   // Settings
-  const [capacity, setCapacity] = useState(100)
+  const [capacity, setCapacity] = useState<number | null>(100)
   const [eligibility, setEligibility] = useState('Open to all registered members')
   const [waitlistEnabled, setWaitlistEnabled] = useState(true)
   const [isTeamEnabled, setIsTeamEnabled] = useState(false)
@@ -132,7 +132,7 @@ export const AdminEventWizardPage: React.FC = () => {
         schedule,
         people,
         formSchema,
-        capacity: Number(capacity),
+        capacity: capacity == null ? null : Number(capacity),
         eligibility,
         waitlistEnabled,
         contact: { name: contactName, email: contactEmail },
@@ -180,7 +180,7 @@ export const AdminEventWizardPage: React.FC = () => {
         schedule,
         people,
         formSchema,
-        capacity: Number(capacity),
+        capacity: capacity == null ? null : Number(capacity),
         eligibility,
         waitlistEnabled,
         contact: { name: contactName, email: contactEmail },
@@ -554,8 +554,8 @@ export const AdminEventWizardPage: React.FC = () => {
               type="number"
               label="Maximum Attendee Capacity"
               required
-              value={capacity}
-              onChange={(e) => setCapacity(Number(e.target.value))}
+              value={capacity ?? ''}
+              onChange={(e) => setCapacity(e.target.value === '' ? null : Number(e.target.value))}
             />
             <Field
               surface="admin"

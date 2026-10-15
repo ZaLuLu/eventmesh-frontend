@@ -52,7 +52,8 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
 
   const handleSelect = (url: string) => {
     onClose()
-    navigate(url)
+    if (/^https?:\/\//.test(url)) window.location.assign(url)
+    else navigate(url)
   }
 
   const hasResults =

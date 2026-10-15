@@ -1,0 +1,11 @@
+[
+  {
+    "date": "2026-10-15",
+    "scope": "app",
+    "macrostructure": "Index First / Workbench",
+    "theme": "custom",
+    "theme_axes": "neutral light / Geist / purple",
+    "enrichment": "existing event artwork and mandatory 3D ticket",
+    "brief": "Implement initial redesign foundations and discovery against approved DESIGN.md; backend untouched"
+  }
+]

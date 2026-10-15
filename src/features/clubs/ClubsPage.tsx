@@ -104,18 +104,11 @@ export const ClubsPage: React.FC = () => {
                 <div className="pt-5 mt-6 border-t border-line/20 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-1.5 text-ink-soft text-xs font-mono">
                     <Users className="w-4 h-4 text-primary" weight="bold" />
-                    <span>{club.followersCount || 42}+ Builders</span>
+                    <span>{club.followersCount == null ? 'Followers unavailable' : `${club.followersCount} followers`}</span>
                   </div>
 
-                  <Link to={`/clubs/${club.slug}`}>
-                    <Button
-                      variant="secondary"
-                      size="compact"
-                      className="text-xs font-normal gap-1"
-                    >
-                      <span>Explore</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Button>
+                  <Link to={`/clubs/${club.slug}`} className="inline-flex min-h-11 items-center gap-2 rounded-input border border-line bg-card px-3 text-sm font-medium text-ink hover:border-accent">
+                    Explore <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </Link>
                 </div>
               </div>

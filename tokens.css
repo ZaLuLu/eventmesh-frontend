@@ -1,0 +1,124 @@
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V4. Subjective implementation review. */
+/* Hallmark · genre: modern-minimal · design-system: DESIGN.md · designed-as-app
+ * Foundation migration; compatibility aliases preserve existing consumers. */
+:root, .admin-scope {
+  --color-canvas: #F7F8FA;
+  --color-canvas-subtle: #F0F2F5;
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #FFFFFF;
+  --color-surface-hover: #ECEFF3;
+  --color-ink: #17202B;
+  --color-ink-soft: #465363;
+  --color-ink-muted: #596779;
+  --color-ink-faint: #596779;
+  --color-line: #DDE2E8;
+  --color-line-strong: #7A8797;
+  --color-accent: #7C3AED;
+  --color-accent-hover: #6D28D9;
+  --color-accent-active: #5B21B6;
+  --color-accent-soft: #F2EAFF;
+  --color-on-accent: #FFFFFF;
+  --color-success: #166534;
+  --color-success-soft: #F0FDF4;
+  --color-warning: #854D0E;
+  --color-warning-soft: #FFFBEB;
+  --color-danger: #B91C1C;
+  --color-danger-soft: #FEF2F2;
+  --color-info: #374151;
+  --color-info-soft: #F3F4F6;
+}
+.dark, [data-theme="dark"], .dark .admin-scope, [data-theme="dark"] .admin-scope {
+  --color-canvas: #111318;
+  --color-canvas-subtle: #171A21;
+  --color-surface: #1D2129;
+  --color-surface-raised: #252B35;
+  --color-surface-hover: #2C333F;
+  --color-ink: #F3F4F6;
+  --color-ink-soft: #C7CDD6;
+  --color-ink-muted: #A6B0BE;
+  --color-ink-faint: #A6B0BE;
+  --color-line: #3B4452;
+  --color-line-strong: #8592A5;
+  --color-accent: #C4B5FD;
+  --color-accent-hover: #DDD6FE;
+  --color-accent-active: #A78BFA;
+  --color-accent-soft: #302747;
+  --color-on-accent: #171322;
+  --color-success: #86EFAC;
+  --color-success-soft: #173326;
+  --color-warning: #FDE68A;
+  --color-warning-soft: #382F18;
+  --color-danger: #FCA5A5;
+  --color-danger-soft: #3B2126;
+  --color-info: #D1D5DB;
+  --color-info-soft: #28303B;
+}
+:root, .admin-scope, .dark, [data-theme="dark"], [data-theme="light"] {
+  --paper: var(--color-canvas);
+  --paper-2: var(--color-canvas-subtle);
+  --card: var(--color-surface);
+  --surface-subtle: var(--color-surface-hover);
+  --surface-float: var(--color-surface-raised);
+  --ink: var(--color-ink);
+  --ink-soft: var(--color-ink-soft);
+  --ink-muted: var(--color-ink-muted);
+  --ink-faint: var(--color-ink-faint);
+  --line: var(--color-line);
+  --line-strong: var(--color-line-strong);
+  --accent: var(--color-accent);
+  --accent-hover: var(--color-accent-hover);
+  --accent-soft: var(--color-accent-soft);
+  --purple: var(--color-accent);
+  --purple-hover: var(--color-accent-hover);
+  --purple-light: #8B5CF6;
+  --lavender: var(--color-canvas-subtle);
+  --lavender-soft: var(--color-canvas-subtle);
+  --ember: var(--color-accent);
+  --ember-hover: var(--color-accent-hover);
+  --ember-soft: var(--color-accent-soft);
+  --cobalt: var(--color-accent);
+  --cobalt-hover: var(--color-accent-hover);
+  --success: var(--color-success);
+  --warning: var(--color-warning);
+  --danger: var(--color-danger);
+  --bg: var(--color-canvas);
+  --surface: var(--color-surface);
+  --surface-raised: var(--color-surface-raised);
+  --text: var(--color-ink);
+  --text-2: var(--color-ink-soft);
+  --text-3: var(--color-ink-muted);
+  --club: var(--color-accent);
+  --admin-accent: var(--color-accent);
+  --color-paper: var(--color-canvas);
+  --sidebar: var(--color-canvas);
+}
+
+:root {
+  color-scheme: light;
+  --font-sans: 'Geist', system-ui, sans-serif;
+  --font-display: var(--font-sans);
+  --font-body: var(--font-sans);
+  --font-mono: var(--font-sans);
+  --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 32px;
+  --text-caption: 12px; --text-small: 14px; --text-body: 16px; --text-title: 28px;
+  --radius-small: 4px; --radius-control: 6px; --radius-card: 8px; --radius-dialog: 12px;
+  --shadow-raised: 0 8px 24px rgb(0 0 0 / 12%);
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --dur-fast: 100ms; --dur-normal: 150ms; --dur-overlay: 180ms;
+  --z-sticky: 10; --z-nav: 20; --z-dropdown: 30; --z-overlay: 40; --z-dialog: 50; --z-toast: 60;
+  --color-focus: var(--color-accent);
+  --color-overlay: rgb(17 19 24 / 48%);
+  --color-backdrop: var(--color-overlay);
+}
+.dark, [data-theme="dark"] { color-scheme: dark; --color-overlay: rgb(0 0 0 / 60%); --color-backdrop: var(--color-overlay); }
+html, body, h1, h2, h3, h4, h5, h6 { font-family: var(--font-sans); }
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+@media (pointer: coarse) {
+  button, [role="button"] { min-height: 44px; }
+  input, select, textarea { font-size: 16px; }
+}
+
+.font-mono { font-family: var(--font-sans); font-variant-numeric: tabular-nums; }

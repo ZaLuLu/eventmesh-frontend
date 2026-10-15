@@ -1,3 +1,5 @@
+import { EventLink } from '@/design-system/EventLink'
+import { eventPriceLabel } from '@/lib/eventPresentation'
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
@@ -51,7 +53,7 @@ const DenseEventRow: React.FC<{ event: Event }> = ({ event }) => {
               aria-hidden="true"
             />
             <span className="text-xs font-medium text-ink-soft truncate">
-              {event.club?.name || event.organizerName || 'Campus Club'}
+              {event.club?.name || event.organizerName || 'Organizer'}
             </span>
             <span className="text-xs font-mono text-ink-muted">·</span>
             <span className="text-xs font-mono text-ink-muted">
@@ -59,15 +61,15 @@ const DenseEventRow: React.FC<{ event: Event }> = ({ event }) => {
             </span>
           </div>
 
-          <Link to={`/events/${event.slug || event.id}`} className="focus:outline-none block">
+          <EventLink event={event} className="focus:outline-none block">
             <h4 className="font-sans font-semibold text-base text-ink group-hover:text-accent transition-colors truncate">
               {event.title}
             </h4>
-          </Link>
+          </EventLink>
 
           <div className="flex items-center gap-1.5 text-xs text-ink-muted">
             <MapPin size={12} weight="bold" className="text-accent flex-shrink-0" />
-            <span className="truncate">{event.venue?.name || 'Campus Venue'}</span>
+            <span className="truncate">{event.venue?.name || 'Venue to be announced'}</span>
           </div>
         </div>
       </div>
@@ -76,22 +78,22 @@ const DenseEventRow: React.FC<{ event: Event }> = ({ event }) => {
       <div className="flex items-center justify-between sm:justify-end gap-3 flex-shrink-0 border-t sm:border-t-0 border-line/40 pt-2 sm:pt-0">
         <div className="text-left sm:text-right font-mono text-xs">
           <span className="font-semibold text-ink">
-            {isFree ? 'Free' : formatCurrency(event.price)}
+            {eventPriceLabel(event)}
           </span>
-          {event.seatsLeft !== undefined && (
+          {event.seatsLeft != null && (
             <p className="text-[11px] text-ink-muted">
               {event.seatsLeft} left
             </p>
           )}
         </div>
 
-        <Link
-          to={`/events/${event.slug || event.id}`}
+        <EventLink
+          event={event}
           className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-subtle hover:bg-accent text-ink hover:text-white font-medium text-xs transition-colors"
         >
           <span>View</span>
           <ArrowUpRight size={12} weight="bold" />
-        </Link>
+        </EventLink>
       </div>
     </article>
   )

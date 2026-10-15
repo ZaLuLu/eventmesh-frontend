@@ -9,8 +9,7 @@ export function getInitialTheme(): 'light' | 'dark' {
   try {
     const saved = localStorage.getItem('eventmesh_theme')
     if (saved === 'dark' || saved === 'light') return saved
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark'
-  } catch {}
+  } catch { /* Theme remains usable when storage or audio is unavailable. */ }
   return 'light'
 }
 
@@ -26,7 +25,7 @@ export function applyTheme(theme: 'light' | 'dark') {
   }
   try {
     localStorage.setItem('eventmesh_theme', theme)
-  } catch {}
+  } catch { /* Theme remains usable when storage or audio is unavailable. */ }
 }
 
 export const ThemeToggle: React.FC<{ className?: string }> = ({ className }) => {
@@ -39,7 +38,7 @@ export const ThemeToggle: React.FC<{ className?: string }> = ({ className }) => 
   const toggleTheme = useCallback(() => {
     try {
       playTearImpulse()
-    } catch {}
+    } catch { /* Theme remains usable when storage or audio is unavailable. */ }
     setTheme((prev) => {
       const next = prev === 'dark' ? 'light' : 'dark'
       applyTheme(next)

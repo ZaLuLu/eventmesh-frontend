@@ -1,3 +1,5 @@
+import { EventLink } from '@/design-system/EventLink'
+import { eventPriceLabel } from '@/lib/eventPresentation'
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { BookmarkSimple, CheckCircle, MapPin, CalendarBlank, ArrowRight, Eye, Sparkle } from '@phosphor-icons/react'
@@ -30,15 +32,7 @@ export function formatCardDate(isoString: string): string {
   }
 }
 
-export function formatPrice(event: Event): string {
-  if (event.isFree || event.price === 0 || !event.features?.paid) {
-    return 'Free'
-  }
-  if (event.price) {
-    return `₹${event.price}`
-  }
-  return 'Free'
-}
+export const formatPrice = eventPriceLabel
 
 export const EventCard: React.FC<EventCardProps> = ({
   event,
@@ -69,11 +63,11 @@ export const EventCard: React.FC<EventCardProps> = ({
   }
 
   const clubColor = event.club?.color || event.organizerColor || '#2F4BD6'
-  const isVerified = event.club?.verified ?? true
+  const isVerified = event.club?.verified ?? false
   const eventLink = `/events/${event.slug || event.id}`
   const dateFormatted = formatCardDate(event.startsAt)
   const isFillingFast =
-    event.seatsLeft !== undefined && event.seatsLeft > 0 && event.seatsLeft <= 5
+    event.seatsLeft != null && event.seatsLeft > 0 && event.seatsLeft <= 5
   const isPromoted = Boolean(event.promotion?.label || event.isSignature)
   const isFree = event.isFree || event.price === 0 || !event.features?.paid
   const hasImage = Boolean(event.poster && event.poster.trim().length > 0)
@@ -135,12 +129,12 @@ export const EventCard: React.FC<EventCardProps> = ({
 
           {/* Title */}
           <h3 className="font-display text-lg sm:text-xl text-ink font-semibold leading-tight line-clamp-2 mb-2 group-hover:text-accent transition-colors">
-            <Link
-              to={eventLink}
+            <EventLink
+              event={event}
               className="after:absolute after:inset-0 focus:outline-none focus-visible:underline"
             >
               {event.title}
-            </Link>
+            </EventLink>
           </h3>
 
           {/* Club attribution */}
@@ -186,15 +180,15 @@ export const EventCard: React.FC<EventCardProps> = ({
             <BookmarkSimple className={cn('w-3.5 h-3.5', isBookmarked && 'fill-accent')} />
           </button>
 
-          <Link
-            to={eventLink}
+          <EventLink
+            event={event}
             aria-hidden="true"
             tabIndex={-1}
             className="hidden sm:inline-flex items-center gap-1.5 text-xs font-mono text-accent hover:underline uppercase font-medium"
           >
             <span>View event</span>
             <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          </EventLink>
         </div>
       </article>
     )
@@ -284,12 +278,12 @@ export const EventCard: React.FC<EventCardProps> = ({
               {dateFormatted}
             </span>
             <h3 className="font-display text-lg font-semibold text-white leading-tight line-clamp-2 mb-1.5">
-              <Link
-                to={eventLink}
+              <EventLink
+                event={event}
                 className="after:absolute after:inset-0 focus:outline-none focus-visible:underline"
               >
                 {event.title}
-              </Link>
+              </EventLink>
             </h3>
             <div className="flex items-center gap-2 text-xs font-mono text-white/80">
               <span
@@ -416,12 +410,12 @@ export const EventCard: React.FC<EventCardProps> = ({
 
           {/* Event Title */}
           <h3 className="font-display text-base sm:text-[17px] text-ink font-semibold leading-snug line-clamp-2 mb-2 group-hover:text-accent transition-colors">
-            <Link
-              to={eventLink}
+            <EventLink
+              event={event}
               className="focus:outline-none focus-visible:underline"
             >
               {event.title}
-            </Link>
+            </EventLink>
           </h3>
         </div>
       </div>
