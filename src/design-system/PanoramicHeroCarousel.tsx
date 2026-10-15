@@ -35,10 +35,10 @@ export const PanoramicHeroCarousel: React.FC<PanoramicHeroCarouselProps> = ({
 
   const count = slides.length
 
-  // Initialize Embla with infinite loop and start-alignment for the next card peek
+  // Initialize Embla with infinite loop and center-alignment for dual left and right peeks
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
-    align: 'start',
+    align: 'center',
     skipSnaps: false,
     containScroll: false,
   })
@@ -119,26 +119,25 @@ export const PanoramicHeroCarousel: React.FC<PanoramicHeroCarouselProps> = ({
       onBlur={() => setIsPaused(false)}
       className={`relative w-full overflow-hidden bg-card border-b border-line select-none py-4 sm:py-6 ${className}`}
     >
-      <div className="mx-auto w-full max-w-7xl px-3 sm:px-6">
-        {/* Embla Viewport Frame */}
-        <div ref={emblaRef} className="overflow-hidden">
-          {/* Infinite Slide Track */}
-          <div className="flex">
-            {slides.map((event, idx) => {
-              const isActive = idx === selectedIndex
-              return (
-                <div
-                  key={event.id || idx}
-                  onClick={() => {
-                    if (!isActive) scrollTo(idx)
-                  }}
-                  className={`relative flex-[0_0_86%] sm:flex-[0_0_82%] lg:flex-[0_0_80%] min-w-0 pr-3 sm:pr-4 md:pr-5 transition-opacity duration-300 ${
-                    isActive ? 'opacity-100' : 'opacity-75 hover:opacity-95 cursor-pointer'
-                  }`}
-                  aria-hidden={!isActive}
-                >
-                  {/* Card Container */}
-                  <div className="relative h-[360px] sm:h-[400px] md:h-[440px] w-full overflow-hidden rounded-2xl sm:rounded-3xl border border-line bg-black shadow-lg">
+      {/* Full-Width Embla Viewport Frame (Occupies 100% of horizontal space for dual left & right peeks) */}
+      <div ref={emblaRef} className="w-full overflow-hidden">
+        {/* Infinite Slide Track */}
+        <div className="flex">
+          {slides.map((event, idx) => {
+            const isActive = idx === selectedIndex
+            return (
+              <div
+                key={event.id || idx}
+                onClick={() => {
+                  if (!isActive) scrollTo(idx)
+                }}
+                className={`relative flex-[0_0_85%] sm:flex-[0_0_78%] lg:flex-[0_0_72%] xl:flex-[0_0_68%] min-w-0 px-2 sm:px-3 lg:px-4 transition-all duration-300 ${
+                  isActive ? 'opacity-100 scale-100' : 'opacity-65 hover:opacity-90 scale-[0.98] cursor-pointer'
+                }`}
+                aria-hidden={!isActive}
+              >
+                {/* Card Container */}
+                <div className="relative h-[340px] sm:h-[400px] md:h-[450px] w-full overflow-hidden rounded-2xl sm:rounded-3xl border border-line bg-black shadow-lg">
                     {/* Background Artwork */}
                     <div className="absolute inset-0 overflow-hidden bg-black">
                       {event.banner || event.poster ? (
@@ -226,9 +225,10 @@ export const PanoramicHeroCarousel: React.FC<PanoramicHeroCarouselProps> = ({
           </div>
         </div>
 
-        {/* Carousel Bottom Control Bar: Indicators & Chevrons */}
-        {count > 1 && (
-          <div className="mt-3 sm:mt-4 flex items-center justify-between gap-3 px-1">
+      {/* Carousel Bottom Control Bar: Indicators & Chevrons */}
+      {count > 1 && (
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 mt-3 sm:mt-4">
+          <div className="flex items-center justify-between gap-3">
             {/* Segmented Dots */}
             <div className="flex items-center gap-1.5 sm:gap-2">
               {slides.map((slide, idx) => (
@@ -269,8 +269,8 @@ export const PanoramicHeroCarousel: React.FC<PanoramicHeroCarouselProps> = ({
               </button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </section>
   )
 }
