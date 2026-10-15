@@ -29,7 +29,7 @@ export const RegisterPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>()
   const { toast } = useToast()
   const { data: event, isLoading } = useEvent(slug || '')
-  const { session } = useAuth()
+  const { session, switchDemoAccount } = useAuth()
   const registerMutation = useRegister()
   const cancelMutation = useCancelMyRegistration()
   const waitlistMutation = useJoinWaitlist()
@@ -248,6 +248,58 @@ export const RegisterPage: React.FC = () => {
           type: 'error',
         })
       }
+    }
+  }
+
+  const handleOneTapRegister = async () => {
+    if (!event) return
+    try {
+      if (!session) {
+        await switchDemoAccount({ role: 'attendee' })
+      }
+      const attendeeName = name || session?.name || 'Aarav Deshmukh'
+      const attendeeEmail = email || session?.email || 'aarav.deshmukh@campus.edu'
+      const attendeePhone = phone || '+91 98765 43210'
+      const attendeeReg = regNumber || 'ENG-2024-8891'
+      const attendeeBranch = branch || 'Computer Engineering'
+
+      const payload = {
+        eventId: event.id,
+        answers: {
+          ...formAnswers,
+          phone: attendeePhone,
+          regNumber: attendeeReg,
+          branch: attendeeBranch,
+          ticketTier: selectedTier || 'Standard Pass',
+        },
+        team: isTeamEvent
+          ? {
+              teamName: teamName || 'Nexus Vanguard',
+              leaderName: attendeeName,
+              leaderEmail: attendeeEmail,
+              members: [
+                { name: attendeeName, email: attendeeEmail, role: 'Team Lead' },
+                { name: 'Rohan Sharma', email: 'rohan.s@campus.edu', role: 'Developer' },
+              ],
+            }
+          : undefined,
+      }
+
+      const res = await registerMutation.mutateAsync(payload)
+      setCreatedRegistration(res)
+      toast({
+        title: 'Pass Issued! ⚡',
+        message: 'Quick test pass confirmed. Present QR code at venue or view in 3D badge dashboard.',
+        type: 'success',
+      })
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (err: any) {
+      console.error('1-Tap register error:', err)
+      toast({
+        title: 'Registration note',
+        message: err.message || 'Pass created or already registered.',
+        type: 'info',
+      })
     }
   }
 
@@ -551,6 +603,32 @@ export const RegisterPage: React.FC = () => {
             {/* STEP 1: Personal particulars (F-01 pre-filled and email locked) */}
             {currentStep === 1 && (
               <div className="space-y-5">
+                {/* ⚡ 1-Tap Quick Pass Shortcut (Testing) */}
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-teal-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-600 flex items-center justify-center font-bold text-base flex-shrink-0">
+                      ⚡
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-ink flex items-center gap-1.5">
+                        <span>1-Tap Quick Pass for Testing</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-800 font-mono font-semibold">Fast Demo</span>
+                      </div>
+                      <p className="text-[11px] text-ink-soft">Instantly autofill credentials, bypass steps, and generate your scannable pass + 3D Student ID.</p>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="compact"
+                    className="bg-ink hover:bg-ink/90 text-paper font-semibold shrink-0 w-full sm:w-auto"
+                    loading={registerMutation.isPending}
+                    onClick={handleOneTapRegister}
+                  >
+                    ⚡ 1-Tap Quick Pass
+                  </Button>
+                </div>
+
                 <div className="p-3.5 rounded-[12px] bg-paper border border-ink/10 flex items-center justify-between text-xs text-ink-soft">
                   <div className="flex items-center gap-2">
                     <Icon name="LockSimple" size={16} className="text-cobalt" />

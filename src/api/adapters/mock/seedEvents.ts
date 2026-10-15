@@ -2,6 +2,400 @@ import { Event, Registration, Certificate, Announcement, Notification, AuditLog 
 
 export const SEED_EVENTS: Event[] = [
   {
+    "id": "evt-demo-1",
+    "slug": "cyberpulse-autonomous-ai-hackathon-2026",
+    "orgId": "org-1",
+    "organizerId": "club-ai",
+    "organizerName": "AIONAI",
+    "organizerColor": "#7B63A8",
+    "club": {
+      "id": "club-ai",
+      "name": "AIONAI",
+      "color": "#7B63A8",
+      "verified": true
+    },
+    "isSignature": true,
+    "title": "CYBERPULSE: AUTONOMOUS AI HACKATHON 2026",
+    "subtitle": "48-Hour Frontier Machine Intelligence & Neural Systems Sprint",
+    "category": "hackathon",
+    "type": "hackathon",
+    "tags": ["AI Agents", "Transformers", "Neural Systems", "Flagship"],
+    "description": "The campus flagship AI hackathon. 48 hours of collaborative engineering where teams train transformer models, build autonomous agent swarms, and develop edge AI pipelines on GPU clusters.",
+    "poster": "/images/events/demo-cyberpulse.jpg",
+    "banner": "/images/events/demo-cyberpulse.jpg",
+    "venue": {
+      "name": "Turing Supercomputing Pavilion",
+      "address": "Floor 4, Advanced Computation Facility",
+      "mapUrl": "https://maps.google.com"
+    },
+    "startsAt": "2026-10-24T09:00:00Z",
+    "endsAt": "2026-10-26T12:00:00Z",
+    "eligibility": "Open to all engineering students, graduate researchers, and verified builders. Teams of 2 to 4.",
+    "capacity": 300,
+    "seatsLeft": 45,
+    "waitlistEnabled": true,
+    "registrationOpensAt": "2026-10-01T00:00:00Z",
+    "registrationClosesAt": "2026-10-23T23:59:00Z",
+    "schedule": [
+      { "time": "09:00 AM · DAY 1", "title": "Opening Keynote & GPU Cluster Access Distribution" },
+      { "time": "11:00 AM · DAY 1", "title": "Neural Architecture Hacking Commences" },
+      { "time": "02:00 AM · DAY 2", "title": "Midnight Latency & Inference Benchmark" },
+      { "time": "10:00 AM · DAY 3", "title": "Project Showcase & Jury Deliberation" }
+    ],
+    "people": [
+      { "name": "Dr. Leena Varma", "role": "judge", "bio": "Director of Computational Intelligence" },
+      { "name": "Nikhil Menon", "role": "judge", "bio": "Staff Machine Learning Engineer" }
+    ],
+    "rules": [
+      "Open source foundations and pre-trained weights permitted with disclosure.",
+      "Live inference demonstration required during final jury evaluation.",
+      "Hardware GPU allocations provided courtesy of Central Research Labs."
+    ],
+    "contact": { "name": "Nikhil Menon", "phone": "+91 98765 00001", "email": "lead@aionai.org" },
+    "certificateInfo": "Verifiable Neural Systems Fellowship Certificate and INR 2,00,000 Cash Pool.",
+    "features": { "certificate": true, "checkin": true, "paid": false, "team": true },
+    "teamConfig": { "minSize": 2, "maxSize": 4 },
+    "formSchema": [
+      { "id": "f-team", "type": "text", "label": "Team Name", "required": true },
+      { "id": "f-github", "type": "text", "label": "GitHub / Hugging Face Profile", "required": true },
+      { "id": "f-track", "type": "select", "label": "Track Focus", "options": ["Autonomous Agents", "Transformer Optimization", "Edge Robotics"], "required": true }
+    ],
+    "status": "published",
+    "results": [],
+    "photos": [],
+    "promotion": { "label": "Featured", "priority": 1, "startsAt": "2026-10-01T00:00:00Z", "endsAt": "2026-11-05T00:00:00Z" },
+    "publishedAt": "2026-10-08T09:00:00Z",
+    "registrationsCount": 255,
+    "isFree": true,
+    "price": 0,
+    "createdAt": "2026-10-01T10:00:00Z"
+  },
+  {
+    "id": "evt-demo-2",
+    "slug": "aerostrike-autonomous-drone-grand-prix",
+    "orgId": "org-1",
+    "organizerId": "club-birds",
+    "organizerName": "BIRDS",
+    "organizerColor": "#6F8468",
+    "club": {
+      "id": "club-birds",
+      "name": "BIRDS",
+      "color": "#6F8468",
+      "verified": true
+    },
+    "isSignature": true,
+    "title": "AEROSTRIKE: AUTONOMOUS DRONE GRAND PRIX",
+    "subtitle": "High-Speed Autonomous Obstacle Navigation & Aerial Kinematics",
+    "category": "contest",
+    "type": "competition",
+    "tags": ["Autonomous Drones", "Computer Vision", "Robotics", "Grand Prix"],
+    "description": "Watch autonomous quadcopters race through an illuminated multi-tier aerial obstacle course with optical flow tracking, obstacle avoidance, and split-second acrobatic maneuvers.",
+    "poster": "/images/events/demo-aerostrike.jpg",
+    "banner": "/images/events/demo-aerostrike.jpg",
+    "venue": {
+      "name": "Indoor Flight Arena & Drone Cage",
+      "address": "Robotics & Aeromechanical Hangar, South Campus",
+      "mapUrl": "https://maps.google.com"
+    },
+    "startsAt": "2026-10-29T10:00:00Z",
+    "endsAt": "2026-10-29T18:00:00Z",
+    "eligibility": "Open to all student collectives, hardware developers, and autonomous aerial teams.",
+    "capacity": 200,
+    "seatsLeft": 38,
+    "waitlistEnabled": true,
+    "registrationOpensAt": "2026-10-01T00:00:00Z",
+    "registrationClosesAt": "2026-10-28T18:00:00Z",
+    "schedule": [
+      { "time": "10:00 AM", "title": "Flight Inspection & Safety Gate Scrutineering" },
+      { "time": "12:00 PM", "title": "Time Trials & Sensor Benchmark Qualifying" },
+      { "time": "03:30 PM", "title": "Final Championship Head-to-Head Heats" },
+      { "time": "05:30 PM", "title": "Grand Podium Ceremony & Trophy Handout" }
+    ],
+    "people": [
+      { "name": "Prof. Maya Nambiar", "role": "judge", "bio": "Embedded Kinematics Chair" },
+      { "name": "Karthik Balan", "role": "judge", "bio": "BIRDS President" }
+    ],
+    "rules": [
+      "Quadcopter weight capped at 850 grams including battery payload.",
+      "Zero manual pilot intervention during official timed gate runs."
+    ],
+    "contact": { "name": "Karthik Balan", "phone": "+91 98765 00002", "email": "lead@birds.org" },
+    "certificateInfo": "Aeronautical Robotics Verified Distinction & Hardware Sponsorship.",
+    "features": { "certificate": true, "checkin": true, "paid": false, "team": true },
+    "teamConfig": { "minSize": 1, "maxSize": 3 },
+    "formSchema": [
+      { "id": "f-pilot", "type": "text", "label": "Flight Controller Spec (e.g. Betaflight, PX4)", "required": true },
+      { "id": "f-team", "type": "text", "label": "Squad / Collectives Name", "required": true }
+    ],
+    "status": "published",
+    "results": [],
+    "photos": [],
+    "promotion": { "label": "Promoted", "priority": 2, "startsAt": "2026-10-01T00:00:00Z", "endsAt": "2026-11-10T00:00:00Z" },
+    "publishedAt": "2026-10-09T09:00:00Z",
+    "registrationsCount": 162,
+    "isFree": true,
+    "price": 0,
+    "createdAt": "2026-10-02T10:00:00Z"
+  },
+  {
+    "id": "evt-demo-3",
+    "slug": "prismatica-spatial-ui-ux-design-jam",
+    "orgId": "org-1",
+    "organizerId": "club-pixelforge",
+    "organizerName": "PixelForge",
+    "organizerColor": "#5B2A4A",
+    "club": {
+      "id": "club-pixelforge",
+      "name": "PixelForge",
+      "color": "#5B2A4A",
+      "verified": true
+    },
+    "isSignature": true,
+    "title": "PRISMATICA: SPATIAL INTERFACE & UI/UX DESIGN JAM",
+    "subtitle": "48-Hour Spatial Computing, Shaders & Micro-Interaction Sprint",
+    "category": "workshop",
+    "type": "workshop",
+    "tags": ["Design Systems", "Spatial UI", "Shaders", "WebGL", "Creative"],
+    "description": "An intense, beautiful creative sprint challenging designers and creative technologists to produce tactile, iridescent, and spatial interface prototypes that break conventional flat UI norms.",
+    "poster": "/images/events/demo-prismatica.jpg",
+    "banner": "/images/events/demo-prismatica.jpg",
+    "venue": {
+      "name": "Design & Prototyping Atrium",
+      "address": "Architecture & Industrial Design Block, Studio 3B",
+      "mapUrl": "https://maps.google.com"
+    },
+    "startsAt": "2026-11-01T09:00:00Z",
+    "endsAt": "2026-11-02T18:00:00Z",
+    "eligibility": "Open to UI/UX designers, 3D artists, creative frontend engineers, and design cohorts.",
+    "capacity": 150,
+    "seatsLeft": 22,
+    "waitlistEnabled": true,
+    "registrationOpensAt": "2026-10-01T00:00:00Z",
+    "registrationClosesAt": "2026-10-31T20:00:00Z",
+    "schedule": [
+      { "time": "09:00 AM · DAY 1", "title": "Design Brief & Spatial Design Token Library Release" },
+      { "time": "02:00 PM · DAY 1", "title": "WebGL Shaders & Tactile Micro-Interactions Masterclass" },
+      { "time": "03:00 PM · DAY 2", "title": "Gallery Walk, Peer Critiques & Interactive Demo Stalls" }
+    ],
+    "people": [
+      { "name": "Aryan Kapoor", "role": "judge", "bio": "Creative Technologist & PixelForge Lead" },
+      { "name": "Simran Kaur", "role": "judge", "bio": "Design Systems Specialist" }
+    ],
+    "rules": [
+      "Prototypes must run live in browser via WebGL, Three.js, React, or interactive Figma prototypes.",
+      "Focus on motion fluidity, haptic resonance, and editorial typography."
+    ],
+    "contact": { "name": "Aryan Kapoor", "phone": "+91 98765 00003", "email": "lead@pixelforge.org" },
+    "certificateInfo": "Excellence in Spatial Interface Craftsmanship Certificate.",
+    "features": { "certificate": true, "checkin": true, "paid": false, "team": true },
+    "teamConfig": { "minSize": 1, "maxSize": 2 },
+    "formSchema": [
+      { "id": "f-portfolio", "type": "text", "label": "Portfolio or Dribbble/Figma Link", "required": true },
+      { "id": "f-tool", "type": "select", "label": "Primary Toolkit", "options": ["Figma & Protopie", "Three.js / React Three Fiber", "Pure CSS / Canvas"], "required": true }
+    ],
+    "status": "published",
+    "results": [],
+    "photos": [],
+    "promotion": { "label": "Featured", "priority": 3, "startsAt": "2026-10-01T00:00:00Z", "endsAt": "2026-11-15T00:00:00Z" },
+    "publishedAt": "2026-10-10T09:00:00Z",
+    "registrationsCount": 128,
+    "isFree": true,
+    "price": 0,
+    "createdAt": "2026-10-03T10:00:00Z"
+  },
+  {
+    "id": "evt-demo-4",
+    "slug": "zeroday-protocol-red-team-ctf",
+    "orgId": "org-1",
+    "organizerId": "club-cyberguard",
+    "organizerName": "CyberGuard",
+    "organizerColor": "#1F5F5B",
+    "club": {
+      "id": "club-cyberguard",
+      "name": "CyberGuard",
+      "color": "#1F5F5B",
+      "verified": true
+    },
+    "isSignature": true,
+    "title": "ZERODAY PROTOCOL: RED TEAM CTF 2026",
+    "subtitle": "36-Hour Binary Exploitation, Web Exploits & Cryptanalysis Tournament",
+    "category": "contest",
+    "type": "competition",
+    "tags": ["Cybersecurity", "CTF", "Binary Exploitation", "Cryptography", "Reverse Engineering"],
+    "description": "Jeopardy and Attack-Defense style Capture The Flag tournament. Penetrate hardening layers, analyze stripped binaries, break cryptographic signatures, and exploit real-world cloud architectures.",
+    "poster": "/images/events/demo-zeroday.jpg",
+    "banner": "/images/events/demo-zeroday.jpg",
+    "venue": {
+      "name": "SecOps Cyber Range & War Room",
+      "address": "Floor 2, Information Security Building",
+      "mapUrl": "https://maps.google.com"
+    },
+    "startsAt": "2026-11-06T18:00:00Z",
+    "endsAt": "2026-11-08T06:00:00Z",
+    "eligibility": "Open to all security researchers, red-team enthusiasts, and students globally.",
+    "capacity": 350,
+    "seatsLeft": 64,
+    "waitlistEnabled": true,
+    "registrationOpensAt": "2026-10-01T00:00:00Z",
+    "registrationClosesAt": "2026-11-05T23:59:00Z",
+    "schedule": [
+      { "time": "06:00 PM · NOV 06", "title": "Infrastructure VPN Credentials & Target Network Launch" },
+      { "time": "12:00 AM · NOV 07", "title": "Release of Insane-Tier Kernel Challenges" },
+      { "time": "06:00 AM · NOV 08", "title": "Scoreboard Freeze & Writeup Verification" }
+    ],
+    "people": [
+      { "name": "Divya Krishnan", "role": "judge", "bio": "Offensive Security Lead" },
+      { "name": "Pranav Nair", "role": "judge", "bio": "CTF Captain & Binary Exploiter" }
+    ],
+    "rules": [
+      "Attacking competition infrastructure or fellow team infrastructure outside declared IP ranges is strictly prohibited.",
+      "Sharing flags or solutions between distinct teams results in immediate disqualification."
+    ],
+    "contact": { "name": "Divya Krishnan", "phone": "+91 98765 00004", "email": "lead@cyberguard.org" },
+    "certificateInfo": "Verifiable Red Team Security Competency Credential.",
+    "features": { "certificate": true, "checkin": true, "paid": false, "team": true },
+    "teamConfig": { "minSize": 1, "maxSize": 4 },
+    "formSchema": [
+      { "id": "f-handle", "type": "text", "label": "CTFtime Handle or Alias", "required": true }
+    ],
+    "status": "published",
+    "results": [],
+    "photos": [],
+    "promotion": { "label": "Promoted", "priority": 4, "startsAt": "2026-10-01T00:00:00Z", "endsAt": "2026-11-20T00:00:00Z" },
+    "publishedAt": "2026-10-11T09:00:00Z",
+    "registrationsCount": 286,
+    "isFree": true,
+    "price": 0,
+    "createdAt": "2026-10-04T10:00:00Z"
+  },
+  {
+    "id": "evt-demo-5",
+    "slug": "neon-odyssey-electric-audiovisual-night",
+    "orgId": "org-1",
+    "organizerId": "club-foss",
+    "organizerName": "FOSS Society",
+    "organizerColor": "#A32828",
+    "club": {
+      "id": "club-foss",
+      "name": "FOSS Society",
+      "color": "#A32828",
+      "verified": true
+    },
+    "isSignature": true,
+    "title": "NEON ODYSSEY: ELECTRIC AUDIOVISUAL NIGHT",
+    "subtitle": "Live Synthwave, Open-Source Generative Visuals & Campus Cultural Evening",
+    "category": "cultural",
+    "type": "other",
+    "tags": ["Live Music", "Synthwave", "Generative Visuals", "Cultural", "Campus Night"],
+    "description": "Celebrate the culmination of Autumn Tech Month with live modular synthesizer performances, code-driven laser projection mapping, and electronic soundscapes performed by student artists.",
+    "poster": "/images/events/demo-neonodyssey.jpg",
+    "banner": "/images/events/demo-neonodyssey.jpg",
+    "venue": {
+      "name": "Open Air Amphitheatre",
+      "address": "Campus Lakeside Green, Western Promenade",
+      "mapUrl": "https://maps.google.com"
+    },
+    "startsAt": "2026-11-12T18:30:00Z",
+    "endsAt": "2026-11-12T23:00:00Z",
+    "eligibility": "All students, faculty, and campus guests with valid digital passes.",
+    "capacity": 800,
+    "seatsLeft": 110,
+    "waitlistEnabled": true,
+    "registrationOpensAt": "2026-10-01T00:00:00Z",
+    "registrationClosesAt": "2026-11-12T17:00:00Z",
+    "schedule": [
+      { "time": "06:30 PM", "title": "Gates Open & Ambient Electronic Prelude" },
+      { "time": "07:30 PM", "title": "Generative Live Coding Visuals & Modular Synth Set" },
+      { "time": "09:30 PM", "title": "Headlining Campus Electronic Collective" }
+    ],
+    "people": [
+      { "name": "Varun Swaminathan", "role": "speaker", "bio": "FOSS Society Lead" }
+    ],
+    "rules": [
+      "Digital student ID or mobile pass QR required at security access barriers.",
+      "Eco-friendly campus protocol: zero single-use plastics permitted in the amphitheatre."
+    ],
+    "contact": { "name": "Varun Swaminathan", "phone": "+91 98765 00005", "email": "lead@foss.org" },
+    "certificateInfo": "Digital Event Attendance Badge.",
+    "features": { "certificate": false, "checkin": true, "paid": false, "team": false },
+    "formSchema": [],
+    "status": "published",
+    "results": [],
+    "photos": [],
+    "promotion": { "label": "Featured", "priority": 5, "startsAt": "2026-10-01T00:00:00Z", "endsAt": "2026-11-25T00:00:00Z" },
+    "publishedAt": "2026-10-12T09:00:00Z",
+    "registrationsCount": 690,
+    "isFree": true,
+    "price": 0,
+    "createdAt": "2026-10-05T10:00:00Z"
+  },
+  {
+    "id": "evt-demo-6",
+    "slug": "voxelforge-48hr-indie-game-sprint",
+    "orgId": "org-1",
+    "organizerId": "club-devcraft",
+    "organizerName": "DevCraft",
+    "organizerColor": "#C66A4A",
+    "club": {
+      "id": "club-devcraft",
+      "name": "DevCraft",
+      "color": "#C66A4A",
+      "verified": true
+    },
+    "isSignature": true,
+    "title": "VOXELFORGE: 48-HOUR INDIE GAME SPRINT",
+    "subtitle": "Game Mechanics, Procedural Shaders & Interactive 3D Graphics Marathon",
+    "category": "hackathon",
+    "type": "hackathon",
+    "tags": ["Game Development", "Unity", "Godot", "Pixel Art", "Shaders"],
+    "description": "Design and ship a complete playable indie game in 48 hours around a surprise theme announced at kickoff. Play arcade builds directly on the auditorium big screen during the closing showcase.",
+    "poster": "/images/events/demo-voxelforge.jpg",
+    "banner": "/images/events/demo-voxelforge.jpg",
+    "venue": {
+      "name": "Interactive Media & Game Development Lab",
+      "address": "Floor 3, Creative Tech Pavilion",
+      "mapUrl": "https://maps.google.com"
+    },
+    "startsAt": "2026-11-15T09:00:00Z",
+    "endsAt": "2026-11-17T14:00:00Z",
+    "eligibility": "Open to indie developers, game designers, soundtrack composers, and 3D animators.",
+    "capacity": 220,
+    "seatsLeft": 31,
+    "waitlistEnabled": true,
+    "registrationOpensAt": "2026-10-01T00:00:00Z",
+    "registrationClosesAt": "2026-11-14T23:59:00Z",
+    "schedule": [
+      { "time": "09:00 AM · DAY 1", "title": "Secret Theme Reveal & Pitching Circles" },
+      { "time": "12:00 AM · DAY 2", "title": "Playable Alpha Milestone Playtest" },
+      { "time": "11:00 AM · DAY 3", "title": "Itch.io Release & Public Arcade Floor" }
+    ],
+    "people": [
+      { "name": "Siddharth Roy", "role": "judge", "bio": "DevCraft Lead & Graphics Engineer" },
+      { "name": "Pooja Hegde", "role": "judge", "bio": "Frontend & Interaction Architect" }
+    ],
+    "rules": [
+      "Any game engine permitted (Godot, Unity, Unreal, Bevy, or WebGL custom engine).",
+      "All game assets created during the 48 hours unless third-party assets are declared CC-0."
+    ],
+    "contact": { "name": "Siddharth Roy", "phone": "+91 98765 00006", "email": "lead@devcraft.org" },
+    "certificateInfo": "Indie Game Developer Credential & Publisher Mentorship.",
+    "features": { "certificate": true, "checkin": true, "paid": false, "team": true },
+    "teamConfig": { "minSize": 1, "maxSize": 4 },
+    "formSchema": [
+      { "id": "f-engine", "type": "select", "label": "Engine / Framework", "options": ["Godot 4", "Unity", "Unreal Engine", "Custom WebGL / Canvas"], "required": true },
+      { "id": "f-team", "type": "text", "label": "Studio / Team Name", "required": true }
+    ],
+    "status": "published",
+    "results": [],
+    "photos": [],
+    "promotion": { "label": "Promoted", "priority": 6, "startsAt": "2026-10-01T00:00:00Z", "endsAt": "2026-11-30T00:00:00Z" },
+    "publishedAt": "2026-10-13T09:00:00Z",
+    "registrationsCount": 189,
+    "isFree": true,
+    "price": 0,
+    "createdAt": "2026-10-06T10:00:00Z"
+  },
+  {
     "id": "evt-1",
     "slug": "grand-turing-hackathon-2026",
     "orgId": "org-1",

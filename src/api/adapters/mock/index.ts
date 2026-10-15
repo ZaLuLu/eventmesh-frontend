@@ -77,7 +77,7 @@ async function simulateLatency(): Promise<void> {
 // -------------------------------------------------------------
 // IN-MEMORY / LOCALSTORAGE STORE
 // -------------------------------------------------------------
-const SCHEMA_VERSION = 'v2_campus_funk_2'
+const SCHEMA_VERSION = 'v4_vercel_demo_events'
 
 class MockDataStore {
   organization: Organization

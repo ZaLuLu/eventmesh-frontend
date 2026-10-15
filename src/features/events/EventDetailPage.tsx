@@ -3,7 +3,8 @@ import React, { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { useEvent } from '@/hooks/useEvents'
-import { useMyRegistrations, useCancelMyRegistration, useJoinWaitlist } from '@/hooks/useRegistrations'
+import { useRegister, useMyRegistrations, useCancelMyRegistration, useJoinWaitlist } from '@/hooks/useRegistrations'
+import { useAuth } from '@/hooks/useAuth'
 import { PageShell } from '@/design-system/layout/PageShell'
 import { PosterArt } from '@/design-system/visuals/PosterArt'
 import { Button } from '@/design-system/primitives/Button'
@@ -28,6 +29,8 @@ export const EventDetailPage: React.FC = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
   const { data: event, isLoading, error } = useEvent(slug || '')
+  const { session, switchDemoAccount } = useAuth()
+  const registerMutation = useRegister()
   const { data: myRegistrations = [] } = useMyRegistrations()
   const cancelMutation = useCancelMyRegistration()
   const waitlistMutation = useJoinWaitlist()
@@ -37,6 +40,54 @@ export const EventDetailPage: React.FC = () => {
   const [selectedTierId, setSelectedTierId] = useState('tier-standard')
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [waitlistSuccess, setWaitlistSuccess] = useState(false)
+  const [isOneTapSubmitting, setIsOneTapSubmitting] = useState(false)
+
+  const handleOneTapRegister = async () => {
+    if (!event) return
+    setIsOneTapSubmitting(true)
+    try {
+      if (!session) {
+        await switchDemoAccount({ role: 'attendee' })
+      }
+      const attendeeName = session?.name || 'Aarav Sharma'
+      const attendeeEmail = session?.email || 'attendee@campus.edu'
+      const payload = {
+        eventId: event.id,
+        answers: {
+          phone: '+91 98450 12345',
+          regNumber: 'ENG-2024-8891',
+          branch: 'Computer Science & Engineering',
+          ticketTier: event.isFree ? 'Free Pass' : 'Standard Pass',
+        },
+        team: event.features?.team
+          ? {
+              teamName: `${event.title.split(' ')[0]} Devs`,
+              leaderName: attendeeName,
+              leaderEmail: attendeeEmail,
+              members: [
+                { name: attendeeName, email: attendeeEmail, role: 'Lead' },
+                { name: 'Rhea Sen', email: 'rhea@campus.edu', role: 'Engineer' }
+              ],
+            }
+          : undefined,
+      }
+      await registerMutation.mutateAsync(payload)
+      toast({
+        title: 'Instant Pass Issued! 🎉',
+        message: 'Your registration is confirmed. Opening your dashboard…',
+        type: 'success',
+      })
+      navigate('/attendee/dashboard')
+    } catch (err: any) {
+      toast({
+        title: 'Registration Error',
+        message: err.message || 'Could not auto-register pass',
+        type: 'error'
+      })
+    } finally {
+      setIsOneTapSubmitting(false)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -662,15 +713,25 @@ export const EventDetailPage: React.FC = () => {
                     )}
                   </div>
                 ) : isRegistrationOpen ? (
-                  <Button
-                    type="button"
-                    variant="primary"
-                    size="default"
-                    fullWidth
-                    onClick={() => navigate(`/events/${event.slug}/register?tier=${selectedTierId}`)}
-                  >
-                    Register now
-                  </Button>
+                  <div className="space-y-2">
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="default"
+                      fullWidth
+                      onClick={() => navigate(`/events/${event.slug}/register?tier=${selectedTierId}`)}
+                    >
+                      Register now
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={handleOneTapRegister}
+                      disabled={isOneTapSubmitting}
+                      className="w-full py-2.5 px-3 rounded-xl border border-accent/40 bg-accent/10 hover:bg-accent/20 text-accent font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-[0.99]"
+                    >
+                      <span>⚡ 1-Tap Quick Pass (Testing)</span>
+                    </button>
+                  </div>
                 ) : (
                   <Button variant="secondary" size="default" fullWidth disabled>
                     Registration closed
@@ -725,13 +786,23 @@ export const EventDetailPage: React.FC = () => {
             Join waitlist
           </Button>
         ) : isRegistrationOpen ? (
-          <Button
-            variant="primary"
-            size="compact"
-            onClick={() => navigate(`/events/${event.slug}/register?tier=${selectedTierId}`)}
-          >
-            Register now
-          </Button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleOneTapRegister}
+              disabled={isOneTapSubmitting}
+              className="py-2 px-3 rounded-full border border-accent/40 bg-accent/10 text-accent font-semibold text-xs whitespace-nowrap"
+            >
+              ⚡ 1-Tap
+            </button>
+            <Button
+              variant="primary"
+              size="compact"
+              onClick={() => navigate(`/events/${event.slug}/register?tier=${selectedTierId}`)}
+            >
+              Register now
+            </Button>
+          </div>
         ) : (
           <Button variant="secondary" size="compact" disabled>Closed</Button>
         )}
