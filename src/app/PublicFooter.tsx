@@ -19,6 +19,9 @@ export const PublicFooter: React.FC = () => {
 
         {/* Right: Discrete Links */}
         <div className="flex flex-wrap items-center justify-center gap-5 text-xs text-ink-soft">
+          <Link to="/" className="hover:text-ink transition-colors">
+            Home
+          </Link>
           <Link to="/explore" className="hover:text-ink transition-colors">
             Explore
           </Link>
@@ -27,9 +30,6 @@ export const PublicFooter: React.FC = () => {
           </Link>
           <Link to="/schedule" className="hover:text-ink transition-colors">
             Calendar
-          </Link>
-          <Link to="/announcements" className="hover:text-ink transition-colors">
-            Announcements
           </Link>
           <span className="text-ink-muted">© {new Date().getFullYear()}</span>
         </div>

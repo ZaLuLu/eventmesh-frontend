@@ -11,9 +11,7 @@ const PUBLIC_ROUTES = [
   '/',
   '/explore',
   '/clubs',
-  '/calendar',
-  '/announcements',
-  '/about',
+  '/schedule',
   '/gallery',
   '/styleguide',
 ]
