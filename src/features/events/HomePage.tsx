@@ -5,6 +5,7 @@ import { usePromotedEvents, useNewestEvents } from '@/hooks/useEvents'
 import { api, Event, PaginatedResult } from '@/api'
 import { ResponsiveMasonryLayout } from '@/design-system/ResponsiveMasonryLayout'
 import { CinematicHeroStage } from './components/CinematicHeroStage'
+import { RecommendedEventsShelf } from './components/RecommendedEventsShelf'
 import { EventTicketCard } from '@/design-system/EventTicketCard'
 import { ClubsStrip } from './components/ClubsStrip'
 import { EventsToolbar } from './components/EventsToolbar'
@@ -154,11 +155,19 @@ export const HomePage: React.FC = () => {
     <div className="w-full bg-paper text-ink min-h-screen flex flex-col select-none">
       <CinematicHeroStage events={promoted.length > 0 ? promoted : discoveryEvents} />
 
-      {/* Bottom 40%: Regular Campus Events Responsive Masonry Layout */}
+      {/* BookMyShow Style Recommended Shows / Events Poster Rail */}
+      <RecommendedEventsShelf
+        events={promoted.length > 0 ? promoted : discoveryEvents}
+        title="Recommended Events"
+        subtitle="Curated campus exhibitions, hackathons, and championship competitions"
+        seeAllLink="/explore"
+      />
+
+      {/* Campus Sessions & Productions Responsive Masonry Layout */}
       <ResponsiveMasonryLayout
         events={newestEvents.length > 0 ? newestEvents : discoveryEvents.slice(0, 8)}
         title="Happening on Campus"
-        subtitle="Non-genre-restricted regular events, club sessions, and daily campus productions"
+        subtitle="Regular club sessions, technical workshops, and daily campus activities"
       />
 
       <section aria-label="Search events" className="sticky top-16 z-30 border-b border-line bg-paper py-4">

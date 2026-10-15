@@ -1,6 +1,6 @@
 import React from 'react'
 import { Event } from '@/api/contracts/event'
-import { LiquidGlassCarousel } from '@/design-system/LiquidGlassCarousel'
+import { PanoramicHeroCarousel } from '@/design-system/PanoramicHeroCarousel'
 
 export interface CinematicHeroStageProps {
   events?: Event[]
@@ -9,12 +9,11 @@ export interface CinematicHeroStageProps {
 
 /**
  * CinematicHeroStage
- * Houses the LiquidGlassCarousel with optical refraction lens, inertial drag,
- * and side-peeking cards for the Top 60% hero featured stage.
+ * Houses the PanoramicHeroCarousel with panoramic banner stage and side peeks.
  */
 export const CinematicHeroStage: React.FC<CinematicHeroStageProps> = ({
   events = [],
   className = '',
 }) => {
-  return <LiquidGlassCarousel events={events} className={className} />
+  return <PanoramicHeroCarousel events={events} className={className} />
 }

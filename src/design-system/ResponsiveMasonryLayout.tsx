@@ -50,7 +50,7 @@ export const ResponsiveMasonryLayout: React.FC<ResponsiveMasonryLayoutProps> = (
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-accent" />
               <p className="font-mono text-xs uppercase tracking-widest text-accent font-semibold">
-                Bottom 40% Discovery Showcase
+                Campus Spotlight
               </p>
             </div>
             <h2 className="mt-1 text-2xl sm:text-3xl font-semibold tracking-tight text-ink font-display">
