@@ -30,7 +30,7 @@ export const OfflineBanner: React.FC = () => {
     <div
       role="status"
       aria-live="polite"
-      className="w-full bg-tangerine text-white px-4 py-2 border-b border-ink flex items-center justify-center gap-2.5 text-xs font-mono font-bold uppercase tracking-wider select-none z-50 sticky top-0"
+      className="w-full bg-purple-600 dark:bg-purple-700 text-white px-4 py-2 border-b-2 border-ink flex items-center justify-center gap-2.5 text-xs font-mono font-bold uppercase tracking-wider select-none z-50 sticky top-0 shadow-xs"
     >
       <WifiSlash size={16} weight="bold" />
       <span>Network Disconnected — Operating in Local Memory Mode</span>

@@ -40,7 +40,7 @@ export const AnnouncementsPage: React.FC = () => {
   const getKindBadge = (kind: string) => {
     switch (kind) {
       case 'deadline':
-        return { color: 'tangerine' as const, label: 'Deadline', icon: <Clock className="w-3.5 h-3.5" weight="bold" /> }
+        return { color: 'purple' as const, label: 'Deadline', icon: <Clock className="w-3.5 h-3.5" weight="bold" /> }
       case 'event_change':
         return { color: 'pink' as const, label: 'Schedule Update', icon: <WarningCircle className="w-3.5 h-3.5" weight="bold" /> }
       case 'result':
@@ -56,7 +56,7 @@ export const AnnouncementsPage: React.FC = () => {
       <div className="space-y-4">
         <SectionHeader
           badge="CAMPUS DISPATCH"
-          badgeColor="mustard"
+          badgeColor="purple"
           title="Announcements & Bulletins"
           accentWord="Bulletins"
           subtitle="Official broadcasts, team deadlines, venue relocations, and competition results posted directly by campus club leads."
@@ -85,7 +85,7 @@ export const AnnouncementsPage: React.FC = () => {
       {pinnedAnnouncements.length > 0 && (
         <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <PushPin className="w-4 h-4 text-ink" weight="fill" />
+            <PushPin className="w-4 h-4 text-accent" weight="fill" />
             <span className="font-display font-extrabold text-sm uppercase tracking-wider text-ink">
               Pinned Announcements
             </span>
@@ -99,11 +99,11 @@ export const AnnouncementsPage: React.FC = () => {
               return (
                 <div
                   key={item.id}
-                  className="rounded-[20px] border-2 border-ink bg-[#F2B84B]/20 border-l-[8px] border-l-[#F2B84B] p-6 shadow-[4px_4px_0_#151130] space-y-3"
+                  className="rounded-[20px] border-2 border-ink bg-purple-500/10 dark:bg-purple-950/30 border-l-[8px] border-l-accent p-6 shadow-[4px_4px_0_#151130] space-y-3"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Sticker color="mustard" size="sm" icon={<PushPin className="w-3.5 h-3.5" weight="fill" />}>
+                      <Sticker color="purple" size="sm" icon={<PushPin className="w-3.5 h-3.5" weight="fill" />}>
                         Pinned
                       </Sticker>
                       <Sticker color={badge.color} size="sm" icon={badge.icon}>

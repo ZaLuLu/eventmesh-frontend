@@ -17,7 +17,6 @@ const destinations = [
   { label: 'Calendar', path: '/schedule' },
   { label: 'Clubs', path: '/clubs' },
   { label: 'Announcements', path: '/announcements' },
-  { label: 'About', path: '/about' },
 ]
 
 export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
@@ -36,7 +35,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
   }
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-card text-ink">
+    <header className="fixed inset-x-0 top-0 z-50 border-b-2 border-ink bg-card text-ink">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
         <div className="flex min-w-0 items-center gap-3">
           <Link to="/" onClick={closeMenus} aria-label="EventMesh home" className="shrink-0 text-lg font-semibold tracking-[-0.03em]">eventmesh</Link>
@@ -54,7 +53,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
           </div>}
         </div>
 
-        <nav aria-label="Primary navigation" className="hidden items-center gap-8 lg:flex">
+        <nav aria-label="Primary navigation" className="hidden items-center gap-6 lg:flex">
           {destinations.map(({ label, path }) => (
             <NavLink key={path} to={path} className={({ isActive }) => cn('relative whitespace-nowrap py-5 text-sm font-medium text-ink-soft hover:text-ink', isActive && 'text-ink after:absolute after:bottom-3 after:left-0 after:right-0 after:h-px after:bg-accent')}>
               {label}
@@ -62,8 +61,22 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
           ))}
         </nav>
 
+        {/* Search Bar in Navbar with Announcement-style Tactile Border */}
+        <button
+          type="button"
+          onClick={onSearchOpen}
+          aria-label="Search events and clubs"
+          className="hidden sm:flex items-center gap-2 rounded-full border-2 border-ink bg-paper px-3 sm:px-3.5 py-1.5 text-xs text-ink-soft hover:text-ink shadow-[2px_2px_0_#151130] dark:shadow-[2px_2px_0_#000000] hover:shadow-[3px_3px_0_#151130] transition-all w-40 md:w-52 lg:w-60"
+        >
+          <MagnifyingGlass size={14} weight="bold" className="text-accent shrink-0" />
+          <span className="truncate font-sans text-xs">Search events, clubs...</span>
+          <kbd className="ml-auto hidden rounded border border-ink/40 bg-card px-1.5 py-0.5 font-mono text-[9px] text-ink-muted md:inline-block">
+            ⌘K
+          </kbd>
+        </button>
+
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-          <button type="button" onClick={onSearchOpen} aria-label="Search events" className="grid h-9 w-9 place-items-center rounded-lg text-ink-soft hover:bg-surface-subtle hover:text-ink"><MagnifyingGlass size={18} /></button>
+          <button type="button" onClick={onSearchOpen} aria-label="Search events" className="sm:hidden grid h-9 w-9 place-items-center rounded-lg border-2 border-ink text-ink shadow-[2px_2px_0_#151130]"><MagnifyingGlass size={16} weight="bold" /></button>
           <div className="hidden sm:block"><ThemeToggle /></div>
           <div className="hidden sm:block"><NotificationInbox /></div>
           {isAuthenticated ? (

@@ -1,6 +1,6 @@
 // Hallmark macrostructure: AdminConsole-ClubProfile
 import React, { useState, useEffect } from 'react'
-import { Palette, CheckCircle, Warning, FloppyDisk } from '@phosphor-icons/react'
+import { Palette, CheckCircle, Warning, FloppyDisk, Users, Trash, Plus } from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { useClub, useUpdateClub } from '@/hooks/useClubs'
@@ -9,6 +9,7 @@ import { Field } from '@/design-system/primitives/Field'
 import { getContrastSummary } from '@/lib/contrast'
 import { TOKENS } from '@/design-system/tokens'
 import { useToast } from '@/design-system/primitives/Toast'
+import type { PersonReference } from '@/api/contracts/organization'
 
 export const AdminClubProfilePage: React.FC = () => {
   const { session } = useAuth()
@@ -25,12 +26,23 @@ export const AdminClubProfilePage: React.FC = () => {
   const [achievements, setAchievements] = useState<string[]>([])
   const [newAchievement, setNewAchievement] = useState('')
 
+  // Club Leadership / Member details for the Club About Page
+  const [coordinators, setCoordinators] = useState<PersonReference[]>([])
+  const [newMemberName, setNewMemberName] = useState('')
+  const [newMemberRole, setNewMemberRole] = useState('')
+  const [newMemberBio, setNewMemberBio] = useState('')
+  const [newMemberPhoto, setNewMemberPhoto] = useState('')
+
   useEffect(() => {
     if (club) {
       setColor(club.color)
       setAbout(club.about)
       setWhatWeDo(club.whatWeDo)
       setAchievements(club.achievements || [])
+      setCoordinators([
+        ...(club.studentCoordinators || []),
+        ...(club.coordinators || []),
+      ])
     }
   }, [club])
 
@@ -46,16 +58,40 @@ export const AdminClubProfilePage: React.FC = () => {
           about,
           whatWeDo,
           achievements,
+          studentCoordinators: coordinators,
+          coordinators: [],
         },
       })
       toast({
-        title: 'Club Profile Updated',
-        message: 'Signature identity color and narrative preserved.',
+        title: 'Club Profile & Roster Updated',
+        message: 'Member details and narrative successfully saved to the club about page.',
         type: 'success',
       })
     } catch {
       toast({ title: 'Update failed', type: 'error' })
     }
+  }
+
+  const handleAddMember = () => {
+    if (newMemberName.trim() && newMemberRole.trim()) {
+      setCoordinators([
+        ...coordinators,
+        {
+          name: newMemberName.trim(),
+          role: newMemberRole.trim(),
+          bio: newMemberBio.trim() || undefined,
+          photo: newMemberPhoto.trim() || undefined,
+        },
+      ])
+      setNewMemberName('')
+      setNewMemberRole('')
+      setNewMemberBio('')
+      setNewMemberPhoto('')
+    }
+  }
+
+  const handleRemoveMember = (idx: number) => {
+    setCoordinators(coordinators.filter((_, i) => i !== idx))
   }
 
   const handleAddAchievement = () => {
@@ -226,6 +262,139 @@ export const AdminClubProfilePage: React.FC = () => {
               </li>
             ))}
           </ul>
+        </div>
+
+        {/* Club Leadership & Member Roster (Showcased on Club About Page) */}
+        <div className="p-5 bg-surface border border-line rounded-panel space-y-4">
+          <div className="flex items-center justify-between border-b border-line pb-2">
+            <div>
+              <h3 className="text-h3 font-semibold text-text flex items-center gap-2">
+                <Users size={18} className="text-accent" />
+                <span>Club Leadership & Team Roster</span>
+              </h3>
+              <p className="text-caption text-text-3 mt-0.5">
+                Team members and coordinators displayed on the public Club About page.
+              </p>
+            </div>
+            <span className="text-caption font-mono text-accent">
+              {coordinators.length} Members
+            </span>
+          </div>
+
+          {/* Add New Member Input Grid */}
+          <div className="p-4 rounded-btn border border-line bg-subtle space-y-3">
+            <span className="text-caption font-semibold text-text block">
+              Add New Organizer / Club Lead
+            </span>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-caption text-text-2 block mb-1">Full Name *</label>
+                <input
+                  type="text"
+                  value={newMemberName}
+                  onChange={(e) => setNewMemberName(e.target.value)}
+                  placeholder="e.g. Maya Chen"
+                  className="w-full bg-surface border border-line rounded-btn px-3 py-1.5 text-small text-text focus:outline-none focus:border-accent"
+                />
+              </div>
+
+              <div>
+                <label className="text-caption text-text-2 block mb-1">Role / Designation *</label>
+                <input
+                  type="text"
+                  value={newMemberRole}
+                  onChange={(e) => setNewMemberRole(e.target.value)}
+                  placeholder="e.g. President & Systems Lead"
+                  className="w-full bg-surface border border-line rounded-btn px-3 py-1.5 text-small text-text focus:outline-none focus:border-accent"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-caption text-text-2 block mb-1">About Them / Short Bio</label>
+              <input
+                type="text"
+                value={newMemberBio}
+                onChange={(e) => setNewMemberBio(e.target.value)}
+                placeholder="e.g. Third-year robotics researcher specializing in autonomous drones and computer vision."
+                className="w-full bg-surface border border-line rounded-btn px-3 py-1.5 text-small text-text focus:outline-none focus:border-accent"
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-end justify-between gap-3 pt-1">
+              <div className="flex-1">
+                <label className="text-caption text-text-2 block mb-1">Photo URL (optional)</label>
+                <input
+                  type="text"
+                  value={newMemberPhoto}
+                  onChange={(e) => setNewMemberPhoto(e.target.value)}
+                  placeholder="https://images.unsplash.com/..."
+                  className="w-full bg-surface border border-line rounded-btn px-3 py-1.5 text-small text-text focus:outline-none focus:border-accent"
+                />
+              </div>
+
+              <Button
+                type="button"
+                surface="admin"
+                variant="secondary"
+                size="sm"
+                icon={<Plus size={14} weight="bold" />}
+                onClick={handleAddMember}
+                disabled={!newMemberName.trim() || !newMemberRole.trim()}
+              >
+                Add Member
+              </Button>
+            </div>
+          </div>
+
+          {/* Members List */}
+          <div className="space-y-2 pt-2">
+            {coordinators.length === 0 ? (
+              <p className="text-caption text-text-3 italic text-center py-4">
+                No custom member details registered yet. Default founding coordinators will be displayed until you add members.
+              </p>
+            ) : (
+              coordinators.map((member, idx) => (
+                <div
+                  key={idx}
+                  className="p-3 border border-line rounded-btn bg-surface flex items-start justify-between gap-3"
+                >
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-full bg-accent/10 border border-accent/20 text-accent font-bold flex items-center justify-center shrink-0 overflow-hidden text-xs">
+                      {member.photo ? (
+                        <img src={member.photo} alt={member.name} className="w-full h-full object-cover" />
+                      ) : (
+                        member.name.slice(0, 2).toUpperCase()
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-small text-text">{member.name}</span>
+                        <span className="text-caption font-mono px-2 py-0.5 rounded-full bg-subtle border border-line text-text-2">
+                          {member.role}
+                        </span>
+                      </div>
+                      {member.bio && (
+                        <p className="text-caption text-text-2 line-clamp-2 mt-0.5">
+                          {member.bio}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveMember(idx)}
+                    className="text-danger hover:text-danger/80 p-1.5 rounded-btn hover:bg-danger/10 transition-colors shrink-0"
+                    title="Remove member"
+                  >
+                    <Trash size={15} />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
         </div>
 
         <div className="flex justify-end">

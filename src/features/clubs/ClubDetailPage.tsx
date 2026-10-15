@@ -23,7 +23,7 @@ export const ClubDetailPage: React.FC = () => {
   const { data: clubEventsData } = useEvents({ clubId: club?.id })
   const toggleFollowMutation = useToggleFollowClub()
 
-  const [activeTab, setActiveTab] = useState<'events' | 'team' | 'gallery'>('events')
+  const [activeTab, setActiveTab] = useState<'about' | 'events' | 'gallery'>('about')
 
   if (isLoading || !club) {
     return (
@@ -43,18 +43,21 @@ export const ClubDetailPage: React.FC = () => {
       role: 'President & System Architect',
       photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
       badge: 'Club Lead',
+      bio: 'Senior systems engineer leading campus distributed computing workshops, serverless architecture sprints, and open-source tooling.',
     },
     {
       name: 'Rohan Sharma',
       role: 'VP Engineering & Infrastructure',
       photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
       badge: 'Tech Director',
+      bio: 'Competitive algorithms finalist and backend mentor organizing university hackathons, kernel workshops, and code audits.',
     },
     {
       name: 'Dr. Sunita Rao',
       role: 'Faculty Coordinator & Mentor',
       photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
       badge: 'Faculty Advisor',
+      bio: 'Department faculty chair guiding student research publications, ethical open source advocacy, and technical innovation grant allocations.',
     },
   ]
 
@@ -69,6 +72,7 @@ export const ClubDetailPage: React.FC = () => {
         role: c.role || (i === 0 ? 'Lead Organizer' : 'Core Coordinator'),
         photo: c.photo || fallbackLeads[i % fallbackLeads.length].photo,
         badge: i === 0 ? 'Lead Organizer' : i === 1 ? 'Technical VP' : 'Core Committee',
+        bio: c.bio || (fallbackLeads[i % fallbackLeads.length] ? fallbackLeads[i % fallbackLeads.length].bio : 'Passionate campus community organizer and technical mentor.'),
       }))
     : fallbackLeads
 
@@ -152,6 +156,18 @@ export const ClubDetailPage: React.FC = () => {
       <div className="flex items-center gap-1.5 border-b border-line/30 pb-2">
         <button
           type="button"
+          onClick={() => setActiveTab('about')}
+          className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+            activeTab === 'about'
+              ? 'bg-ink text-surface shadow-xs'
+              : 'text-ink-soft hover:text-ink hover:bg-surface-subtle'
+          }`}
+        >
+          About & Team
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab('events')}
           className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
             activeTab === 'events'
@@ -160,18 +176,6 @@ export const ClubDetailPage: React.FC = () => {
           }`}
         >
           Events ({events.length})
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('team')}
-          className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
-            activeTab === 'team'
-              ? 'bg-ink text-surface shadow-xs'
-              : 'text-ink-soft hover:text-ink hover:bg-surface-subtle'
-          }`}
-        >
-          Organizers ({leadMembers.length})
         </button>
 
         {club.gallery && club.gallery.length > 0 && (
@@ -189,7 +193,156 @@ export const ClubDetailPage: React.FC = () => {
         )}
       </div>
 
-      {/* Tab Contents */}
+      {/* Tab Contents: 1. About & Team Tab */}
+      {activeTab === 'about' && (
+        <div className="space-y-10">
+          {/* Club Mission, Focus & Story */}
+          <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-2 rounded-3xl bg-surface-subtle p-6 sm:p-8 space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-accent bg-accent/10 px-2.5 py-1 rounded-full border border-accent/20">
+                  Mission & Directives
+                </span>
+              </div>
+              <h2 className="font-display font-bold text-2xl text-ink">
+                About {club.name}
+              </h2>
+              <p className="text-ink-soft text-base leading-relaxed whitespace-pre-line">
+                {club.about || 'A collegiate technical collective bringing together ambitious student engineers, designers, and researchers.'}
+              </p>
+              {club.whatWeDo && (
+                <div className="pt-3 border-t border-line/20">
+                  <h3 className="font-semibold text-sm text-ink mb-1.5 font-sans">What We Do</h3>
+                  <p className="text-ink-soft text-sm leading-relaxed">
+                    {club.whatWeDo}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Quick Stats & Credentials */}
+            <div className="rounded-3xl bg-surface-subtle p-6 sm:p-8 space-y-5 flex flex-col justify-between">
+              <div className="space-y-4">
+                <h3 className="font-semibold text-sm text-ink uppercase tracking-wider font-mono">
+                  Club Profile
+                </h3>
+                <div className="space-y-3 text-xs font-mono">
+                  <div className="flex items-center justify-between py-1.5 border-b border-line/20">
+                    <span className="text-ink-muted">Membership</span>
+                    <span className="text-ink font-semibold capitalize">{club.joinMode || 'Open'}</span>
+                  </div>
+                  <div className="flex items-center justify-between py-1.5 border-b border-line/20">
+                    <span className="text-ink-muted">Community Size</span>
+                    <span className="text-ink font-semibold">{club.followersCount || 42}+ Builders</span>
+                  </div>
+                  <div className="flex items-center justify-between py-1.5 border-b border-line/20">
+                    <span className="text-ink-muted">Sessions Hosted</span>
+                    <span className="text-ink font-semibold">{events.length} Events</span>
+                  </div>
+                </div>
+              </div>
+
+              {club.achievements && club.achievements.length > 0 && (
+                <div className="pt-4 border-t border-line/20 space-y-2">
+                  <span className="text-[11px] font-mono text-accent font-bold uppercase tracking-wider block">
+                    Distinctions
+                  </span>
+                  <ul className="space-y-1 text-xs text-ink-soft">
+                    {club.achievements.map((ach, i) => (
+                      <li key={i} className="flex items-start gap-1.5">
+                        <span className="text-accent">•</span>
+                        <span>{ach}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* People Running the Club Section */}
+          <section className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-line/20 pb-3">
+              <div>
+                <h2 className="font-display font-medium text-2xl text-ink">
+                  People Running {club.name}
+                </h2>
+                <p className="text-ink-soft text-xs sm:text-sm mt-1">
+                  Meet the student leads, core coordinators, and mentors directing club programming.
+                </p>
+              </div>
+              <span className="text-xs font-mono text-ink-muted">
+                {leadMembers.length} Core Members
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
+              {leadMembers.map((lead, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-3xl bg-surface-subtle p-6 space-y-4 flex flex-col justify-between hover:border-line transition-colors border border-transparent"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-4">
+                      <div className="w-14 h-14 rounded-full bg-accent/10 border border-accent/20 text-accent font-bold flex items-center justify-center shrink-0 overflow-hidden text-base">
+                        {lead.photo ? (
+                          <img
+                            src={lead.photo}
+                            alt={lead.name}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        ) : (
+                          lead.name.slice(0, 2).toUpperCase()
+                        )}
+                      </div>
+                      <div className="space-y-1 min-w-0">
+                        <Badge variant="neutral" size="sm" className="mb-0.5">
+                          {lead.badge}
+                        </Badge>
+                        <h3 className="font-display font-semibold text-base text-ink leading-snug truncate">
+                          {lead.name}
+                        </h3>
+                        <p className="text-ink-soft text-xs leading-normal font-mono">
+                          {lead.role}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Basic About Them / Bio */}
+                    <p className="text-xs text-ink-soft leading-relaxed line-clamp-3 pt-1">
+                      {lead.bio || 'Core student coordinator managing peer workshops, hackathon tracks, and campus technical sessions.'}
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t border-line/20 flex items-center justify-between">
+                    <span className="text-[11px] font-mono text-ink-muted">
+                      {club.name}
+                    </span>
+                    <Button
+                      variant="secondary"
+                      size="compact"
+                      className="text-xs font-normal gap-1"
+                      onClick={() => {
+                        toast({
+                          title: `Connecting with ${lead.name}`,
+                          message: `Message channel opened with ${lead.name} (${lead.role}).`,
+                          type: 'info',
+                        })
+                      }}
+                    >
+                      <EnvelopeSimple className="w-3.5 h-3.5" />
+                      <span>Connect</span>
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
+
+      {/* Tab Contents: 2. Events Tab */}
       {activeTab === 'events' && (
         <div className="space-y-10">
           {/* Upcoming Events */}
@@ -235,70 +388,6 @@ export const ClubDetailPage: React.FC = () => {
             </section>
           )}
         </div>
-      )}
-
-      {/* Team / Organizers Tab */}
-      {activeTab === 'team' && (
-        <section className="space-y-6">
-          <div className="border-b border-line/20 pb-3">
-            <h2 className="font-display font-medium text-xl text-ink">
-              Core Leadership & Mentors
-            </h2>
-            <p className="text-ink-soft text-xs mt-1">
-              Student coordinators and faculty mentors running {club.name}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
-            {leadMembers.map((lead, idx) => (
-              <div
-                key={idx}
-                className="rounded-3xl bg-surface-subtle p-6 space-y-4 flex flex-col justify-between"
-              >
-                <div className="flex items-start gap-4">
-                  <img
-                    src={lead.photo}
-                    alt={lead.name}
-                    className="w-14 h-14 rounded-full object-cover flex-shrink-0"
-                    loading="lazy"
-                  />
-                  <div className="space-y-1">
-                    <Badge variant="neutral" size="sm" className="mb-1">
-                      {lead.badge}
-                    </Badge>
-                    <h3 className="font-display font-medium text-base text-ink leading-snug">
-                      {lead.name}
-                    </h3>
-                    <p className="text-ink-soft text-xs leading-normal">
-                      {lead.role}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-line/20 flex items-center justify-between">
-                  <span className="text-xs font-mono text-ink-soft">
-                    {club.name} Lead
-                  </span>
-                  <Button
-                    variant="secondary"
-                    size="compact"
-                    className="text-xs font-normal gap-1"
-                    onClick={() => {
-                      toast({
-                        title: `Contacting ${lead.name}`,
-                        message: `Connection channel opened with ${lead.name}.`,
-                        type: 'info',
-                      })
-                    }}
-                  >
-                    <EnvelopeSimple className="w-3.5 h-3.5" />
-                    <span>Connect</span>
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
       )}
 
       {/* Gallery Tab */}

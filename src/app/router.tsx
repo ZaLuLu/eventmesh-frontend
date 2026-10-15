@@ -39,9 +39,6 @@ const CalendarPage = lazy(() =>
 const AnnouncementsPage = lazy(() =>
   import('@/features/announcements/AnnouncementsPage').then((m) => ({ default: m.AnnouncementsPage }))
 )
-const AboutPage = lazy(() =>
-  import('@/features/about/AboutPage').then((m) => ({ default: m.AboutPage }))
-)
 const GalleryPage = lazy(() =>
   import('@/features/gallery/GalleryPage').then((m) => ({ default: m.GalleryPage }))
 )
@@ -184,14 +181,7 @@ export const router = createBrowserRouter([
           </Suspense>
         ),
       },
-      {
-        path: 'about',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <AboutPage />
-          </Suspense>
-        ),
-      },
+      { path: 'about', element: <Navigate to="/clubs" replace /> },
       {
         path: 'gallery',
         element: (

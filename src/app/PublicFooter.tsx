@@ -28,8 +28,8 @@ export const PublicFooter: React.FC = () => {
           <Link to="/schedule" className="hover:text-ink transition-colors">
             Calendar
           </Link>
-          <Link to="/about" className="hover:text-ink transition-colors">
-            About
+          <Link to="/announcements" className="hover:text-ink transition-colors">
+            Announcements
           </Link>
           <span className="text-ink-muted">© {new Date().getFullYear()}</span>
         </div>

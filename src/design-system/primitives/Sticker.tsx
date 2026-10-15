@@ -1,6 +1,7 @@
 import React from 'react'
 
 export type StickerColor =
+  | 'purple'
   | 'pink'
   | 'mint'
   | 'mustard'
@@ -24,6 +25,7 @@ export interface StickerProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 const COLOR_MAP: Record<StickerColor, { bg: string; text: string; border: string }> = {
+  purple: { bg: 'bg-accent/15', text: 'text-accent', border: 'border-accent/30' },
   pink: { bg: 'bg-primary/10', text: 'text-primary', border: 'border-primary/20' },
   mint: { bg: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-500/20' },
   mustard: { bg: 'bg-amber-500/10', text: 'text-amber-700 dark:text-amber-300', border: 'border-amber-500/20' },
