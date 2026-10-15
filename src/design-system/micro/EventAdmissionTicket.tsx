@@ -382,11 +382,11 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
     </div>
   )
 
-  // Floating Overlay Presentation (Solid Opaque Backdrop, No Frosted Glass)
+  // Floating Overlay Presentation (Deep Darkened Backdrop with Crisp Focus Blur)
   if (floatingCanvas) {
     return (
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 bg-ink/80 overflow-y-auto select-none"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 bg-black/85 backdrop-blur-md overflow-y-auto select-none transition-all"
         onClick={(e) => {
           if (e.target === e.currentTarget && onClose) onClose()
         }}
@@ -399,15 +399,15 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="fixed top-6 right-6 z-50 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card text-ink border-2 border-line hover:border-accent hover:text-accent text-xs font-mono font-medium shadow-[2px_2px_0_var(--ink)] transition-transform active:translate-y-0.5 focus-visible:outline-2 focus-visible:outline-accent"
+            className="fixed top-6 right-6 z-50 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/95 text-ink border-2 border-line hover:border-accent hover:text-accent text-xs font-mono font-medium shadow-lg hover:shadow-xl transition-all active:scale-95 focus-visible:outline-2 focus-visible:outline-accent"
           >
             <span>Close Pass</span>
             <kbd className="px-1.5 py-0.5 rounded bg-surface-subtle text-[10px] text-ink-soft font-mono">ESC</kbd>
-            <X size={13} weight="bold" />
+            <X size={14} weight="bold" />
           </button>
         )}
 
-        <div className="my-auto py-6 animate-in fade-in zoom-in-95 duration-200">
+        <div className="my-auto py-6 animate-in fade-in zoom-in-95 duration-200 w-full flex justify-center">
           {content}
         </div>
       </div>

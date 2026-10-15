@@ -142,11 +142,11 @@
   bottom: 0;
   left: 0;
   width: calc(var(--tt-w) - var(--tt-stub));
-  transition: opacity 500ms ease;
+  transition: opacity 300ms ease;
 }
 
 .tear-ticket[data-used] .tear-ticket__content {
-  opacity: 0.55;
+  opacity: 1;
 }
 
 .tear-ticket__stub {

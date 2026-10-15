@@ -82,27 +82,21 @@ export const buildGeometry = (
   for (let i = 0; i <= n; i += 1) {
     const y0 = notch + i * (bridge + hole);
     const y1 = y0 + bridge;
-    const steps = Math.max(2, Math.round(bridge / 2.2));
     const pts: [number, number][] = [];
-    for (let k = 1; k < steps; k += 1) {
-      pts.push([x + (random() - 0.5) * 2 * rough, y0 + (bridge * k) / steps]);
-    }
+    pts.push([x, y0]);
+    pts.push([x, y1]);
     bridges.push({ y0, y1, mid: (y0 + y1) / 2, pts, ...at(x, (y0 + y1) / 2) });
   }
   let body = `M${pt(R, 0)}L${pt(x - notch, 0)}${arc(notch, 0, x, notch)}`;
   bridges.forEach((b, i) => {
-    b.pts.forEach(p => {
-      body += `L${pt(p[0], p[1])}`;
-    });
-    body += `L${pt(x, b.y1)}`;
+    body += `L${pt(x, b.y0)}L${pt(x, b.y1)}`;
     if (i < n) body += arc(hr, 0, x, b.y1 + hole);
   });
   body += `${arc(notch, 0, x - notch, cross)}L${pt(R, cross)}${arc(R, 1, 0, cross - R)}L${pt(0, R)}${arc(R, 1, R, 0)}Z`;
   let stub = `M${pt(x + notch, 0)}L${pt(main - R, 0)}${arc(R, 1, main, R)}L${pt(main, cross - R)}${arc(R, 1, main - R, cross)}L${pt(x + notch, cross)}${arc(notch, 0, x, cross - notch)}`;
   for (let i = n; i >= 0; i -= 1) {
     const b = bridges[i];
-    for (let k = b.pts.length - 1; k >= 0; k -= 1) stub += `L${pt(b.pts[k][0], b.pts[k][1])}`;
-    stub += `L${pt(x, b.y0)}`;
+    stub += `L${pt(x, b.y1)}L${pt(x, b.y0)}`;
     if (i > 0) stub += arc(hr, 0, x, b.y0 - hole);
   }
   stub += `${arc(notch, 0, x + notch, 0)}Z`;
