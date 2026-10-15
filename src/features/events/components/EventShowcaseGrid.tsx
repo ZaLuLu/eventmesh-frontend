@@ -38,7 +38,7 @@ export const EventShowcaseCard: React.FC<{ event: Event }> = ({ event }) => {
   const isFree = event.isFree ?? (!event.price || event.price === 0)
 
   return (
-    <article className="group relative flex flex-col bg-card rounded-2xl border border-line/70 hover:border-line hover:shadow-[0_8px_30px_-4px_rgba(20,17,29,0.06)] transition-all duration-200 overflow-hidden select-none">
+    <article className="group relative flex flex-col bg-card rounded-2xl border border-purple-200/60 dark:border-purple-900/60 hover:border-purple-400 dark:hover:border-purple-700 hover:shadow-xl hover:shadow-purple-950/5 transition-all duration-200 overflow-hidden select-none">
       <Link to={`/events/${event.slug}`} className="block focus:outline-none">
         {/* Card Artwork Header */}
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-surface-subtle">
@@ -55,11 +55,11 @@ export const EventShowcaseCard: React.FC<{ event: Event }> = ({ event }) => {
 
           {/* Overlaid Category Pill */}
           <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5">
-            <span className="px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-white font-mono text-[10px] font-semibold uppercase tracking-wider border border-white/10">
+            <span className="px-2.5 py-0.5 rounded-full bg-purple-600 text-white font-mono text-[10px] font-bold uppercase tracking-wider shadow-sm shadow-purple-600/30">
               {event.category || 'SESSION'}
             </span>
             {event.isSignature && (
-              <span className="px-2 py-0.5 rounded-full bg-accent text-white font-mono text-[10px] font-semibold uppercase">
+              <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white font-mono text-[10px] font-bold uppercase shadow-xs">
                 ★
               </span>
             )}
@@ -69,13 +69,13 @@ export const EventShowcaseCard: React.FC<{ event: Event }> = ({ event }) => {
           <div className="absolute bottom-3 right-3 z-10">
             <span
               className={cn(
-                'px-2.5 py-1 rounded-full font-mono text-[11px] font-bold backdrop-blur-md',
+                'px-2.5 py-1 rounded-full font-mono text-[11px] font-bold shadow-sm',
                 isFree
-                  ? 'bg-emerald-500/90 text-white'
-                  : 'bg-black/75 text-white border border-white/15'
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-purple-600 text-white'
               )}
             >
-              {isFree ? 'FREE' : `₹${event.price}`}
+              {isFree ? 'FREE ENTRY' : `₹${event.price}`}
             </span>
           </div>
         </div>
@@ -180,10 +180,10 @@ export const EventShowcaseGrid: React.FC<EventShowcaseGridProps> = ({
                   type="button"
                   onClick={() => handleCategoryChange(tab.id)}
                   className={cn(
-                    'px-3 py-1.5 rounded-full text-xs font-mono font-medium transition-colors',
+                    'px-3.5 py-1.5 rounded-full text-xs font-sans font-medium transition-colors cursor-pointer',
                     isSelected
-                      ? 'bg-ink text-paper font-semibold shadow-xs'
-                      : 'bg-surface-subtle hover:bg-line text-ink-soft hover:text-ink'
+                      ? 'bg-purple-600 text-white font-semibold shadow-sm shadow-purple-600/30'
+                      : 'bg-surface-subtle hover:bg-purple-100/70 dark:hover:bg-purple-950/40 text-ink-soft hover:text-purple-600'
                   )}
                 >
                   {tab.label}
@@ -202,7 +202,7 @@ export const EventShowcaseGrid: React.FC<EventShowcaseGridProps> = ({
           ))}
         </div>
       ) : filteredEvents.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl bg-surface-subtle/40 border border-line/60 space-y-3">
+        <div className="p-12 text-center rounded-2xl bg-surface-subtle border border-line/60 space-y-3">
           <p className="font-sans font-bold text-base text-ink">No events in this category yet</p>
           <p className="text-xs text-ink-soft max-w-sm mx-auto">
             Try switching categories or open the discovery drawer to filter across other campus collectives.

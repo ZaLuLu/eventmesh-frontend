@@ -168,13 +168,14 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'calendar',
+        path: 'schedule',
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <CalendarPage />
           </Suspense>
         ),
       },
+      { path: 'calendar', element: <Navigate to="/schedule" replace /> },
       {
         path: 'announcements',
         element: (

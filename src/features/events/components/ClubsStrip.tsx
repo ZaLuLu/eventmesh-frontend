@@ -4,6 +4,7 @@ import { Bell, Check, ArrowUpRight, Users } from '@/design-system/Icon'
 import { getClubTheme } from '@/design-system/clubColors'
 import { useClubs, useToggleFollowClub } from '@/hooks/useClubs'
 import { Organizer } from '@/api'
+import { FALLBACK_CLUBS } from '@/data/heroFallbacks'
 
 /**
  * ClubsStrip: Modern-Minimal Campus Collective Directory
@@ -12,6 +13,8 @@ import { Organizer } from '@/api'
 export const ClubsStrip: React.FC = () => {
   const { data: clubs = [], isLoading } = useClubs()
   const toggleFollowMutation = useToggleFollowClub()
+
+  const displayClubs = clubs.length > 0 ? clubs : FALLBACK_CLUBS
 
   if (isLoading && clubs.length === 0) {
     return (
@@ -31,7 +34,7 @@ export const ClubsStrip: React.FC = () => {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {clubs.map((club: Organizer, index: number) => {
+      {displayClubs.map((club: Organizer, index: number) => {
         const theme = getClubTheme(club.slug || club.id)
         const isFollowed = Boolean(club.isFollowed)
         const followers = club.followersCount || 120 + (index * 45)
@@ -40,7 +43,7 @@ export const ClubsStrip: React.FC = () => {
           <Link
             key={club.id}
             to={`/clubs/${club.slug || club.id}`}
-            className="group relative flex flex-col justify-between p-5 rounded-2xl bg-card border border-line/80 hover:border-accent/40 transition-all duration-200 select-none"
+            className="group relative flex flex-col justify-between p-5 rounded-2xl bg-card border border-purple-200/60 dark:border-purple-900/60 hover:border-purple-400 dark:hover:border-purple-700 hover:shadow-lg hover:shadow-purple-950/5 transition-all duration-200 select-none"
           >
             {/* Top Bar: Club Icon, Member Count & Follow Pill */}
             <div className="flex items-center justify-between gap-3 mb-3">

@@ -1,3 +1,4 @@
+// Hallmark macrostructure: Profile Bento & Physical 3D Lanyard ID Badge
 import React, { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { jsPDF } from 'jspdf'
@@ -19,18 +20,19 @@ import {
 import { useMyRegistrations, useCancelRegistration, useUpdateRegistrationStatus } from '@/hooks/useRegistrations'
 import { useMyCertificates } from '@/hooks/useCertificates'
 import { useClubs } from '@/hooks/useClubs'
+import { useEvents } from '@/hooks/useEvents'
 import { useAuth } from '@/hooks/useAuth'
 import { PageShell } from '@/design-system/layout/PageShell'
 import { Badge } from '@/design-system/primitives/Badge'
 import { Button } from '@/design-system/primitives/Button'
 import { formatDate } from '@/lib/dates'
-import { Registration, Certificate } from '@/api'
+import { api, Registration, Certificate } from '@/api'
 import { useToast } from '@/design-system/primitives/Toast'
 import { EmptyState } from '@/design-system/primitives/EmptyState'
 import { fireCelebrationConfetti } from '@/lib/confetti'
 import { TactileBoardingPass } from './components/TactileBoardingPass'
 import { EventAdmissionTicket } from '@/design-system/micro/EventAdmissionTicket'
-import { LanyardProfileOverlay } from './components/LanyardProfileOverlay'
+import { Lanyard, StudentIDCard2D, generateStudentIDTexture } from '@/design-system/3d'
 import { AvatarSelectorModal } from './components/AvatarSelectorModal'
 import { resolveUserAvatar } from '@/lib/avatars'
 
@@ -40,13 +42,13 @@ export const AttendeeDashboardPage: React.FC = () => {
   const { data: registrations = [], isLoading: regsLoading } = useMyRegistrations()
   const { data: certificates = [], isLoading: certsLoading } = useMyCertificates()
   const { data: clubs = [] } = useClubs()
+  const { data: upcomingData } = useEvents()
   const cancelMutation = useCancelRegistration()
   const updateStatusMutation = useUpdateRegistrationStatus()
 
   const [selectedTicket, setSelectedTicket] = useState<Registration | null>(null)
   const [activeTab, setActiveTab] = useState<'passes' | 'certificates' | 'clubs'>('passes')
   const [copiedRegNo, setCopiedRegNo] = useState(false)
-  const [isLanyardOpen, setIsLanyardOpen] = useState(false)
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState<string>(() => resolveUserAvatar(session))
 
@@ -59,23 +61,61 @@ export const AttendeeDashboardPage: React.FC = () => {
   // Student Identity Data
   const studentData = useMemo(() => {
     const s = session as any
-    const rawName = s?.name || 'Aditya Narayan'
+    const rawName = s?.name || 'EventMesh member'
     const cleanName = rawName
       .replace(/\s*\([^)]*\)/g, '')
-      .trim() || 'Aditya Narayan'
+      .trim() || 'EventMesh member'
 
     return {
       name: cleanName,
-      registrationNumber: s?.registrationNumber || '21BCE1042',
-      degreeBranch: s?.degreeBranch || 'B.Tech Computer Science & Engineering',
-      semester: s?.semester || 6,
-      email: s?.email || 'aditya.narayan@vitstudent.ac.in',
-      role: 'STUDENT PASSHOLDER',
-      campus: 'CENTRAL UNIVERSITY CAMPUS',
-      bloodGroup: 'O+',
-      emergencyPhone: '+91 98765 43210',
+      registrationNumber: s?.registrationNumber || '',
+      degreeBranch: s?.degreeBranch || '',
+      semester: s?.semester,
+      email: s?.email || '',
+      role: 'EVENTMESH MEMBER',
+      campus: s?.campus || '',
+      bloodGroup: s?.bloodGroup,
+      emergencyPhone: s?.emergencyPhone,
     }
   }, [session])
+
+  const [lanyardMode, setLanyardMode] = useState<'3d' | '2d'>('3d')
+
+  const frontTexture = useMemo(() => {
+    if (lanyardMode !== '3d') return ''
+    return generateStudentIDTexture(
+      {
+        ...studentData,
+        avatarUrl,
+        attendedEvents: registrations
+          .filter((r) => r.status === 'checked_in')
+          .map((r) => ({
+            title: r.eventTitle || 'Campus Session',
+            date: formatDate(r.checkedInAt || r.createdAt),
+          })),
+        earnedBadges: certificates.length ? [`${certificates.length} credentials`] : [],
+      },
+      'front'
+    )
+  }, [lanyardMode, studentData, avatarUrl, registrations, certificates.length])
+
+  const backTexture = useMemo(() => {
+    if (lanyardMode !== '3d') return ''
+    return generateStudentIDTexture(
+      {
+        ...studentData,
+        avatarUrl,
+        attendedEvents: registrations
+          .filter((r) => r.status === 'checked_in')
+          .map((r) => ({
+            title: r.eventTitle || 'Campus Session',
+            date: formatDate(r.checkedInAt || r.createdAt),
+          })),
+        earnedBadges: certificates.length ? [`${certificates.length} credentials`] : [],
+      },
+      'back'
+    )
+  }, [lanyardMode, studentData, avatarUrl, registrations, certificates.length])
 
   const handleCopyRegNo = () => {
     navigator.clipboard.writeText(studentData.registrationNumber)
@@ -109,6 +149,26 @@ export const AttendeeDashboardPage: React.FC = () => {
   }
 
   const followedClubs = clubs.filter((c) => c.isFollowed)
+
+  const handleBecomeOrganizer = async () => {
+    try {
+      if (api.auth.becomeOrganizer) {
+        await api.auth.becomeOrganizer()
+        toast({
+          title: 'Role Promoted',
+          message: 'You have been granted Club Organizer privileges. You can now host events and lead clubs!',
+          type: 'success',
+        })
+        window.location.reload()
+      }
+    } catch (err: any) {
+      toast({
+        title: 'Upgrade failed',
+        message: err.detail || 'Unable to promote role at this time.',
+        type: 'error',
+      })
+    }
+  }
 
   const downloadCertificatePDF = (cert: Certificate) => {
     try {
@@ -189,47 +249,48 @@ export const AttendeeDashboardPage: React.FC = () => {
     }
   }
 
-  if (!isAuthenticated) {
-    return (
-      <PageShell className="py-16">
-        <div className="max-w-md mx-auto bg-surface-subtle/40 rounded-3xl p-8 text-center space-y-4">
-          <h2 className="font-display font-semibold text-2xl text-ink tracking-tight">Sign in required</h2>
-          <p className="text-sm text-ink-soft">
-            Sign in to access your digital entry passes, official credentials, and followed clubs.
-          </p>
-          <Link to="/login" className="inline-block pt-2">
-            <button type="button" className="btn-minimal-primary px-6 py-2.5">
-              Sign in with Campus SSO
-            </button>
-          </Link>
-        </div>
-      </PageShell>
-    )
-  }
+  // Unauthenticated guests see demo passholder identity with permanent 3D lanyard preview
 
   const activePasses = registrations.filter((r) => r.status !== 'cancelled')
   const attendedPasses = registrations.filter((r) => r.status === 'checked_in')
+  const nextEvent = (upcomingData?.items || [])
+    .filter((event) => activePasses.some((pass) => pass.eventId === event.id) && new Date(event.startsAt).getTime() >= Date.now())
+    .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())[0]
+  const nextPass = nextEvent && activePasses.find((pass) => pass.eventId === nextEvent.id)
 
   return (
     <PageShell className="py-6 sm:py-8 space-y-8">
+      {nextEvent && nextPass && (
+        <section className="flex flex-col gap-4 rounded-panel border border-line bg-card p-5 sm:flex-row sm:items-center sm:justify-between" aria-label="Next event">
+          <div><p className="font-mono text-xs uppercase tracking-widest text-accent">Next up</p><h1 className="mt-1 text-xl font-semibold text-ink">{nextEvent.title}</h1><p className="mt-1 text-sm text-ink-soft">{formatDate(nextEvent.startsAt)} · {nextEvent.venue?.name || 'Venue to be announced'}</p></div>
+          <button type="button" onClick={() => setSelectedTicket(nextPass)} className="shrink-0 rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white hover:bg-accent-hover">View ticket</button>
+        </section>
+      )}
       {/* ========================================================================= */}
       {/* PROFILE BENTO HEADER                                                      */}
       {/* ========================================================================= */}
-      <section className="bg-surface-subtle/30 rounded-3xl p-6 sm:p-8">
+      <section className="bg-surface-subtle rounded-3xl p-6 sm:p-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Left Column (7 cols): Academic Profile Bento */}
-          <div className="lg:col-span-7 space-y-6">
+          {/* Left Column (5 cols): Academic Profile Summary & Counters */}
+          <div className="lg:col-span-5 space-y-6">
             {/* Header Chips */}
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="neutral" size="sm">
                 Campus Identity
               </Badge>
-              <Badge variant="iris" size="sm">
-                Verified Passholder
-              </Badge>
+              {session?.role !== 'platform_admin' && session?.role !== 'org_admin' && session?.role !== 'club_admin' && (
+                <button
+                  type="button"
+                  onClick={handleBecomeOrganizer}
+                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors border border-accent/30 shadow-xs"
+                >
+                  <Sparkle className="w-3.5 h-3.5" weight="bold" />
+                  <span>Become an Organizer</span>
+                </button>
+              )}
             </div>
 
-            {/* Student Name & Email */}
+            {/* Student Name & Academic Affiliation */}
             <div>
               <h1 className="font-display font-semibold text-3xl sm:text-4xl text-ink tracking-tight leading-tight">
                 {studentData.name}
@@ -237,137 +298,96 @@ export const AttendeeDashboardPage: React.FC = () => {
               <p className="font-mono text-xs text-ink-soft mt-1">
                 {studentData.email}
               </p>
-            </div>
-
-            {/* Academic Info Bento Tiles */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-              {/* Registration Number Tile with Copy */}
-              <div className="p-4 rounded-xl bg-surface/80 flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] font-mono uppercase tracking-wider text-ink-soft/70">
-                    Registration Number
-                  </p>
-                  <p className="font-mono font-medium text-base text-ink mt-0.5">
-                    {studentData.registrationNumber}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleCopyRegNo}
-                  className="p-1.5 rounded-md hover:bg-surface-subtle text-ink-soft hover:text-ink transition-colors"
-                  title="Copy registration number"
-                  aria-label="Copy registration number"
-                >
-                  {copiedRegNo ? (
-                    <Check className="w-4 h-4 text-emerald-600" weight="bold" />
-                  ) : (
-                    <Copy className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-
-              {/* Program & Semester Tile */}
-              <div className="p-4 rounded-xl bg-surface/80">
-                <p className="text-[10px] font-mono uppercase tracking-wider text-ink-soft/70">
-                  Degree & Branch
-                </p>
-                <p className="font-medium text-ink text-sm truncate mt-0.5">
-                  {studentData.degreeBranch}
-                </p>
-                <p className="font-mono text-[11px] text-ink-soft mt-0.5">
-                  Semester {studentData.semester} · Active Student
-                </p>
-              </div>
+              <p className="font-mono text-xs text-accent font-semibold mt-1.5">
+                {studentData.degreeBranch} {studentData.semester ? `· Semester 0${studentData.semester}` : ''}
+              </p>
             </div>
 
             {/* Metric Summary Counters */}
-            <div className="flex flex-wrap items-center gap-3 pt-1">
-              <div className="px-4 py-2.5 rounded-xl bg-surface/80 text-center min-w-[100px] flex-1 sm:flex-none">
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <div className="px-4 py-2.5 rounded-xl bg-surface text-center min-w-[100px] flex-1 sm:flex-none">
                 <p className="font-display font-medium text-2xl text-ink font-mono">{activePasses.length}</p>
                 <p className="text-[11px] text-ink-soft">Active Passes</p>
               </div>
-              <div className="px-4 py-2.5 rounded-xl bg-surface/80 text-center min-w-[100px] flex-1 sm:flex-none">
+              <div className="px-4 py-2.5 rounded-xl bg-surface text-center min-w-[100px] flex-1 sm:flex-none">
                 <p className="font-display font-medium text-2xl text-emerald-600 dark:text-emerald-400 font-mono">
                   {attendedPasses.length}
                 </p>
                 <p className="text-[11px] text-ink-soft">Admitted at Gate</p>
               </div>
-              <div className="px-4 py-2.5 rounded-xl bg-surface/80 text-center min-w-[100px] flex-1 sm:flex-none">
+              <div className="px-4 py-2.5 rounded-xl bg-surface text-center min-w-[100px] flex-1 sm:flex-none">
                 <p className="font-display font-medium text-2xl text-ink font-mono">{certificates.length}</p>
                 <p className="text-[11px] text-ink-soft">Credentials</p>
               </div>
             </div>
+
+            {/* Micro Instruction Note */}
+            <p className="text-[11px] font-mono text-ink-muted">
+              Official 3D Native ID Card · Click directly on the badge to copy your registration number.
+            </p>
           </div>
 
-          {/* Right Column (5 cols): Official ID Pass Card & 3D Interactive Lanyard Trigger */}
-          <div className="lg:col-span-5 flex flex-col items-center">
-            <div className="w-full bg-surface/80 rounded-2xl p-6 border border-line/40 shadow-xs space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-line/20">
-                <div className="flex items-center gap-2">
-                  <IdentificationCard className="w-4 h-4 text-primary" weight="bold" />
-                  <span className="text-[11px] font-mono font-medium uppercase tracking-wider text-ink-soft">
-                    CAMPUS PASS CARD
-                  </span>
-                </div>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  ACTIVE
-                </span>
+          {/* Right Column (7 cols): Free-Floating 3D Native Campus ID (Zero Bento Box Cage) */}
+          <div className="lg:col-span-7 flex flex-col items-center justify-center relative min-h-[580px] sm:min-h-[660px]">
+            {/* Minimal Floating Mode Toggle Pill */}
+            <div className="absolute top-2 right-2 z-20 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setLanyardMode(lanyardMode === '3d' ? '2d' : '3d')}
+                className="px-3 py-1.5 rounded-full border border-line bg-surface/90 hover:bg-surface text-ink text-xs font-mono shadow-sm backdrop-blur-none transition-all hover:border-line-strong active:scale-95"
+                title="Switch between 3D Physics Lanyard and 2D Pass View"
+              >
+                {lanyardMode === '3d' ? 'Switch to 2D Pass' : 'View in 3D Lanyard'}
+              </button>
+            </div>
+
+            {/* Direct On-Card Copied Toast Notification */}
+            {copiedRegNo && (
+              <div className="absolute top-12 z-30 px-4 py-2 rounded-full bg-ink text-paper text-xs font-mono shadow-lg flex items-center gap-2 animate-in fade-in zoom-in-95 duration-200">
+                <Check className="w-4 h-4 text-emerald-400" weight="bold" />
+                <span>Copied {studentData.registrationNumber} to clipboard!</span>
               </div>
+            )}
 
-              {/* Avatar & Identity summary */}
-              <div className="flex items-center gap-4">
-                <div className="relative group">
-                  <img
-                    src={avatarUrl}
-                    alt={studentData.name}
-                    className="w-16 h-16 rounded-full border-2 border-line/60 bg-surface-subtle object-cover shadow-xs"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setIsAvatarModalOpen(true)}
-                    className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-ink text-surface shadow hover:scale-105 transition-transform"
-                    title="Change avatar"
-                    aria-label="Change avatar"
-                  >
-                    <PencilSimple className="w-3 h-3" weight="bold" />
-                  </button>
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-display font-medium text-base text-ink truncate">{studentData.name}</h3>
-                  </div>
-                  <p className="font-mono text-xs text-ink-soft truncate">{studentData.registrationNumber}</p>
-                  <button
-                    type="button"
-                    onClick={() => setIsAvatarModalOpen(true)}
-                    className="text-[11px] font-medium text-primary hover:underline mt-0.5 inline-block"
-                  >
-                    Customize avatar
-                  </button>
-                </div>
-              </div>
-
-              {/* 3D Lanyard Pass Launcher */}
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsLanyardOpen(true)}
-                  className="w-full group relative overflow-hidden rounded-xl bg-ink text-paper p-4 text-left transition-all hover:shadow-md hover:bg-ink/90 flex items-center justify-between"
+            {/* Free-Floating Canvas Container (Uncaged, Expansive Stage) */}
+            <div className="w-full h-[560px] sm:h-[640px] relative flex items-center justify-center">
+              {lanyardMode === '3d' ? (
+                <div
+                  className="w-full h-full cursor-grab active:cursor-grabbing"
+                  title="Click card to copy registration number | Drag to swing"
                 >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Cube className="w-4 h-4 text-accent" weight="bold" />
-                      <span className="font-display font-medium text-sm text-paper">Inspect 3D Identity Pass</span>
-                    </div>
-                    <p className="text-[11px] text-paper/70 font-mono">
-                      Interactive physics lanyard with participation credentials
-                    </p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-paper/70 group-hover:translate-x-1 transition-transform" weight="bold" />
-                </button>
-              </div>
+                  <Lanyard
+                    frontImage={frontTexture}
+                    backImage={backTexture}
+                    imageFit="cover"
+                    cardColor="#0B0814"
+                    strapColor="#7C3AED"
+                    strapWidth={0.16}
+                    strapLength={0.28}
+                    size={0.88}
+                    metal="silver"
+                    interactive={true}
+                    onCardClick={handleCopyRegNo}
+                    className="w-full h-full"
+                  />
+                </div>
+              ) : (
+                <div
+                  onClick={handleCopyRegNo}
+                  className="cursor-pointer transition-transform hover:scale-102 active:scale-98"
+                  title="Click card to copy registration number"
+                >
+                  <StudentIDCard2D
+                    name={studentData.name}
+                    registrationNumber={studentData.registrationNumber}
+                    degreeBranch={studentData.degreeBranch}
+                    semester={studentData.semester}
+                    email={studentData.email}
+                    role={studentData.role}
+                    campus={studentData.campus}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -385,13 +405,13 @@ export const AttendeeDashboardPage: React.FC = () => {
             className={`px-4 py-1.5 rounded-full font-medium text-xs transition-all flex items-center gap-2 ${
               activeTab === 'passes'
                 ? 'bg-ink text-surface shadow-xs'
-                : 'text-ink-soft hover:text-ink hover:bg-surface-subtle/60'
+                : 'text-ink-soft hover:text-ink hover:bg-surface-subtle'
             }`}
           >
             <Ticket className="w-3.5 h-3.5" weight="bold" />
             <span>My Tickets</span>
             <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-              activeTab === 'passes' ? 'bg-surface/20 text-surface' : 'bg-surface-subtle text-ink-soft'
+              activeTab === 'passes' ? 'bg-accent text-white' : 'bg-surface-subtle text-ink-soft'
             }`}>
               {registrations.length}
             </span>
@@ -403,13 +423,13 @@ export const AttendeeDashboardPage: React.FC = () => {
             className={`px-4 py-1.5 rounded-full font-medium text-xs transition-all flex items-center gap-2 ${
               activeTab === 'certificates'
                 ? 'bg-ink text-surface shadow-xs'
-                : 'text-ink-soft hover:text-ink hover:bg-surface-subtle/60'
+                : 'text-ink-soft hover:text-ink hover:bg-surface-subtle'
             }`}
           >
             <CertificateIcon className="w-3.5 h-3.5" weight="bold" />
             <span>Certificates</span>
             <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-              activeTab === 'certificates' ? 'bg-surface/20 text-surface' : 'bg-surface-subtle text-ink-soft'
+              activeTab === 'certificates' ? 'bg-accent text-white' : 'bg-surface-subtle text-ink-soft'
             }`}>
               {certificates.length}
             </span>
@@ -421,13 +441,13 @@ export const AttendeeDashboardPage: React.FC = () => {
             className={`px-4 py-1.5 rounded-full font-medium text-xs transition-all flex items-center gap-2 ${
               activeTab === 'clubs'
                 ? 'bg-ink text-surface shadow-xs'
-                : 'text-ink-soft hover:text-ink hover:bg-surface-subtle/60'
+                : 'text-ink-soft hover:text-ink hover:bg-surface-subtle'
             }`}
           >
             <GraduationCap className="w-3.5 h-3.5" weight="bold" />
             <span>Followed Clubs</span>
             <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-              activeTab === 'clubs' ? 'bg-surface/20 text-surface' : 'bg-surface-subtle text-ink-soft'
+              activeTab === 'clubs' ? 'bg-accent text-white' : 'bg-surface-subtle text-ink-soft'
             }`}>
               {followedClubs.length}
             </span>
@@ -440,7 +460,7 @@ export const AttendeeDashboardPage: React.FC = () => {
             {regsLoading ? (
               <p className="text-xs font-mono text-ink-soft">Loading tickets...</p>
             ) : registrations.length === 0 ? (
-              <div className="bg-surface-subtle/30 rounded-3xl p-10 text-center space-y-3">
+              <div className="bg-surface-subtle rounded-3xl p-10 text-center space-y-3">
                 <h3 className="font-display font-medium text-lg text-ink">No active passes yet</h3>
                 <p className="text-sm text-ink-soft max-w-sm mx-auto">
                   You haven't reserved seats for upcoming events. Browse campus collectives to grab a pass.
@@ -477,7 +497,7 @@ export const AttendeeDashboardPage: React.FC = () => {
             {certsLoading ? (
               <p className="text-xs font-mono text-ink-soft">Loading certificates...</p>
             ) : certificates.length === 0 ? (
-              <div className="bg-surface-subtle/30 rounded-3xl p-10 text-center space-y-3">
+              <div className="bg-surface-subtle rounded-3xl p-10 text-center space-y-3">
                 <h3 className="font-display font-medium text-lg text-ink">No credentials issued yet</h3>
                 <p className="text-sm text-ink-soft max-w-sm mx-auto">
                   Certificates are automatically minted upon verified attendance at hackathons and workshops.
@@ -488,7 +508,7 @@ export const AttendeeDashboardPage: React.FC = () => {
                 {certificates.map((cert) => (
                   <div
                     key={cert.id}
-                    className="bg-surface-subtle/30 hover:bg-surface-subtle/60 rounded-2xl p-5 space-y-4 transition-colors"
+                    className="bg-surface-subtle hover:bg-surface-subtle rounded-2xl p-5 space-y-4 transition-colors"
                   >
                     <div className="flex items-center justify-between border-b border-line/20 pb-3">
                       <div className="flex items-center gap-2">
@@ -535,7 +555,7 @@ export const AttendeeDashboardPage: React.FC = () => {
         {activeTab === 'clubs' && (
           <div>
             {followedClubs.length === 0 ? (
-              <div className="bg-surface-subtle/30 rounded-3xl p-10 text-center space-y-3">
+              <div className="bg-surface-subtle rounded-3xl p-10 text-center space-y-3">
                 <h3 className="font-display font-medium text-lg text-ink">No followed clubs</h3>
                 <p className="text-sm text-ink-soft max-w-sm mx-auto">
                   Follow campus collectives to receive immediate updates about their new workshops and flagship gatherings.
@@ -554,11 +574,11 @@ export const AttendeeDashboardPage: React.FC = () => {
                   <Link
                     key={club.id}
                     to={`/clubs/${club.slug}`}
-                    className="flex items-center gap-3 p-4 rounded-2xl bg-surface-subtle/30 hover:bg-surface-subtle/60 transition-colors"
+                    className="flex items-center gap-3 p-4 rounded-2xl bg-surface-subtle hover:bg-surface-subtle transition-colors"
                   >
                     <span
                       className="h-3.5 w-3.5 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: club.color || '#6366F1' }}
+                      style={{ backgroundColor: club.color || 'var(--color-accent)' }}
                       aria-hidden="true"
                     />
                     <div className="min-w-0 flex-1">
@@ -603,11 +623,7 @@ export const AttendeeDashboardPage: React.FC = () => {
         />
       )}
 
-      {/* 3D Lanyard Fullscreen Profile Overlay */}
-      <LanyardProfileOverlay
-        isOpen={isLanyardOpen}
-        onClose={() => setIsLanyardOpen(false)}
-      />
+
 
       {/* Avatar Customizer Modal */}
       <AvatarSelectorModal

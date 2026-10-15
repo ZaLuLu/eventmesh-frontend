@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -7,25 +8,39 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Campus Funk Primary Public Palette
+        // Semantic palette from REDESIGN_TEMPLATE.md
         paper: {
-          DEFAULT: '#F6F1E7',
-          2: '#EFE8D9',
+          DEFAULT: 'var(--paper)',
+          2: 'var(--paper-2)',
         },
-        card: '#FFFDF8',
+        card: 'var(--card)',
         ink: {
-          DEFAULT: '#151130',
-          soft: '#4A4668',
-          muted: '#6B6885',
+          DEFAULT: 'var(--ink)',
+          soft: 'var(--ink-soft)',
+          muted: 'var(--ink-muted)',
+        },
+        ember: {
+          DEFAULT: 'var(--ember)',
+          hover: 'var(--ember-hover)',
+          soft: 'var(--ember-soft)',
         },
         cobalt: {
-          DEFAULT: '#0047FF',
-          hover: '#0037CC',
-          soft: 'rgba(0, 71, 255, 0.08)',
+          DEFAULT: 'var(--ember)',
+          hover: 'var(--ember-hover)',
+          soft: 'var(--ember-soft)',
+        },
+        purple: {
+          DEFAULT: 'var(--color-accent)',
+          hover: 'var(--color-accent-hover)',
+          light: 'var(--purple-light)',
+          dark: 'var(--color-accent-active)',
+          soft: 'var(--color-accent-soft)',
         },
         lavender: {
-          DEFAULT: '#C8BEFA',
-          light: '#F0EDFD',
+          DEFAULT: '#EDE9FE',
+          light: '#F5F3FF',
+          dark: '#DDD6FE',
+          border: '#C4B5FD',
         },
 
         // Sticker Accent Palette
@@ -56,12 +71,12 @@ export default {
 
         // Dedicated Admin Palette
         admin: {
-          bg: '#0F0D1F',
-          surface: '#181530',
-          text: '#F6F1E7',
-          accent: '#D4F25A',
-          border: '#2D2852',
-          muted: '#8D87B0',
+          bg: 'var(--color-canvas)',
+          surface: 'var(--color-surface)',
+          text: 'var(--color-ink)',
+          accent: 'var(--color-accent)',
+          border: 'var(--color-line)',
+          muted: 'var(--color-ink-muted)',
         },
 
         // Semantic CSS Custom Variable Mappings
@@ -74,18 +89,18 @@ export default {
         'text-2': 'var(--ink-soft)',
         'text-3': 'var(--ink-muted)',
         accent: {
-          DEFAULT: 'var(--cobalt)',
-          hover: '#0037CC',
-          soft: 'rgba(0, 71, 255, 0.08)',
+          DEFAULT: 'var(--color-accent)',
+          hover: 'var(--color-accent-hover)',
+          soft: 'var(--color-accent-soft)',
         },
         'on-accent': '#FFFFFF',
-        success: '#16A34A',
-        warning: '#D97706',
-        danger: '#DC2626',
+        success: 'var(--color-success)',
+        warning: 'var(--color-warning)',
+        danger: 'var(--color-danger)',
       },
       fontFamily: {
-        display: ['"Bricolage Grotesque Variable"', '"Bricolage Grotesque"', 'system-ui', 'sans-serif'],
-        accent: ['"Instrument Serif"', 'serif'],
+        display: ['Geist', 'system-ui', 'sans-serif'],
+        accent: ['Geist', 'system-ui', 'sans-serif'],
         sans: ['Geist', 'system-ui', '-apple-system', 'sans-serif'],
         body: ['Geist', 'system-ui', '-apple-system', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
@@ -118,11 +133,11 @@ export default {
         sm: '8px',
         DEFAULT: '12px',
         md: '12px',
-        lg: '16px',
+        lg: '8px',
         ticket: '16px',
-        poster: '20px',
-        input: '14px',
-        panel: '16px',
+        poster: '18px',
+        input: '8px',
+        panel: '24px',
         full: '9999px',
         pill: '9999px',
       },

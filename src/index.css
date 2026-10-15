@@ -13,85 +13,82 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ==========================================================================
-   EVENTMESH — HALLMARK MODERN-MINIMAL DESIGN TOKENS
-   Identity: Seamless Borderless Architecture · Iris Obsidian Palette
-   Genre: modern-minimal · Theme: custom-iris-obsidian
-   Floored by Hallmark 57 Anti-Slop Gates
-   ========================================================================== */
-
+/* EventMesh semantic system — REDESIGN_TEMPLATE.md */
 :root {
-  /* Alabaster Iris Light Canvas (oklch 295° tint) */
-  --paper: #FAF9FC;
-  --paper-2: #F3F1F8;
-  --card: #FEFEFF;
-  --surface-subtle: #F3F1F8;
-  --surface-float: #FEFEFF;
-
-  /* Amethyst Ink Scale */
-  --ink: #14111D;
-  --ink-soft: #6B6578;
-  --ink-muted: #9D96AC;
-  --ink-faint: #B5AFC0;
-  --line: #E8E5EE;
-
-  /* Signal Accents: Royal Iris (<=3% viewport presence) */
-  --accent: #6366F1;
-  --accent-hover: #4F46E5;
-  --accent-soft: rgba(99, 102, 241, 0.08);
-  --cobalt: #6366F1;
-  --cobalt-hover: #4F46E5;
-  --lavender: #E0E2FD;
-
-  /* Status Signals */
-  --success: #10B981;
-  --warning: #F59E0B;
-  --danger: #EF4444;
-
-  /* Semantic Compatibility Variables */
-  --bg: var(--paper);
-  --surface: var(--card);
-  --surface-raised: var(--paper-2);
-  --text: var(--ink);
-  --text-2: var(--ink-soft);
-  --text-3: var(--ink-muted);
-  --club: var(--accent);
-  --admin-accent: var(--accent);
+  --color-canvas: #FAF8FF;
+  --color-canvas-subtle: #F3EDFD;
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #FCFAFF;
+  --color-surface-hover: #F1EBFA;
+  --color-ink: #120D24;
+  --color-ink-soft: #4E466B;
+  --color-ink-muted: #786F9C;
+  --color-ink-faint: #A59DBF;
+  --color-line: #E9D5FF;
+  --color-line-strong: #C4B5FD;
+  --color-accent: #7C3AED;
+  --color-accent-hover: #6D28D9;
+  --color-accent-active: #5B21B6;
+  --color-accent-soft: #F2EAFF;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --paper: var(--color-canvas);
+  --paper-2: var(--color-canvas-subtle);
+  --card: var(--color-surface);
+  --surface-subtle: var(--color-surface-hover);
+  --surface-float: var(--color-surface-raised);
+  --ink: var(--color-ink);
+  --ink-soft: var(--color-ink-soft);
+  --ink-muted: var(--color-ink-muted);
+  --ink-faint: var(--color-ink-faint);
+  --line: var(--color-line);
+  --line-strong: var(--color-line-strong);
+  --accent: var(--color-accent);
+  --accent-hover: var(--color-accent-hover);
+  --accent-soft: var(--color-accent-soft);
+  --purple: var(--color-accent);
+  --purple-hover: var(--color-accent-hover);
+  --purple-light: #8B5CF6;
+  --lavender: var(--color-canvas-subtle);
+  --lavender-soft: var(--color-canvas-subtle);
+  --ember: var(--color-accent);
+  --ember-hover: var(--color-accent-hover);
+  --ember-soft: var(--color-accent-soft);
+  --cobalt: var(--color-accent);
+  --cobalt-hover: var(--color-accent-hover);
+  --success: var(--color-success);
+  --warning: var(--color-warning);
+  --danger: var(--color-danger);
+  --bg: var(--color-canvas);
+  --surface: var(--color-surface);
+  --surface-raised: var(--color-surface-raised);
+  --text: var(--color-ink);
+  --text-2: var(--color-ink-soft);
+  --text-3: var(--color-ink-muted);
+  --club: var(--color-accent);
+  --admin-accent: var(--color-accent);
+  --color-paper: var(--color-canvas);
 }
 
-/* ==========================================================================
-   OBSIDIAN AMETHYST DARK & ADMIN PALETTE
-   ========================================================================== */
-.dark,
-.admin-scope,
-[data-theme="admin"] {
-  --paper: #0D0B12;
-  --paper-2: #16131F;
-  --card: #16131F;
-  --surface-subtle: #16131F;
-  --surface-float: #201B2E;
-
-  --ink: #F4F2F8;
-  --ink-soft: #9D96AC;
-  --ink-muted: #6B6578;
-  --ink-faint: #443E54;
-  --line: #292338;
-
-  --accent: #818CF8;
-  --accent-hover: #A5B4FC;
-  --accent-soft: rgba(129, 140, 248, 0.12);
-  --cobalt: #818CF8;
-  --cobalt-hover: #A5B4FC;
-  --lavender: #201B2E;
-
-  --bg: var(--paper);
-  --surface: var(--card);
-  --surface-raised: var(--paper-2);
-  --text: var(--ink);
-  --text-2: var(--ink-soft);
-  --text-3: var(--ink-muted);
-  --admin-accent: var(--accent);
-  --sidebar: #0D0B12;
+.dark, .admin-scope, [data-theme="dark"], [data-theme="admin"] {
+  --color-canvas: #0B0814;
+  --color-canvas-subtle: #130E24;
+  --color-surface: #1A1333;
+  --color-surface-raised: #251B47;
+  --color-surface-hover: #2C2050;
+  --color-ink: #FAF8FF;
+  --color-ink-soft: #C4B5FD;
+  --color-ink-muted: #938BB8;
+  --color-ink-faint: #5E5680;
+  --color-line: #2B1F4F;
+  --color-line-strong: #402F75;
+  --color-accent: #8B5CF6;
+  --color-accent-hover: #A78BFA;
+  --color-accent-active: #7C3AED;
+  --color-accent-soft: #2A1B4A;
+  --purple-light: #C4B5FD;
+  --sidebar: var(--color-canvas);
 }
 
 /* Document Base (Gate 34: overflow-x: clip on html and body) */

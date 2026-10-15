@@ -44,8 +44,40 @@ export const AdminEventsListPage: React.FC = () => {
         message: `"${title}" is now live on the public website and calendar.`,
         type: 'success',
       })
+      refetch()
     } catch {
       toast({ title: 'Publish failed', type: 'error' })
+    }
+  }
+
+  const handleSubmitForApproval = async (id: string, title: string) => {
+    try {
+      await api.eventsAdmin.submitForApproval(id)
+      toast({
+        title: 'Submitted for Review',
+        message: `"${title}" was submitted to institution leadership for publication.`,
+        type: 'success',
+      })
+      refetch()
+    } catch {
+      toast({ title: 'Submission failed', type: 'error' })
+    }
+  }
+
+  const handleCancelEvent = async (id: string, title: string) => {
+    if (!window.confirm(`Are you sure you want to cancel "${title}"?`)) return
+    try {
+      if (api.eventsAdmin.cancelEvent) {
+        await api.eventsAdmin.cancelEvent(id)
+      }
+      toast({
+        title: 'Event Cancelled',
+        message: `"${title}" has been cancelled.`,
+        type: 'info',
+      })
+      refetch()
+    } catch {
+      toast({ title: 'Cancellation failed', type: 'error' })
     }
   }
 
@@ -90,7 +122,7 @@ export const AdminEventsListPage: React.FC = () => {
       {/* Filter and Search Bar (Inline above the table) */}
       <div className="p-3 bg-surface border border-line rounded-panel flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar text-small">
-          {['all', 'published', 'draft', 'in_review', 'live', 'completed'].map((st) => (
+          {['all', 'published', 'submitted', 'draft', 'cancelled'].map((st) => (
             <button
               key={st}
               type="button"
@@ -101,7 +133,7 @@ export const AdminEventsListPage: React.FC = () => {
                   : 'text-text-2 hover:text-text hover:bg-subtle'
               }`}
             >
-              {st.replace('_', ' ')}
+              {st === 'submitted' ? 'Submitted (In Review)' : st.replace('_', ' ')}
             </button>
           ))}
         </div>
@@ -179,24 +211,61 @@ export const AdminEventsListPage: React.FC = () => {
                       className={`inline-block text-caption px-2 py-0.5 rounded-full border capitalize font-medium ${
                         evt.status === 'published'
                           ? 'bg-success/10 text-success border-success/30'
+                          : evt.status === 'submitted' || evt.status === 'in_review'
+                          ? 'bg-sky-500/10 text-sky-400 border-sky-500/30'
                           : evt.status === 'draft'
                           ? 'bg-warning/10 text-warning border-warning/30'
+                          : evt.status === 'cancelled'
+                          ? 'bg-danger/10 text-danger border-danger/30'
                           : 'bg-subtle text-text border-line'
                       }`}
                     >
-                      {evt.status.replace('_', ' ')}
+                      {evt.status === 'submitted' || evt.status === 'in_review' ? 'Submitted' : evt.status.replace('_', ' ')}
                     </span>
                   </td>
 
                   <td className="py-2.5 px-4 text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       {evt.status === 'draft' && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => handleSubmitForApproval(evt.id, evt.title)}
+                            className="px-2 py-1 bg-subtle text-text hover:bg-accent hover:text-on-accent transition-colors rounded-btn text-caption font-semibold border border-line"
+                            title="Submit for Review"
+                          >
+                            Submit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handlePublish(evt.id, evt.title)}
+                            className="px-2.5 py-1 bg-accent text-on-accent hover:bg-accent-hover transition-colors rounded-btn text-caption font-semibold"
+                            title="Publish Directly"
+                          >
+                            Publish
+                          </button>
+                        </>
+                      )}
+
+                      {(evt.status === 'submitted' || evt.status === 'in_review') && (
                         <button
                           type="button"
                           onClick={() => handlePublish(evt.id, evt.title)}
                           className="px-2.5 py-1 bg-accent text-on-accent hover:bg-accent-hover transition-colors rounded-btn text-caption font-semibold"
+                          title="Approve & Publish Live"
                         >
-                          Publish
+                          Approve
+                        </button>
+                      )}
+
+                      {evt.status === 'published' && (
+                        <button
+                          type="button"
+                          onClick={() => handleCancelEvent(evt.id, evt.title)}
+                          className="px-2 py-1 bg-danger/10 text-danger hover:bg-danger hover:text-white transition-colors rounded-btn text-caption font-semibold border border-danger/30"
+                          title="Cancel Event"
+                        >
+                          Cancel
                         </button>
                       )}
 

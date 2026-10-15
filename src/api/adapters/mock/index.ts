@@ -494,6 +494,26 @@ export const mockEventsAdminApi: EventsAdminApi = {
     mockStore.save()
     return mockStore.events[index]
   },
+
+  async cancelEvent(id: string): Promise<Event> {
+    await simulateLatency()
+    const index = mockStore.events.findIndex((e) => e.id === id)
+    if (index === -1) throw new Error('Event not found')
+
+    mockStore.events[index].status = 'cancelled'
+    mockStore.save()
+    return mockStore.events[index]
+  },
+
+  async archiveEvent(id: string): Promise<Event> {
+    await simulateLatency()
+    const index = mockStore.events.findIndex((e) => e.id === id)
+    if (index === -1) throw new Error('Event not found')
+
+    mockStore.events[index].status = 'archived'
+    mockStore.save()
+    return mockStore.events[index]
+  },
 }
 
 export const mockFormsApi: FormsApi = {
@@ -1146,6 +1166,15 @@ export const mockAuthApi: AuthApi = {
     mockStore.currentSession = match
     mockStore.save()
     return match
+  },
+
+  async becomeOrganizer(): Promise<any> {
+    await simulateLatency()
+    if (mockStore.currentSession) {
+      mockStore.currentSession.role = 'club_admin'
+      mockStore.save()
+    }
+    return { role: 'organizer' }
   },
 }
 

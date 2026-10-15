@@ -1,15 +1,16 @@
-// Hallmark macrostructure: Ecosystem Index / Option B Seamless Architecture
+// EventMesh campus programme and discovery
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { usePromotedEvents, useNewestEvents } from '@/hooks/useEvents'
 import { api, Event, PaginatedResult } from '@/api'
-import { FeaturedEventsHero } from './components/FeaturedEventsHero'
-import { EventShowcaseGrid } from './components/EventShowcaseGrid'
+import { ResponsiveMasonryLayout } from '@/design-system/ResponsiveMasonryLayout'
+import { CinematicHeroStage } from './components/CinematicHeroStage'
+import { EventTicketCard } from '@/design-system/EventTicketCard'
 import { ClubsStrip } from './components/ClubsStrip'
 import { EventsToolbar } from './components/EventsToolbar'
 import { EventsDiscoveryView } from './components/EventsDiscoveryView'
 import { SectionHeader } from '@/design-system/SectionHeader'
-import { Ticket, ArrowDown } from '@/design-system/Icon'
+import { ArrowRight } from '@/design-system/Icon'
 
 export const HomePage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -28,7 +29,7 @@ export const HomePage: React.FC = () => {
       setViewMode(mode)
       try {
         localStorage.setItem('eventmesh_view_preference', mode)
-      } catch {}
+      } catch { /* Browsing still works when local storage is unavailable. */ }
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev)
@@ -50,7 +51,7 @@ export const HomePage: React.FC = () => {
 
   // 3. Promoted & Newest Data
   const { data: promoted = [] } = usePromotedEvents()
-  const { data: newestData, isLoading: isNewestLoading } = useNewestEvents({ limit: 5 })
+  const { data: newestData, isLoading: isNewestLoading } = useNewestEvents({ limit: 8 })
   const newestEvents = useMemo(() => newestData?.items || [], [newestData?.items])
 
   // 4. Discovery Events: Cursor Pagination & Filter Fetching
@@ -59,10 +60,12 @@ export const HomePage: React.FC = () => {
   const [nextCursor, setNextCursor] = useState<string | undefined>(undefined)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false)
+  const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
     let isCancelled = false
     setIsLoading(true)
+    setLoadError(false)
 
     const fetchDiscovery = async () => {
       try {
@@ -90,6 +93,10 @@ export const HomePage: React.FC = () => {
       } catch (err) {
         if (!isCancelled) {
           console.error('Failed to fetch discovery events:', err)
+          setDiscoveryEvents([])
+          setTotalCount(0)
+          setNextCursor(undefined)
+          setLoadError(true)
           setIsLoading(false)
         }
       }
@@ -144,61 +151,29 @@ export const HomePage: React.FC = () => {
   }
 
   return (
-    <div className="w-full bg-[var(--color-paper)] text-[var(--color-ink)] min-h-screen flex flex-col select-none">
-      {/* ==============================================================
-          HERO ACT: FEATURED EVENTS DISCOVERY CAROUSEL
-          Kinetic horizontal slider adapting @reactbits-pro/about-15
-          ============================================================== */}
-      <FeaturedEventsHero events={promoted.length > 0 ? promoted : discoveryEvents} />
+    <div className="w-full bg-paper text-ink min-h-screen flex flex-col select-none">
+      <CinematicHeroStage events={promoted.length > 0 ? promoted : discoveryEvents} />
 
-      {/* ==============================================================
-          SECTION 1: RECENTLY UPLOADED SESSIONS
-          Showcase Grid adapting @reactbits-pro/showcase-4 patterns
-          ============================================================== */}
-      <section className="relative w-full py-12 sm:py-16 border-b border-line/60">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <EventShowcaseGrid
-            events={newestEvents.length > 0 ? newestEvents : discoveryEvents}
-            title="Recently Scheduled Sessions"
-            subtitle="Browse newly announced hackathons, workshops, and gatherings across student guilds."
-            showCategoryFilters={true}
-            isLoading={isNewestLoading}
-          />
-        </div>
-      </section>
+      {/* Bottom 40%: Regular Campus Events Responsive Masonry Layout */}
+      <ResponsiveMasonryLayout
+        events={newestEvents.length > 0 ? newestEvents : discoveryEvents.slice(0, 8)}
+        title="Happening on Campus"
+        subtitle="Non-genre-restricted regular events, club sessions, and daily campus productions"
+      />
 
-      {/* ==============================================================
-          SECTION 2: CAMPUS COLLECTIVES
-          ============================================================== */}
-      <section className="relative w-full py-14 sm:py-20 border-b border-line/60 bg-surface-subtle/30">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
+      <section aria-label="Search events" className="sticky top-16 z-30 border-b border-line bg-paper py-4">
+        <div className="mx-auto max-w-7xl space-y-5 px-4 sm:px-6">
           <SectionHeader
-            title="Campus Collectives"
-            subtitle="Autonomous student guilds, research labs, and design studios organizing this season."
-            badge="Societies"
-            action={
-              <Link
-                to="/clubs"
-                className="text-xs font-semibold text-accent hover:underline inline-flex items-center gap-1 font-mono uppercase tracking-wider"
-              >
-                <span>View all clubs</span>
-              </Link>
-            }
-          />
-          <ClubsStrip />
-        </div>
-      </section>
-
-      {/* ==============================================================
-          SECTION 3: DISCOVERY DIRECTORY & FILTER TOOLBAR
-          ============================================================== */}
-      <section id="discovery" className="relative w-full py-14 sm:py-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
-          <SectionHeader
-            title="All Sessions & Workshops"
+            title="Explore All Events & Sessions"
             subtitle="Filter by category, timing, or search for specific technologies."
-            badge="Directory"
+            badge="CAMPUS DIRECTORY"
           />
+
+          <nav aria-label="Browse events by date" className="flex flex-wrap gap-2">
+            <Link to="/explore?date=today" className="rounded-lg border border-line bg-card px-3 py-2 text-xs font-medium text-ink hover:border-line-strong">Today</Link>
+            <Link to="/explore?date=weekend" className="rounded-lg border border-line bg-card px-3 py-2 text-xs font-medium text-ink hover:border-line-strong">This weekend</Link>
+            <Link to="/explore?date=next-week" className="rounded-lg border border-line bg-card px-3 py-2 text-xs font-medium text-ink hover:border-line-strong">Next week</Link>
+          </nav>
 
           <EventsToolbar
             category={category}
@@ -240,7 +215,38 @@ export const HomePage: React.FC = () => {
             totalCount={totalCount}
           />
 
-          <EventsDiscoveryView
+        </div>
+      </section>
+
+      {/* ==============================================================
+          SECTION 2: CAMPUS COLLECTIVES & SOCIETIES
+          ============================================================== */}
+      <section className="relative w-full py-10 sm:py-14 border-b border-line bg-paper-2">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
+          <SectionHeader
+            title="Campus Collectives & Societies"
+            subtitle="Autonomous student guilds, competitive programming labs, and creative code studios."
+            badge="TOP SOCIETIES"
+            action={
+              <Link
+                to="/clubs"
+                className="text-xs sm:text-sm font-semibold text-accent hover:underline inline-flex items-center gap-1"
+              >
+                <span>View all clubs</span>
+                <ArrowRight size={14} weight="bold" />
+              </Link>
+            }
+          />
+          <ClubsStrip />
+        </div>
+      </section>
+
+      {/* ==============================================================
+          SECTION 3: DISCOVERY DIRECTORY & FILTER TOOLBAR
+          ============================================================== */}
+      <section id="discovery" className="relative w-full py-10 sm:py-16 bg-paper">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
+          {loadError ? <p role="alert" className="rounded-panel border border-line bg-card p-6 text-center text-ink-soft">Events could not be loaded. Please refresh to try again.</p> : <EventsDiscoveryView
             events={discoveryEvents}
             viewMode={viewMode}
             isLoading={isLoading}
@@ -248,7 +254,7 @@ export const HomePage: React.FC = () => {
             hasMore={Boolean(nextCursor)}
             onLoadMore={handleLoadMore}
             onResetFilters={handleResetFilters}
-          />
+          />}
         </div>
       </section>
     </div>

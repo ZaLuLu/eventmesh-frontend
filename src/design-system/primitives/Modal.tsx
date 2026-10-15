@@ -50,7 +50,7 @@ export const Modal: React.FC<ModalProps> = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
             onClick={onClose}
-            className={`fixed inset-0 backdrop-blur-md ${isDark ? 'bg-black/70' : 'bg-black/30'}`}
+            className={`fixed inset-0 ${isDark ? 'bg-black/75' : 'bg-black/45'}`}
             aria-hidden="true"
           />
 

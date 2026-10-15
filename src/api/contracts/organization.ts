@@ -49,22 +49,24 @@ export interface OrganizationRead {
   id: string
   slug: string
   name: string
-  type: string // 'institution' | 'organization' | 'club'
+  type: string
   is_institution: boolean
   description: string | null
   website: string | null
-  contact_email: string | null
-  phone: string | null
-  city: string | null
-  region: string | null
-  country: string | null
-  logo_url: string | null
+  contact_email?: string | null
+  phone?: string | null
+  city?: string | null
+  region?: string | null
+  country?: string | null
+  logo_url?: string | null
   avatar_url?: string | null
-  is_archived: boolean
+  is_archived?: boolean
   owner_id: string
   status: string
-  role?: string | null // Caller's role in this organization
+  role?: string | null
+  parent_organization_id?: string | null
   parent_id?: string | null
+  parent_slug?: string | null
   parent_name?: string | null
   institution_verified_at?: string | null
   created_at?: string
@@ -73,7 +75,9 @@ export interface OrganizationRead {
 
 export interface MemberRead {
   user_id: string
-  role: 'owner' | 'manager' | 'member' | string
+  role: 'owner' | 'admin' | 'manager' | 'member' | string
+  email?: string
+  display_name?: string
 }
 
 export interface CreateOrgPayload {
@@ -99,5 +103,6 @@ export interface CreateClubPayload {
   slug?: string
   description?: string
   website?: string
+  contact_email?: string
 }
 

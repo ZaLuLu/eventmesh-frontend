@@ -173,7 +173,7 @@ export const EventPeekDrawer: React.FC<EventPeekDrawerProps> = ({
                     {formatPrice(event)}
                   </Badge>
                   {event.category && (
-                    <span className="px-2.5 py-0.5 rounded-full text-caption font-semibold bg-white/90 backdrop-blur text-ink border border-line">
+                    <span className="px-2.5 py-0.5 rounded-full text-caption font-semibold bg-card text-ink border border-line">
                       {event.category.toUpperCase()}
                     </span>
                   )}

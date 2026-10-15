@@ -162,28 +162,28 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
       </div>
 
       {/* Centered Ticket Stage with Responsive Scaling Container */}
-      <div className="w-full max-w-[700px] overflow-visible flex justify-center py-2">
+      <div className="w-full max-w-[880px] overflow-visible flex justify-center py-2">
         <TearTicket
-          width={680}
-          height={280}
-          stubSize={210}
+          width={840}
+          height={360}
+          stubSize={260}
           radius={16}
-          holes={11}
-          notch={14}
-          roughness={2}
-          tearAngle={22}
-          stretch={30}
-          resistance={0.4}
+          holes={14}
+          notch={16}
+          roughness={1.5}
+          tearAngle={20}
+          stretch={4}
+          resistance={0.04}
           torn={isPhysicallyTorn}
           disabled={backendAdmitted || disabled}
-          background="#FAF9FC" // Alabaster Paper
-          stubBackground="#14111D" // Obsidian Slate Gate Stub
-          color="#14111D"
-          borderColor="#E8E5EE"
-          borderWidth={1}
-          tilt={!backendAdmitted}
-          tiltMax={4}
-          className="shadow-[0_8px_30px_-4px_rgba(20,17,29,0.08)]"
+          background="var(--card)" // Solid Card Paper
+          stubBackground="#151130" // Solid Deep Ink Gate Stub
+          color="var(--ink)"
+          borderColor="var(--line)"
+          borderWidth={1.5}
+          tilt={false}
+          tiltMax={0}
+          className="shadow-2xl border border-line"
           onTear={triggerVisualTear}
           stub={
             /* Physical Gate Stub */
@@ -254,7 +254,7 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
 
               {/* Stub Footer */}
               <div className="text-[9px] text-white/50 border-t border-dashed border-white/15 pt-2 w-full flex items-center justify-between font-mono">
-                <span>GATE PASS</span>
+                <span className="text-[8px] text-amber-400 font-bold tracking-tight">✁ PULL OR TAP STUB</span>
                 <span className="font-bold text-white/80">
                   {backendAdmitted ? 'VALIDATED' : isVisualTorn ? 'TORN' : 'INTACT'}
                 </span>
@@ -364,40 +364,28 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
         </TearTicket>
       </div>
 
-      {/* Tactile Tear Controls (Repeatable, active only before admission) */}
-      {!backendAdmitted && (
+      {/* Visual Tear Feedback indicator (Only when stub is torn in preview) */}
+      {!backendAdmitted && isVisualTorn && (
         <div className="mt-3 flex items-center gap-3">
-          {!isVisualTorn ? (
-            <button
-              type="button"
-              onClick={triggerVisualTear}
-              className="px-3.5 py-1.5 rounded-full bg-surface-subtle hover:bg-accent-soft text-ink-soft hover:text-accent border border-line text-xs font-mono flex items-center gap-1.5 transition-colors"
-              aria-label="Simulate tearing pass stub"
-            >
-              <Scissors size={13} weight="bold" />
-              <span>Tear stub (tactile preview)</span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={resetVisualTear}
-              className="px-3.5 py-1.5 rounded-full bg-ink text-paper hover:bg-accent text-xs font-mono flex items-center gap-1.5 transition-colors shadow-xs"
-              aria-label="Restore intact pass stub"
-            >
-              <ArrowsClockwise size={13} weight="bold" />
-              <span>Restore pass stub</span>
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={resetVisualTear}
+            className="px-3 py-1 rounded-full bg-card hover:bg-surface-subtle text-ink text-xs font-mono flex items-center gap-1.5 transition-colors border border-line shadow-xs"
+            aria-label="Restore intact pass stub"
+          >
+            <ArrowsClockwise size={13} weight="bold" />
+            <span>Restore Stub</span>
+          </button>
         </div>
       )}
     </div>
   )
 
-  // Floating Overlay Presentation
+  // Floating Overlay Presentation (Solid Opaque Backdrop, No Frosted Glass)
   if (floatingCanvas) {
     return (
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 backdrop-blur-md bg-black/70 overflow-y-auto"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 bg-ink/80 overflow-y-auto select-none"
         onClick={(e) => {
           if (e.target === e.currentTarget && onClose) onClose()
         }}
@@ -410,10 +398,10 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="fixed top-6 right-6 z-50 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/15 backdrop-blur-md text-xs font-mono transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            className="fixed top-6 right-6 z-50 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card text-ink border-2 border-line hover:border-accent hover:text-accent text-xs font-mono font-medium shadow-[2px_2px_0_var(--ink)] transition-transform active:translate-y-0.5 focus-visible:outline-2 focus-visible:outline-accent"
           >
-            <span>Close</span>
-            <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-white/80 font-mono">ESC</kbd>
+            <span>Close Pass</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-surface-subtle text-[10px] text-ink-soft font-mono">ESC</kbd>
             <X size={13} weight="bold" />
           </button>
         )}

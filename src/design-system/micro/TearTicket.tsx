@@ -115,6 +115,7 @@ interface Sim {
   snapped: boolean[];
   snapAt: number[];
   span: number[];
+  autoPull?: { started: number; startX: number; startY: number; targetX: number; targetY: number; duration: number };
 }
 
 interface Cfg {
@@ -235,8 +236,8 @@ const TearTicket: React.FC<TearTicketProps> = ({
   tiltReach = 260,
   parallax = 6,
   perspective = 1000,
-  background = '#27272a',
-  color = '#f5f5f5',
+  background = 'var(--card)',
+  color = 'var(--ink)',
   border = true,
   borderColor = '',
   borderWidth = 1,
@@ -257,7 +258,6 @@ const TearTicket: React.FC<TearTicketProps> = ({
   const stageRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const stubRef = useRef<HTMLDivElement>(null);
-  const fibres = useRef<(SVGPathElement | null)[]>([]);
   const vertical = orientation === 'vertical';
   const geo = useMemo(
     () => buildGeometry(width, height, stubSize, radius, holes, holeSize, notch, roughness, vertical),
@@ -328,69 +328,7 @@ const TearTicket: React.FC<TearTicketProps> = ({
     }
     const up = c.geo.vertical;
     if (bodyEl) bodyEl.style.transform = `translate${up ? 'Y' : 'X'}(${s.bx.toFixed(2)}px)`;
-    const cos = Math.cos(s.theta * s.sign);
-    const sin = Math.sin(s.theta * s.sign);
-    const lx = up ? 1.6 : 0;
-    const ly = up ? 0 : 1.6;
-    let busy = false;
-    c.geo.bridges.forEach((b, i) => {
-      const dx = b.x - s.hinge.x;
-      const dy = b.y - s.hinge.y;
-      const tx = s.hinge.x + dx * cos - dy * sin + s.sx;
-      const ty = s.hinge.y + dx * sin + dy * cos + s.sy;
-      const ox = b.x + (up ? 0 : s.bx);
-      const oy = b.y + (up ? s.bx : 0);
-      const gx = tx - ox;
-      const gy = ty - oy;
-      const gap = Math.hypot(gx, gy);
-      const near = fibres.current[i * 2];
-      const far = fibres.current[i * 2 + 1];
-      if (!near || !far) return;
-      const live = s.phase !== 'idle' && !c.reduce;
-      if (!s.snapped[i]) {
-        if (!live || gap < 0.35) {
-          near.style.opacity = '0';
-          far.style.opacity = '0';
-          return;
-        }
-        const k = clamp(gap / c.stretch, 0, 1);
-        const sag = gap * 0.18;
-        const w = (1.7 - 1.15 * k).toFixed(2);
-        const sx = (up ? sag : 0) + gx / 2;
-        const sy = (up ? 0 : sag) + gy / 2;
-        near.setAttribute(
-          'd',
-          `M${f(ox - lx)},${f(oy - ly)}Q${f(ox - lx + sx)},${f(oy - ly + sy)} ${f(tx - lx)},${f(ty - ly)}`
-        );
-        far.setAttribute(
-          'd',
-          `M${f(ox + lx)},${f(oy + ly)}Q${f(ox + lx + gx - sx)},${f(oy + ly + gy - sy)} ${f(tx + lx)},${f(ty + ly)}`
-        );
-        near.style.strokeWidth = w;
-        far.style.strokeWidth = w;
-        near.style.opacity = '1';
-        far.style.opacity = '1';
-        s.span[i] = gap;
-        return;
-      }
-      const t = (now - s.snapAt[i]) / 1000 / RETRACT;
-      if (!live || t >= 1 || !s.snapAt[i]) {
-        near.style.opacity = '0';
-        far.style.opacity = '0';
-        return;
-      }
-      busy = true;
-      const left = (1 - t) * (1 - t);
-      const len = (s.span[i] || c.stretch) * 0.5 * left;
-      const ux = gap > 0.01 ? gx / gap : 1;
-      const uy = gap > 0.01 ? gy / gap : 0;
-      near.setAttribute('d', `M${f(ox)},${f(oy)}L${f(ox + ux * len)},${f(oy + uy * len)}`);
-      far.setAttribute('d', `M${f(tx)},${f(ty)}L${f(tx - ux * len)},${f(ty - uy * len)}`);
-      near.style.strokeWidth = '0.9';
-      far.style.strokeWidth = '0.9';
-      near.style.opacity = left.toFixed(2);
-      far.style.opacity = left.toFixed(2);
-    });
+    const busy = false;
     return busy;
   };
 
@@ -407,6 +345,27 @@ const TearTicket: React.FC<TearTicketProps> = ({
     const dt = clamp((now - s.last) / 1000, 0.001, 0.034);
     s.last = now;
     const limit = rad(c.tearAngle);
+    if (s.autoPull && s.phase === 'held') {
+      const pull = s.autoPull;
+      const progress = clamp((now - pull.started) / pull.duration, 0, 1);
+      const ease = progress * progress * (3 - 2 * progress);
+      s.point = {
+        x: pull.startX + (pull.targetX - pull.startX) * ease,
+        y: pull.startY + (pull.targetY - pull.startY) * ease
+      };
+      s.pvx = ((pull.targetX - pull.startX) / (pull.duration / 1000)) * 0.7;
+      s.pvy = ((pull.targetY - pull.startY) / (pull.duration / 1000)) * 0.7;
+      s.pt = now;
+      if (progress >= 1) {
+        s.autoPull = undefined;
+        setGrabbing(false);
+        s.phase = 'drop';
+        s.vx = clamp(s.pvx, 140, 380);
+        s.vy = clamp(s.pvy, -60, 240);
+        s.spin = 2.4 * s.sign;
+        s.age = 0;
+      }
+    }
     if (s.phase === 'held') {
       const count = c.geo.bridges.length;
       let intact = 0;
@@ -424,19 +383,13 @@ const TearTicket: React.FC<TearTicketProps> = ({
       s.sx += (px - s.sx) * (1 - Math.exp(-dt / 0.05));
       s.sy += (py - s.sy) * (1 - Math.exp(-dt / 0.05));
       const slack = Math.hypot(s.sx, s.sy);
-      let left = 0;
-      c.geo.bridges.forEach((b, i) => {
-        if (s.snapped[i]) return;
-        const d = Math.abs(b.mid - s.hingeV);
-        if (2 * d * Math.sin(s.theta / 2) + slack > c.stretch || s.theta >= limit) {
+      if (s.theta >= limit * 0.4 || slack > 12) {
+        for (let i = 0; i < count; i += 1) {
           s.snapped[i] = true;
           s.snapAt[i] = now;
-          s.bv -= 560 / c.geo.bridges.length;
-        } else left += 1;
-      });
-      if (left === 0) {
+        }
         s.phase = 'free';
-        s.bv -= 150;
+        s.bv -= 350;
       }
     } else if (s.phase === 'free') {
       const cos = Math.cos(s.theta * s.sign);
@@ -555,40 +508,15 @@ const TearTicket: React.FC<TearTicketProps> = ({
     setGrabbing(true);
     run();
 
-    const startTime = performance.now();
-    const duration = 650; // 650ms natural peeling paper rip
-    const targetX = startX + (geo.vertical ? 50 : 130);
-    const targetY = startY + (geo.vertical ? 130 : 65);
-
-    const pullStep = (now: number) => {
-      const elapsed = now - startTime;
-      const progress = clamp(elapsed / duration, 0, 1);
-      // Smooth natural cubic easing (slow start, accelerating tear)
-      const ease = progress * progress * (3 - 2 * progress);
-
-      s.point = {
-        x: startX + (targetX - startX) * ease,
-        y: startY + (targetY - startY) * ease
-      };
-      s.pvx = ((targetX - startX) / (duration / 1000)) * 0.7;
-      s.pvy = ((targetY - startY) / (duration / 1000)) * 0.7;
-      s.pt = now;
-
-      if (progress < 1 && s.phase === 'held') {
-        requestAnimationFrame(pullStep);
-      } else {
-        // All bridges snapped, release stub to gravity drop
-        setGrabbing(false);
-        s.phase = 'drop';
-        s.vx = clamp(s.pvx, 140, 380);
-        s.vy = clamp(s.pvy, -60, 240);
-        s.spin = 2.4 * s.sign;
-        s.age = 0;
-        run();
-      }
+    s.autoPull = {
+      started: performance.now(),
+      duration: 650,
+      startX,
+      startY,
+      targetX: startX + (geo.vertical ? 50 : 130),
+      targetY: startY + (geo.vertical ? 130 : 65)
     };
-
-    requestAnimationFrame(pullStep);
+    run();
   };
 
   const isInitialMount = useRef(true);
@@ -640,7 +568,7 @@ const TearTicket: React.FC<TearTicketProps> = ({
     if (disabled || used || e.button !== 0 || s.id !== null || s.phase === 'drop') return;
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {}
+    } catch { /* Pointer capture may be unavailable. */ }
     const p = local(e);
     s.id = e.pointerId;
     s.start = p;
@@ -691,7 +619,7 @@ const TearTicket: React.FC<TearTicketProps> = ({
     s.id = null;
     try {
       if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
-    } catch {}
+    } catch { /* Pointer capture may be unavailable. */ }
     setGrabbing(false);
     if (s.phase === 'free') {
       const still = performance.now() - s.pt > 80;
@@ -720,17 +648,23 @@ const TearTicket: React.FC<TearTicketProps> = ({
 
   useEffect(() => {
     if (!tilt || reduce || disabled) return undefined;
+    let rect = rootRef.current?.getBoundingClientRect();
+    const measure = () => { rect = rootRef.current?.getBoundingClientRect(); };
     const move = (e: globalThis.PointerEvent) => {
       const el = rootRef.current;
-      if (!el || e.pointerType === 'touch' || sim.current.id !== null) return;
-      const r = el.getBoundingClientRect();
+      if (!el || !rect || e.pointerType === 'touch' || sim.current.id !== null) return;
+      const r = rect;
       const nx = clamp((e.clientX - (r.left + r.width / 2)) / (r.width / 2 + tiltReach), -1, 1);
       const ny = clamp((e.clientY - (r.top + r.height / 2)) / (r.height / 2 + tiltReach), -1, 1);
       tiltY.set(nx * tiltMax);
       tiltX.set(-ny * tiltMax);
     };
+    const root = rootRef.current;
+    root?.addEventListener('pointerenter', measure);
+    window.addEventListener('scroll', measure, { passive: true });
+    window.addEventListener('resize', measure);
     window.addEventListener('pointermove', move);
-    return () => window.removeEventListener('pointermove', move);
+    return () => { root?.removeEventListener('pointerenter', measure); window.removeEventListener('scroll', measure); window.removeEventListener('resize', measure); window.removeEventListener('pointermove', move); };
   }, [tilt, reduce, disabled, tiltMax, tiltReach, tiltX, tiltY]);
 
   return (
@@ -772,7 +706,7 @@ const TearTicket: React.FC<TearTicketProps> = ({
                 <path d={geo.bodyOutline} />
               </svg>
             ) : null}
-            <div className="tear-ticket__paper" style={{ clipPath: `path('${geo.body}')` }}>
+            <div className="tear-ticket__paper" style={{ borderRadius: radius }}>
               {image ? (
                 <div className="tear-ticket__art">
                   <motion.img
@@ -790,22 +724,6 @@ const TearTicket: React.FC<TearTicketProps> = ({
               </motion.div>
             </div>
           </div>
-          <svg className="tear-ticket__fibres" aria-hidden="true">
-            {geo.bridges.map((b, i) => (
-              <g key={i}>
-                <path
-                  ref={el => {
-                    fibres.current[i * 2] = el;
-                  }}
-                />
-                <path
-                  ref={el => {
-                    fibres.current[i * 2 + 1] = el;
-                  }}
-                />
-              </g>
-            ))}
-          </svg>
           <div
             ref={stubRef}
             className="tear-ticket__piece tear-ticket__piece--stub"
@@ -827,7 +745,7 @@ const TearTicket: React.FC<TearTicketProps> = ({
                 <path d={geo.stubOutline} />
               </svg>
             ) : null}
-            <div className="tear-ticket__paper tear-ticket__paper--stub" style={{ clipPath: `path('${geo.stub}')` }}>
+            <div className="tear-ticket__paper tear-ticket__paper--stub" style={{ borderRadius: radius }}>
               <div className="tear-ticket__stub">{stub}</div>
             </div>
           </div>

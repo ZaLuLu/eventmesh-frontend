@@ -44,7 +44,7 @@ type OrientationPermission = {
 
 const THEMES: Record<Palette, Record<string, string>> = {
   dark: {
-    '--pc-frame': 'rgba(38, 35, 46, 0.66)',
+    '--pc-frame': 'var(--color-surface)',
     '--pc-frame-edge': 'rgba(255, 255, 255, 0.08)',
     '--pc-frame-highlight': 'rgba(255, 255, 255, 0.07)',
     '--pc-frame-shadow': '0 22px 44px -20px rgba(0, 0, 0, 0.8), 0 6px 16px -8px rgba(0, 0, 0, 0.5)',
@@ -59,7 +59,7 @@ const THEMES: Record<Palette, Record<string, string>> = {
     '--pc-shade': 'rgba(0, 0, 0, 0.4)'
   },
   light: {
-    '--pc-frame': 'rgba(240, 240, 243, 0.8)',
+    '--pc-frame': 'var(--color-surface)',
     '--pc-frame-edge': 'rgba(24, 24, 27, 0.07)',
     '--pc-frame-highlight': 'rgba(255, 255, 255, 0.95)',
     '--pc-frame-shadow': '0 22px 44px -22px rgba(24, 24, 27, 0.3), 0 6px 16px -10px rgba(24, 24, 27, 0.16)',
@@ -188,7 +188,7 @@ const SHADE_STYLE: CSSProperties = {
 
 const ROOT = 'relative w-full max-w-[300px] touch-pan-y [perspective:1000px] [-webkit-tap-highlight-color:transparent]';
 const BODY =
-  'relative flex flex-col gap-[10px] rounded-[calc(var(--pc-radius)+10px)] p-[10px] backdrop-blur-[20px] backdrop-saturate-[1.6] will-change-transform [background:var(--pc-frame)] [box-shadow:var(--pc-frame-shadow)] [transform:rotateX(var(--pc-rotate-x))_rotateY(var(--pc-rotate-y))]';
+  'relative flex flex-col gap-[10px] rounded-[calc(var(--pc-radius)+10px)] p-[10px] will-change-transform [background:var(--pc-frame)] [box-shadow:var(--pc-frame-shadow)] [transform:rotateX(var(--pc-rotate-x))_rotateY(var(--pc-rotate-y))]';
 const TILE =
   'relative isolate aspect-[1/1] sm:aspect-[4/4.2] overflow-hidden rounded-[var(--pc-radius)] [background:var(--pc-backdrop)] [box-shadow:var(--pc-tile-shadow)]';
 const LAYER = 'pointer-events-none absolute inset-0 rounded-[inherit]';

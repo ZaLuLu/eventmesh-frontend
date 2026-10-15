@@ -61,7 +61,7 @@ export const AvatarSelectorModal: React.FC<AvatarSelectorModalProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/75"
           />
 
           {/* Modal Card */}
@@ -100,7 +100,7 @@ export const AvatarSelectorModal: React.FC<AvatarSelectorModalProps> = ({
                       'relative p-2 rounded-2xl flex flex-col items-center gap-1.5 transition-all border',
                       isSelected
                         ? 'border-accent bg-accent/5 ring-2 ring-accent/30 shadow-xs'
-                        : 'border-line/60 hover:border-line hover:bg-surface-subtle/50'
+                        : 'border-line/60 hover:border-line hover:bg-surface-subtle'
                     )}
                   >
                     <img

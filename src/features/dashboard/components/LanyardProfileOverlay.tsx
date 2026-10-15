@@ -15,7 +15,7 @@ interface LanyardProfileOverlayProps {
 export const LanyardProfileOverlay: React.FC<LanyardProfileOverlayProps> = ({ isOpen, onClose }) => {
   const { session } = useAuth()
   const { data: registrations = [] } = useMyRegistrations()
-  const [viewMode, setViewMode] = useState<'3d' | '2d'>('3d')
+  const [viewMode, setViewMode] = useState<'3d' | '2d'>('2d')
   const [isFlipped, setIsFlipped] = useState(false)
 
   // Derive genuine attended events from confirmed checked_in registrations
@@ -25,40 +25,40 @@ export const LanyardProfileOverlay: React.FC<LanyardProfileOverlayProps> = ({ is
       .map((r) => ({
         title: r.eventTitle || 'Campus Session',
         date: r.checkedInAt ? formatDate(r.checkedInAt) : formatDate(r.createdAt),
-        clubName: 'Verified Collective',
+        clubName: '',
       }))
   }, [registrations])
 
   // Derive earned badges from genuine attended categories
   const earnedBadges = useMemo(() => {
-    if (attendedEvents.length === 0) return ['Member', 'Campus Identity']
-    return ['Verified Attendee', 'Autumn 2026', `${attendedEvents.length} Sessions Attended`]
+    if (attendedEvents.length === 0) return []
+    return [`${attendedEvents.length} Sessions Attended`]
   }, [attendedEvents])
 
   // Generate textures for 3D physics Lanyard
   const studentData = useMemo(() => {
     return {
-      name: session?.name || 'Student Attendee',
-      registrationNumber: `EM-${(session?.id || '8841').slice(0, 8).toUpperCase()}`,
-      degreeBranch: session?.orgId || 'Engineering & Computer Science',
-      semester: 6,
-      email: session?.email || 'attendee@campus.edu',
+      name: session?.name || 'EventMesh member',
+      registrationNumber: (session as any)?.registrationNumber || '',
+      degreeBranch: (session as any)?.degreeBranch || '',
+      semester: (session as any)?.semester,
+      email: session?.email || '',
       role: session?.role?.replace('_', ' ') || 'Attendee',
-      campus: 'CENTRAL UNIVERSITY CAMPUS',
+      campus: (session as any)?.campus || '',
       attendedEvents,
       earnedBadges,
     }
   }, [session, attendedEvents, earnedBadges])
 
   const frontTexture = useMemo(() => {
-    if (!isOpen) return ''
+    if (!isOpen || viewMode !== '3d') return ''
     return generateStudentIDTexture(studentData, 'front')
-  }, [studentData, isOpen])
+  }, [studentData, isOpen, viewMode])
 
   const backTexture = useMemo(() => {
-    if (!isOpen) return ''
+    if (!isOpen || viewMode !== '3d') return ''
     return generateStudentIDTexture(studentData, 'back')
-  }, [studentData, isOpen])
+  }, [studentData, isOpen, viewMode])
 
   // Escape key handler
   useEffect(() => {
@@ -92,27 +92,27 @@ export const LanyardProfileOverlay: React.FC<LanyardProfileOverlayProps> = ({ is
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/75 backdrop-blur-md"
+            className="fixed inset-0 bg-black/75"
           />
 
           {/* Floating Close Button */}
           <button
             type="button"
             onClick={onClose}
-            className="fixed top-6 right-6 z-50 p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border border-white/15 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            className="fixed top-6 right-6 z-50 p-2.5 rounded-full bg-card hover:bg-surface-subtle text-ink border border-line transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             aria-label="Close profile pass"
           >
             <X size={20} weight="bold" />
           </button>
 
           {/* Top Controls Bar */}
-          <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-white">
+          <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-line text-xs text-ink">
             <span className="font-mono text-[11px] text-white/80 pr-1">CAMPUS PASS</span>
             <div className="h-3 w-[1px] bg-white/20" />
             <button
               type="button"
               onClick={() => setViewMode(viewMode === '3d' ? '2d' : '3d')}
-              className="px-2.5 py-1 rounded-full bg-white/15 hover:bg-white/25 transition-colors flex items-center gap-1 font-mono text-[11px]"
+              className="px-2.5 py-1 rounded-full bg-surface-subtle hover:bg-paper-2 transition-colors flex items-center gap-1 font-mono text-[11px]"
             >
               {viewMode === '3d' ? (
                 <>
@@ -142,10 +142,10 @@ export const LanyardProfileOverlay: React.FC<LanyardProfileOverlayProps> = ({ is
                     <Lanyard
                       frontImage={frontTexture}
                       backImage={backTexture}
-                      cardColor="#0F0D15"
+                      cardColor="var(--card)"
                       finish="matte"
                       orientation="portrait"
-                      strapColor="#6366F1"
+                      strapColor="var(--accent)"
                       size={0.92}
                       strapLength={0.34}
                       intro={false}

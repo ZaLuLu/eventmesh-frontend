@@ -166,7 +166,7 @@ export const GalleryPage: React.FC = () => {
       {activePhoto && (
         <div
           onClick={() => setActivePhoto(null)}
-          className="fixed inset-0 z-50 bg-ink/80 backdrop-blur-sm p-4 sm:p-8 flex items-center justify-center cursor-pointer animate-fade-in"
+          className="fixed inset-0 z-50 bg-ink/85 p-4 sm:p-8 flex items-center justify-center cursor-pointer animate-fade-in"
           role="dialog"
           aria-modal="true"
         >

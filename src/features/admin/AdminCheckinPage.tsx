@@ -27,11 +27,16 @@ import { playSound } from '@/lib/sound'
 import { Registration } from '@/api'
 
 interface ScanResultState {
-  status: 'admitted' | 'already_admitted' | 'wrong_event' | 'invalid'
+  status: 'admitted' | 'already_admitted' | 'queued' | 'wrong_event' | 'invalid'
   title: string
   message: string
   registration?: Registration
   scannedAt: string
+}
+
+interface OfflineCheckin {
+  code: string
+  eventId: string
 }
 
 export const AdminCheckinPage: React.FC = () => {
@@ -55,7 +60,8 @@ export const AdminCheckinPage: React.FC = () => {
     clubId: clubId || undefined,
   })
 
-  const activeEventId = selectedEventId || events[0]?.id || ''
+  const activeEventId =
+    selectedEventId || events.find((e) => e.status === 'published')?.id || events[0]?.id || ''
   const activeEvent = events.find((e) => e.id === activeEventId)
   const { data: stats } = useCheckinStats(activeEventId)
 
@@ -66,30 +72,38 @@ export const AdminCheckinPage: React.FC = () => {
   useEffect(() => {
     const checkOfflineQueue = async () => {
       try {
-        const queue = (await get<string[]>('eventmesh_offline_checkins')) || []
+        const queue = (await get<Array<OfflineCheckin | string>>('eventmesh_offline_checkins')) || []
         setOfflineCount(queue.length)
-      } catch {}
+      } catch { /* Continue when optional storage or browser API is unavailable. */ }
     }
     checkOfflineQueue()
 
     const handleOnline = async () => {
       try {
-        const queue = (await get<string[]>('eventmesh_offline_checkins')) || []
+        const queue = (await get<Array<OfflineCheckin | string>>('eventmesh_offline_checkins')) || []
         if (queue.length > 0) {
           toast({
             title: 'Syncing Offline Scans',
             message: `Uploading ${queue.length} scans queued while offline...`,
             type: 'info',
           })
-          for (const code of queue) {
-            await checkinMutation.mutateAsync({ ticketCode: code, eventId: activeEventId })
+          const pending: Array<OfflineCheckin | string> = []
+          for (const entry of queue) {
+            const code = typeof entry === 'string' ? entry : entry.code
+            const eventId = typeof entry === 'string' ? activeEventId : entry.eventId
+            try {
+              const result = await checkinMutation.mutateAsync({ ticketCode: code, eventId })
+              if (!result.success) pending.push(entry)
+            } catch {
+              pending.push(entry)
+            }
           }
-          await set('eventmesh_offline_checkins', [])
-          setOfflineCount(0)
+          await set('eventmesh_offline_checkins', pending)
+          setOfflineCount(pending.length)
           toast({
-            title: 'Offline Sync Complete',
-            message: 'All gate entries successfully synced with registry.',
-            type: 'success',
+            title: pending.length ? 'Some scans still need verification' : 'Offline sync complete',
+            message: pending.length ? `${pending.length} scans remain in the queue.` : 'Queued scans were verified with the registry.',
+            type: pending.length ? 'info' : 'success',
           })
         }
       } catch (err) {
@@ -115,7 +129,7 @@ export const AdminCheckinPage: React.FC = () => {
         if (parsed.ticketId) cleanCode = String(parsed.ticketId).toUpperCase()
         if (parsed.eventId) payloadEventId = parsed.eventId
       }
-    } catch {}
+    } catch { /* Continue when optional storage or browser API is unavailable. */ }
 
     // Debounce duplicate decodes (ignore same token within 3s)
     if (lastScannedRef.current.code === cleanCode && now - lastScannedRef.current.time < 3000) {
@@ -139,20 +153,20 @@ export const AdminCheckinPage: React.FC = () => {
     // Check offline status
     if (!navigator.onLine) {
       try {
-        const currentQueue = (await get<string[]>('eventmesh_offline_checkins')) || []
-        currentQueue.push(cleanCode)
+        if (!activeEventId) throw new Error('Select an event before queuing a scan')
+        const currentQueue = (await get<Array<OfflineCheckin | string>>('eventmesh_offline_checkins')) || []
+        currentQueue.push({ code: cleanCode, eventId: activeEventId })
         await set('eventmesh_offline_checkins', currentQueue)
         setOfflineCount(currentQueue.length)
         if (navigator.vibrate) navigator.vibrate([100, 50, 100])
-        playSound('success')
         setLastScanResult({
-          status: 'admitted',
-          title: 'Admitted (Queued Offline)',
-          message: `Pass ${cleanCode} accepted offline and saved to device terminal queue.`,
+          status: 'queued',
+          title: 'Pending verification',
+          message: `Pass ${cleanCode} is queued locally. Verify with the registry before admitting this attendee.`,
           scannedAt: new Date().toLocaleTimeString(),
         })
         return
-      } catch {}
+      } catch { /* Continue when optional storage or browser API is unavailable. */ }
     }
 
     try {
@@ -176,7 +190,7 @@ export const AdminCheckinPage: React.FC = () => {
           const channel = new BroadcastChannel('eventmesh_gate_admission')
           channel.postMessage({ registrationId: reg.id, ticketCode: reg.ticketCode })
           channel.close()
-        } catch {}
+        } catch { /* Continue when optional storage or browser API is unavailable. */ }
         window.dispatchEvent(
           new CustomEvent('eventmesh_gate_admitted', {
             detail: { registrationId: reg.id, ticketCode: reg.ticketCode },
@@ -253,13 +267,13 @@ export const AdminCheckinPage: React.FC = () => {
     <div className="max-w-xl mx-auto space-y-6 pb-12 select-none">
       {/* Offline Alert Banner */}
       {offlineCount > 0 && (
-        <div className="rounded-[16px] border-2 border-[#D4F25A] bg-[#181530] p-4 flex items-center justify-between text-xs font-bold text-[#F6F1E7] shadow-[3px_3px_0_#000]">
+        <div className="rounded-panel border-2 border-[var(--color-accent)] bg-[var(--color-surface)] p-4 flex items-center justify-between text-xs font-bold text-[var(--color-ink)] shadow-sm">
           <div className="flex items-center gap-2.5">
-            <Lightning className="w-5 h-5 text-[#D4F25A]" weight="fill" />
+            <Lightning className="w-5 h-5 text-[var(--color-accent)]" weight="fill" />
             <span>{offlineCount} scans queued in offline storage</span>
           </div>
-          <span className="text-[#D4F25A] font-mono text-[11px] animate-pulse">
-            AUTO-SYNCING
+          <span className="text-[var(--color-accent)] font-mono text-[11px] animate-pulse">
+            PENDING SYNC
           </span>
         </div>
       )}
@@ -270,20 +284,20 @@ export const AdminCheckinPage: React.FC = () => {
           <Sticker color="lime" size="sm" className="font-extrabold tracking-wider uppercase text-[10px]">
             GATE ACCESS TERMINAL
           </Sticker>
-          <span className="text-xs text-white/50 font-mono">Mobile Scanner v2</span>
+          <span className="text-xs text-ink-muted font-mono">Mobile Scanner v2</span>
         </div>
-        <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-white tracking-tight">
+        <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-ink tracking-tight">
           Venue Gate Check-in
         </h1>
-        <p className="text-xs text-white/60">
+        <p className="text-xs text-ink-soft">
           Fast one-handed optical scanning, duplicate prevention, and real-time pass tear verification.
         </p>
       </div>
 
       {/* Event Picker & Live Counter Card */}
-      <div className="rounded-[20px] border border-white/10 bg-[#181530] p-5 space-y-4 shadow-[4px_4px_0_#000]">
+      <div className="rounded-panel border border-line bg-[var(--color-surface)] p-5 space-y-4 shadow-sm">
         <div className="space-y-1.5">
-          <label htmlFor="active-event-select" className="text-[11px] font-mono font-bold uppercase tracking-wider text-white/50 block">
+          <label htmlFor="active-event-select" className="text-[11px] font-mono font-bold uppercase tracking-wider text-ink-muted block">
             Active Event Venue
           </label>
           <select
@@ -291,7 +305,7 @@ export const AdminCheckinPage: React.FC = () => {
             aria-label="Active Event Venue"
             value={activeEventId}
             onChange={(e) => setSelectedEventId(e.target.value)}
-            className="w-full bg-[#120F24] border border-white/20 rounded-[12px] p-3 text-xs sm:text-sm font-bold text-white focus:outline-none focus:border-[#D4F25A] transition-colors"
+            className="w-full bg-[var(--color-canvas-subtle)] border border-line-strong rounded-lg p-3 text-xs sm:text-sm font-bold text-ink focus:outline-none focus:border-[var(--color-accent)] transition-colors"
           >
             {events.map((e) => (
               <option key={e.id} value={e.id}>
@@ -303,20 +317,20 @@ export const AdminCheckinPage: React.FC = () => {
 
         {/* Live Attendance Counter */}
         {stats && (
-          <div className="pt-2 border-t border-white/10 space-y-2">
+          <div className="pt-2 border-t border-line space-y-2">
             <div className="flex items-baseline justify-between text-xs">
-              <span className="text-white/60 font-semibold">Attendance Progress</span>
+              <span className="text-ink-soft font-semibold">Attendance Progress</span>
               <div className="flex items-baseline gap-1 font-mono">
-                <span className="font-extrabold text-base text-[#D4F25A]">{stats.totalCheckedIn}</span>
-                <span className="text-white/50">/ {stats.totalRegistered} registered</span>
-                <span className="text-[11px] font-bold text-white/70 ml-1">({stats.percentage}%)</span>
+                <span className="font-extrabold text-base text-[var(--color-accent)]">{stats.totalCheckedIn}</span>
+                <span className="text-ink-muted">/ {stats.totalRegistered} registered</span>
+                <span className="text-[11px] font-bold text-ink-soft ml-1">({stats.percentage}%)</span>
               </div>
             </div>
 
             {/* Progress Bar */}
-            <div className="w-full h-2.5 bg-white/10 rounded-full overflow-hidden">
+            <div className="w-full h-2.5 bg-surface-subtle rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#D4F25A] transition-[width] duration-300 rounded-full"
+                className="h-full bg-[var(--color-accent)] transition-[width] duration-300 rounded-full"
                 style={{ width: `${Math.min(stats.percentage, 100)}%` }}
               />
             </div>
@@ -325,16 +339,16 @@ export const AdminCheckinPage: React.FC = () => {
       </div>
 
       {/* Optical Camera Viewport */}
-      <div className="rounded-[24px] border-2 border-white/15 bg-[#120F24] overflow-hidden shadow-[6px_6px_0_#000] relative">
-        <div className="p-3 bg-[#181530] border-b border-white/10 flex items-center justify-between">
+      <div className="rounded-[24px] border-2 border-white/15 bg-[var(--color-canvas-subtle)] overflow-hidden shadow-sm relative">
+        <div className="p-3 bg-[var(--color-surface)] border-b border-line flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Camera className="w-4 h-4 text-[#D4F25A]" weight="bold" />
-            <span className="text-xs font-bold text-white">Live Camera Scanner</span>
+            <Camera className="w-4 h-4 text-[var(--color-accent)]" weight="bold" />
+            <span className="text-xs font-bold text-ink">Live Camera Scanner</span>
           </div>
           <button
             type="button"
             onClick={() => setCameraActive(!cameraActive)}
-            className="text-[11px] font-mono text-white/60 hover:text-white px-2 py-0.5 rounded border border-white/15"
+            className="text-[11px] font-mono text-ink-soft hover:text-ink px-2 py-0.5 rounded border border-white/15"
           >
             {cameraActive ? 'Pause Video' : 'Resume Video'}
           </button>
@@ -345,16 +359,16 @@ export const AdminCheckinPage: React.FC = () => {
           {cameraActive ? (
             cameraError ? (
               <div className="p-6 text-center space-y-3">
-                <Camera className="w-10 h-10 text-white/40 mx-auto" />
-                <p className="text-xs text-white/80 font-bold">Camera Access Restricted</p>
-                <p className="text-[11px] text-white/50 max-w-xs">{cameraError}</p>
+                <Camera className="w-10 h-10 text-ink-muted mx-auto" />
+                <p className="text-xs text-ink/80 font-bold">Camera Access Restricted</p>
+                <p className="text-[11px] text-ink-muted max-w-xs">{cameraError}</p>
                 <button
                   type="button"
                   onClick={() => {
                     setCameraError(null)
                     setCameraActive(true)
                   }}
-                  className="px-3 py-1.5 rounded-full bg-[#D4F25A] text-[#0F0D1F] text-xs font-bold"
+                  className="px-3 py-1.5 rounded-full bg-[var(--color-accent)] text-[var(--color-canvas)] text-xs font-bold"
                 >
                   Retry Camera
                 </button>
@@ -374,19 +388,19 @@ export const AdminCheckinPage: React.FC = () => {
 
                 {/* Tactical Target Frame Over Scanner */}
                 <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                  <div className="w-56 h-56 border-2 border-dashed border-[#D4F25A]/60 rounded-[20px] relative">
-                    <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-[#D4F25A]" />
-                    <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-[#D4F25A]" />
-                    <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-[#D4F25A]" />
-                    <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-[#D4F25A]" />
+                  <div className="w-56 h-56 border-2 border-dashed border-[var(--color-accent)]/60 rounded-panel relative">
+                    <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-[var(--color-accent)]" />
+                    <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-[var(--color-accent)]" />
+                    <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-[var(--color-accent)]" />
+                    <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-[var(--color-accent)]" />
                   </div>
                 </div>
               </div>
             )
           ) : (
             <div className="p-6 text-center space-y-2">
-              <Camera className="w-8 h-8 text-white/40 mx-auto" />
-              <p className="text-xs text-white/60">Scanner Paused</p>
+              <Camera className="w-8 h-8 text-ink-muted mx-auto" />
+              <p className="text-xs text-ink-soft">Scanner Paused</p>
             </div>
           )}
         </div>
@@ -395,45 +409,45 @@ export const AdminCheckinPage: React.FC = () => {
       {/* Last Scan Result Card */}
       {lastScanResult && (
         <div
-          className={`rounded-[20px] border-2 p-5 space-y-3 shadow-[4px_4px_0_#000] animate-fade-in ${
+          className={`rounded-panel border-2 p-5 space-y-3 shadow-sm animate-fade-in ${
             lastScanResult.status === 'admitted'
-              ? 'border-[#7FD8B8] bg-[#14231E]'
-              : lastScanResult.status === 'already_admitted'
-              ? 'border-[#F2B84B] bg-[#241E10]'
-              : 'border-[#FF5C8A] bg-[#251019]'
+              ? 'border-[var(--color-success)] bg-[var(--color-surface)]'
+              : lastScanResult.status === 'already_admitted' || lastScanResult.status === 'queued'
+              ? 'border-[var(--color-warning)] bg-[var(--color-surface)]'
+              : 'border-[var(--color-danger)] bg-[var(--color-surface)]'
           }`}
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
               {lastScanResult.status === 'admitted' && (
-                <CheckCircle className="w-7 h-7 text-[#7FD8B8] flex-shrink-0" weight="bold" />
+                <CheckCircle className="w-7 h-7 text-[var(--color-success)] flex-shrink-0" weight="bold" />
               )}
-              {lastScanResult.status === 'already_admitted' && (
-                <Warning className="w-7 h-7 text-[#F2B84B] flex-shrink-0" weight="bold" />
+              {(lastScanResult.status === 'already_admitted' || lastScanResult.status === 'queued') && (
+                <Warning className="w-7 h-7 text-[var(--color-warning)] flex-shrink-0" weight="bold" />
               )}
               {(lastScanResult.status === 'wrong_event' || lastScanResult.status === 'invalid') && (
-                <XCircle className="w-7 h-7 text-[#FF5C8A] flex-shrink-0" weight="bold" />
+                <XCircle className="w-7 h-7 text-[var(--color-danger)] flex-shrink-0" weight="bold" />
               )}
               <div>
-                <h3 className="font-display font-extrabold text-base text-white">
+                <h3 className="font-display font-extrabold text-base text-ink">
                   {lastScanResult.title}
                 </h3>
-                <p className="text-xs text-white/70">{lastScanResult.message}</p>
+                <p className="text-xs text-ink-soft">{lastScanResult.message}</p>
               </div>
             </div>
 
-            <span className="text-[10px] font-mono font-bold text-white/40">
+            <span className="text-[10px] font-mono font-bold text-ink-muted">
               {lastScanResult.scannedAt}
             </span>
           </div>
 
           {lastScanResult.registration && (
-            <div className="p-3 rounded-[12px] bg-black/30 border border-white/10 flex items-center justify-between text-xs">
+            <div className="p-3 rounded-lg bg-paper-2 border border-line flex items-center justify-between text-xs">
               <div className="space-y-0.5">
-                <p className="font-bold text-white text-sm">
+                <p className="font-bold text-ink text-sm">
                   {lastScanResult.registration.userName}
                 </p>
-                <p className="text-[11px] font-mono text-white/50">
+                <p className="text-[11px] font-mono text-ink-muted">
                   {lastScanResult.registration.ticketCode} · {lastScanResult.registration.tierName || 'Hacker Pass'}
                 </p>
               </div>
@@ -445,7 +459,7 @@ export const AdminCheckinPage: React.FC = () => {
                     lastScanResult.registration!.userName
                   )
                 }
-                className="px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-white font-bold text-[11px] flex items-center gap-1 transition-colors"
+                className="px-2.5 py-1 rounded bg-surface-subtle hover:bg-white/20 text-ink font-bold text-[11px] flex items-center gap-1 transition-colors"
               >
                 <ArrowCounterClockwise className="w-3.5 h-3.5" weight="bold" />
                 <span>Undo</span>
@@ -456,8 +470,8 @@ export const AdminCheckinPage: React.FC = () => {
       )}
 
       {/* Manual Code Fallback Input */}
-      <div className="rounded-[20px] border border-white/10 bg-[#181530] p-5 space-y-3 shadow-[4px_4px_0_#000]">
-        <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-white/50 block">
+      <div className="rounded-panel border border-line bg-[var(--color-surface)] p-5 space-y-3 shadow-sm">
+        <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-ink-muted block">
           Manual Ticket Code Lookup
         </label>
         <form
@@ -472,12 +486,12 @@ export const AdminCheckinPage: React.FC = () => {
             value={ticketInput}
             onChange={(e) => setTicketInput(e.target.value)}
             placeholder="E.g. TKT-884192 or 6-digit OTP..."
-            className="flex-1 bg-[#120F24] border border-white/20 rounded-[12px] px-4 py-2.5 text-xs sm:text-sm font-mono text-white placeholder:text-white/30 focus:outline-none focus:border-[#D4F25A] uppercase"
+            className="flex-1 bg-[var(--color-canvas-subtle)] border border-line-strong rounded-lg px-4 py-2.5 text-xs sm:text-sm font-mono text-ink placeholder:text-ink/30 focus:outline-none focus:border-[var(--color-accent)] uppercase"
           />
           <button
             type="submit"
             disabled={checkinMutation.isPending}
-            className="px-4 py-2.5 rounded-[12px] bg-[#D4F25A] hover:bg-[#c2e245] text-[#0F0D1F] text-xs font-bold tracking-wide transition-colors flex-shrink-0"
+            className="px-4 py-2.5 rounded-lg bg-[var(--color-accent)] hover:bg-accent-hover text-[var(--color-canvas)] text-xs font-bold tracking-wide transition-colors flex-shrink-0"
           >
             Verify Pass
           </button>
@@ -485,19 +499,19 @@ export const AdminCheckinPage: React.FC = () => {
 
         {/* Dev Tools Gated Quick Simulate Buttons (Audit F-12, V-13) */}
         {isDevMode && (
-          <div className="pt-2 border-t border-white/10 flex items-center gap-2">
-            <span className="text-[10px] font-mono text-white/40">DEV SIMULATE:</span>
+          <div className="pt-2 border-t border-line flex items-center gap-2">
+            <span className="text-[10px] font-mono text-ink-muted">DEV SIMULATE:</span>
             <button
               type="button"
               onClick={() => processScanCode('TKT-884192')}
-              className="text-[10px] font-mono text-[#D4F25A] hover:underline px-2 py-0.5 rounded bg-white/5"
+              className="text-[10px] font-mono text-[var(--color-accent)] hover:underline px-2 py-0.5 rounded bg-surface-subtle"
             >
               Aditya (TKT-884192)
             </button>
             <button
               type="button"
               onClick={() => processScanCode('TKT-104921')}
-              className="text-[10px] font-mono text-[#D4F25A] hover:underline px-2 py-0.5 rounded bg-white/5"
+              className="text-[10px] font-mono text-[var(--color-accent)] hover:underline px-2 py-0.5 rounded bg-surface-subtle"
             >
               Ananya (TKT-104921)
             </button>
@@ -508,20 +522,20 @@ export const AdminCheckinPage: React.FC = () => {
       {/* Recent Scans Strip with Instant Undo */}
       {recentScans.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-white/50 px-1">
+          <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-ink-muted px-1">
             Recent Gate Check-ins
           </h4>
           <div className="space-y-1.5">
             {recentScans.map((reg) => (
               <div
                 key={reg.id}
-                className="rounded-[14px] border border-white/10 bg-[#181530] p-3 flex items-center justify-between gap-3 text-xs"
+                className="rounded-panel border border-line bg-[var(--color-surface)] p-3 flex items-center justify-between gap-3 text-xs"
               >
                 <div className="flex items-center gap-2.5">
-                  <span className="w-2 h-2 rounded-full bg-[#7FD8B8]" />
+                  <span className="w-2 h-2 rounded-full bg-[var(--color-success)]" />
                   <div>
-                    <span className="font-bold text-white">{reg.userName}</span>
-                    <span className="text-[11px] font-mono text-white/40 ml-2">
+                    <span className="font-bold text-ink">{reg.userName}</span>
+                    <span className="text-[11px] font-mono text-ink-muted ml-2">
                       {reg.ticketCode}
                     </span>
                   </div>
@@ -530,7 +544,7 @@ export const AdminCheckinPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleUndo(reg.id, reg.userName)}
-                  className="text-[11px] font-semibold text-white/60 hover:text-white flex items-center gap-1"
+                  className="text-[11px] font-semibold text-ink-soft hover:text-ink flex items-center gap-1"
                 >
                   <ArrowCounterClockwise className="w-3.5 h-3.5" />
                   <span>Undo</span>

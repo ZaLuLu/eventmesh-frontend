@@ -51,7 +51,7 @@ export const TactileBoardingPass: React.FC<TactileBoardingPassProps> = ({
       >
         {/* ================= FRONT FACE ================= */}
         <div
-          className="absolute inset-0 w-full h-full bg-surface-subtle/50 hover:bg-surface-subtle/80 rounded-2xl overflow-hidden flex flex-col justify-between transition-all"
+          className="absolute inset-0 w-full h-full bg-surface-subtle hover:bg-surface-subtle rounded-2xl overflow-hidden flex flex-col justify-between transition-all"
           style={{
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
@@ -127,7 +127,7 @@ export const TactileBoardingPass: React.FC<TactileBoardingPassProps> = ({
           </div>
 
           {/* Bottom Stub Actions */}
-          <div className="p-3.5 bg-surface/50 flex items-center justify-between gap-2.5 flex-shrink-0">
+          <div className="p-3.5 bg-surface flex items-center justify-between gap-2.5 flex-shrink-0">
             <button
               type="button"
               className="btn-minimal-primary flex-1 py-1.5 text-xs flex items-center justify-center gap-1.5"

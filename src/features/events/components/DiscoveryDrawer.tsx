@@ -107,7 +107,7 @@ export const DiscoveryDrawer: React.FC<DiscoveryDrawerProps> = ({ isOpen, onClos
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/60"
           />
 
           {/* Slide-out Drawer */}
@@ -231,7 +231,7 @@ export const DiscoveryDrawer: React.FC<DiscoveryDrawerProps> = ({ isOpen, onClos
                           'w-full p-2.5 rounded-xl text-left border transition-all flex items-center justify-between',
                           isSelected
                             ? 'bg-card border-accent shadow-xs'
-                            : 'bg-card/50 border-line/60 hover:bg-card text-ink'
+                            : 'bg-card border-line/60 hover:bg-card text-ink'
                         )}
                       >
                         <div className="flex items-center gap-3 min-w-0">

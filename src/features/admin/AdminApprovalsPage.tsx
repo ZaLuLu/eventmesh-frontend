@@ -1,22 +1,24 @@
 // Hallmark macrostructure: AdminConsole-Approvals
 import React from 'react'
-import { Check } from '@phosphor-icons/react'
+import { Check, X } from '@phosphor-icons/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useAuth } from '@/hooks/useAuth'
 import { api } from '@/api'
 import { Button } from '@/design-system/primitives/Button'
 import { formatDate } from '@/lib/dates'
 import { useToast } from '@/design-system/primitives/Toast'
 
 export const AdminApprovalsPage: React.FC = () => {
+  const { session } = useAuth()
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
   const { data: events = [], isLoading } = useQuery({
-    queryKey: ['admin-approvals'],
-    queryFn: () => api.eventsAdmin.getAdminEvents({ orgId: 'org-1' }),
+    queryKey: ['admin-approvals', session?.orgId],
+    queryFn: () => api.eventsAdmin.getAdminEvents({ orgId: session?.orgId || 'org-1' }),
   })
 
-  const inReviewEvents = events.filter((e) => e.status === 'in_review')
+  const inReviewEvents = events.filter((e) => e.status === 'in_review' || e.status === 'submitted')
 
   const approveMutation = useMutation({
     mutationFn: (id: string) => api.eventsAdmin.approveEvent(id),
@@ -24,6 +26,15 @@ export const AdminApprovalsPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-approvals'] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'events'] })
       toast({ title: 'Event Approved', message: 'The event has been approved and published live.', type: 'success' })
+    },
+  })
+
+  const rejectMutation = useMutation({
+    mutationFn: (id: string) => api.eventsAdmin.updateEvent(id, { status: 'draft' } as any),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-approvals'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'events'] })
+      toast({ title: 'Returned to Draft', message: 'Event was returned to draft for edits.', type: 'info' })
     },
   })
 
@@ -66,6 +77,14 @@ export const AdminApprovalsPage: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={rejectMutation.isPending}
+                    onClick={() => rejectMutation.mutate(evt.id)}
+                    className="px-3 py-1.5 rounded-btn border border-line text-caption font-medium text-text-2 hover:text-text hover:bg-subtle transition-colors"
+                  >
+                    Return to Draft
+                  </button>
                   <Button
                     surface="admin"
                     size="sm"

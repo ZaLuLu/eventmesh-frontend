@@ -29,7 +29,7 @@ const DenseEventRow: React.FC<{ event: Event }> = ({ event }) => {
   const isFree = event.isFree ?? (!event.price || event.price === 0)
 
   return (
-    <article className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3.5 rounded-xl bg-card hover:bg-surface-subtle/70 transition-colors duration-150 select-none border border-line/60">
+    <article className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3.5 rounded-xl bg-card hover:bg-surface-subtle transition-colors duration-150 select-none border border-line/60">
       {/* Left: Date Block & Main Details */}
       <div className="flex items-start sm:items-center gap-3.5 min-w-0">
         {/* Date Stamp Block */}

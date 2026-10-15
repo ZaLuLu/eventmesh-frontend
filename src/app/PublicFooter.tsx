@@ -4,17 +4,12 @@ import { Link } from 'react-router-dom'
 
 export const PublicFooter: React.FC = () => {
   return (
-    <footer className="w-full bg-[var(--color-paper)] border-t border-[var(--color-line)] py-12 select-none text-[var(--color-ink)]">
+    <footer className="w-full bg-paper border-t border-line py-12 select-none text-ink">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6">
         {/* Left: Brand & Tagline */}
         <div className="flex items-center gap-3">
-          <Link to="/" className="inline-flex items-center gap-2 group">
-            <div className="w-6 h-6 rounded-full bg-ink text-paper flex items-center justify-center font-sans font-bold text-[10px]">
-              EM
-            </div>
-            <span className="font-sans font-semibold text-sm tracking-tight text-ink">
-              EventMesh
-            </span>
+          <Link to="/" aria-label="EventMesh home" className="font-semibold text-sm tracking-[-0.03em] text-ink hover:text-accent transition-colors">
+            eventmesh
           </Link>
           <span className="text-ink-muted text-xs">·</span>
           <p className="text-xs text-ink-muted">
@@ -36,7 +31,7 @@ export const PublicFooter: React.FC = () => {
           <Link to="/clubs" className="hover:text-ink transition-colors">
             Clubs
           </Link>
-          <Link to="/calendar" className="hover:text-ink transition-colors">
+          <Link to="/schedule" className="hover:text-ink transition-colors">
             Calendar
           </Link>
           <Link to="/about" className="hover:text-ink transition-colors">

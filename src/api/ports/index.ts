@@ -74,6 +74,8 @@ export interface EventsAdminApi {
   publishEvent(id: string): Promise<Event>
   submitForApproval(id: string): Promise<Event>
   approveEvent(id: string): Promise<Event>
+  cancelEvent?(id: string): Promise<Event>
+  archiveEvent?(id: string): Promise<Event>
 }
 
 

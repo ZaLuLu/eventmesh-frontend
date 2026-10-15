@@ -1,3 +1,4 @@
+// Hallmark macrostructure: Club Stage & Member Vault
 import React, { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
@@ -98,7 +99,7 @@ export const ClubDetailPage: React.FC = () => {
       </nav>
 
       {/* Header Band */}
-      <header className="relative rounded-3xl bg-surface-subtle/40 p-6 sm:p-8 space-y-6">
+      <header className="relative rounded-3xl bg-surface-subtle p-6 sm:p-8 space-y-6">
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
           <div className="space-y-3 max-w-3xl">
             <div className="flex items-center gap-2">
@@ -155,7 +156,7 @@ export const ClubDetailPage: React.FC = () => {
           className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
             activeTab === 'events'
               ? 'bg-ink text-surface shadow-xs'
-              : 'text-ink-soft hover:text-ink hover:bg-surface-subtle/60'
+              : 'text-ink-soft hover:text-ink hover:bg-surface-subtle'
           }`}
         >
           Events ({events.length})
@@ -167,7 +168,7 @@ export const ClubDetailPage: React.FC = () => {
           className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
             activeTab === 'team'
               ? 'bg-ink text-surface shadow-xs'
-              : 'text-ink-soft hover:text-ink hover:bg-surface-subtle/60'
+              : 'text-ink-soft hover:text-ink hover:bg-surface-subtle'
           }`}
         >
           Organizers ({leadMembers.length})
@@ -180,7 +181,7 @@ export const ClubDetailPage: React.FC = () => {
             className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
               activeTab === 'gallery'
                 ? 'bg-ink text-surface shadow-xs'
-                : 'text-ink-soft hover:text-ink hover:bg-surface-subtle/60'
+                : 'text-ink-soft hover:text-ink hover:bg-surface-subtle'
             }`}
           >
             Gallery ({club.gallery.length})
@@ -200,7 +201,7 @@ export const ClubDetailPage: React.FC = () => {
             </div>
 
             {upcomingEvents.length === 0 ? (
-              <div className="rounded-3xl bg-surface-subtle/30 p-8 sm:p-12 text-center space-y-3">
+              <div className="rounded-3xl bg-surface-subtle p-8 sm:p-12 text-center space-y-3">
                 <p className="font-display font-medium text-lg text-ink">
                   No upcoming events right now
                 </p>
@@ -252,7 +253,7 @@ export const ClubDetailPage: React.FC = () => {
             {leadMembers.map((lead, idx) => (
               <div
                 key={idx}
-                className="rounded-3xl bg-surface-subtle/30 p-6 space-y-4 flex flex-col justify-between"
+                className="rounded-3xl bg-surface-subtle p-6 space-y-4 flex flex-col justify-between"
               >
                 <div className="flex items-start gap-4">
                   <img
@@ -316,7 +317,7 @@ export const ClubDetailPage: React.FC = () => {
             {club.gallery.map((photo, i) => (
               <div
                 key={photo.id || i}
-                className="rounded-2xl bg-surface-subtle/30 p-3 space-y-2"
+                className="rounded-2xl bg-surface-subtle p-3 space-y-2"
               >
                 <div className="aspect-[4/3] rounded-xl overflow-hidden bg-surface-subtle">
                   <img

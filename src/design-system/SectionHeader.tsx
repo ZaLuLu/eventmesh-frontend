@@ -34,7 +34,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
       className={`flex flex-col gap-2 ${isCenter ? 'items-center text-center' : 'items-start text-left'} ${className}`}
     >
       {activeBadge && (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono uppercase tracking-wider text-accent bg-accent-soft">
+        <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-sans font-semibold tracking-wide text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-950/60 border border-purple-200/80 dark:border-purple-900/60">
           {activeBadge}
         </span>
       )}

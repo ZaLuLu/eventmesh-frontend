@@ -39,6 +39,7 @@ export interface LanyardProps {
   breeze?: number;
   interactive?: boolean;
   intro?: boolean;
+  onCardClick?: () => void;
   className?: string;
   style?: CSSProperties;
 }
@@ -64,6 +65,7 @@ interface Settings {
   breeze: number;
   interactive: boolean;
   intro: boolean;
+  onCardClick?: () => void;
 }
 
 interface Images {
@@ -888,6 +890,7 @@ const Lanyard = ({
   breeze = 0.5,
   interactive = true,
   intro = true,
+  onCardClick,
   className = '',
   style
 }: LanyardProps) => {
@@ -915,7 +918,8 @@ const Lanyard = ({
     elasticity,
     breeze,
     interactive,
-    intro
+    intro,
+    onCardClick
   };
 
   useEffect(() => {
@@ -946,11 +950,12 @@ const Lanyard = ({
     const environment = buildEnvironment(renderer);
     scene.environment = environment.texture;
     const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 200);
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.6);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
     keyLight.position.set(-2.5, 4, 6);
-    const fillLight = new THREE.DirectionalLight(0xffffff, 0.35);
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.75);
     fillLight.position.set(3, -1, 4);
-    scene.add(keyLight, fillLight);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+    scene.add(keyLight, fillLight, ambientLight);
 
     const imageCache = new Map<string, Promise<HTMLImageElement | null>>();
     const images: Images = { front: null, back: null, strap: null };
@@ -1267,6 +1272,7 @@ const Lanyard = ({
       renderer.render(scene, camera);
     };
 
+    let lastInteraction = performance.now();
     const physics = (): Physics => {
       const s = settingsRef.current!;
       const gravity = 40 * clamp(s.gravity, 0, 3);
@@ -1290,7 +1296,7 @@ const Lanyard = ({
         twistDamping: 3,
         grip: 40,
         gripDamping: 6,
-        breeze: reducedMotion ? 0 : clamp(s.breeze, 0, 1)
+        breeze: reducedMotion || performance.now() - lastInteraction > 3000 ? 0 : clamp(s.breeze, 0, 1)
       };
     };
 
@@ -1321,9 +1327,11 @@ const Lanyard = ({
 
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
+    let pointerRect = canvas.getBoundingClientRect();
+    const measurePointerRect = () => { pointerRect = canvas.getBoundingClientRect(); };
 
     const toPointer = (event: Point) => {
-      const rect = canvas.getBoundingClientRect();
+      const rect = pointerRect;
       pointer.set(
         ((event.clientX - rect.left) / rect.width) * 2 - 1,
         -((event.clientY - rect.top) / rect.height) * 2 + 1
@@ -1358,6 +1366,7 @@ const Lanyard = ({
       toPointer(event);
       const hit = pickCard();
       if (!hit) return;
+      lastInteraction = performance.now();
       sim.grab = {
         local: hit.point.clone().sub(sim.body.position).applyQuaternion(sim.body.quaternion.clone().invert()),
         rotation: sim.body.quaternion.clone(),
@@ -1368,7 +1377,7 @@ const Lanyard = ({
       press = { x: event.clientX, y: event.clientY, time: performance.now(), point: hit.point.clone() };
       canvas.setPointerCapture?.(event.pointerId);
       setCursor('grabbing');
-      event.preventDefault();
+      if (event.pointerType !== 'touch') event.preventDefault();
       start();
     };
 
@@ -1378,6 +1387,12 @@ const Lanyard = ({
       if (sim.grab) {
         if (press && Math.hypot(event.clientX - press.x, event.clientY - press.y) > 6) press = null;
         raycaster.ray.at(sim.grab.reach, sim.grab.target);
+        // Soft physics drag leash: prevent pulling card out of visible canvas boundaries
+        const maxDragX = 3.2;
+        const maxDragY = 4.2;
+        sim.grab.target.x = clamp(sim.grab.target.x, sim.anchor.x - maxDragX, sim.anchor.x + maxDragX);
+        sim.grab.target.y = clamp(sim.grab.target.y, sim.anchor.y - maxDragY, sim.anchor.y + 0.6);
+        lastInteraction = performance.now();
         start();
         return;
       }
@@ -1389,17 +1404,14 @@ const Lanyard = ({
     const onPointerUp = (event: PointerEvent) => {
       if (!sim.grab) return;
       sim.grab = null;
-      if (press && event.type === 'pointerup' && performance.now() - press.time < 450) flip(press.point);
+      if (press && event.type === 'pointerup' && performance.now() - press.time < 450) {
+        flip(press.point);
+        settingsRef.current?.onCardClick?.();
+      }
       press = null;
       canvas.releasePointerCapture?.(event.pointerId);
       setCursor(hovering && event.pointerType !== 'touch' ? 'grab' : '');
       start();
-    };
-
-    const onTouchStart = (event: TouchEvent) => {
-      if (!settingsRef.current!.interactive || event.touches.length !== 1) return;
-      toPointer(event.touches[0]);
-      if (pickCard()) event.preventDefault();
     };
 
     canvas.addEventListener('pointerdown', onPointerDown);
@@ -1407,7 +1419,6 @@ const Lanyard = ({
     canvas.addEventListener('pointerup', onPointerUp);
     canvas.addEventListener('pointercancel', onPointerUp);
     canvas.addEventListener('lostpointercapture', onPointerUp);
-    canvas.addEventListener('touchstart', onTouchStart, { passive: false });
 
     const handleContextLost = (e: Event) => {
       e.preventDefault();
@@ -1423,9 +1434,10 @@ const Lanyard = ({
     canvas.addEventListener('webglcontextrestored', handleContextRestored, false);
 
     const resize = () => {
+      measurePointerRect();
       view.width = Math.max(1, container.clientWidth);
       view.height = Math.max(1, container.clientHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, window.innerWidth < 768 ? 1 : 1.5));
       renderer.setSize(view.width, view.height, false);
       apply();
       render();
@@ -1433,6 +1445,8 @@ const Lanyard = ({
 
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(container);
+    window.addEventListener('scroll', measurePointerRect, { passive: true });
+    window.addEventListener('resize', measurePointerRect);
     const intersectionObserver = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
       if (visible) start();
@@ -1451,6 +1465,8 @@ const Lanyard = ({
       cancelAnimationFrame(raf);
       applyRef.current = null;
       resizeObserver.disconnect();
+      window.removeEventListener('scroll', measurePointerRect);
+      window.removeEventListener('resize', measurePointerRect);
       intersectionObserver.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);
       canvas.removeEventListener('webglcontextlost', handleContextLost);
@@ -1460,7 +1476,6 @@ const Lanyard = ({
       canvas.removeEventListener('pointerup', onPointerUp);
       canvas.removeEventListener('pointercancel', onPointerUp);
       canvas.removeEventListener('lostpointercapture', onPointerUp);
-      canvas.removeEventListener('touchstart', onTouchStart);
       [bodyMesh, frontMesh, backMesh, ring, clampMesh, eyelet, band].forEach(mesh => mesh.geometry?.dispose());
       [frontMaterial, backMaterial, edgeMaterial, metalMaterial, bandMaterial].forEach(material => material.dispose());
       [frontTexture, backTexture, strapTexture, grain, weave].forEach(texture => texture.dispose());

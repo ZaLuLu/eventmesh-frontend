@@ -128,8 +128,8 @@ export const NotificationInbox: React.FC<{ className?: string }> = ({ className 
                 onClick={() => {
                   if (!n.read) markReadMutation.mutate(n.id)
                 }}
-                className={`p-3.5 flex items-start gap-3 transition-colors cursor-pointer hover:bg-paper-2/60 ${
-                  n.read ? 'opacity-70 bg-card' : 'bg-paper/80 font-medium'
+                className={`p-3.5 flex items-start gap-3 transition-colors cursor-pointer hover:bg-paper-2 ${
+                  n.read ? 'opacity-70 bg-card' : 'bg-paper font-medium'
                 }`}
               >
                 <div className="p-2 rounded-full bg-paper border border-ink/15 flex-shrink-0 mt-0.5">

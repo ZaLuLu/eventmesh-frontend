@@ -87,13 +87,13 @@ export const AdminShell: React.FC = () => {
   const activeClubName = session?.clubName || (session?.role === 'org_admin' ? 'All Campus Clubs' : 'Campus Federation')
 
   return (
-    <div className="min-h-screen bg-[#0F0D1F] text-[#F6F1E7] font-body flex flex-col admin-scope antialiased selection:bg-[#D4F25A] selection:text-[#0F0D1F]">
+    <div className="min-h-screen bg-paper text-ink font-body flex flex-col admin-scope antialiased selection:bg-accent selection:text-white">
       <OfflineBanner />
 
       {/* Top Console Strip */}
-      <header className="h-8 bg-[#090814] text-[#F6F1E7]/80 px-4 flex items-center justify-between text-xs border-b border-white/10 select-none z-50">
+      <header className="h-8 bg-paper text-[var(--color-ink)]/80 px-4 flex items-center justify-between text-xs border-b border-white/10 select-none z-50">
         <div className="flex items-center gap-2.5 truncate">
-          <span className="font-display font-bold text-[#D4F25A] tracking-wider text-[11px] uppercase">
+          <span className="font-display font-bold text-[var(--color-accent)] tracking-wider text-[11px] uppercase">
             ADMIN CONSOLE
           </span>
           <span className="opacity-30">·</span>
@@ -111,12 +111,12 @@ export const AdminShell: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3 flex-shrink-0">
-          <span className="text-[11px] bg-[#D4F25A] text-[#0F0D1F] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+          <span className="text-[11px] bg-[var(--color-accent)] text-[var(--color-canvas)] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
             {session?.role?.replace('_', ' ')}
           </span>
           <Link
             to="/"
-            className="text-white/70 hover:text-[#D4F25A] inline-flex items-center gap-1 transition-colors text-xs font-semibold"
+            className="text-white/70 hover:text-[var(--color-accent)] inline-flex items-center gap-1 transition-colors text-xs font-semibold"
           >
             <span>Public Site</span>
             <ArrowSquareOut className="w-3.5 h-3.5" weight="bold" />
@@ -127,7 +127,7 @@ export const AdminShell: React.FC = () => {
       <div className="flex-1 flex overflow-hidden">
         {/* Admin Sidebar */}
         <aside
-          className={`fixed inset-y-8 left-0 z-40 w-64 bg-[#141226] text-[#F6F1E7] border-r border-white/10 flex flex-col transition-transform duration-200 md:static md:translate-x-0 ${
+          className={`fixed inset-y-8 left-0 z-40 w-64 bg-card text-[var(--color-ink)] border-r border-white/10 flex flex-col transition-transform duration-200 md:static md:translate-x-0 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
@@ -177,11 +177,11 @@ export const AdminShell: React.FC = () => {
                           onClick={() => setSidebarOpen(false)}
                           className={`flex items-center gap-3 px-3 py-2 rounded-[10px] text-xs font-bold transition-colors ${
                             isActive
-                              ? 'bg-[#D4F25A] text-[#0F0D1F] shadow-[2px_2px_0_#000000]'
+                              ? 'bg-[var(--color-accent)] text-[var(--color-canvas)] shadow-sm'
                               : 'text-white/70 hover:bg-white/5 hover:text-white'
                           }`}
                         >
-                          <span className={isActive ? 'text-[#0F0D1F]' : 'text-white/60'}>
+                          <span className={isActive ? 'text-[var(--color-canvas)]' : 'text-white/60'}>
                             {item.icon}
                           </span>
                           <span>{item.label}</span>
@@ -195,7 +195,7 @@ export const AdminShell: React.FC = () => {
           </nav>
 
           {/* User Profile & Sign Out Footer */}
-          <div className="p-3 border-t border-white/10 bg-[#0C0A19] flex items-center justify-between gap-3">
+          <div className="p-3 border-t border-white/10 bg-paper-2 flex items-center justify-between gap-3">
             <div className="truncate">
               <p className="text-xs font-bold text-white truncate">
                 {session?.name}
@@ -211,7 +211,7 @@ export const AdminShell: React.FC = () => {
                 await logout()
                 navigate('/')
               }}
-              className="p-1.5 text-white/60 hover:text-[#D4F25A] hover:bg-white/10 rounded-[8px] transition-colors"
+              className="p-1.5 text-white/60 hover:text-[var(--color-accent)] hover:bg-white/10 rounded-[8px] transition-colors"
               title="Sign Out"
               aria-label="Sign out"
             >
@@ -221,19 +221,19 @@ export const AdminShell: React.FC = () => {
         </aside>
 
         {/* Main Console Workspace */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-[#0F0D1F] relative">
+        <div className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-[var(--color-canvas)] relative">
           {/* Subtle Dot Grid Background Pattern (Allowed in Admin per Section 3 & 6.3) */}
           <div
             className="absolute inset-0 opacity-[0.03] pointer-events-none"
             style={{
-              backgroundImage: 'radial-gradient(#F6F1E7 1px, transparent 1px)',
+              backgroundImage: 'radial-gradient(var(--color-ink) 1px, transparent 1px)',
               backgroundSize: '20px 20px',
             }}
             aria-hidden="true"
           />
 
           {/* Mobile Header Bar */}
-          <div className="md:hidden h-14 bg-[#141226] border-b border-white/10 px-4 flex items-center justify-between flex-shrink-0 z-30">
+          <div className="md:hidden h-14 bg-card border-b border-white/10 px-4 flex items-center justify-between flex-shrink-0 z-30">
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}

@@ -91,18 +91,18 @@ export const PromotedTicketStack: React.FC<PromotedTicketStackProps> = ({ events
 
             {/* Floating Status Badges */}
             <div className="absolute top-3 left-3 flex items-center gap-1.5">
-              <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-black/60 text-white backdrop-blur-md uppercase tracking-wider">
+              <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-ink text-paper border border-white/20 uppercase tracking-wider">
                 Featured
               </span>
               {isFree && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/90 text-white backdrop-blur-md">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-600 text-white">
                   Free
                 </span>
               )}
             </div>
 
             <div className="absolute top-3 right-3">
-              <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-card/85 text-ink backdrop-blur-md">
+              <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-card text-ink border border-line shadow-xs">
                 {currentEvent.organizerName || 'Campus Society'}
               </span>
             </div>

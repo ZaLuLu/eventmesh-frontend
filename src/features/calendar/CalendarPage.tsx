@@ -241,7 +241,7 @@ export const CalendarPage: React.FC = () => {
                   return (
                     <div
                       key={`empty-${idx}`}
-                      className="min-h-[90px] sm:min-h-[110px] p-2 bg-paper/50 border-r-2 border-b-2 border-ink/15 last:border-r-0"
+                      className="min-h-[90px] sm:min-h-[110px] p-2 bg-paper border-r-2 border-b-2 border-ink/15 last:border-r-0"
                     />
                   )
                 }

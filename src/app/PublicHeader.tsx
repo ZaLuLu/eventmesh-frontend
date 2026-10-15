@@ -1,347 +1,96 @@
-// Hallmark macrostructure: PageHeader / N5 Floating Iris Pill
-import React, { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import {
-  MagnifyingGlass,
-  Ticket,
-  Compass,
-  Users,
-  CalendarBlank,
-  Sparkle,
-  List,
-  SignOut,
-  Gauge,
-  CaretDown,
-  X,
-} from '@/design-system/Icon'
+import React, { useState } from 'react'
+import { Link, NavLink, useLocation } from 'react-router-dom'
+import { CaretDown, List, MagnifyingGlass, MapPin, X } from '@/design-system/Icon'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
-import { hasMultipleCampuses, APP_CONFIG, CampusLocation } from '@/config/appConfig'
-import { SoundToggleButton } from '@/design-system/SoundProvider'
+import { APP_CONFIG } from '@/config/appConfig'
+import { ThemeToggle } from '@/design-system/ThemeToggle'
 import { NotificationInbox } from '@/features/notifications/NotificationInbox'
-import { DiscoveryDrawer } from '@/features/events/components/DiscoveryDrawer'
-import { LanyardProfileOverlay } from '@/features/dashboard/components/LanyardProfileOverlay'
 import { cn } from '@/lib/utils'
 
 interface PublicHeaderProps {
   onSearchOpen: () => void
 }
 
+const destinations = [
+  { label: 'Explore', path: '/explore' },
+  { label: 'Calendar', path: '/schedule' },
+  { label: 'Clubs', path: '/clubs' },
+  { label: 'Announcements', path: '/announcements' },
+  { label: 'About', path: '/about' },
+]
+
 export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
   const location = useLocation()
   const { session, isAuthenticated, logout } = useAuth()
   const { canAccessAdmin } = usePermission()
+  const [campus, setCampus] = useState(APP_CONFIG.campuses[0]?.name || 'Select campus')
+  const [campusOpen, setCampusOpen] = useState(false)
+  const [accountOpen, setAccountOpen] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
 
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [isAccountOpen, setIsAccountOpen] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isDiscoveryOpen, setIsDiscoveryOpen] = useState(false)
-  const [isLanyardOpen, setIsLanyardOpen] = useState(false)
-  const [selectedCampus, setSelectedCampus] = useState(APP_CONFIG.campuses[0]?.name || 'Main Campus')
-  const [isCampusOpen, setIsCampusOpen] = useState(false)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 15)
-    }
-    handleScroll()
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  const navLinks = [
-    { label: 'Explore', path: '/explore' },
-    { label: 'Clubs', path: '/clubs' },
-    { label: 'Calendar', path: '/calendar' },
-    { label: 'About', path: '/about' },
-  ]
+  const closeMenus = () => {
+    setMobileOpen(false)
+    setAccountOpen(false)
+    setCampusOpen(false)
+  }
 
   return (
-    <>
-      <header
-        className={cn(
-          'fixed top-0 left-0 right-0 z-50 transition-[padding,background-color,border-color] duration-200 pointer-events-none',
-          isScrolled ? 'pt-2.5' : 'pt-4'
-        )}
-      >
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div
-            className={cn(
-              'pointer-events-auto h-13 px-4 sm:px-5 flex items-center justify-between gap-3 rounded-full transition-all duration-200',
-              'bg-[var(--color-paper)]/85 backdrop-blur-xl border border-[var(--color-line)] shadow-[0_2px_12px_-2px_rgba(20,17,29,0.06)]'
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-card text-ink">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+        <div className="flex min-w-0 items-center gap-3">
+          <Link to="/" onClick={closeMenus} aria-label="EventMesh home" className="shrink-0 text-lg font-semibold tracking-[-0.03em]">eventmesh</Link>
+          <div className="relative hidden min-[1100px]:block">
+            <button type="button" onClick={() => setCampusOpen(!campusOpen)} aria-expanded={campusOpen} aria-label="Select campus" className="flex max-w-44 items-center gap-1.5 rounded-lg border border-line bg-card px-2.5 py-2 text-xs text-ink-soft hover:bg-surface-subtle">
+              <MapPin size={14} aria-hidden="true" /><span className="truncate">{campus}</span><CaretDown size={12} aria-hidden="true" />
+            </button>
+            {campusOpen && (
+              <div className="absolute left-0 top-full mt-2 w-56 rounded-lg border border-line bg-card p-1 shadow-lg">
+                {APP_CONFIG.campuses.map((option) => (
+                  <button key={option.id} type="button" onClick={() => { setCampus(option.name); setCampusOpen(false) }} className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-surface-subtle">{option.name}</button>
+                ))}
+              </div>
             )}
-          >
-            {/* Left: Hamburger Discovery Trigger, Minimal Wordmark & Campus Tag */}
-            <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsDiscoveryOpen(true)}
-                className="p-1.5 text-ink-soft hover:text-ink hover:bg-surface-subtle rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-                title="Filter events by category & club"
-                aria-label="Open discovery drawer"
-              >
-                <List size={18} weight="bold" />
-              </button>
-
-              <Link
-                to="/"
-                className="flex items-center gap-2 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-full"
-                aria-label="EventMesh Home"
-              >
-                <div className="w-7 h-7 rounded-full bg-ink text-paper flex items-center justify-center font-sans font-bold text-xs tracking-tight transition-colors group-hover:bg-accent group-hover:text-white">
-                  EM
-                </div>
-                <span className="font-sans font-semibold text-base tracking-tight text-ink">
-                  EventMesh
-                </span>
-              </Link>
-
-              {/* Campus Selector (if multiple) */}
-              {hasMultipleCampuses() && (
-                <div className="relative hidden md:block">
-                  <button
-                    type="button"
-                    onClick={() => setIsCampusOpen(!isCampusOpen)}
-                    className="flex items-center gap-1.5 px-2.5 py-1 text-xs text-ink-soft hover:text-ink rounded-full transition-colors"
-                  >
-                    <span className="truncate max-w-[130px] font-mono">{selectedCampus}</span>
-                    <CaretDown size={11} weight="bold" />
-                  </button>
-
-                  {isCampusOpen && (
-                    <div className="absolute left-0 mt-2 w-44 bg-card border border-line rounded-xl shadow-lg py-1 z-50 text-xs">
-                      {APP_CONFIG.campuses.map((campus: CampusLocation) => (
-                        <button
-                          key={campus.id}
-                          onClick={() => {
-                            setSelectedCampus(campus.name)
-                            setIsCampusOpen(false)
-                          }}
-                          className={cn(
-                            'w-full text-left px-3 py-1.5 flex items-center justify-between hover:bg-surface-subtle transition-colors',
-                            selectedCampus === campus.name ? 'font-semibold text-accent' : 'text-ink'
-                          )}
-                        >
-                          <span>{campus.name}</span>
-                          {selectedCampus === campus.name && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Middle: Minimal Navigation Links */}
-            <nav className="hidden md:flex items-center gap-1">
-              {navLinks.map((link) => {
-                const isActive = location.pathname.startsWith(link.path)
-                return (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    className={cn(
-                      'relative px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors duration-150',
-                      isActive
-                        ? 'text-ink font-semibold'
-                        : 'text-ink-soft hover:text-ink hover:bg-surface-subtle/70'
-                    )}
-                  >
-                    <span>{link.label}</span>
-                    {isActive && (
-                      <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-accent" />
-                    )}
-                  </Link>
-                )
-              })}
-            </nav>
-
-            {/* Right: Quick Search, Sound, Notification, Wallet, Account */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {/* Quick Search Trigger */}
-              <button
-                type="button"
-                onClick={onSearchOpen}
-                className="hidden lg:flex items-center gap-2 h-8 px-3 bg-surface-subtle/80 hover:bg-surface-subtle text-ink-soft hover:text-ink rounded-full text-xs transition-colors"
-                aria-label="Search catalog"
-              >
-                <MagnifyingGlass size={13} weight="bold" />
-                <span className="text-xs">Search</span>
-                <kbd className="px-1.5 py-0.5 text-[10px] bg-card rounded text-ink-soft font-mono">
-                  ⌘K
-                </kbd>
-              </button>
-
-              <button
-                type="button"
-                onClick={onSearchOpen}
-                className="lg:hidden p-1.5 text-ink-soft hover:text-ink rounded-full transition-colors"
-                aria-label="Search events"
-              >
-                <MagnifyingGlass size={16} weight="bold" />
-              </button>
-
-              {/* Sound & Notifications */}
-              <SoundToggleButton />
-              <NotificationInbox />
-
-              {/* My Tickets Pill */}
-              <Link
-                to="/attendee/dashboard"
-                className="hidden sm:inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full bg-surface-subtle hover:bg-accent-soft text-ink hover:text-accent font-medium text-xs border border-line transition-colors"
-                aria-label="My tickets"
-              >
-                <Ticket size={13} weight="bold" className="text-accent" />
-                <span>Tickets</span>
-              </Link>
-
-              {/* Admin shortcut if permitted */}
-              {canAccessAdmin() && (
-                <Link
-                  to="/admin"
-                  className="hidden xl:inline-flex items-center gap-1 h-8 px-3 rounded-full bg-ink text-paper hover:bg-accent hover:text-white font-medium text-xs transition-colors"
-                >
-                  <Gauge size={13} weight="bold" />
-                  <span>Admin</span>
-                </Link>
-              )}
-
-              {/* User Account / Sign In */}
-              {isAuthenticated ? (
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setIsAccountOpen(!isAccountOpen)}
-                    className="flex items-center gap-1.5 h-8 px-1.5 bg-surface-subtle hover:bg-line/40 rounded-full text-ink text-xs transition-colors"
-                    aria-label="Account menu"
-                    aria-expanded={isAccountOpen}
-                  >
-                    <div className="w-5 h-5 rounded-full bg-accent text-white flex items-center justify-center font-sans font-semibold text-[10px]">
-                      {(session?.name || 'U')[0].toUpperCase()}
-                    </div>
-                    <CaretDown size={10} weight="bold" className="opacity-60" />
-                  </button>
-
-                  {isAccountOpen && (
-                    <div className="absolute right-0 mt-2 w-52 bg-card border border-line rounded-xl shadow-xl py-1 z-50 text-xs">
-                      <div className="px-3.5 py-2 border-b border-line">
-                        <p className="font-semibold text-ink truncate">{session?.name}</p>
-                        <p className="text-ink-soft truncate text-xs font-mono">{session?.email}</p>
-                      </div>
-
-                      <Link
-                        to="/attendee/dashboard"
-                        onClick={() => setIsAccountOpen(false)}
-                        className="flex items-center gap-2 px-3.5 py-2 text-ink hover:text-accent hover:bg-surface-subtle transition-colors"
-                      >
-                        <Ticket size={14} weight="bold" className="text-accent" />
-                        <span>Passes & Wallet</span>
-                      </Link>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsAccountOpen(false)
-                          setIsLanyardOpen(true)
-                        }}
-                        className="w-full text-left flex items-center gap-2 px-3.5 py-2 text-ink hover:text-accent hover:bg-surface-subtle transition-colors"
-                      >
-                        <span className="w-3.5 h-3.5 rounded-full bg-accent/20 text-accent font-bold text-[9px] flex items-center justify-center">
-                          ID
-                        </span>
-                        <span>3D Identity Pass</span>
-                      </button>
-
-                      {canAccessAdmin() && (
-                        <Link
-                          to="/admin"
-                          onClick={() => setIsAccountOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-2 text-ink hover:text-accent hover:bg-surface-subtle transition-colors"
-                        >
-                          <Gauge size={14} weight="bold" className="text-accent" />
-                          <span>Admin Console</span>
-                        </Link>
-                      )}
-
-                      <div className="border-t border-line my-1" />
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsAccountOpen(false)
-                          logout()
-                        }}
-                        className="w-full text-left flex items-center gap-2 px-3.5 py-2 text-red-600 hover:bg-red-500/10 transition-colors"
-                      >
-                        <SignOut size={14} weight="bold" />
-                        <span>Sign out</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <Link
-                  to="/login"
-                  className="inline-flex items-center justify-center h-8 px-3.5 rounded-full bg-ink text-paper hover:bg-accent hover:text-white font-medium text-xs transition-colors"
-                >
-                  Sign In
-                </Link>
-              )}
-
-              {/* Mobile hamburger button */}
-              <button
-                type="button"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden p-1.5 text-ink-soft hover:text-ink rounded-full"
-                aria-label="Toggle navigation menu"
-              >
-                {isMobileMenuOpen ? <X size={18} weight="bold" /> : <List size={18} weight="bold" />}
-              </button>
-            </div>
           </div>
         </div>
 
-        {/* Mobile Dropdown Menu */}
-        {isMobileMenuOpen && (
-          <div className="pointer-events-auto md:hidden max-w-sm mx-auto mt-2 px-4">
-            <div className="bg-card/95 backdrop-blur-xl border border-line rounded-2xl shadow-xl p-4 flex flex-col gap-2 text-sm">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="px-3 py-2 rounded-xl text-ink hover:bg-surface-subtle transition-colors font-medium"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <div className="border-t border-line my-1" />
-              <Link
-                to="/attendee/dashboard"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-ink hover:bg-surface-subtle font-medium"
-              >
-                <Ticket size={16} weight="bold" className="text-accent" />
-                <span>My Tickets</span>
-              </Link>
+        <nav aria-label="Primary navigation" className="hidden items-center gap-8 md:flex">
+          {destinations.map(({ label, path }) => (
+            <NavLink key={path} to={path} className={({ isActive }) => cn('relative whitespace-nowrap py-5 text-sm font-medium text-ink-soft hover:text-ink', isActive && 'text-ink after:absolute after:bottom-3 after:left-0 after:right-0 after:h-px after:bg-accent')}>
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <button type="button" onClick={onSearchOpen} aria-label="Search events" className="grid h-9 w-9 place-items-center rounded-lg text-ink-soft hover:bg-surface-subtle hover:text-ink"><MagnifyingGlass size={18} /></button>
+          <div className="hidden sm:block"><ThemeToggle /></div>
+          <div className="hidden sm:block"><NotificationInbox /></div>
+          {isAuthenticated ? (
+            <div className="relative">
+              <Link to="/attendee/dashboard" onClick={closeMenus} className="inline-flex h-9 items-center rounded-full bg-ink px-4 text-xs font-semibold text-paper hover:bg-ink-soft">My Passes</Link>
+              <button type="button" onClick={() => setAccountOpen(!accountOpen)} aria-label="Account menu" aria-expanded={accountOpen} className="ml-1 inline-flex h-9 w-8 items-center justify-center rounded-lg text-ink-soft hover:bg-surface-subtle"><CaretDown size={14} /></button>
+              {accountOpen && (
+                <div className="absolute right-0 top-full mt-2 w-52 rounded-lg border border-line bg-card p-2 text-sm shadow-lg">
+                  <p className="truncate px-2 py-2 text-xs text-ink-soft">{session?.name || session?.email}</p>
+                  {canAccessAdmin() && <Link to="/admin" onClick={closeMenus} className="block rounded-lg px-2 py-2 hover:bg-surface-subtle">Admin console</Link>}
+                  <button type="button" onClick={() => { closeMenus(); logout() }} className="block w-full rounded-lg px-2 py-2 text-left hover:bg-surface-subtle">Sign out</button>
+                </div>
+              )}
             </div>
-          </div>
-        )}
-      </header>
-
-      {/* Slide-out Discovery Drawer (Categories, Clubs & Fast Filters) */}
-      <DiscoveryDrawer
-        isOpen={isDiscoveryOpen}
-        onClose={() => setIsDiscoveryOpen(false)}
-      />
-
-      {/* 3D Physics Lanyard Profile Experience */}
-      <LanyardProfileOverlay
-        isOpen={isLanyardOpen}
-        onClose={() => setIsLanyardOpen(false)}
-      />
-    </>
+          ) : (
+            <Link to="/login" onClick={closeMenus} className="inline-flex h-9 items-center rounded-full bg-ink px-4 text-xs font-semibold text-paper hover:bg-ink-soft active:scale-[0.98]">Sign In</Link>
+          )}
+          <button type="button" onClick={() => setMobileOpen(!mobileOpen)} aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={mobileOpen} className="grid h-10 w-10 place-items-center rounded-lg text-ink md:hidden">{mobileOpen ? <X size={20} /> : <List size={20} />}</button>
+        </div>
+      </div>
+      {mobileOpen && (
+        <nav aria-label="Mobile navigation" className="border-t border-line bg-card px-4 py-2 md:hidden">
+          {destinations.map(({ label, path }) => (
+            <Link key={path} to={path} onClick={closeMenus} aria-current={location.pathname === path ? 'page' : undefined} className="flex min-h-11 items-center border-b border-line px-2 text-base font-medium text-ink last:border-b-0">{label}</Link>
+          ))}
+        </nav>
+      )}
+    </header>
   )
 }

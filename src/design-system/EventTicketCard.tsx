@@ -1,11 +1,10 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { BookmarkSimple, MapPin, CalendarBlank, Users, ArrowUpRight } from '@/design-system/Icon'
-import { PosterArt } from './visuals/PosterArt'
-import { formatDate, formatTime, formatCurrency } from '@/lib/format'
-import { getClubTheme } from './clubColors'
+import { BookmarkSimple, CheckCircle, MapPin } from '@/design-system/Icon'
 import { Event } from '@/api'
+import { formatDate, formatTime } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { PosterArt } from './visuals/PosterArt'
 
 export interface EventTicketCardProps {
   event: Event
@@ -14,139 +13,25 @@ export interface EventTicketCardProps {
   className?: string
 }
 
-/**
- * EventTicketCard: Option B Seamless Borderless Art Plate
- * Clean photographic plate with zero cartoon outlines, zero bite notches,
- * and razor-sharp Geist + JetBrains Mono typographic hierarchy.
- */
-export const EventTicketCard: React.FC<EventTicketCardProps> = ({
-  event,
-  onBookmark,
-  isBookmarked = false,
-  className = '',
-}) => {
-  const clubId = event.organizerId || (event as any).clubId || (event as any).organizer?.slug
-  const clubTheme = getClubTheme(clubId)
-  const isFree = event.isFree ?? (!event.price || event.price === 0)
-  const isWaitlist = event.seatsLeft === 0 || (event as any).isWaitlist
-  const seatsLeft = event.seatsLeft
-
-  const hasCustomCover = Boolean(
-    event.poster &&
-    !event.poster.includes('placeholder') &&
-    !event.poster.includes('default') &&
-    (event.poster.startsWith('http') || event.poster.startsWith('/images/'))
-  )
-
+export const EventTicketCard: React.FC<EventTicketCardProps> = ({ event, onBookmark, isBookmarked = false, className = '' }) => {
+  const href = '/events/' + (event.slug || event.id)
+  const host = event.club?.name || event.organizerName || 'Organizer'
+  const soldOut = event.seatsLeft === 0
+  const price = event.isFree || !event.price ? 'Free' : '₹' + event.price
   return (
-    <article
-      className={cn(
-        'group relative flex flex-col rounded-2xl bg-card transition-all duration-200 hover:bg-surface-subtle/60 p-2.5 -m-2.5 select-none',
-        className
-      )}
-    >
-      {/* 1. PHOTOGRAPHIC ART PLATE (16:10 aspect, borderless) */}
-      <Link
-        to={`/events/${event.slug || event.id}`}
-        className="relative w-full aspect-[16/10] overflow-hidden rounded-xl bg-surface-subtle"
-        tabIndex={-1}
-      >
-        {hasCustomCover ? (
-          <img
-            src={event.poster}
-            alt={event.title}
-            loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-          />
-        ) : (
-          <PosterArt
-            eventId={event.id}
-            title={event.title}
-            category={event.category}
-            clubId={clubId}
-          />
-        )}
-
-        {/* Minimal Category Pill (Top Left) */}
-        <div className="absolute top-3 left-3 flex items-center gap-1.5">
-          <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-black/60 text-white backdrop-blur-md uppercase tracking-wider">
-            {event.category || 'Event'}
-          </span>
-          {isFree && (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/90 text-white backdrop-blur-md">
-              Free
-            </span>
-          )}
-        </div>
-
-        {/* Minimal Bookmark Button (Top Right) */}
-        {onBookmark && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              onBookmark(event.id)
-            }}
-            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-md flex items-center justify-center transition-colors"
-            aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark event'}
-          >
-            <BookmarkSimple
-              size={15}
-              weight={isBookmarked ? 'fill' : 'bold'}
-              className={isBookmarked ? 'text-accent' : 'text-white'}
-            />
-          </button>
-        )}
-      </Link>
-
-      {/* 2. METADATA STACK (Zero borders, pure typographic flow) */}
-      <div className="pt-3.5 pb-1 px-1 flex flex-col flex-1 gap-2">
-        {/* Date & Time in JetBrains Mono */}
-        <div className="flex items-center justify-between text-xs font-mono text-accent">
-          <span>{formatDate(event.startsAt)}</span>
-          <span className="text-ink-muted">{formatTime(event.startsAt)}</span>
-        </div>
-
-        {/* Event Title */}
-        <Link to={`/events/${event.slug || event.id}`} className="focus:outline-none">
-          <h3 className="font-sans font-semibold text-base sm:text-lg text-ink group-hover:text-accent transition-colors line-clamp-1 leading-snug">
-            {event.title}
-          </h3>
-        </Link>
-
-        {/* Subtitle / Description */}
-        {event.subtitle && (
-          <p className="text-xs text-ink-soft line-clamp-1 leading-relaxed">
-            {event.subtitle}
-          </p>
-        )}
-
-        {/* Venue & Host Club */}
-        <div className="mt-auto pt-2 flex items-center justify-between text-xs text-ink-muted">
-          <div className="flex items-center gap-1.5 truncate pr-2">
-            <span
-              className="w-2 h-2 rounded-full flex-shrink-0"
-              style={{ backgroundColor: clubTheme.hex || 'var(--accent)' }}
-            />
-            <span className="truncate font-medium text-ink-soft">
-              {event.organizerName || 'Campus Society'}
-            </span>
-          </div>
-
-          {/* Pricing / Capacity indicator */}
-          <div className="flex items-center gap-2 font-mono text-[11px] flex-shrink-0">
-            {seatsLeft !== undefined && (
-              <span className={seatsLeft <= 10 ? 'text-amber-600 font-semibold' : 'text-ink-muted'}>
-                {seatsLeft} seats
-              </span>
-            )}
-            <ArrowUpRight
-              size={14}
-              weight="bold"
-              className="text-ink-muted group-hover:text-accent group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
-            />
-          </div>
+    <article className={cn('group flex min-w-0 flex-col rounded-panel border border-line bg-card p-3 transition-colors hover:border-line-strong', className)}>
+      <div className="relative aspect-[16/10] overflow-hidden rounded-poster bg-surface-subtle">
+        {event.poster ? <img src={event.poster} alt={event.title} loading="lazy" className="h-full w-full object-cover" /> : <PosterArt eventId={event.id} title={event.title} category={event.category} clubId={event.organizerId} />}
+        <span className="absolute left-3 top-3 rounded-full bg-card px-2.5 py-1 font-mono text-[10px] uppercase text-ink">{event.category || 'Event'}</span>
+        {onBookmark && <button type="button" onClick={() => onBookmark(event.id)} aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark event'} className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-card text-ink hover:text-accent"><BookmarkSimple size={17} weight={isBookmarked ? 'fill' : 'regular'} /></button>}
+      </div>
+      <div className="flex flex-1 flex-col px-1 pb-1 pt-4">
+        <div className="flex min-w-0 items-center gap-1.5 text-xs text-ink-soft"><span className="truncate">{host}</span>{event.club?.verified && <CheckCircle size={14} weight="fill" className="shrink-0 text-success" aria-label="Verified organizer" />}</div>
+        <h3 className="mt-1 line-clamp-2 text-lg font-semibold leading-snug text-ink"><Link to={href} className="hover:text-accent">{event.title}</Link></h3>
+        {event.subtitle && <p className="mt-1 line-clamp-2 text-sm text-ink-soft">{event.subtitle}</p>}
+        <div className="mt-auto flex items-end justify-between gap-2 border-t border-line pt-3 text-xs">
+          <div className="min-w-0 space-y-1 font-mono text-ink-soft"><p>{formatDate(event.startsAt)} · {formatTime(event.startsAt)}</p><p className="flex items-center gap-1 truncate"><MapPin size={12} aria-hidden="true" />{event.venue?.name || 'Venue to be announced'}</p><p className="text-ink">{soldOut ? 'Sold out' : event.seatsLeft != null && event.seatsLeft <= 14 ? event.seatsLeft + ' passes left' : price}</p></div>
+          <Link to={href} className="shrink-0 rounded-full bg-ink px-3 py-2 font-semibold text-paper hover:bg-accent hover:text-white active:scale-[0.98]">{soldOut ? 'View' : 'Book +'}</Link>
         </div>
       </div>
     </article>

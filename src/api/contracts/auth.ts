@@ -45,24 +45,45 @@ export type VerifyOtpRequest = z.infer<typeof VerifyOtpRequestSchema>
 export interface ProfileRead {
   id: string
   email: string
-  handle: string
-  display_name: string
+  handle: string | null
+  display_name: string | null
   avatar_url: string | null
+  first_name: string | null
+  middle_name: string | null
+  last_name: string | null
+  date_of_birth: string | null
+  phone: string | null
+  location: string | null
+  college_email: string | null
+  college_id: string | null
   student_id: string | null
   institution_name: string | null
-  college_email: string | null
+  onboarding_completed: boolean
+  institution_verified: boolean
+  institution_verified_at: string | null
+  role: string
   is_organizer: boolean
-  created_at: string
-  updated_at: string
+  created_at?: string
+  updated_at?: string
 }
 
 export interface ProfileUpdatePayload {
   handle?: string
   display_name?: string
   avatar_url?: string | null
+  first_name?: string
+  middle_name?: string | null
+  last_name?: string
+  date_of_birth?: string | null
+  phone?: string | null
+  location?: string | null
   student_id?: string | null
   institution_name?: string | null
+  college_name?: string | null
+  branch?: string | null
+  graduation_year?: number | null
   college_email?: string | null
+  college_id?: string | null
 }
 
 export function profileToSession(profile: ProfileRead): UserSession {

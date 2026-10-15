@@ -1,7 +1,9 @@
+// Hallmark macrostructure: Vibrant Color-Blocked Tiles
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Users, ArrowRight } from '@phosphor-icons/react'
 import { useClubs, useToggleFollowClub } from '@/hooks/useClubs'
+import { FALLBACK_CLUBS } from '@/data/heroFallbacks'
 import { PageShell } from '@/design-system/layout/PageShell'
 import { SectionHeader } from '@/design-system/SectionHeader'
 import { Badge } from '@/design-system/primitives/Badge'
@@ -13,6 +15,8 @@ export const ClubsPage: React.FC = () => {
   const { data: clubs = [], isLoading } = useClubs()
   const toggleFollowMutation = useToggleFollowClub()
   const { toast } = useToast()
+
+  const displayClubs = clubs.length > 0 ? clubs : FALLBACK_CLUBS
 
   const handleToggleFollow = async (clubId: string, clubName: string) => {
     try {
@@ -52,13 +56,13 @@ export const ClubsPage: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          {clubs.map((club) => {
+          {displayClubs.map((club) => {
             const isFollowed = Boolean(club.isFollowed)
 
             return (
               <div
                 key={club.id}
-                className="group relative flex flex-col justify-between rounded-3xl bg-surface-subtle/30 hover:bg-surface-subtle/70 p-6 sm:p-7 transition-all duration-200 select-none overflow-hidden"
+                className="group relative flex flex-col justify-between rounded-3xl bg-surface-subtle hover:bg-surface-subtle p-6 sm:p-7 transition-all duration-200 select-none overflow-hidden"
               >
                 <div className="space-y-4">
                   {/* Top Bar: Category / Join Mode & Bell Follow */}

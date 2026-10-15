@@ -1,6 +1,6 @@
+// Hallmark macrostructure: 3-Step Focused Stepper & Order Ledger
 import React, { useState, useEffect } from 'react'
-import { useParams, Link, useSearchParams } from 'react-router-dom'
-import confetti from 'canvas-confetti'
+import { useParams, Link } from 'react-router-dom'
 import { useEvent } from '@/hooks/useEvents'
 import { useAuth } from '@/hooks/useAuth'
 import { useRegister, useMyRegistrations, useCancelMyRegistration, useJoinWaitlist } from '@/hooks/useRegistrations'
@@ -11,7 +11,7 @@ import { Badge } from '@/design-system/primitives/Badge'
 import { QRCode } from '@/design-system/primitives/QRCode'
 import { FormRenderer } from './FormRenderer'
 import { formatDate, formatTime, formatCurrency } from '@/lib/format'
-import { Registration } from '@/api'
+import { api, Registration } from '@/api'
 import { downloadICS } from '@/lib/ics'
 import { useToast } from '@/design-system/primitives/Toast'
 import { Icon } from '@/design-system/Icon'
@@ -27,7 +27,6 @@ interface TeamMemberItem {
 
 export const RegisterPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>()
-  const [searchParams] = useSearchParams()
   const { toast } = useToast()
   const { data: event, isLoading } = useEvent(slug || '')
   const { session } = useAuth()
@@ -43,17 +42,17 @@ export const RegisterPage: React.FC = () => {
   // Step 1: Attendee Profile (pre-filled from active session, email locked: F-01)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('+91 98765 43210')
-  const [regNumber, setRegNumber] = useState('22BCE1094')
-  const [branch, setBranch] = useState('Computer Science & Eng.')
+  const [phone, setPhone] = useState('')
+  const [regNumber, setRegNumber] = useState('')
+  const [branch, setBranch] = useState('')
 
   useEffect(() => {
     if (session) {
-      setName(session.name || 'Aarav Deshmukh')
-      setEmail(session.email || 'aarav.deshmukh@campus.edu.in')
+      setName(session.name || '')
+      setEmail(session.email || '')
     } else {
-      setName('Aarav Deshmukh')
-      setEmail('aarav.deshmukh@campus.edu.in')
+      setName('')
+      setEmail('')
     }
   }, [session])
 
@@ -66,27 +65,29 @@ export const RegisterPage: React.FC = () => {
     if (event?.features?.team && teamMembers.length === 0) {
       const leadMember: TeamMemberItem = {
         id: 'mem-lead',
-        name: name || session?.name || 'Aarav Deshmukh',
-        email: email || session?.email || 'aarav.deshmukh@campus.edu.in',
+        name: name || session?.name || '',
+        email: email || session?.email || '',
         role: 'Team Lead',
         status: 'Joined',
       }
-      const initialTeammate: TeamMemberItem = {
-        id: 'mem-1',
-        name: 'Rohan Sharma',
-        email: 'rohan.sharma@campus.edu.in',
-        role: 'Full-Stack Developer',
-        status: 'Invited',
-      }
-      setTeamMembers([leadMember, initialTeammate])
-      setTeamName('Team Turing Genesis')
+      setTeamMembers([leadMember])
     }
-  }, [event, name, email, session])
+  }, [event, name, email, session, teamMembers.length])
 
   // Dynamic Questionnaire answers
   const [formAnswers, setFormAnswers] = useState<Record<string, any>>({})
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [agreedToConduct, setAgreedToConduct] = useState(true)
+
+  // Profile Onboarding Gate (FastAPI Backend requirement)
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false)
+  const [onboardingData, setOnboardingData] = useState({
+    collegeName: '',
+    branch: '',
+    graduationYear: new Date().getFullYear(),
+    phone: '',
+  })
+  const [isOnboardingSubmitting, setIsOnboardingSubmitting] = useState(false)
 
   if (isLoading || !event) {
     return (
@@ -103,7 +104,7 @@ export const RegisterPage: React.FC = () => {
     )
   }
 
-  const selectedTier = searchParams.get('tier') || 'tier-standard'
+  const selectedTier = 'tier-standard'
   const isSoldOut = event.seatsLeft <= 0
   const isTeamEvent = Boolean(event.features?.team)
   const minTeamSize = event.teamConfig?.minSize || 2
@@ -167,13 +168,12 @@ export const RegisterPage: React.FC = () => {
 
   const handleAddTeammate = () => {
     if (teamMembers.length >= maxTeamSize) return
-    const newIdx = teamMembers.length + 1
     setTeamMembers([
       ...teamMembers,
       {
         id: `mem-${Date.now()}`,
-        name: `Teammate ${newIdx}`,
-        email: `teammate${newIdx}@campus.edu.in`,
+        name: '',
+        email: '',
         role: 'Collaborator',
         status: 'Invited',
       },
@@ -230,22 +230,54 @@ export const RegisterPage: React.FC = () => {
 
       const res = await registerMutation.mutateAsync(payload)
       setCreatedRegistration(res)
-      try {
-        confetti({
-          particleCount: 75,
-          spread: 60,
-          origin: { y: 0.6 },
-          colors: ['#0047FF', '#C8BEFA', '#7FD8B8', '#F2B84B', '#FF5C8A'],
-        })
-      } catch {}
       window.scrollTo({ top: 0, behavior: 'smooth' })
-    } catch (err) {
+    } catch (err: any) {
       console.error('Registration failed:', err)
+      const detail = err.detail || err.message || ''
+      if (detail.includes('onboarding') || err.status === 403) {
+        setShowOnboardingModal(true)
+        toast({
+          title: 'Campus Profile Required',
+          message: 'Please complete your student college details before reserving a pass.',
+          type: 'info',
+        })
+      } else {
+        toast({
+          title: 'Registration failed',
+          message: detail || 'Unable to reserve pass. Please try again.',
+          type: 'error',
+        })
+      }
+    }
+  }
+
+  const handleSaveOnboarding = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsOnboardingSubmitting(true)
+    try {
+      if (api.auth.updateProfile) {
+        await api.auth.updateProfile({
+          institution_name: onboardingData.collegeName,
+          college_name: onboardingData.collegeName,
+          branch: onboardingData.branch,
+          graduation_year: Number(onboardingData.graduationYear),
+          phone: onboardingData.phone,
+        })
+      }
+      setShowOnboardingModal(false)
       toast({
-        title: 'Registration failed',
-        message: 'Unable to reserve pass. Please try again.',
+        title: 'Profile Saved',
+        message: 'Your campus details are verified. You can now reserve your pass.',
+        type: 'success',
+      })
+    } catch (err: any) {
+      toast({
+        title: 'Update failed',
+        message: err.detail || 'Unable to save profile.',
         type: 'error',
       })
+    } finally {
+      setIsOnboardingSubmitting(false)
     }
   }
 
@@ -337,7 +369,7 @@ export const RegisterPage: React.FC = () => {
           </div>
 
           {/* Minimal Digital Pass Ticket Object */}
-          <div className="bg-surface-subtle/40 rounded-3xl p-6 sm:p-8 text-left relative overflow-hidden">
+          <div className="bg-surface-subtle rounded-3xl p-6 sm:p-8 text-left relative overflow-hidden">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line/20 pb-4">
               <div className="flex items-center gap-2">
                 <Badge variant="neutral" size="sm">
@@ -791,7 +823,7 @@ export const RegisterPage: React.FC = () => {
 
           {/* Right Column: Sticky Order Summary (380px) (V-06) */}
           <div className="lg:col-span-4">
-            <div className="sticky top-28 bg-surface-subtle/40 rounded-3xl p-6 space-y-5">
+            <div className="sticky top-28 bg-surface-subtle rounded-3xl p-6 space-y-5">
               <h3 className="font-display text-base font-medium text-ink border-b border-line/20 pb-3">
                 Order summary
               </h3>
@@ -824,25 +856,121 @@ export const RegisterPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <span>Tier Selected</span>
                   <span className="font-semibold text-ink capitalize">
-                    {selectedTier.replace('tier-', '')} Pass
+                    Event pass
                   </span>
                 </div>
                 <div className="flex items-center justify-between pt-3 border-t border-ink/10 text-sm">
-                  <span className="font-bold text-ink">Total fee</span>
+                  <span className="font-bold text-ink">Listed event price</span>
                   <span className="font-bold text-emerald-800 font-mono">
                     {event.isFree ? 'Free' : formatCurrency(event.price || 0)}
                   </span>
                 </div>
+                <p className="text-xs text-ink-soft">Additional fees are not specified in this event record.</p>
               </div>
 
               <div className="p-3 rounded-[12px] bg-paper border border-ink/10 space-y-1 text-[11px] text-ink-soft">
                 <p className="font-semibold text-ink flex items-center gap-1">
                   <Icon name="ShieldCheck" size={13} className="text-cobalt" />
-                  Campus Pass Protection
+                  Digital pass
                 </p>
-                <p>Passes are cryptographically signed and stored in your profile badge.</p>
+                <p>Confirmed passes appear in My Passes.</p>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Onboarding Modal Gate (Required for FastAPI Backend Registration) */}
+      {showOnboardingModal && (
+        <div className="fixed inset-0 bg-ink/75 z-50 flex items-center justify-center p-4">
+          <div className="bg-card border border-line rounded-panel p-6 sm:p-8 max-w-md w-full shadow-sm space-y-5 select-none relative animate-in fade-in zoom-in-95 duration-150">
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-accent bg-accent/10 px-2 py-0.5 rounded border border-accent/20">
+                Collegiate Requirement
+              </span>
+              <h2 className="font-display text-2xl font-bold text-ink">
+                Complete campus onboarding
+              </h2>
+              <p className="text-xs text-ink-soft">
+                To reserve verified seats, the campus registry requires your academic institution and branch details.
+              </p>
+            </div>
+
+            <form onSubmit={handleSaveOnboarding} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-semibold text-ink mb-1">
+                  College / Institute Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={onboardingData.collegeName}
+                  onChange={(e) => setOnboardingData({ ...onboardingData, collegeName: e.target.value })}
+                  className="w-full bg-paper border border-line rounded-lg px-3 py-2 text-xs text-ink focus:border-accent focus:outline-none"
+                  placeholder="Apex Institute of Technology"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-ink mb-1">
+                    Branch / Major
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={onboardingData.branch}
+                    onChange={(e) => setOnboardingData({ ...onboardingData, branch: e.target.value })}
+                    className="w-full bg-paper border border-line rounded-lg px-3 py-2 text-xs text-ink focus:border-accent focus:outline-none"
+                    placeholder="Computer Science"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-ink mb-1">
+                    Graduation Year
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={onboardingData.graduationYear}
+                    onChange={(e) => setOnboardingData({ ...onboardingData, graduationYear: Number(e.target.value) })}
+                    className="w-full bg-paper border border-line rounded-lg px-3 py-2 text-xs text-ink focus:border-accent focus:outline-none"
+                    placeholder="2027"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-ink mb-1">
+                  Contact Phone Number
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={onboardingData.phone}
+                  onChange={(e) => setOnboardingData({ ...onboardingData, phone: e.target.value })}
+                  className="w-full bg-paper border border-line rounded-lg px-3 py-2 text-xs text-ink focus:border-accent focus:outline-none"
+                  placeholder="+91 98765 43210"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-line">
+                <button
+                  type="button"
+                  onClick={() => setShowOnboardingModal(false)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium text-ink-soft hover:text-ink hover:bg-surface-subtle transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isOnboardingSubmitting}
+                  className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-ink text-paper hover:bg-accent hover:text-white transition-colors active:scale-[0.98] disabled:opacity-50"
+                >
+                  {isOnboardingSubmitting ? 'Verifying...' : 'Save & Reserve Pass'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

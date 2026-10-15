@@ -1,3 +1,4 @@
+// Hallmark macrostructure: Cover Stage & Sticky Checkout Dock
 import React, { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
@@ -82,29 +83,13 @@ export const EventDetailPage: React.FC = () => {
 
   // Available ticket tiers (F-07)
   const basePrice = event.isFree ? 0 : (event.price || 0)
-  const tiers: TicketTierOption[] = [
-    {
-      id: 'tier-standard',
-      name: 'General Pass',
-      price: basePrice,
-      description: 'Standard campus entry pass with plenary seating and digital certificate.',
-      perks: ['Keynote & track access', 'Digital attendance pass', 'Verifiable certificate'],
-    },
-    {
-      id: 'tier-builder',
-      name: 'Builder / Hacker Pass',
-      price: basePrice === 0 ? 99 : basePrice + 99,
-      description: 'Dedicated hack space, hardware workstation access, and mentor check-in queue.',
-      perks: ['All General perks', 'Mentor queue priority', 'Hack pack & badge'],
-    },
-    {
-      id: 'tier-vip',
-      name: 'Priority Pass',
-      price: basePrice === 0 ? 199 : basePrice + 199,
-      description: 'Front-row amphitheatre reserve, fast-track venue gate, and speaker networking.',
-      perks: ['All Builder perks', 'Front-row reserve', 'Fast-track gate lane'],
-    },
-  ]
+  const tiers: TicketTierOption[] = [{
+    id: 'tier-standard',
+    name: 'Event pass',
+    price: basePrice,
+    description: 'Admission to this event.',
+    perks: [],
+  }]
 
   const handleDownloadCalendar = () => {
     downloadICS({
@@ -180,29 +165,14 @@ export const EventDetailPage: React.FC = () => {
   const tabs = [
     { id: 'about' as const, label: 'About' },
     { id: 'schedule' as const, label: 'Schedule', count: event.schedule?.length },
-    { id: 'speakers' as const, label: 'Speakers', count: event.people?.length || 2 },
+    { id: 'speakers' as const, label: 'Speakers', count: event.people?.length || 0 },
     { id: 'venue' as const, label: 'Venue' },
     { id: 'faq' as const, label: 'FAQ' },
     { id: 'rules' as const, label: 'Rules' },
     { id: 'contact' as const, label: 'Contact' },
   ]
 
-  const speakersList = event.people && event.people.length > 0
-    ? event.people
-    : [
-        {
-          name: 'Dr. Aris Thorne',
-          role: 'Keynote Speaker & AI Research Director',
-          bio: 'Specialist in distributed neural networks and autonomous campus systems.',
-          photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
-        },
-        {
-          name: 'Kavya Patel',
-          role: 'Lead Systems Architect & Mentor',
-          bio: 'Architecting low-latency infrastructure and high-throughput event streaming pipelines.',
-          photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
-        },
-      ]
+  const speakersList = event.people || []
 
   return (
     <>
@@ -252,7 +222,7 @@ export const EventDetailPage: React.FC = () => {
             <button
               type="button"
               onClick={handleShare}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-subtle/70 text-ink-soft hover:text-ink hover:bg-surface-subtle text-xs font-medium transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-subtle text-ink-soft hover:text-ink hover:bg-surface-subtle text-xs font-medium transition-colors"
             >
               <Icon name="ShareNetwork" size={14} />
               <span>Share</span>
@@ -260,7 +230,7 @@ export const EventDetailPage: React.FC = () => {
             <button
               type="button"
               onClick={handleDownloadCalendar}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-subtle/70 text-ink-soft hover:text-ink hover:bg-surface-subtle text-xs font-medium transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-subtle text-ink-soft hover:text-ink hover:bg-surface-subtle text-xs font-medium transition-colors"
             >
               <Icon name="CalendarPlus" size={14} />
               <span>Add to calendar</span>
@@ -284,6 +254,11 @@ export const EventDetailPage: React.FC = () => {
         {/* Title and Meta Bar */}
         <div className="space-y-4 pt-1">
           <div className="flex flex-wrap items-center gap-2.5">
+            {event.institutionName && (
+              <Badge variant="neutral" size="sm" className="font-semibold border-accent/40 bg-accent/5 text-ink">
+                🏛️ {event.institutionName}
+              </Badge>
+            )}
             <Badge variant="neutral" size="sm">
               {event.organizerName || event.club?.name || 'Campus Club'}
             </Badge>
@@ -349,13 +324,13 @@ export const EventDetailPage: React.FC = () => {
                   className={`px-3.5 py-1.5 text-xs font-medium rounded-full transition-all whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'bg-ink text-surface shadow-xs'
-                      : 'bg-transparent text-ink-soft hover:text-ink hover:bg-surface-subtle/60'
+                      : 'bg-transparent text-ink-soft hover:text-ink hover:bg-surface-subtle'
                   }`}
                 >
                   {tab.label}
                   {tab.count !== undefined && (
                     <span className={`ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] ${
-                      activeTab === tab.id ? 'bg-surface/20 text-surface' : 'bg-surface-subtle text-ink-soft'
+                      activeTab === tab.id ? 'bg-accent text-white' : 'bg-surface-subtle text-ink-soft'
                     }`}>
                       {tab.count}
                     </span>
@@ -366,7 +341,7 @@ export const EventDetailPage: React.FC = () => {
 
             {/* Tab 1: About */}
             {activeTab === 'about' && (
-              <div className="bg-surface-subtle/30 rounded-2xl p-6 sm:p-8 space-y-8">
+              <div className="bg-card border border-line rounded-panel p-6 sm:p-8 space-y-8">
                 <div>
                   <h3 className="font-display text-lg font-medium text-ink mb-3">About this session</h3>
                   <div className="text-ink-soft text-sm leading-relaxed whitespace-pre-line space-y-4">
@@ -375,11 +350,11 @@ export const EventDetailPage: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-line/30">
-                  <div className="p-4 rounded-xl bg-surface/70 space-y-1">
+                  <div className="p-4 rounded-xl bg-card space-y-1">
                     <span className="text-[11px] font-medium text-ink-soft/70 block uppercase tracking-wider">Eligibility</span>
                     <p className="text-sm font-medium text-ink">{event.eligibility || 'Open to all enrolled students'}</p>
                   </div>
-                  <div className="p-4 rounded-xl bg-surface/70 space-y-1">
+                  <div className="p-4 rounded-xl bg-card space-y-1">
                     <span className="text-[11px] font-medium text-ink-soft/70 block uppercase tracking-wider">Format</span>
                     <p className="text-sm font-medium text-ink">
                       {event.features?.team ? 'Team participation (2–4 members)' : 'Individual attendee pass'}
@@ -391,7 +366,7 @@ export const EventDetailPage: React.FC = () => {
 
             {/* Tab 2: Schedule */}
             {activeTab === 'schedule' && (
-              <div className="bg-surface-subtle/30 rounded-2xl p-6 sm:p-8 space-y-4">
+              <div className="bg-card border border-line rounded-panel p-6 sm:p-8 space-y-4">
                 <h3 className="font-display text-lg font-medium text-ink">Event schedule</h3>
                 {event.schedule && event.schedule.length > 0 ? (
                   <div className="divide-y divide-line/20">
@@ -420,19 +395,16 @@ export const EventDetailPage: React.FC = () => {
 
             {/* Tab 3: Speakers & Mentors */}
             {activeTab === 'speakers' && (
-              <div className="bg-surface-subtle/30 rounded-2xl p-6 sm:p-8 space-y-6">
+              <div className="bg-card border border-line rounded-panel p-6 sm:p-8 space-y-6">
                 <div>
                   <h3 className="font-display text-lg font-medium text-ink">Speakers & Mentors</h3>
                   <p className="text-xs text-ink-soft mt-0.5">Industry practitioners and faculty leads facilitating this session.</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {speakersList.length === 0 && <p className="text-sm text-ink-soft">Speakers have not been announced.</p>}
                   {speakersList.map((person, idx) => (
-                    <div key={idx} className="p-4 rounded-xl bg-surface/70 flex items-start gap-3.5">
-                      <img
-                        src={(person as any).photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}
-                        alt={person.name}
-                        className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-                      />
+                    <div key={idx} className="p-4 rounded-xl bg-card flex items-start gap-3.5">
+                      {person.photo && <img src={person.photo} alt="" className="h-12 w-12 flex-shrink-0 rounded-full object-cover" />}
                       <div className="min-w-0 flex-1">
                         <h4 className="font-medium text-sm text-ink truncate">{person.name}</h4>
                         <span className="text-xs font-normal text-primary block truncate">{person.role}</span>
@@ -448,9 +420,9 @@ export const EventDetailPage: React.FC = () => {
 
             {/* Tab 4: Venue */}
             {activeTab === 'venue' && (
-              <div className="bg-surface-subtle/30 rounded-2xl p-6 sm:p-8 space-y-4">
+              <div className="bg-card border border-line rounded-panel p-6 sm:p-8 space-y-4">
                 <h3 className="font-display text-lg font-medium text-ink">Venue details</h3>
-                <div className="p-5 rounded-xl bg-surface/70 space-y-3">
+                <div className="p-5 rounded-xl bg-card space-y-3">
                   <div className="flex items-start gap-3">
                     <Icon name="MapPin" size={18} className="text-primary flex-shrink-0 mt-0.5" />
                     <div>
@@ -470,22 +442,22 @@ export const EventDetailPage: React.FC = () => {
 
             {/* Tab 5: FAQ */}
             {activeTab === 'faq' && (
-              <div className="bg-surface-subtle/30 rounded-2xl p-6 sm:p-8 space-y-4">
+              <div className="bg-card border border-line rounded-panel p-6 sm:p-8 space-y-4">
                 <h3 className="font-display text-lg font-medium text-ink">Frequently asked questions</h3>
                 <div className="space-y-3">
-                  <div className="p-4 rounded-xl bg-surface/70 space-y-1">
+                  <div className="p-4 rounded-xl bg-card space-y-1">
                     <h4 className="font-medium text-sm text-ink">What do I need to bring for venue check-in?</h4>
                     <p className="text-xs text-ink-soft leading-relaxed">
                       Bring your smartphone with the digital pass open on EventMesh (QR code face intact) or your physical student ID card.
                     </p>
                   </div>
-                  <div className="p-4 rounded-xl bg-surface/70 space-y-1">
+                  <div className="p-4 rounded-xl bg-card space-y-1">
                     <h4 className="font-medium text-sm text-ink">Can beginners register?</h4>
                     <p className="text-xs text-ink-soft leading-relaxed">
                       Yes! All sessions feature introductory tracks and mentor checkpoints suitable for students of all branches and years.
                     </p>
                   </div>
-                  <div className="p-4 rounded-xl bg-surface/70 space-y-1">
+                  <div className="p-4 rounded-xl bg-card space-y-1">
                     <h4 className="font-medium text-sm text-ink">When will attendance certificates be issued?</h4>
                     <p className="text-xs text-ink-soft leading-relaxed">
                       Certificates are automatically minted on EventMesh within 24 hours of gate check-in and session conclusion.
@@ -497,7 +469,7 @@ export const EventDetailPage: React.FC = () => {
 
             {/* Tab 6: Rules */}
             {activeTab === 'rules' && (
-              <div className="bg-surface-subtle/30 rounded-2xl p-6 sm:p-8 space-y-4">
+              <div className="bg-card border border-line rounded-panel p-6 sm:p-8 space-y-4">
                 <h3 className="font-display text-lg font-medium text-ink">Rules & code of conduct</h3>
                 {event.rules && event.rules.length > 0 ? (
                   <ul className="space-y-2.5 text-sm text-ink">
@@ -531,7 +503,7 @@ export const EventDetailPage: React.FC = () => {
 
             {/* Tab 7: Contact */}
             {activeTab === 'contact' && (
-              <div className="bg-surface-subtle/30 rounded-2xl p-6 sm:p-8 space-y-4">
+              <div className="bg-card border border-line rounded-panel p-6 sm:p-8 space-y-4">
                 <h3 className="font-display text-lg font-medium text-ink">Organizer contact</h3>
                 <div className="space-y-3 text-sm">
                   <p className="font-medium text-ink text-base">{event.organizerName || 'Lead Club Coordinator'}</p>
@@ -556,7 +528,7 @@ export const EventDetailPage: React.FC = () => {
 
           {/* Sticky Ticket Panel Column (Option B Borderless Plate) */}
           <div className="lg:col-span-4">
-            <div className="sticky top-28 bg-surface-subtle/40 rounded-3xl p-6 space-y-6">
+            <div className="sticky top-28 bg-card border border-line rounded-panel p-6 space-y-6">
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[11px] font-medium uppercase tracking-wider text-ink-soft/70">Admission Pass</span>
@@ -601,7 +573,7 @@ export const EventDetailPage: React.FC = () => {
                         className={`w-full text-left p-3.5 rounded-xl transition-all ${
                           isSelected
                             ? 'bg-surface shadow-xs text-ink ring-1 ring-primary/40'
-                            : 'bg-surface/40 hover:bg-surface/70 text-ink-soft'
+                            : 'bg-surface hover:bg-card text-ink-soft'
                         }`}
                       >
                         <div className="flex items-center justify-between">
@@ -729,7 +701,7 @@ export const EventDetailPage: React.FC = () => {
       </PageShell>
 
       {/* Sticky Bottom Bar on Mobile */}
-      <div className="lg:hidden fixed bottom-14 left-0 right-0 z-30 bg-surface/90 backdrop-blur-md border-t border-line/30 px-4 py-3 flex items-center justify-between gap-4">
+      <div className="lg:hidden fixed bottom-14 left-0 right-0 z-30 bg-card border-t border-line px-4 py-3 flex items-center justify-between gap-4 shadow-lg">
         <div className="min-w-0">
           <span className="text-[11px] font-mono text-primary block truncate">
             {isSoldOut ? 'Waitlist open' : `${event.seatsLeft} seats left`}

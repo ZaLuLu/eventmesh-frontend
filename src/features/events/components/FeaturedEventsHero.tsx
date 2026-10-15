@@ -186,7 +186,7 @@ export const FeaturedEventsHero: React.FC<FeaturedEventsHeroProps> = ({ events }
 
                 {/* Overlaid Badges */}
                 <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
-                  <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white font-mono text-[11px] font-semibold tracking-wider uppercase border border-white/10">
+                  <span className="px-3 py-1 rounded-full bg-ink text-paper font-mono text-[11px] font-semibold tracking-wider uppercase border border-white/20">
                     {currentEvent.category || 'HACKATHON'}
                   </span>
                   {currentEvent.isSignature && (
@@ -200,10 +200,10 @@ export const FeaturedEventsHero: React.FC<FeaturedEventsHeroProps> = ({ events }
                 {/* Price Pill */}
                 <div className="absolute bottom-4 right-4 z-10">
                   <span className={cn(
-                    'px-3.5 py-1.5 rounded-full font-mono text-xs font-bold backdrop-blur-md shadow-md',
+                    'px-3.5 py-1.5 rounded-full font-mono text-xs font-bold shadow-xs',
                     isFree
-                      ? 'bg-emerald-500/90 text-white'
-                      : 'bg-black/75 text-white border border-white/15'
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-ink text-white border border-white/20'
                   )}>
                     {isFree ? 'FREE ENTRY' : `₹${currentEvent.price || 199}`}
                   </span>

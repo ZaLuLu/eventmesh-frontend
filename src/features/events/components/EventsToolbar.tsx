@@ -68,7 +68,7 @@ export const EventsToolbar: React.FC<EventsToolbarProps> = ({
   return (
     <div
       className={cn(
-        'sticky top-20 z-30 bg-paper/90 backdrop-blur-xl border-b border-line py-3 select-none transition-colors',
+        'bg-paper border-t border-line py-3 select-none transition-colors',
         className
       )}
     >

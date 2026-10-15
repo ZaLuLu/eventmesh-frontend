@@ -74,7 +74,7 @@ export const AdminRegistrationsPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
         <div>
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#D4F25A] block mb-1">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[var(--color-accent)] block mb-1">
             ATTENDEE ROSTER
           </span>
           <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-white tracking-tight">
@@ -89,7 +89,7 @@ export const AdminRegistrationsPage: React.FC = () => {
           type="button"
           onClick={handleExportCSV}
           disabled={registrations.length === 0}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-[12px] bg-[#D4F25A] hover:bg-[#c2e245] text-[#0F0D1F] text-xs font-bold transition-[background-color,transform] disabled:opacity-40"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-[12px] bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-[var(--color-canvas)] text-xs font-bold transition-[background-color,transform] disabled:opacity-40"
         >
           <DownloadSimple className="w-4 h-4" weight="bold" />
           <span>Export CSV Roster</span>
@@ -97,7 +97,7 @@ export const AdminRegistrationsPage: React.FC = () => {
       </div>
 
       {/* Filter / Search Bar */}
-      <div className="p-3 bg-[#181530] border border-white/10 rounded-[16px] flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="p-3 bg-[var(--color-surface)] border border-white/10 rounded-[16px] flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 text-xs overflow-x-auto scrollbar-none">
           {(['all', 'registered', 'checked_in', 'waitlisted', 'cancelled'] as (RegistrationStatus | 'all')[]).map(
             (st) => (
@@ -107,7 +107,7 @@ export const AdminRegistrationsPage: React.FC = () => {
                 onClick={() => setStatusFilter(st)}
                 className={`px-3 py-1.5 rounded-[8px] font-bold text-xs transition-colors capitalize ${
                   statusFilter === st
-                    ? 'bg-[#D4F25A] text-[#0F0D1F]'
+                    ? 'bg-[var(--color-accent)] text-[var(--color-canvas)]'
                     : 'text-white/60 hover:text-white hover:bg-white/5'
                 }`}
               >
@@ -124,16 +124,16 @@ export const AdminRegistrationsPage: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search attendee or ticket..."
-            className="w-full bg-[#120F24] text-white text-xs pl-9 pr-3 py-2 border border-white/20 rounded-[10px] focus:outline-none focus:border-[#D4F25A] placeholder:text-white/30"
+            className="w-full bg-[var(--color-canvas-subtle)] text-white text-xs pl-9 pr-3 py-2 border border-white/20 rounded-[10px] focus:outline-none focus:border-[var(--color-accent)] placeholder:text-white/30"
           />
         </div>
       </div>
 
       {/* Registrations Table */}
-      <div className="bg-[#181530] border border-white/10 rounded-[16px] overflow-x-auto shadow-[4px_4px_0_#000]">
+      <div className="bg-[var(--color-surface)] border border-white/10 rounded-[16px] overflow-x-auto shadow-sm">
         <table className="w-full text-left border-collapse min-w-[750px]">
           <thead>
-            <tr className="border-b border-white/10 bg-[#120F24] text-[11px] font-mono font-bold text-white/50 uppercase tracking-wider sticky top-0">
+            <tr className="border-b border-white/10 bg-[var(--color-canvas-subtle)] text-[11px] font-mono font-bold text-white/50 uppercase tracking-wider sticky top-0">
               <th className="py-3 px-4">Pass & Attendee</th>
               <th className="py-3 px-4">Event</th>
               <th className="py-3 px-4">Status</th>
@@ -158,7 +158,7 @@ export const AdminRegistrationsPage: React.FC = () => {
               registrations.map((reg) => (
                 <tr key={reg.id} className="hover:bg-white/[0.02] transition-colors">
                   <td className="py-3 px-4 space-y-0.5">
-                    <p className="font-mono font-extrabold text-[#D4F25A] text-xs">{reg.ticketCode}</p>
+                    <p className="font-mono font-extrabold text-[var(--color-accent)] text-xs">{reg.ticketCode}</p>
                     <p className="font-bold text-white text-xs">{reg.userName}</p>
                     <p className="text-[11px] text-white/50 font-mono">{reg.userEmail}</p>
                     {reg.team && (
@@ -179,11 +179,11 @@ export const AdminRegistrationsPage: React.FC = () => {
                     <span
                       className={`inline-block text-xs px-2.5 py-0.5 rounded-full border capitalize font-bold ${
                         reg.status === 'checked_in'
-                          ? 'bg-[#7FD8B8]/15 text-[#7FD8B8] border-[#7FD8B8]/30'
+                          ? 'bg-card text-success border-success'
                           : reg.status === 'registered'
-                          ? 'bg-[#8EC5FF]/15 text-[#8EC5FF] border-[#8EC5FF]/30'
+                          ? 'bg-card text-accent border-accent'
                           : reg.status === 'waitlisted'
-                          ? 'bg-[#F2B84B]/15 text-[#F2B84B] border-[#F2B84B]/30'
+                          ? 'bg-card text-warning border-warning'
                           : 'bg-white/5 text-white/60 border-white/10'
                       }`}
                     >
@@ -201,7 +201,7 @@ export const AdminRegistrationsPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handlePromoteWaitlist(reg.id, reg.userName)}
-                          className="px-2.5 py-1 bg-[#7FD8B8] text-[#0F0D1F] font-extrabold rounded-[6px] text-[11px] hover:opacity-90"
+                          className="px-2.5 py-1 bg-success text-[var(--color-canvas)] font-extrabold rounded-[6px] text-[11px] hover:opacity-90"
                         >
                           Promote
                         </button>
@@ -211,7 +211,7 @@ export const AdminRegistrationsPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleStatusChange(reg.id, 'checked_in')}
-                          className="px-2.5 py-1 bg-[#D4F25A] text-[#0F0D1F] font-extrabold rounded-[6px] text-[11px] hover:opacity-90"
+                          className="px-2.5 py-1 bg-[var(--color-accent)] text-[var(--color-canvas)] font-extrabold rounded-[6px] text-[11px] hover:opacity-90"
                         >
                           Check In
                         </button>
@@ -220,7 +220,7 @@ export const AdminRegistrationsPage: React.FC = () => {
                       <select
                         value={reg.status}
                         onChange={(e) => handleStatusChange(reg.id, e.target.value as any)}
-                        className="p-1 border border-white/20 bg-[#120F24] rounded-[6px] text-[11px] font-bold text-white focus:outline-none"
+                        className="p-1 border border-white/20 bg-[var(--color-canvas-subtle)] rounded-[6px] text-[11px] font-bold text-white focus:outline-none"
                       >
                         <option value="registered">Registered</option>
                         <option value="checked_in">Checked In</option>

@@ -30,3 +30,30 @@ export const OrganizerSchema = z.object({
 
 export type Organizer = z.infer<typeof OrganizerSchema>
 export type Club = Organizer
+
+export function normalizeBackendOrganization(org: any): Organizer {
+  const defaultColors = ['#0047FF', '#C66A4A', '#2F4BD6', '#7B63A8', '#0070F3', '#FF6B35']
+  const slugStr = org.slug || 'club'
+  const hash = slugStr.split('').reduce((acc: number, c: string) => acc + c.charCodeAt(0), 0)
+  const color = defaultColors[Math.abs(hash) % defaultColors.length]
+  const parentNote = org.parent_name ? ` · Part of ${org.parent_name}` : ''
+
+  return {
+    id: org.id,
+    orgId: org.parent_slug || org.slug,
+    name: org.name,
+    slug: org.slug,
+    color,
+    logo: org.avatar_url || undefined,
+    about: org.description || `Autonomous student collective${parentNote}.`,
+    whatWeDo: org.description || `Hands-on collegiate engineering and creative building${parentNote}.`,
+    coordinators: [],
+    studentCoordinators: [],
+    achievements: [],
+    gallery: [],
+    joinMode: 'open',
+    followersCount: 140,
+    isFollowed: false,
+  }
+}
+

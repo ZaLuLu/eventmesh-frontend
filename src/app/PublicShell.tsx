@@ -29,15 +29,14 @@ export const PublicShell: React.FC = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-[var(--color-paper)] text-[var(--color-ink)] flex flex-col font-sans selection:bg-accent/20 selection:text-accent">
+    <div className="min-h-screen bg-paper text-ink flex flex-col font-sans selection:bg-accent/20 selection:text-accent">
       {/* Offline Status Detector */}
       <OfflineBanner />
 
       {/* Modern-Minimal Floating Header */}
       <PublicHeader onSearchOpen={() => setIsSearchOpen(true)} />
 
-      {/* Main Content Area: generous breathing room for floating pill */}
-      <main className="flex-1 pt-20 sm:pt-24 pb-16 lg:pb-0">
+      <main className="flex-1 pt-16 pb-16 lg:pb-0">
         <ErrorBoundary>
           <Outlet />
         </ErrorBoundary>
@@ -49,7 +48,7 @@ export const PublicShell: React.FC = () => {
       {/* Mobile Bottom Navigation Bar */}
       <nav
         aria-label="Mobile Bottom Navigation"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--color-paper)]/90 backdrop-blur-xl border-t border-[var(--color-line)] px-2 py-1.5 flex items-center justify-around select-none shadow-sm"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-paper border-t border-line px-2 py-1.5 flex items-center justify-around select-none shadow-sm"
       >
         {mobileTabs.map((tab) => {
           const isActive =

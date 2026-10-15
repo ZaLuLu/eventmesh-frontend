@@ -3,6 +3,7 @@ import { FormFieldSchema } from './formSchema'
 
 export const EventStatusSchema = z.enum([
   'draft',
+  'submitted',
   'in_review',
   'published',
   'registration_closed',
@@ -135,6 +136,8 @@ export const EventSchema = z.object({
       verified: z.boolean().default(false),
     })
     .optional(),
+  institutionName: z.string().optional(),
+  institutionSlug: z.string().optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 })
@@ -192,6 +195,7 @@ export interface EventRead {
   slug: string
   title: string
   description: string
+  status: 'draft' | 'submitted' | 'published' | 'cancelled' | 'archived' | string
   event_type: string
   visibility: 'draft' | 'preview' | 'published' | 'hidden' | 'archived'
   audience_type: 'open' | 'institution_only'
@@ -308,7 +312,7 @@ export function normalizeBackendEvent(item: VisibleEventRead | EventRead): Event
       team: false,
     },
     formSchema: [],
-    status: isDetail ? ((item as EventRead).visibility as any) : 'published',
+    status: isDetail ? (((item as EventRead).status || (item as EventRead).visibility) as any) : 'published',
     results: [],
     photos: [],
     organizerName: item.organization?.name,
@@ -318,10 +322,12 @@ export function normalizeBackendEvent(item: VisibleEventRead | EventRead): Event
     price: (item.price_cents || 0) / 100,
     isOnline: item.is_online,
     registrationsCount: 0,
+    institutionName: ('institution' in item && item.institution?.name) || (item as any).institution_name || undefined,
+    institutionSlug: ('institution' in item && item.institution?.slug) || (item as any).institution_slug || undefined,
     club: {
-      id: item.organization?.id || 'org-1',
-      name: item.organization?.name || 'Organizer',
-      color: '#1A73E8',
+      id: item.organization?.id || (item as any).organization_id || 'org-1',
+      name: item.organization?.name || (item as any).organization_name || 'Campus Club',
+      color: '#0047FF',
       verified: true,
     },
   }

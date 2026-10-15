@@ -69,7 +69,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/40 backdrop-blur-md"
+            className="fixed inset-0 bg-black/60"
             aria-hidden="true"
           />
 
@@ -81,7 +81,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
             className="relative z-10 w-full max-w-xl bg-card border border-line rounded-2xl shadow-2xl flex flex-col max-h-[75vh] overflow-hidden"
           >
             {/* Search Input Bar */}
-            <div className="p-3 border-b border-line bg-surface-subtle/50">
+            <div className="p-3 border-b border-line bg-surface-subtle">
               <div className="flex items-center gap-3 px-3.5 h-11 bg-card rounded-xl border border-line/80 focus-within:border-accent">
                 <MagnifyingGlass size={16} weight="bold" className="text-accent flex-shrink-0" />
                 <input
