@@ -122,26 +122,32 @@ export const PanoramicHeroCarousel: React.FC<PanoramicHeroCarouselProps> = ({
       aria-label="Flagship featured campus productions"
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      className={`relative w-full overflow-hidden bg-paper-2 pt-4 pb-8 sm:py-6 border-b border-line select-none ${className}`}
+      className={`relative w-full overflow-hidden bg-[#07080c] text-white pt-4 pb-8 sm:py-7 border-b border-white/10 select-none ${className}`}
     >
-      <div className="relative mx-auto w-full max-w-[1480px] px-2 sm:px-6 lg:px-8">
+      {/* Cinematic Ambient Glow Backdrop */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+        <div className="absolute -top-[30%] left-1/2 -translate-x-1/2 w-[850px] sm:w-[1200px] h-[500px] bg-gradient-to-b from-purple-950/30 via-indigo-950/20 to-transparent blur-[120px] rounded-full" />
+      </div>
+
+      <div className="relative mx-auto w-full max-w-[1520px] px-2 sm:px-6 lg:px-8">
         {/* Panoramic Carousel Stage */}
-        <div className="relative flex h-[280px] sm:h-[360px] md:h-[400px] lg:h-[430px] items-center justify-center overflow-hidden">
-          {/* Left Peeking Slide (Desk & Tablet) */}
+        <div className="relative flex h-[280px] sm:h-[360px] md:h-[400px] lg:h-[440px] items-center justify-center overflow-hidden">
+          {/* Left Peeking Slide (In Vivid Color, Scale & Subtle Scrim) */}
           {count > 1 && (
             <div
               onClick={() => move(-1)}
               role="button"
               tabIndex={0}
               aria-label={`Previous: ${prevEvent.title}`}
-              className="absolute left-0 -translate-x-[68%] sm:-translate-x-[42%] md:-translate-x-[32%] lg:-translate-x-[24%] h-[82%] sm:h-[88%] w-[88%] sm:w-[80%] md:w-[72%] max-w-[1080px] rounded-2xl sm:rounded-3xl overflow-hidden cursor-pointer opacity-40 hover:opacity-75 transition-all duration-300 z-0 shadow-sm border border-line"
+              className="absolute left-0 -translate-x-[68%] sm:-translate-x-[42%] md:-translate-x-[32%] lg:-translate-x-[24%] h-[82%] sm:h-[88%] w-[88%] sm:w-[80%] md:w-[72%] max-w-[1080px] rounded-2xl sm:rounded-3xl overflow-hidden cursor-pointer opacity-65 hover:opacity-95 transition-all duration-300 z-0 shadow-2xl border border-white/10 scale-[0.93] hover:scale-[0.95] group"
             >
               <img
                 src={prevEvent.banner || prevEvent.poster || '/images/events/demo-cyberpulse.jpg'}
                 alt=""
-                className="h-full w-full object-cover filter grayscale contrast-110"
+                className="h-full w-full object-cover group-hover:scale-102 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-black/40" />
+              {/* Soft directional scrim preserving vibrant color while maintaining focal hierarchy */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-black/40 to-black/70 group-hover:bg-black/20 transition-colors duration-300" />
             </div>
           )}
 
@@ -154,10 +160,10 @@ export const PanoramicHeroCarousel: React.FC<PanoramicHeroCarouselProps> = ({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                className="group relative h-full w-full overflow-hidden rounded-2xl sm:rounded-3xl border border-line-strong bg-card shadow-lg"
+                className="group relative h-full w-full overflow-hidden rounded-2xl sm:rounded-3xl border border-white/15 bg-black/90 shadow-[0_20px_60px_rgba(0,0,0,0.9)] ring-1 ring-white/10"
               >
                 {/* Background Panoramic Event Visual */}
-                <div className="absolute inset-0 overflow-hidden bg-paper-3">
+                <div className="absolute inset-0 overflow-hidden bg-black">
                   <img
                     src={activeEvent.banner || activeEvent.poster || '/images/events/demo-cyberpulse.jpg'}
                     alt={activeEvent.title}
@@ -222,32 +228,33 @@ export const PanoramicHeroCarousel: React.FC<PanoramicHeroCarouselProps> = ({
             </AnimatePresence>
           </div>
 
-          {/* Right Peeking Slide (Desk & Tablet) */}
+          {/* Right Peeking Slide (In Vivid Color, Scale & Subtle Scrim) */}
           {count > 1 && (
             <div
               onClick={() => move(1)}
               role="button"
               tabIndex={0}
               aria-label={`Next: ${nextEvent.title}`}
-              className="absolute right-0 translate-x-[68%] sm:translate-x-[42%] md:translate-x-[32%] lg:translate-x-[24%] h-[82%] sm:h-[88%] w-[88%] sm:w-[80%] md:w-[72%] max-w-[1080px] rounded-2xl sm:rounded-3xl overflow-hidden cursor-pointer opacity-40 hover:opacity-75 transition-all duration-300 z-0 shadow-sm border border-line"
+              className="absolute right-0 translate-x-[68%] sm:translate-x-[42%] md:translate-x-[32%] lg:translate-x-[24%] h-[82%] sm:h-[88%] w-[88%] sm:w-[80%] md:w-[72%] max-w-[1080px] rounded-2xl sm:rounded-3xl overflow-hidden cursor-pointer opacity-65 hover:opacity-95 transition-all duration-300 z-0 shadow-2xl border border-white/10 scale-[0.93] hover:scale-[0.95] group"
             >
               <img
                 src={nextEvent.banner || nextEvent.poster || '/images/events/demo-cyberpulse.jpg'}
                 alt=""
-                className="h-full w-full object-cover filter grayscale contrast-110"
+                className="h-full w-full object-cover group-hover:scale-102 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-black/40" />
+              {/* Soft directional scrim preserving vibrant color */}
+              <div className="absolute inset-0 bg-gradient-to-l from-black/20 via-black/40 to-black/70 group-hover:bg-black/20 transition-colors duration-300" />
             </div>
           )}
 
-          {/* Floating Circular Nav Controls (Left & Right - BookMyShow Signature) */}
+          {/* Floating Circular Nav Controls (BookMyShow Signature Glass) */}
           {count > 1 && (
             <>
               <button
                 type="button"
                 onClick={() => move(-1)}
                 aria-label="Previous slide"
-                className="absolute left-2 sm:left-4 z-20 grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-full bg-black/60 hover:bg-black/85 text-white backdrop-blur-md border border-white/20 shadow-md transition-all active:scale-90"
+                className="absolute left-2 sm:left-5 z-20 grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-full bg-black/75 hover:bg-black/95 text-white backdrop-blur-md border border-white/20 shadow-2xl transition-all hover:scale-105 active:scale-90"
               >
                 <CaretLeft size={20} weight="bold" />
               </button>
@@ -255,7 +262,7 @@ export const PanoramicHeroCarousel: React.FC<PanoramicHeroCarouselProps> = ({
                 type="button"
                 onClick={() => move(1)}
                 aria-label="Next slide"
-                className="absolute right-2 sm:right-4 z-20 grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-full bg-black/60 hover:bg-black/85 text-white backdrop-blur-md border border-white/20 shadow-md transition-all active:scale-90"
+                className="absolute right-2 sm:right-5 z-20 grid h-10 w-10 sm:h-12 sm:w-12 place-items-center rounded-full bg-black/75 hover:bg-black/95 text-white backdrop-blur-md border border-white/20 shadow-2xl transition-all hover:scale-105 active:scale-90"
               >
                 <CaretRight size={20} weight="bold" />
               </button>
@@ -265,7 +272,7 @@ export const PanoramicHeroCarousel: React.FC<PanoramicHeroCarouselProps> = ({
 
         {/* Carousel Pagination Dots */}
         {count > 1 && (
-          <div className="mt-4 flex items-center justify-center gap-2">
+          <div className="mt-5 flex items-center justify-center gap-2">
             {slides.map((slide, idx) => (
               <button
                 key={slide.id || idx}
@@ -274,8 +281,8 @@ export const PanoramicHeroCarousel: React.FC<PanoramicHeroCarouselProps> = ({
                 aria-label={`Jump to slide ${idx + 1}: ${slide.title}`}
                 className={`transition-all duration-300 rounded-full ${
                   idx === safeIndex
-                    ? 'w-7 h-2 bg-accent shadow-xs'
-                    : 'w-2 h-2 bg-line-strong hover:bg-ink-muted'
+                    ? 'w-8 h-2 bg-accent shadow-[0_0_12px_rgba(139,92,246,0.7)]'
+                    : 'w-2 h-2 bg-white/25 hover:bg-white/50'
                 }`}
               />
             ))}
