@@ -98,10 +98,10 @@
   --font-sans: 'Geist', system-ui, sans-serif;
   --font-display: var(--font-sans);
   --font-body: var(--font-sans);
-  --font-mono: var(--font-sans);
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   --space-xs: 4px; --space-sm: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 32px;
   --text-caption: 12px; --text-small: 14px; --text-body: 16px; --text-title: 28px;
-  --radius-small: 4px; --radius-control: 6px; --radius-card: 8px; --radius-dialog: 12px;
+  --radius-small: 4px; --radius-control: 8px; --radius-card: 24px; --radius-poster: 18px; --radius-panel: 24px; --radius-dialog: 16px;
   --shadow-raised: 0 8px 24px rgb(0 0 0 / 12%);
   --ease-out: cubic-bezier(0.2, 0, 0, 1);
   --dur-fast: 100ms; --dur-normal: 150ms; --dur-overlay: 180ms;
@@ -121,4 +121,4 @@ html, body, h1, h2, h3, h4, h5, h6 { font-family: var(--font-sans); }
   input, select, textarea { font-size: 16px; }
 }
 
-.font-mono { font-family: var(--font-sans); font-variant-numeric: tabular-nums; }
+.font-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }

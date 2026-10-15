@@ -1,8 +1,7 @@
 import { EventLink } from './EventLink'
 import { eventPriceLabel } from '@/lib/eventPresentation'
 import React from 'react'
-import { Link } from 'react-router-dom'
-import { BookmarkSimple, CheckCircle, MapPin } from '@/design-system/Icon'
+import { BookmarkSimple, CheckCircle, MapPin, CalendarBlank } from '@/design-system/Icon'
 import { Event } from '@/api'
 import { formatDate, formatTime } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -15,25 +14,116 @@ export interface EventTicketCardProps {
   className?: string
 }
 
-export const EventTicketCard: React.FC<EventTicketCardProps> = ({ event, onBookmark, isBookmarked = false, className = '' }) => {
+/**
+ * EventTicketCard
+ * Implements Section 4.3 Inset-Frame Solid Card (Hallmark Study DNA):
+ * - 100% Solid opaque surface with rounded-[24px] outer frame and 1px border.
+ * - Inset 12px margin framing the rounded-[18px] poster container.
+ * - Typographic core with verified organizer checkmark.
+ * - Bottom Split Utility Dock: Tabular metadata left + Rounded-full Pill CTA right.
+ */
+export const EventTicketCard: React.FC<EventTicketCardProps> = ({
+  event,
+  onBookmark,
+  isBookmarked = false,
+  className = '',
+}) => {
   const host = event.club?.name || event.organizerName || 'Organizer'
   const soldOut = event.seatsLeft === 0
   const price = eventPriceLabel(event)
+  const isVerified = event.club?.verified ?? false
+
   return (
-    <article className={cn('group flex min-w-0 flex-col rounded-panel border border-line bg-card p-3 transition-colors hover:border-line-strong', className)}>
-      <div className="relative aspect-[16/10] overflow-hidden rounded-poster bg-surface-subtle">
-        {event.poster ? <img src={event.poster} alt={event.title} loading="lazy" className="h-full w-full object-cover" /> : <PosterArt eventId={event.id} title={event.title} category={event.category} clubId={event.organizerId} />}
-        <span className="absolute left-3 top-3 rounded-full bg-card px-2.5 py-1 font-mono text-[10px] uppercase text-ink">{event.category || 'Event'}</span>
-        {onBookmark && <button type="button" onClick={() => onBookmark(event.id)} aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark event'} className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-card text-ink hover:text-accent"><BookmarkSimple size={17} weight={isBookmarked ? 'fill' : 'regular'} /></button>}
+    <article
+      data-testid="event-ticket-card"
+      className={cn(
+        'group flex min-w-0 flex-col rounded-[24px] border border-line bg-card p-3 shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-0.5',
+        className
+      )}
+    >
+      {/* Inset Media Frame (18px inner radius with 12px margin) */}
+      <div className="relative aspect-[16/10] overflow-hidden rounded-[18px] bg-surface-subtle border border-line/40">
+        {event.poster ? (
+          <img
+            src={event.poster}
+            alt={event.title}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-103"
+          />
+        ) : (
+          <PosterArt
+            eventId={event.id}
+            title={event.title}
+            category={event.category}
+            clubId={event.organizerId}
+          />
+        )}
+
+        {/* Category Pill Tag */}
+        <span className="absolute left-2.5 top-2.5 rounded-full bg-card/90 backdrop-blur-xs px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-ink border border-line/40 shadow-xs">
+          {event.category || 'Event'}
+        </span>
+
+        {/* Bookmark Trigger */}
+        {onBookmark && (
+          <button
+            type="button"
+            onClick={() => onBookmark(event.id)}
+            aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark event'}
+            className="absolute right-2.5 top-2.5 grid h-8 w-8 place-items-center rounded-full bg-card/90 backdrop-blur-xs text-ink hover:text-accent border border-line/40 shadow-xs transition-colors"
+          >
+            <BookmarkSimple size={15} weight={isBookmarked ? 'fill' : 'regular'} />
+          </button>
+        )}
       </div>
-      <div className="flex flex-1 flex-col px-1 pb-1 pt-4">
-        <div className="flex min-w-0 items-center gap-1.5 text-xs text-ink-soft"><span className="truncate">{host}</span>{event.club?.verified && <CheckCircle size={14} weight="fill" className="shrink-0 text-success" aria-label="Verified organizer" />}</div>
-        <h3 className="mt-1 line-clamp-2 text-lg font-semibold leading-snug text-ink"><EventLink event={event} className="hover:text-accent">{event.title}</EventLink></h3>
-        {event.kind === 'imported' && <p className="mt-1 text-xs text-ink-soft">On {event.provider || 'event provider'}</p>}
-        {event.subtitle && <p className="mt-1 line-clamp-2 text-sm text-ink-soft">{event.subtitle}</p>}
+
+      {/* Typographic Core */}
+      <div className="flex flex-1 flex-col px-1 pb-1 pt-3.5 space-y-1.5">
+        <div className="flex min-w-0 items-center gap-1.5 text-xs text-ink-soft">
+          <span className="truncate font-medium">{host}</span>
+          {isVerified && (
+            <CheckCircle size={14} weight="fill" className="shrink-0 text-emerald-500" aria-label="Verified organizer" />
+          )}
+        </div>
+
+        <h3 className="line-clamp-2 text-lg font-semibold leading-snug text-ink font-display group-hover:text-accent transition-colors">
+          <EventLink event={event} className="hover:text-accent">
+            {event.title}
+          </EventLink>
+        </h3>
+
+        {event.kind === 'imported' && (
+          <p className="text-xs text-ink-muted">On {event.provider || 'event provider'}</p>
+        )}
+
+        {(event.subtitle || event.description) && (
+          <p className="line-clamp-2 text-xs sm:text-sm text-ink-soft leading-relaxed">
+            {event.subtitle || event.description}
+          </p>
+        )}
+
+        {/* Split Utility Dock */}
         <div className="mt-auto flex items-end justify-between gap-2 border-t border-line pt-3 text-xs">
-          <div className="min-w-0 space-y-1 font-mono text-ink-soft"><p>{formatDate(event.startsAt)} · {formatTime(event.startsAt)}</p><p className="flex items-center gap-1 truncate"><MapPin size={12} aria-hidden="true" />{event.venue?.name || 'Venue to be announced'}</p><p className="text-ink">{soldOut ? 'Sold out' : event.seatsLeft != null && event.seatsLeft <= 14 ? event.seatsLeft + ' passes left' : price}</p></div>
-          <EventLink event={event} className="shrink-0 rounded-input bg-ink px-3 py-2 font-semibold text-paper hover:bg-accent hover:text-on-accent active:scale-[0.98]">{event.kind === 'imported' ? 'View event' : 'Details'}</EventLink>
+          <div className="min-w-0 space-y-1 font-mono text-ink-soft text-[11px]">
+            <p className="flex items-center gap-1.5 truncate">
+              <CalendarBlank size={13} className="shrink-0 text-ink-muted" aria-hidden="true" />
+              <span>{formatDate(event.startsAt)} · {formatTime(event.startsAt)}</span>
+            </p>
+            <p className="flex items-center gap-1.5 truncate">
+              <MapPin size={13} className="shrink-0 text-ink-muted" aria-hidden="true" />
+              <span className="truncate">{event.venue?.name || (event.isOnline ? 'Online' : 'Venue TBA')}</span>
+            </p>
+            <p className="font-semibold text-ink">
+              {soldOut ? 'Sold out' : event.seatsLeft != null && event.seatsLeft <= 14 ? `${event.seatsLeft} passes left` : price}
+            </p>
+          </div>
+
+          <EventLink
+            event={event}
+            className="shrink-0 rounded-full bg-accent px-4 py-1.5 font-mono text-xs font-semibold text-white hover:bg-accent-hover active:scale-[0.98] transition-all shadow-xs"
+          >
+            {event.kind === 'imported' ? 'Book ↗' : 'Book +'}
+          </EventLink>
         </div>
       </div>
     </article>

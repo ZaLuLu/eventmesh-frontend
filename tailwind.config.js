@@ -101,7 +101,7 @@ export default {
         danger: 'var(--color-danger)',
       },
       fontFamily: {
-        display: ['var(--font-sans)'], accent: ['var(--font-sans)'], sans: ['var(--font-sans)'], body: ['var(--font-sans)'], mono: ['var(--font-sans)'],
+        display: ['var(--font-sans)'], accent: ['var(--font-sans)'], sans: ['var(--font-sans)'], body: ['var(--font-sans)'], mono: ['var(--font-mono)', 'monospace'],
       },
       fontSize: {
         caption: ['0.75rem', { lineHeight: '1rem' }],
@@ -122,8 +122,8 @@ export default {
       },
       borderRadius: {
         sm: 'var(--radius-small)', DEFAULT: 'var(--radius-control)', md: 'var(--radius-control)',
-        lg: 'var(--radius-card)', ticket: 'var(--radius-card)', poster: 'var(--radius-card)',
-        input: 'var(--radius-control)', panel: 'var(--radius-card)', full: '9999px', pill: '9999px',
+        lg: 'var(--radius-card)', ticket: 'var(--radius-card)', poster: 'var(--radius-poster, 18px)',
+        input: 'var(--radius-control)', panel: 'var(--radius-panel, 24px)', full: '9999px', pill: '9999px',
       },
       maxWidth: {
         container: '1280px',

@@ -322,16 +322,16 @@ export const EventCard: React.FC<EventCardProps> = ({
     <article
       data-testid="event-card-stacked"
       className={cn(
-        'group relative flex flex-col justify-between bg-card rounded-xl border border-line p-3 hover:border-accent transition-all shadow-xs',
+        'group relative flex flex-col justify-between bg-card rounded-[24px] border border-line p-3 hover:border-line-strong transition-all duration-300 shadow-xs hover:shadow-md hover:-translate-y-0.5',
         className
       )}
     >
       <div>
-        {/* Floating Poster */}
+        {/* Inset Framed Poster (18px inner radius, 12px margin) */}
         <div className="relative mb-3">
           <div
             className={cn(
-              'relative w-full overflow-hidden rounded-lg bg-surface-subtle border border-line group-hover:border-accent transition-colors flex-shrink-0',
+              'relative w-full overflow-hidden rounded-[18px] bg-surface-subtle border border-line/40 transition-colors flex-shrink-0',
               aspectClass
             )}
           >
@@ -349,34 +349,34 @@ export const EventCard: React.FC<EventCardProps> = ({
             <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none z-10 font-mono text-xs">
               <div className="flex items-center gap-1.5 flex-wrap pointer-events-auto">
                 {isPromoted && (
-                  <span className="px-2 py-0.5 rounded-full bg-surface text-accent border border-line font-medium text-[10px]">
+                  <span className="px-2.5 py-1 rounded-full bg-card/90 text-accent border border-line/40 font-mono font-bold text-[10px] tracking-wider uppercase shadow-xs">
                     PROMOTED
                   </span>
                 )}
                 {isFillingFast && (
-                  <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[10px] font-medium">
+                  <span className="px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[10px] font-mono font-medium shadow-xs">
                     Filling fast
                   </span>
                 )}
                 {isFree ? (
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-medium">
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-medium shadow-xs">
                     Free
                   </span>
                 ) : (
-                  <span className="px-2 py-0.5 rounded-full bg-surface text-ink border border-line text-[10px] font-medium shadow-xs">
+                  <span className="px-2.5 py-1 rounded-full bg-card/90 text-ink border border-line/40 text-[10px] font-mono font-medium shadow-xs">
                     {formatPrice(event)}
                   </span>
                 )}
               </div>
 
-              <div className="flex items-center gap-1 pointer-events-auto">
+              <div className="flex items-center gap-1.5 pointer-events-auto">
                 {onPeek && (
                   <button
                     type="button"
                     onClick={handlePeekClick}
                     title="Quick Preview"
                     aria-label="Quick preview event"
-                    className="w-7 h-7 rounded-full flex items-center justify-center bg-surface border border-line text-ink hover:text-accent hover:border-accent transition-colors shadow-xs"
+                    className="w-7 h-7 rounded-full flex items-center justify-center bg-card/90 border border-line/40 text-ink hover:text-accent hover:border-accent transition-colors shadow-xs"
                   >
                     <Eye className="w-3.5 h-3.5" />
                   </button>
@@ -389,7 +389,7 @@ export const EventCard: React.FC<EventCardProps> = ({
                     'w-7 h-7 rounded-full flex items-center justify-center border transition-colors duration-150 shadow-xs',
                     isBookmarked
                       ? 'bg-accent/15 text-accent border-accent'
-                      : 'bg-surface text-ink-soft border-line hover:text-accent hover:border-accent'
+                      : 'bg-card/90 text-ink-soft border-line/40 hover:text-accent hover:border-accent'
                   )}
                 >
                   <BookmarkSimple className={cn('w-3.5 h-3.5', isBookmarked && 'fill-accent')} />
@@ -400,16 +400,26 @@ export const EventCard: React.FC<EventCardProps> = ({
         </div>
 
         {/* Card Body */}
-        <div>
-          {/* Date stamp */}
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-mono font-medium text-accent uppercase tracking-wider">
-              {dateFormatted}
+        <div className="px-1 space-y-1.5">
+          {/* Host & Verified */}
+          <div className="flex items-center gap-1.5 text-xs text-ink-soft">
+            <span
+              className="w-2 h-2 rounded-full flex-shrink-0"
+              style={{ backgroundColor: clubColor }}
+              aria-hidden="true"
+            />
+            <span className="text-ink truncate font-medium">
+              {event.club?.name || event.organizerName || 'Autonomous Club'}
             </span>
+            {isVerified && (
+              <span title="Verified Club" className="inline-flex items-center text-emerald-500 flex-shrink-0">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+              </span>
+            )}
           </div>
 
           {/* Event Title */}
-          <h3 className="font-display text-base sm:text-[17px] text-ink font-semibold leading-snug line-clamp-2 mb-2 group-hover:text-accent transition-colors">
+          <h3 className="font-display text-base sm:text-lg text-ink font-semibold leading-snug line-clamp-2 group-hover:text-accent transition-colors">
             <EventLink
               event={event}
               className="focus:outline-none focus-visible:underline"
@@ -420,30 +430,27 @@ export const EventCard: React.FC<EventCardProps> = ({
         </div>
       </div>
 
-      {/* Card Footer: Club attribution & Venue */}
-      <div className="pt-2 mt-auto border-t border-line flex items-center justify-between text-xs font-mono text-ink-soft">
-        <div className="flex items-center gap-1.5 min-w-0 pr-2">
-          <span
-            className="w-2 h-2 rounded-full flex-shrink-0"
-            style={{ backgroundColor: clubColor }}
-            aria-hidden="true"
-          />
-          <span className="text-ink truncate">
-            {event.club?.name || event.organizerName || 'Autonomous Club'}
-          </span>
-          {isVerified && (
-            <span title="Verified Club" className="inline-flex items-center text-accent flex-shrink-0">
-              <CheckCircle className="w-3.5 h-3.5 text-accent" />
-            </span>
+      {/* Card Split Utility Dock */}
+      <div className="pt-3 mt-4 border-t border-line px-1 flex items-center justify-between text-xs font-mono text-ink-soft">
+        <div className="min-w-0 space-y-0.5 text-[11px]">
+          <div className="flex items-center gap-1.5 text-accent">
+            <CalendarBlank className="w-3 h-3 text-accent" />
+            <span className="truncate">{dateFormatted}</span>
+          </div>
+          {event.venue?.name && (
+            <div className="flex items-center gap-1.5 text-ink-muted">
+              <MapPin className="w-3 h-3 text-ink-muted flex-shrink-0" />
+              <span className="truncate max-w-[130px]">{event.venue.name}</span>
+            </div>
           )}
         </div>
 
-        {event.venue?.name && (
-          <span className="truncate flex items-center gap-1 text-ink-muted max-w-[40%] text-right">
-            <MapPin className="w-3.5 h-3.5 text-accent flex-shrink-0" />
-            <span className="truncate">{event.venue.name}</span>
-          </span>
-        )}
+        <EventLink
+          event={event}
+          className="flex-shrink-0 rounded-full bg-accent px-3.5 py-1.5 font-mono text-xs font-semibold text-white hover:bg-accent-hover active:scale-[0.98] transition-all shadow-xs"
+        >
+          {event.kind === 'imported' ? 'Book ↗' : 'Book +'}
+        </EventLink>
       </div>
     </article>
   )
