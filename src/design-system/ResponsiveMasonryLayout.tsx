@@ -126,15 +126,15 @@ export const ResponsiveMasonryLayout: React.FC<ResponsiveMasonryLayoutProps> = (
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             {totalCount != null && (
-              <span className="font-mono text-xs text-ink-muted hidden sm:inline-block">
+              <span className="font-mono text-xs text-ink-muted hidden md:inline-block">
                 {totalCount} total events
               </span>
             )}
             <Link
               to="/explore"
-              className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-accent hover:text-accent-hover self-start sm:self-auto"
+              className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-accent hover:text-accent-hover whitespace-nowrap self-start sm:self-auto"
             >
               <span>Explore full directory</span>
               <ArrowRight size={13} weight="bold" />
