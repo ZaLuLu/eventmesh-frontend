@@ -162,21 +162,21 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
       </div>
 
       {/* Centered Ticket Stage with Responsive Scaling Container */}
-      <div className="w-full max-w-[880px] overflow-visible flex justify-center py-2">
+      <div className="w-full max-w-[880px] overflow-visible flex justify-center items-center py-4 my-auto">
         <TearTicket
           width={840}
           height={360}
           stubSize={260}
           radius={16}
-          holes={12}
-          holeSize={6}
-          notch={6}
-          roughness={0.8}
-          tearAngle={30}
-          stretch={30}
-          resistance={0.35}
+          holes={14}
+          holeSize={7}
+          notch={8}
+          roughness={0.7}
+          tearAngle={24}
+          stretch={22}
+          resistance={0.2}
           tilt={true}
-          tiltMax={6}
+          tiltMax={5}
           torn={isPhysicallyTorn}
           disabled={backendAdmitted || disabled}
           background="var(--card)"
@@ -184,7 +184,7 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
           color="var(--ink)"
           borderColor="var(--line)"
           borderWidth={1.5}
-          className="shadow-2xl"
+          className="shadow-2xl mx-auto"
           onTear={triggerVisualTear}
           stub={
             /* Physical Gate Stub */

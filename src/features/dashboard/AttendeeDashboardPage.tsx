@@ -362,9 +362,9 @@ export const AttendeeDashboardPage: React.FC = () => {
                     imageFit="cover"
                     cardColor="#0B0814"
                     strapColor="#7C3AED"
-                    strapWidth={0.16}
-                    strapLength={0.28}
-                    size={0.88}
+                    strapWidth={0.15}
+                    strapLength={0.16}
+                    size={0.72}
                     metal="silver"
                     interactive={true}
                     onCardClick={handleCopyRegNo}

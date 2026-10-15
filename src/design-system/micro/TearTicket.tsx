@@ -409,31 +409,31 @@ export function TearTicket({
       let intact = 0;
       for (let i = 0; i < count; i += 1) if (!s.snapped[i]) intact += 1;
       const hold = count ? intact / count : 0;
-      const follow = 0.92 * (1 - clamp(c.resistance, 0, 0.95) * hold);
+      const follow = 0.96 * (1 - clamp(c.resistance, 0, 0.7) * hold);
       const a = Math.atan2(s.point.y - s.hinge.y, s.point.x - s.hinge.x);
       const want = clamp(wrap(a - s.a0) * s.sign * follow, 0, limit + 0.1);
-      s.theta += (want - s.theta) * (1 - Math.exp(-dt / 0.035));
+      s.theta += (want - s.theta) * (1 - Math.exp(-dt / 0.02));
       const up = c.geo.vertical;
-      const away = clamp(((up ? s.point.y - s.start.y : s.point.x - s.start.x) || 0) * 0.05, -2, 4);
-      const side = clamp(((up ? s.point.x - s.start.x : s.point.y - s.start.y) || 0) * 0.05, -3, 3);
+      const away = clamp(((up ? s.point.y - s.start.y : s.point.x - s.start.x) || 0) * 0.15, -4, 12);
+      const side = clamp(((up ? s.point.x - s.start.x : s.point.y - s.start.y) || 0) * 0.15, -8, 8);
       const px = up ? side : away;
       const py = up ? away : side;
-      s.sx += (px - s.sx) * (1 - Math.exp(-dt / 0.05));
-      s.sy += (py - s.sy) * (1 - Math.exp(-dt / 0.05));
+      s.sx += (px - s.sx) * (1 - Math.exp(-dt / 0.025));
+      s.sy += (py - s.sy) * (1 - Math.exp(-dt / 0.025));
       const slack = Math.hypot(s.sx, s.sy);
       let left = 0;
       c.geo.bridges.forEach((b, i) => {
         if (s.snapped[i]) return;
         const d = Math.abs(b.mid - s.hingeV);
-        if (2 * d * Math.sin(s.theta / 2) + slack > c.stretch || s.theta >= limit) {
+        if (2 * d * Math.sin(s.theta / 2) + slack > (c.stretch * 0.6) || s.theta >= (limit * 0.7) || slack > 20) {
           s.snapped[i] = true;
           s.snapAt[i] = now;
-          s.bv -= 560 / c.geo.bridges.length;
+          s.bv -= 720 / c.geo.bridges.length;
         } else left += 1;
       });
       if (left === 0) {
         s.phase = 'free';
-        s.bv -= 150;
+        s.bv -= 250;
       }
     } else if (s.phase === 'free') {
       const cos = Math.cos(s.theta * s.sign);

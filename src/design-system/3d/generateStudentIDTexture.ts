@@ -75,122 +75,129 @@ export function generateStudentIDTexture(data: StudentIDData, side: 'front' | 'b
 
   // 3. Top Header Bar (Royal Purple Accent)
   ctx.fillStyle = '#7C3AED'
-  ctx.fillRect(0, 0, width, 220)
+  ctx.fillRect(0, 0, width, 240)
 
   // Top Lanyard Slot Aperture Indicator
   ctx.fillStyle = 'rgba(0, 0, 0, 0.45)'
   ctx.beginPath()
-  ctx.roundRect((width - 240) / 2, 28, 240, 44, 22)
+  ctx.roundRect((width - 260) / 2, 28, 260, 48, 24)
   ctx.fill()
 
-  // Header Typography
+  // Header Typography - Crisp & Bold
   ctx.fillStyle = '#FFFFFF'
-  ctx.font = '800 36px "Geist", -apple-system, sans-serif'
+  ctx.font = '900 44px "Geist", -apple-system, sans-serif'
   ctx.textAlign = 'center'
-  ctx.fillText('EVENTMESH · CAMPUS IDENTITY', width / 2, 136)
+  ctx.fillText('EVENTMESH · CAMPUS IDENTITY', width / 2, 142)
 
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'
-  ctx.font = '600 24px "JetBrains Mono", monospace'
-  ctx.fillText(data.campus || 'CENTRAL UNIVERSITY CAMPUS', width / 2, 182)
+  ctx.fillStyle = '#EDE9FE'
+  ctx.font = '700 28px "JetBrains Mono", monospace'
+  ctx.fillText(data.campus || 'CENTRAL UNIVERSITY CAMPUS', width / 2, 194)
 
   // 4. Member Photo / Avatar Frame
   const photoSize = 340
   const photoX = (width - photoSize) / 2
-  const photoY = 270
+  const photoY = 280
 
   // Photo border & background
   ctx.fillStyle = '#1A1333'
   ctx.beginPath()
-  ctx.roundRect(photoX, photoY, photoSize, photoSize, 28)
+  ctx.roundRect(photoX, photoY, photoSize, photoSize, 32)
   ctx.fill()
 
-  ctx.strokeStyle = '#8B5CF6'
-  ctx.lineWidth = 3
+  ctx.strokeStyle = '#A78BFA'
+  ctx.lineWidth = 4
   ctx.stroke()
 
   // Monogram / Avatar representation
-  ctx.fillStyle = '#8B5CF6'
-  ctx.font = '800 130px "Geist", sans-serif'
+  ctx.fillStyle = '#A78BFA'
+  ctx.font = '900 150px "Geist", sans-serif'
   ctx.textAlign = 'center'
-  ctx.fillText((data.name || 'U')[0].toUpperCase(), width / 2, photoY + 225)
+  ctx.fillText((data.name || 'U')[0].toUpperCase(), width / 2, photoY + 235)
 
-  // 5. Member Name & Role
+  // 5. Member Name & Role (Dynamic Auto-Scale so NO ellipsis truncation occurs)
   ctx.textAlign = 'center'
   ctx.fillStyle = '#FFFFFF'
-  ctx.font = '800 52px "Geist", sans-serif'
-  const displayName = data.name.length > 20 ? data.name.slice(0, 20) + '…' : data.name
-  ctx.fillText(displayName, width / 2, 690)
+  
+  // Calculate dynamic font size so full name fits comfortably
+  const rawName = data.name || 'Student Member'
+  let nameFontSize = 64
+  ctx.font = `900 ${nameFontSize}px "Geist", sans-serif`
+  while (ctx.measureText(rawName).width > width - 160 && nameFontSize > 38) {
+    nameFontSize -= 2
+    ctx.font = `900 ${nameFontSize}px "Geist", sans-serif`
+  }
+  ctx.fillText(rawName, width / 2, 695)
 
   // Role Pill
   const roleText = (data.role || 'ATTENDEE').toUpperCase()
-  ctx.fillStyle = 'rgba(124, 58, 237, 0.25)'
-  ctx.strokeStyle = '#8B5CF6'
-  ctx.lineWidth = 2
+  ctx.fillStyle = 'rgba(124, 58, 237, 0.35)'
+  ctx.strokeStyle = '#A78BFA'
+  ctx.lineWidth = 2.5
   ctx.beginPath()
-  ctx.roundRect(width / 2 - 130, 725, 260, 50, 25)
+  ctx.roundRect(width / 2 - 150, 730, 300, 56, 28)
   ctx.fill()
   ctx.stroke()
 
-  ctx.fillStyle = '#C4B5FD'
-  ctx.font = '700 22px "JetBrains Mono", monospace'
-  ctx.fillText(roleText, width / 2, 758)
+  ctx.fillStyle = '#DDD6FE'
+  ctx.font = '800 26px "JetBrains Mono", monospace'
+  ctx.fillText(roleText, width / 2, 768)
 
   // 6. High-Visibility Dedicated Registration Number Slot (Click to Copy)
-  const regBoxY = 820
-  const regBoxX = 80
-  const regBoxW = width - 160
-  const regBoxH = 150
+  const regBoxY = 825
+  const regBoxX = 70
+  const regBoxW = width - 140
+  const regBoxH = 165
 
-  ctx.fillStyle = '#1A1333'
+  ctx.fillStyle = '#150E28'
   ctx.beginPath()
-  ctx.roundRect(regBoxX, regBoxY, regBoxW, regBoxH, 24)
+  ctx.roundRect(regBoxX, regBoxY, regBoxW, regBoxH, 26)
   ctx.fill()
 
   ctx.strokeStyle = '#8B5CF6'
-  ctx.lineWidth = 3.5
+  ctx.lineWidth = 4
   ctx.stroke()
 
   ctx.textAlign = 'left'
-  ctx.fillStyle = '#C4B5FD'
-  ctx.font = '700 22px "JetBrains Mono", monospace'
-  ctx.fillText('STUDENT REGISTRATION ID · CLICK TO COPY', regBoxX + 36, regBoxY + 50)
+  ctx.fillStyle = '#DDD6FE'
+  ctx.font = '800 24px "JetBrains Mono", monospace'
+  ctx.fillText('STUDENT REGISTRATION ID · CLICK TO COPY', regBoxX + 40, regBoxY + 54)
 
   ctx.fillStyle = '#FFFFFF'
-  ctx.font = '800 48px "JetBrains Mono", monospace'
-  ctx.fillText(data.registrationNumber || 'EM-2026-0814', regBoxX + 36, regBoxY + 112)
+  ctx.font = '900 54px "JetBrains Mono", monospace'
+  ctx.fillText(data.registrationNumber || 'EM-2026-0814', regBoxX + 40, regBoxY + 124)
 
   // Copy Badge Button on right
-  const copyBtnX = regBoxX + regBoxW - 220
-  const copyBtnY = regBoxY + 40
+  const copyBtnX = regBoxX + regBoxW - 210
+  const copyBtnY = regBoxY + 45
   ctx.fillStyle = '#7C3AED'
   ctx.beginPath()
-  ctx.roundRect(copyBtnX, copyBtnY, 180, 70, 35)
+  ctx.roundRect(copyBtnX, copyBtnY, 170, 75, 37.5)
   ctx.fill()
 
   ctx.fillStyle = '#FFFFFF'
-  ctx.font = '800 22px "JetBrains Mono", monospace'
+  ctx.font = '900 26px "JetBrains Mono", monospace'
   ctx.textAlign = 'center'
-  ctx.fillText('📋 COPY', copyBtnX + 90, copyBtnY + 44)
+  ctx.fillText('📋 COPY', copyBtnX + 85, copyBtnY + 47)
 
   // 7. Academic Details Rows
-  const infoStartY = 1030
-  const leftColX = 110
-  const rightColX = width - 110
+  const infoStartY = 1045
+  const leftColX = 90
+  const rightColX = width - 90
 
   const drawRow = (label: string, value: string, y: number) => {
     ctx.textAlign = 'left'
-    ctx.fillStyle = 'rgba(244, 242, 248, 0.65)'
-    ctx.font = '600 24px "JetBrains Mono", monospace'
+    ctx.fillStyle = '#A78BFA'
+    ctx.font = '800 28px "JetBrains Mono", monospace'
     ctx.fillText(label, leftColX, y)
 
     ctx.textAlign = 'right'
     ctx.fillStyle = '#FFFFFF'
-    ctx.font = '700 26px "Geist", sans-serif'
+    ctx.font = '800 32px "Geist", sans-serif'
     ctx.fillText(value, rightColX, y)
 
     // Hairline divider
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)'
-    ctx.lineWidth = 1.5
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)'
+    ctx.lineWidth = 2
     ctx.beginPath()
     ctx.moveTo(leftColX, y + 26)
     ctx.lineTo(rightColX, y + 26)
@@ -199,30 +206,30 @@ export function generateStudentIDTexture(data: StudentIDData, side: 'front' | 'b
 
   drawRow('DISCIPLINE', data.degreeBranch || 'Computer Science & Systems', infoStartY)
   if (data.semester) {
-    drawRow('SEMESTER', `Semester 0${data.semester}`, infoStartY + 90)
+    drawRow('SEMESTER', `Semester 0${data.semester}`, infoStartY + 100)
   }
-  drawRow('COLLEGE EMAIL', data.email || 'student@campus.edu', infoStartY + (data.semester ? 180 : 90))
+  drawRow('COLLEGE EMAIL', data.email || 'student@campus.edu', infoStartY + (data.semester ? 200 : 100))
 
   // 8. Bottom Verification Bar
-  const bottomY = 1530
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.04)'
+  const bottomY = 1520
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.06)'
   ctx.beginPath()
-  ctx.roundRect(80, bottomY, width - 160, 180, 24)
+  ctx.roundRect(70, bottomY, width - 140, 190, 26)
   ctx.fill()
 
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'
-  ctx.lineWidth = 2
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)'
+  ctx.lineWidth = 2.5
   ctx.stroke()
 
   ctx.textAlign = 'left'
-  ctx.fillStyle = '#10B981'
-  ctx.font = '800 24px "JetBrains Mono", monospace'
-  ctx.fillText('IDENTITY STATUS: VERIFIED ACTIVE ✓', 120, bottomY + 64)
+  ctx.fillStyle = '#34D399'
+  ctx.font = '900 28px "JetBrains Mono", monospace'
+  ctx.fillText('IDENTITY STATUS: VERIFIED ACTIVE ✓', 110, bottomY + 68)
 
-  ctx.fillStyle = 'rgba(244, 242, 248, 0.75)'
-  ctx.font = '22px "JetBrains Mono", monospace'
-  ctx.fillText('EventMesh Verified Student Cryptographic Key', 120, bottomY + 110)
-  ctx.fillText('Autonomous Cross-Society Admission Pass', 120, bottomY + 144)
+  ctx.fillStyle = '#F4F2F8'
+  ctx.font = '600 26px "JetBrains Mono", monospace'
+  ctx.fillText('EventMesh Verified Student Cryptographic Key', 110, bottomY + 118)
+  ctx.fillText('Autonomous Cross-Society Admission Pass', 110, bottomY + 156)
 
   const result = canvas.toDataURL('image/png')
   if (textureCache.size >= 16) textureCache.delete(textureCache.keys().next().value as string)

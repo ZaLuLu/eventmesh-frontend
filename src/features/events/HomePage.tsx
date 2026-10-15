@@ -173,35 +173,61 @@ export const HomePage: React.FC = () => {
         subtitle="Regular club sessions, technical workshops, and daily campus activities"
       />
 
-      {/* 4. Filter Toolbar & Search Bar */}
-      <section aria-label="Search events" className="sticky top-16 z-30 border-b border-line bg-paper py-4">
-        <div className="mx-auto max-w-7xl space-y-5 px-4 sm:px-6">
+      {/* 4. Campus Collectives & Societies (Moved up so it introduces clubs before search discovery) */}
+      <section className="relative w-full py-10 sm:py-14 border-b border-line bg-paper-2">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
           <SectionHeader
-            title="Explore All Events & Sessions"
-            subtitle="Filter by category, timing, or search for specific technologies."
-            badge="CAMPUS DIRECTORY"
+            title="Campus Collectives & Societies"
+            subtitle="Autonomous student guilds, competitive programming labs, and creative code studios."
+            badge="TOP SOCIETIES"
+            action={
+              <Link
+                to="/clubs"
+                className="text-xs sm:text-sm font-semibold text-accent hover:underline inline-flex items-center gap-1"
+              >
+                <span>View all clubs</span>
+                <ArrowRight size={14} weight="bold" />
+              </Link>
+            }
           />
+          <ClubsStrip />
+        </div>
+      </section>
 
-          <nav aria-label="Browse events by date" className="flex flex-wrap gap-2">
-            <Link
-              to="/explore?date=today"
-              className="rounded-full border border-line bg-card px-3.5 py-1.5 text-xs font-medium text-ink hover:border-line-strong hover:bg-surface-subtle transition-colors"
-            >
-              Today
-            </Link>
-            <Link
-              to="/explore?date=weekend"
-              className="rounded-full border border-line bg-card px-3.5 py-1.5 text-xs font-medium text-ink hover:border-line-strong hover:bg-surface-subtle transition-colors"
-            >
-              This weekend
-            </Link>
-            <Link
-              to="/explore?date=next-week"
-              className="rounded-full border border-line bg-card px-3.5 py-1.5 text-xs font-medium text-ink hover:border-line-strong hover:bg-surface-subtle transition-colors"
-            >
-              Next week
-            </Link>
-          </nav>
+      {/* 5. Streamlined Filter Toolbar & Search Bar directly scoping the Discovery Directory */}
+      <section aria-label="Search events" className="sticky top-16 z-30 border-b border-line bg-paper/95 backdrop-blur-md py-3 shadow-xs">
+        <div className="mx-auto max-w-7xl space-y-3 px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg sm:text-xl font-bold tracking-tight text-ink">
+                Explore Events & Sessions
+              </h2>
+              <p className="text-xs text-ink-soft hidden sm:block">
+                Filter by category, timing, or search for specific technologies
+              </p>
+            </div>
+
+            <nav aria-label="Browse events by date" className="flex flex-wrap items-center gap-2">
+              <Link
+                to="/explore?date=today"
+                className="rounded-full border border-line bg-card px-3 py-1 text-xs font-medium text-ink hover:border-line-strong hover:bg-surface-subtle transition-colors"
+              >
+                Today
+              </Link>
+              <Link
+                to="/explore?date=weekend"
+                className="rounded-full border border-line bg-card px-3 py-1 text-xs font-medium text-ink hover:border-line-strong hover:bg-surface-subtle transition-colors"
+              >
+                This weekend
+              </Link>
+              <Link
+                to="/explore?date=next-week"
+                className="rounded-full border border-line bg-card px-3 py-1 text-xs font-medium text-ink hover:border-line-strong hover:bg-surface-subtle transition-colors"
+              >
+                Next week
+              </Link>
+            </nav>
+          </div>
 
           <EventsToolbar
             category={category}
@@ -245,29 +271,8 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 5. Campus Collectives & Societies */}
-      <section className="relative w-full py-10 sm:py-14 border-b border-line bg-paper-2">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
-          <SectionHeader
-            title="Campus Collectives & Societies"
-            subtitle="Autonomous student guilds, competitive programming labs, and creative code studios."
-            badge="TOP SOCIETIES"
-            action={
-              <Link
-                to="/clubs"
-                className="text-xs sm:text-sm font-semibold text-accent hover:underline inline-flex items-center gap-1"
-              >
-                <span>View all clubs</span>
-                <ArrowRight size={14} weight="bold" />
-              </Link>
-            }
-          />
-          <ClubsStrip />
-        </div>
-      </section>
-
-      {/* 6. Discovery Directory & Filter Toolbar */}
-      <section id="discovery" className="relative w-full py-10 sm:py-16 bg-paper">
+      {/* 6. Discovery Directory */}
+      <section id="discovery" className="relative w-full py-8 sm:py-12 bg-paper">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
           {loadError ? (
             <p role="alert" className="rounded-[24px] border border-line bg-card p-6 text-center text-ink-soft">
