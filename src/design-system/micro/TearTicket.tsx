@@ -8,14 +8,112 @@ import React, {
   useState,
   type CSSProperties,
   type KeyboardEvent,
-  type PointerEvent,
-  type ReactNode
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
 } from 'react';
 import { motion, useMotionTemplate, useReducedMotion, useSpring, useTransform } from 'motion/react';
 
 import './TearTicket.css';
 
-export type TearTicketOrientation = 'horizontal' | 'vertical';
+const TILT_SPRING = { stiffness: 220, damping: 24, mass: 0.6 };
+const GRAVITY = 2400;
+const ART_INSET = 8;
+const ART_SPAN = 0.78;
+const RETRACT = 0.17;
+
+const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v));
+const rad = (deg: number): number => (deg * Math.PI) / 180;
+const wrap = (a: number): number => Math.atan2(Math.sin(a), Math.cos(a));
+const noise = (seed: number) => {
+  let s = seed | 0;
+  return () => {
+    s = (s + 0x6d2b79f5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+};
+const f = (n: number): string => n.toFixed(2);
+
+export interface Bridge {
+  y0: number;
+  y1: number;
+  mid: number;
+  pts: [number, number][];
+  x: number;
+  y: number;
+}
+
+export interface TicketGeometry {
+  vertical: boolean;
+  cross: number;
+  body: string;
+  stub: string;
+  bridges: Bridge[];
+  ends: Array<{ x: number; y: number; v: number }>;
+  bodyOutline: string;
+  stubOutline: string;
+}
+
+export const buildGeometry = (
+  W: number,
+  H: number,
+  S: number,
+  R: number,
+  holes: number,
+  hole: number,
+  notch: number,
+  rough: number,
+  vertical: boolean
+): TicketGeometry => {
+  const main = vertical ? H : W;
+  const cross = vertical ? W : H;
+  const x = main - S;
+  const hr = hole / 2;
+  const n = Math.max(1, Math.round(holes));
+  const span = cross - 2 * notch;
+  const bridge = Math.max(2, (span - n * hole) / (n + 1));
+  const random = noise(n * 7919 + Math.round(cross));
+  const at = (u: number, v: number) => (vertical ? { x: v, y: u } : { x: u, y: v });
+  const pt = (u: number, v: number) => (vertical ? `${f(v)},${f(u)}` : `${f(u)},${f(v)}`);
+  const arc = (r: number, sweep: number, u: number, v: number) =>
+    `A${f(r)},${f(r)} 0 0 ${vertical ? 1 - sweep : sweep} ${pt(u, v)}`;
+  const bridges: Bridge[] = [];
+  for (let i = 0; i <= n; i += 1) {
+    const y0 = notch + i * (bridge + hole);
+    const y1 = y0 + bridge;
+    const steps = Math.max(2, Math.round(bridge / 2.2));
+    const pts: [number, number][] = [];
+    for (let k = 1; k < steps; k += 1) {
+      pts.push([x + (random() - 0.5) * 2 * rough, y0 + (bridge * k) / steps]);
+    }
+    bridges.push({ y0, y1, mid: (y0 + y1) / 2, pts, ...at(x, (y0 + y1) / 2) });
+  }
+  let body = `M${pt(R, 0)}L${pt(x - notch, 0)}${arc(notch, 0, x, notch)}`;
+  bridges.forEach((b, i) => {
+    b.pts.forEach(p => {
+      body += `L${pt(p[0], p[1])}`;
+    });
+    body += `L${pt(x, b.y1)}`;
+    if (i < n) body += arc(hr, 0, x, b.y1 + hole);
+  });
+  body += `${arc(notch, 0, x - notch, cross)}L${pt(R, cross)}${arc(R, 1, 0, cross - R)}L${pt(0, R)}${arc(R, 1, R, 0)}Z`;
+  let stub = `M${pt(x + notch, 0)}L${pt(main - R, 0)}${arc(R, 1, main, R)}L${pt(main, cross - R)}${arc(R, 1, main - R, cross)}L${pt(x + notch, cross)}${arc(notch, 0, x, cross - notch)}`;
+  for (let i = n; i >= 0; i -= 1) {
+    const b = bridges[i];
+    for (let k = b.pts.length - 1; k >= 0; k -= 1) stub += `L${pt(b.pts[k][0], b.pts[k][1])}`;
+    stub += `L${pt(x, b.y0)}`;
+    if (i > 0) stub += arc(hr, 0, x, b.y0 - hole);
+  }
+  stub += `${arc(notch, 0, x + notch, 0)}Z`;
+  const ends = [
+    { ...at(x, notch), v: notch },
+    { ...at(x, cross - notch), v: cross - notch }
+  ];
+  const bodyOutline = `M${pt(x, cross - notch)}${arc(notch, 0, x - notch, cross)}L${pt(R, cross)}${arc(R, 1, 0, cross - R)}L${pt(0, R)}${arc(R, 1, R, 0)}L${pt(x - notch, 0)}${arc(notch, 0, x, notch)}`;
+  const stubOutline = `M${pt(x, notch)}${arc(notch, 0, x + notch, 0)}L${pt(main - R, 0)}${arc(R, 1, main, R)}L${pt(main, cross - R)}${arc(R, 1, main - R, cross)}L${pt(x + notch, cross)}${arc(notch, 0, x, cross - notch)}`;
+  return { vertical, cross, body, stub, bridges, ends, bodyOutline, stubOutline };
+};
 
 export interface TearTicketProps {
   children?: ReactNode;
@@ -24,7 +122,7 @@ export interface TearTicketProps {
   imageAlt?: string;
   scrim?: boolean;
   imageRadius?: number;
-  orientation?: TearTicketOrientation;
+  orientation?: 'horizontal' | 'vertical';
   torn?: boolean;
   defaultTorn?: boolean;
   onTear?: () => void;
@@ -57,158 +155,7 @@ export interface TearTicketProps {
   className?: string;
 }
 
-interface Point {
-  x: number;
-  y: number;
-}
-
-interface Bridge extends Point {
-  y0: number;
-  y1: number;
-  mid: number;
-  pts: number[][];
-}
-
-interface End extends Point {
-  v: number;
-}
-
-export interface Geometry {
-  vertical: boolean;
-  cross: number;
-  body: string;
-  stub: string;
-  bridges: Bridge[];
-  ends: End[];
-  bodyOutline: string;
-  stubOutline: string;
-}
-
-type Phase = 'idle' | 'held' | 'free' | 'drop' | 'return';
-
-interface Sim {
-  raf: number;
-  last: number;
-  phase: Phase;
-  id: number | null;
-  sign: number;
-  hinge: Point;
-  hingeV: number;
-  grab: Point;
-  start: Point;
-  point: Point;
-  a0: number;
-  theta: number;
-  thetaV: number;
-  sx: number;
-  sy: number;
-  vx: number;
-  vy: number;
-  spin: number;
-  pvx: number;
-  pvy: number;
-  pt: number;
-  fade: number;
-  age: number;
-  bx: number;
-  bv: number;
-  snapped: boolean[];
-  snapAt: number[];
-  span: number[];
-  autoPull?: { started: number; startX: number; startY: number; targetX: number; targetY: number; duration: number };
-}
-
-interface Cfg {
-  geo: Geometry;
-  tearAngle: number;
-  stretch: number;
-  resistance: number;
-  height: number;
-  notch: number;
-  reduce: boolean | null;
-  onTear?: () => void;
-  controlled: boolean;
-}
-
-const TILT_SPRING = { stiffness: 220, damping: 24, mass: 0.6 };
-const GRAVITY = 2400;
-const ART_INSET = 8;
-const ART_SPAN = 0.78;
-const RETRACT = 0.17;
-
-const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
-const rad = (deg: number) => (deg * Math.PI) / 180;
-const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
-const noise = (seed: number) => {
-  let s = seed | 0;
-  return () => {
-    s = (s + 0x6d2b79f5) | 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-};
-const f = (n: number) => n.toFixed(2);
-
-const buildGeometry = (
-  W: number,
-  H: number,
-  S: number,
-  R: number,
-  holes: number,
-  hole: number,
-  notch: number,
-  rough: number,
-  vertical: boolean
-): Geometry => {
-  const main = vertical ? H : W;
-  const cross = vertical ? W : H;
-  const x = main - S;
-  const hr = hole / 2;
-  const n = Math.max(1, Math.round(holes));
-  const span = cross - 2 * notch;
-  const bridge = Math.max(2, (span - n * hole) / (n + 1));
-  const random = noise(n * 7919 + Math.round(cross));
-  const at = (u: number, v: number): Point => (vertical ? { x: v, y: u } : { x: u, y: v });
-  const pt = (u: number, v: number) => (vertical ? `${f(v)},${f(u)}` : `${f(u)},${f(v)}`);
-  const arc = (r: number, sweep: number, u: number, v: number) =>
-    `A${f(r)},${f(r)} 0 0 ${vertical ? 1 - sweep : sweep} ${pt(u, v)}`;
-  const bridges: Bridge[] = [];
-  for (let i = 0; i <= n; i += 1) {
-    const y0 = notch + i * (bridge + hole);
-    const y1 = y0 + bridge;
-    const steps = Math.max(2, Math.round(bridge / 2.2));
-    const pts: number[][] = [];
-    for (let k = 1; k < steps; k += 1) pts.push([x + (random() - 0.5) * 2 * rough, y0 + (bridge * k) / steps]);
-    bridges.push({ y0, y1, mid: (y0 + y1) / 2, pts, ...at(x, (y0 + y1) / 2) });
-  }
-  let body = `M${pt(R, 0)}L${pt(x - notch, 0)}${arc(notch, 0, x, notch)}`;
-  bridges.forEach((b, i) => {
-    b.pts.forEach(p => {
-      body += `L${pt(p[0], p[1])}`;
-    });
-    body += `L${pt(x, b.y1)}`;
-    if (i < n) body += arc(hr, 0, x, b.y1 + hole);
-  });
-  body += `${arc(notch, 0, x - notch, cross)}L${pt(R, cross)}${arc(R, 1, 0, cross - R)}L${pt(0, R)}${arc(R, 1, R, 0)}Z`;
-  let stub = `M${pt(x + notch, 0)}L${pt(main - R, 0)}${arc(R, 1, main, R)}L${pt(main, cross - R)}${arc(R, 1, main - R, cross)}L${pt(x + notch, cross)}${arc(notch, 0, x, cross - notch)}`;
-  for (let i = n; i >= 0; i -= 1) {
-    const b = bridges[i];
-    for (let k = b.pts.length - 1; k >= 0; k -= 1) stub += `L${pt(b.pts[k][0], b.pts[k][1])}`;
-    stub += `L${pt(x, b.y0)}`;
-    if (i > 0) stub += arc(hr, 0, x, b.y0 - hole);
-  }
-  stub += `${arc(notch, 0, x + notch, 0)}Z`;
-  const ends = [
-    { ...at(x, notch), v: notch },
-    { ...at(x, cross - notch), v: cross - notch }
-  ];
-  const bodyOutline = `M${pt(x, cross - notch)}${arc(notch, 0, x - notch, cross)}L${pt(R, cross)}${arc(R, 1, 0, cross - R)}L${pt(0, R)}${arc(R, 1, R, 0)}L${pt(x - notch, 0)}${arc(notch, 0, x, notch)}`;
-  const stubOutline = `M${pt(x, notch)}${arc(notch, 0, x + notch, 0)}L${pt(main - R, 0)}${arc(R, 1, main, R)}L${pt(main, cross - R)}${arc(R, 1, main - R, cross)}L${pt(x + notch, cross)}${arc(notch, 0, x, cross - notch)}`;
-  return { vertical, cross, body, stub, bridges, ends, bodyOutline, stubOutline };
-};
-
-const TearTicket: React.FC<TearTicketProps> = ({
+export function TearTicket({
   children = null,
   stub = null,
   image = '',
@@ -236,8 +183,8 @@ const TearTicket: React.FC<TearTicketProps> = ({
   tiltReach = 260,
   parallax = 6,
   perspective = 1000,
-  background = 'var(--card)',
-  color = 'var(--ink)',
+  background = '#27272a',
+  color = '#f5f5f5',
   border = true,
   borderColor = '',
   borderWidth = 1,
@@ -246,7 +193,7 @@ const TearTicket: React.FC<TearTicketProps> = ({
   disabled = false,
   ariaLabel = 'Tear off the stub',
   className = ''
-}) => {
+}: TearTicketProps) {
   const reduce = useReducedMotion();
   const controlled = torn !== undefined;
   const [inner, setInner] = useState(defaultTorn);
@@ -258,14 +205,64 @@ const TearTicket: React.FC<TearTicketProps> = ({
   const stageRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const stubRef = useRef<HTMLDivElement>(null);
+  const fibres = useRef<(SVGPathElement | null)[]>([]);
   const vertical = orientation === 'vertical';
   const geo = useMemo(
     () => buildGeometry(width, height, stubSize, radius, holes, holeSize, notch, roughness, vertical),
     [width, height, stubSize, radius, holes, holeSize, notch, roughness, vertical]
   );
-  const cfg = useRef<Cfg>({} as Cfg);
+  const cfg = useRef<{
+    geo: TicketGeometry;
+    tearAngle: number;
+    stretch: number;
+    resistance: number;
+    height: number;
+    notch: number;
+    reduce: boolean | null;
+    onTear?: () => void;
+    controlled: boolean;
+  }>({
+    geo,
+    tearAngle,
+    stretch,
+    resistance,
+    height,
+    notch,
+    reduce,
+    onTear,
+    controlled,
+  });
   cfg.current = { geo, tearAngle, stretch, resistance, height, notch, reduce, onTear, controlled };
-  const sim = useRef<Sim>({
+  const sim = useRef<{
+    raf: number;
+    last: number;
+    phase: 'idle' | 'held' | 'free' | 'drop' | 'return';
+    id: number | null;
+    sign: number;
+    hinge: { x: number; y: number };
+    hingeV: number;
+    grab: { x: number; y: number };
+    start: { x: number; y: number };
+    point: { x: number; y: number };
+    a0: number;
+    theta: number;
+    thetaV: number;
+    sx: number;
+    sy: number;
+    vx: number;
+    vy: number;
+    spin: number;
+    pvx: number;
+    pvy: number;
+    pt: number;
+    fade: number;
+    age: number;
+    bx: number;
+    bv: number;
+    snapped: boolean[];
+    snapAt: number[];
+    span: number[];
+  }>({
     raf: 0,
     last: 0,
     phase: 'idle',
@@ -300,11 +297,11 @@ const TearTicket: React.FC<TearTicketProps> = ({
   const tiltY = useSpring(0, TILT_SPRING);
   const plane = useMotionTemplate`perspective(${perspective}px) rotate(${rotate}deg) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
   const depth = tiltMax > 0 ? parallax / tiltMax : 0;
-  const artX = useTransform(tiltY, v => -v * depth);
-  const artY = useTransform(tiltX, v => v * depth);
+  const artX = useTransform(tiltY, (v: number) => -v * depth);
+  const artY = useTransform(tiltX, (v: number) => v * depth);
   const art = useMotionTemplate`translate(${artX}px, ${artY}px)`;
-  const inkX = useTransform(tiltY, v => v * depth * 0.22);
-  const inkY = useTransform(tiltX, v => -v * depth * 0.22);
+  const inkX = useTransform(tiltY, (v: number) => v * depth * 0.22);
+  const inkY = useTransform(tiltX, (v: number) => -v * depth * 0.22);
   const ink = useMotionTemplate`translate(${inkX}px, ${inkY}px)`;
 
   useLayoutEffect(() => {
@@ -328,7 +325,69 @@ const TearTicket: React.FC<TearTicketProps> = ({
     }
     const up = c.geo.vertical;
     if (bodyEl) bodyEl.style.transform = `translate${up ? 'Y' : 'X'}(${s.bx.toFixed(2)}px)`;
-    const busy = false;
+    const cos = Math.cos(s.theta * s.sign);
+    const sin = Math.sin(s.theta * s.sign);
+    const lx = up ? 1.6 : 0;
+    const ly = up ? 0 : 1.6;
+    let busy = false;
+    c.geo.bridges.forEach((b, i) => {
+      const dx = b.x - s.hinge.x;
+      const dy = b.y - s.hinge.y;
+      const tx = s.hinge.x + dx * cos - dy * sin + s.sx;
+      const ty = s.hinge.y + dx * sin + dy * cos + s.sy;
+      const ox = b.x + (up ? 0 : s.bx);
+      const oy = b.y + (up ? s.bx : 0);
+      const gx = tx - ox;
+      const gy = ty - oy;
+      const gap = Math.hypot(gx, gy);
+      const near = fibres.current[i * 2];
+      const far = fibres.current[i * 2 + 1];
+      if (!near || !far) return;
+      const live = s.phase !== 'idle' && !c.reduce;
+      if (!s.snapped[i]) {
+        if (!live || gap < 0.35) {
+          near.style.opacity = '0';
+          far.style.opacity = '0';
+          return;
+        }
+        const k = clamp(gap / c.stretch, 0, 1);
+        const sag = gap * 0.18;
+        const w = (1.7 - 1.15 * k).toFixed(2);
+        const sx = (up ? sag : 0) + gx / 2;
+        const sy = (up ? 0 : sag) + gy / 2;
+        near.setAttribute(
+          'd',
+          `M${f(ox - lx)},${f(oy - ly)}Q${f(ox - lx + sx)},${f(oy - ly + sy)} ${f(tx - lx)},${f(ty - ly)}`
+        );
+        far.setAttribute(
+          'd',
+          `M${f(ox + lx)},${f(oy + ly)}Q${f(ox + lx + gx - sx)},${f(oy + ly + gy - sy)} ${f(tx + lx)},${f(ty + ly)}`
+        );
+        near.style.strokeWidth = w;
+        far.style.strokeWidth = w;
+        near.style.opacity = '1';
+        far.style.opacity = '1';
+        s.span[i] = gap;
+        return;
+      }
+      const t = (now - s.snapAt[i]) / 1000 / RETRACT;
+      if (!live || t >= 1 || !s.snapAt[i]) {
+        near.style.opacity = '0';
+        far.style.opacity = '0';
+        return;
+      }
+      busy = true;
+      const left = (1 - t) * (1 - t);
+      const len = (s.span[i] || c.stretch) * 0.5 * left;
+      const ux = gap > 0.01 ? gx / gap : 1;
+      const uy = gap > 0.01 ? gy / gap : 0;
+      near.setAttribute('d', `M${f(ox)},${f(oy)}L${f(ox + ux * len)},${f(oy + uy * len)}`);
+      far.setAttribute('d', `M${f(tx)},${f(ty)}L${f(tx - ux * len)},${f(ty - uy * len)}`);
+      near.style.strokeWidth = '0.9';
+      far.style.strokeWidth = '0.9';
+      near.style.opacity = left.toFixed(2);
+      far.style.opacity = left.toFixed(2);
+    });
     return busy;
   };
 
@@ -345,27 +404,6 @@ const TearTicket: React.FC<TearTicketProps> = ({
     const dt = clamp((now - s.last) / 1000, 0.001, 0.034);
     s.last = now;
     const limit = rad(c.tearAngle);
-    if (s.autoPull && s.phase === 'held') {
-      const pull = s.autoPull;
-      const progress = clamp((now - pull.started) / pull.duration, 0, 1);
-      const ease = progress * progress * (3 - 2 * progress);
-      s.point = {
-        x: pull.startX + (pull.targetX - pull.startX) * ease,
-        y: pull.startY + (pull.targetY - pull.startY) * ease
-      };
-      s.pvx = ((pull.targetX - pull.startX) / (pull.duration / 1000)) * 0.7;
-      s.pvy = ((pull.targetY - pull.startY) / (pull.duration / 1000)) * 0.7;
-      s.pt = now;
-      if (progress >= 1) {
-        s.autoPull = undefined;
-        setGrabbing(false);
-        s.phase = 'drop';
-        s.vx = clamp(s.pvx, 140, 380);
-        s.vy = clamp(s.pvy, -60, 240);
-        s.spin = 2.4 * s.sign;
-        s.age = 0;
-      }
-    }
     if (s.phase === 'held') {
       const count = c.geo.bridges.length;
       let intact = 0;
@@ -383,13 +421,19 @@ const TearTicket: React.FC<TearTicketProps> = ({
       s.sx += (px - s.sx) * (1 - Math.exp(-dt / 0.05));
       s.sy += (py - s.sy) * (1 - Math.exp(-dt / 0.05));
       const slack = Math.hypot(s.sx, s.sy);
-      if (s.theta >= limit * 0.4 || slack > 12) {
-        for (let i = 0; i < count; i += 1) {
+      let left = 0;
+      c.geo.bridges.forEach((b, i) => {
+        if (s.snapped[i]) return;
+        const d = Math.abs(b.mid - s.hingeV);
+        if (2 * d * Math.sin(s.theta / 2) + slack > c.stretch || s.theta >= limit) {
           s.snapped[i] = true;
           s.snapAt[i] = now;
-        }
+          s.bv -= 560 / c.geo.bridges.length;
+        } else left += 1;
+      });
+      if (left === 0) {
         s.phase = 'free';
-        s.bv -= 350;
+        s.bv -= 150;
       }
     } else if (s.phase === 'free') {
       const cos = Math.cos(s.theta * s.sign);
@@ -468,73 +512,10 @@ const TearTicket: React.FC<TearTicketProps> = ({
     paint(performance.now());
   };
 
-  const simulatePaperTear = () => {
-    const s = sim.current;
-    if (!stubRef.current || s.phase === 'drop') return;
-
-    cancelAnimationFrame(s.raf);
-    s.raf = 0;
-    s.id = null;
-
-    // Reset snapped bridges so full natural rip sequence plays out
-    s.snapped = geo.bridges.map(() => false);
-    s.snapAt = geo.bridges.map(() => 0);
-
-    // Start tear from top notch
-    const far = false;
-    const end = geo.ends[far ? 1 : 0];
-    s.sign = (far ? 1 : -1) * (geo.vertical ? -1 : 1);
-    s.hinge = { x: end.x, y: end.y };
-    s.hingeV = end.v;
-    if (stubRef.current) stubRef.current.style.transformOrigin = `${s.hinge.x}px ${s.hinge.y}px`;
-
-    const startX = width - stubSize * 0.45;
-    const startY = height * 0.8;
-    s.start = { x: startX, y: startY };
-    s.point = { x: startX, y: startY };
-    s.pt = performance.now();
-    s.pvx = 0;
-    s.pvy = 0;
-
-    const ux = startX - s.sx - s.hinge.x;
-    const uy = startY - s.sy - s.hinge.y;
-    s.grab = { x: s.hinge.x + ux, y: s.hinge.y + uy };
-    s.a0 = Math.atan2(s.grab.y - s.hinge.y, s.grab.x - s.hinge.x);
-    s.phase = 'held';
-    s.theta = 0;
-    s.thetaV = 0;
-    tiltX.set(0);
-    tiltY.set(0);
-    setGrabbing(true);
-    run();
-
-    s.autoPull = {
-      started: performance.now(),
-      duration: 650,
-      startX,
-      startY,
-      targetX: startX + (geo.vertical ? 50 : 130),
-      targetY: startY + (geo.vertical ? 130 : 65)
-    };
-    run();
-  };
-
-  const isInitialMount = useRef(true);
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      if (used) {
-        const s = sim.current;
-        if (s.phase === 'idle' && stubRef.current) stubRef.current.style.visibility = 'hidden';
-      }
-      return;
-    }
-
     if (used) {
       const s = sim.current;
-      if (s.phase !== 'drop') {
-        simulatePaperTear();
-      }
+      if (s.phase === 'idle' && stubRef.current) stubRef.current.style.visibility = 'hidden';
       return;
     }
     setInstant(false);
@@ -550,8 +531,8 @@ const TearTicket: React.FC<TearTicketProps> = ({
     return () => cancelAnimationFrame(s.raf);
   }, []);
 
-  const local = (e: PointerEvent<HTMLDivElement>): Point => {
-    const r = stageRef.current!.getBoundingClientRect();
+  const local = (e: ReactPointerEvent<HTMLDivElement> | PointerEvent) => {
+    const r = stageRef.current ? stageRef.current.getBoundingClientRect() : { left: 0, top: 0, width };
     const k = r.width / width || 1;
     return { x: (e.clientX - r.left) / k, y: (e.clientY - r.top) / k };
   };
@@ -563,12 +544,12 @@ const TearTicket: React.FC<TearTicketProps> = ({
     setInstant(true);
     finish();
   };
-  const onStubDown = (e: PointerEvent<HTMLDivElement>) => {
+  const onStubDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     const s = sim.current;
     if (disabled || used || e.button !== 0 || s.id !== null || s.phase === 'drop') return;
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
-    } catch { /* Pointer capture may be unavailable. */ }
+    } catch {}
     const p = local(e);
     s.id = e.pointerId;
     s.start = p;
@@ -597,7 +578,7 @@ const TearTicket: React.FC<TearTicketProps> = ({
     setGrabbing(true);
     run();
   };
-  const onStubMove = (e: PointerEvent<HTMLDivElement>) => {
+  const onStubMove = (e: ReactPointerEvent<HTMLDivElement>) => {
     const s = sim.current;
     if (s.id !== e.pointerId) return;
     const p = local(e);
@@ -613,13 +594,13 @@ const TearTicket: React.FC<TearTicketProps> = ({
       tearNow();
     }
   };
-  const onStubUp = (e: PointerEvent<HTMLDivElement>) => {
+  const onStubUp = (e: ReactPointerEvent<HTMLDivElement>) => {
     const s = sim.current;
     if (s.id !== e.pointerId) return;
     s.id = null;
     try {
       if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
-    } catch { /* Pointer capture may be unavailable. */ }
+    } catch {}
     setGrabbing(false);
     if (s.phase === 'free') {
       const still = performance.now() - s.pt > 80;
@@ -629,13 +610,6 @@ const TearTicket: React.FC<TearTicketProps> = ({
       s.age = 0;
       s.phase = 'drop';
     } else if (s.phase === 'held') {
-      const moved = Math.hypot(s.point.x - s.start.x, s.point.y - s.start.y);
-      if (moved < 8 && !disabled && !used) {
-        // Tap/click on stub triggers natural paper tear
-        simulatePaperTear();
-        return;
-      }
-      if (used) return;
       s.phase = 'return';
     }
     run();
@@ -643,28 +617,22 @@ const TearTicket: React.FC<TearTicketProps> = ({
   const onStubKey = (e: KeyboardEvent<HTMLDivElement>) => {
     if (disabled || used || (e.key !== 'Enter' && e.key !== ' ')) return;
     e.preventDefault();
-    if (!e.repeat) simulatePaperTear();
+    if (!e.repeat) tearNow();
   };
 
   useEffect(() => {
     if (!tilt || reduce || disabled) return undefined;
-    let rect = rootRef.current?.getBoundingClientRect();
-    const measure = () => { rect = rootRef.current?.getBoundingClientRect(); };
-    const move = (e: globalThis.PointerEvent) => {
+    const move = (e: PointerEvent) => {
       const el = rootRef.current;
-      if (!el || !rect || e.pointerType === 'touch' || sim.current.id !== null) return;
-      const r = rect;
+      if (!el || e.pointerType === 'touch' || sim.current.id !== null) return;
+      const r = el.getBoundingClientRect();
       const nx = clamp((e.clientX - (r.left + r.width / 2)) / (r.width / 2 + tiltReach), -1, 1);
       const ny = clamp((e.clientY - (r.top + r.height / 2)) / (r.height / 2 + tiltReach), -1, 1);
       tiltY.set(nx * tiltMax);
       tiltX.set(-ny * tiltMax);
     };
-    const root = rootRef.current;
-    root?.addEventListener('pointerenter', measure);
-    window.addEventListener('scroll', measure, { passive: true });
-    window.addEventListener('resize', measure);
     window.addEventListener('pointermove', move);
-    return () => { root?.removeEventListener('pointerenter', measure); window.removeEventListener('scroll', measure); window.removeEventListener('resize', measure); window.removeEventListener('pointermove', move); };
+    return () => window.removeEventListener('pointermove', move);
   }, [tilt, reduce, disabled, tiltMax, tiltReach, tiltX, tiltY]);
 
   return (
@@ -706,7 +674,7 @@ const TearTicket: React.FC<TearTicketProps> = ({
                 <path d={geo.bodyOutline} />
               </svg>
             ) : null}
-            <div className="tear-ticket__paper" style={{ borderRadius: radius }}>
+            <div className="tear-ticket__paper" style={{ clipPath: `path('${geo.body}')` }}>
               {image ? (
                 <div className="tear-ticket__art">
                   <motion.img
@@ -724,6 +692,22 @@ const TearTicket: React.FC<TearTicketProps> = ({
               </motion.div>
             </div>
           </div>
+          <svg className="tear-ticket__fibres" aria-hidden="true">
+            {geo.bridges.map((b, i) => (
+              <g key={i}>
+                <path
+                  ref={el => {
+                    fibres.current[i * 2] = el;
+                  }}
+                />
+                <path
+                  ref={el => {
+                    fibres.current[i * 2 + 1] = el;
+                  }}
+                />
+              </g>
+            ))}
+          </svg>
           <div
             ref={stubRef}
             className="tear-ticket__piece tear-ticket__piece--stub"
@@ -745,7 +729,7 @@ const TearTicket: React.FC<TearTicketProps> = ({
                 <path d={geo.stubOutline} />
               </svg>
             ) : null}
-            <div className="tear-ticket__paper tear-ticket__paper--stub" style={{ borderRadius: radius }}>
+            <div className="tear-ticket__paper tear-ticket__paper--stub" style={{ clipPath: `path('${geo.stub}')` }}>
               <div className="tear-ticket__stub">{stub}</div>
             </div>
           </div>
@@ -756,7 +740,6 @@ const TearTicket: React.FC<TearTicketProps> = ({
       </span>
     </div>
   );
-};
+}
 
-export { TearTicket, buildGeometry };
 export default TearTicket;
