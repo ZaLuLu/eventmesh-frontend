@@ -228,50 +228,54 @@ export const AdminEventsListPage: React.FC = () => {
                     <div className="flex items-center justify-end gap-1.5">
                       {evt.status === 'draft' && (
                         <>
-                          <button
-                            type="button"
+                          <Button
+                            surface="admin"
+                            size="dense"
+                            variant="secondary"
                             onClick={() => handleSubmitForApproval(evt.id, evt.title)}
-                            className="px-2 py-1 bg-subtle text-text hover:bg-accent hover:text-on-accent transition-colors rounded-btn text-caption font-semibold border border-line"
                             title="Submit for Review"
                           >
                             Submit
-                          </button>
-                          <button
-                            type="button"
+                          </Button>
+                          <Button
+                            surface="admin"
+                            size="dense"
+                            variant="primary"
                             onClick={() => handlePublish(evt.id, evt.title)}
-                            className="px-2.5 py-1 bg-accent text-on-accent hover:bg-accent-hover transition-colors rounded-btn text-caption font-semibold"
                             title="Publish Directly"
                           >
                             Publish
-                          </button>
+                          </Button>
                         </>
                       )}
 
                       {(evt.status === 'submitted' || evt.status === 'in_review') && (
-                        <button
-                          type="button"
+                        <Button
+                          surface="admin"
+                          size="dense"
+                          variant="primary"
                           onClick={() => handlePublish(evt.id, evt.title)}
-                          className="px-2.5 py-1 bg-accent text-on-accent hover:bg-accent-hover transition-colors rounded-btn text-caption font-semibold"
                           title="Approve & Publish Live"
                         >
                           Approve
-                        </button>
+                        </Button>
                       )}
 
                       {evt.status === 'published' && (
-                        <button
-                          type="button"
+                        <Button
+                          surface="admin"
+                          size="dense"
+                          variant="danger"
                           onClick={() => handleCancelEvent(evt.id, evt.title)}
-                          className="px-2 py-1 bg-danger/10 text-danger hover:bg-danger hover:text-white transition-colors rounded-btn text-caption font-semibold border border-danger/30"
                           title="Cancel Event"
                         >
                           Cancel
-                        </button>
+                        </Button>
                       )}
 
                       <Link
                         to={`/admin/events/${evt.id}/edit`}
-                        className="p-1.5 border border-line rounded-btn hover:bg-subtle text-text transition-colors"
+                        className="inline-flex items-center justify-center h-7 w-7 border border-line rounded-btn hover:bg-subtle text-text transition-colors"
                         title="Edit Event & Form"
                       >
                         <PencilSimple size={14} weight="bold" />
@@ -281,21 +285,23 @@ export const AdminEventsListPage: React.FC = () => {
                         <Link
                           to={`/events/${evt.slug}`}
                           target="_blank"
-                          className="p-1.5 border border-line rounded-btn hover:bg-subtle text-text transition-colors"
+                          className="inline-flex items-center justify-center h-7 w-7 border border-line rounded-btn hover:bg-subtle text-text transition-colors"
                           title="View Live Public Page"
                         >
                           <ArrowUpRight size={14} weight="bold" />
                         </Link>
                       )}
 
-                      <button
-                        type="button"
+                      <Button
+                        surface="admin"
+                        variant="ghost"
+                        size="dense"
                         onClick={() => handleDelete(evt.id, evt.title)}
-                        className="p-1.5 border border-line rounded-btn hover:bg-danger/10 text-text hover:text-danger hover:border-danger/40 transition-colors"
+                        className="h-7 w-7 p-0 text-danger hover:bg-danger/10"
                         title="Delete Event"
                       >
                         <Trash size={14} weight="bold" />
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>

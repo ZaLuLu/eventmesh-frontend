@@ -1,0 +1,87 @@
+/* ==========================================================================
+   3D DESK STAMP & IMPACT ANIMATION STYLES
+   Based on mortspace/stamp reverse-engineered physics
+   ========================================================================== */
+
+@keyframes stampImpact {
+  0% {
+    opacity: 0;
+    transform: scale(3.2) translateY(-24px) rotate(-14deg);
+    filter: blur(4px);
+  }
+  42% {
+    opacity: 0.85;
+    transform: scale(1.12) translateY(2px) rotate(-3.5deg);
+    filter: blur(0.5px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.95) translateY(0) rotate(-4.2deg);
+    filter: blur(0);
+  }
+  80% {
+    transform: scale(1.03) rotate(-3.4deg);
+  }
+  100% {
+    opacity: 0.94;
+    transform: scale(1) rotate(-3.5deg);
+  }
+}
+
+@keyframes deskShake {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  20% {
+    transform: translateY(3px) rotate(0.4deg);
+  }
+  40% {
+    transform: translateY(-2px) rotate(-0.3deg);
+  }
+  60% {
+    transform: translateY(1.5px) rotate(0.2deg);
+  }
+  80% {
+    transform: translateY(-0.5px);
+  }
+}
+
+@keyframes stampBodySlam {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -180px, 120px) rotateX(35deg) scale(1.4);
+  }
+  45% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotateX(0deg) scale(0.94);
+  }
+  65% {
+    transform: translate3d(0, -12px, 20px) rotateX(4deg) scale(1.02);
+  }
+  85% {
+    transform: translate3d(0, -60px, 80px) rotateX(15deg) scale(1.1);
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -140px, 160px) rotateX(25deg) scale(1.2);
+  }
+}
+
+.animate-stamp-impact {
+  animation: stampImpact 420ms cubic-bezier(0.18, 0.89, 0.32, 1.25) forwards;
+}
+
+.animate-desk-shake {
+  animation: deskShake 380ms cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+}
+
+.animate-stamp-slam {
+  animation: stampBodySlam 950ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.perspective-stamp-stage {
+  perspective: 1000px;
+  perspective-origin: center 40%;
+  transform-style: preserve-3d;
+}

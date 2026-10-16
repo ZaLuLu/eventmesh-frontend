@@ -25,6 +25,8 @@ import {
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { useOrg } from '@/hooks/useOrg'
+import { useQuery } from '@tanstack/react-query'
+import { api, PayoutAccount, Event } from '@/api'
 import { ToastContainer } from '@/design-system/primitives/Toast'
 import { ForbiddenPage } from './ForbiddenPage'
 import { ErrorBoundary } from './ErrorBoundary'
@@ -40,13 +42,28 @@ export const AdminShell: React.FC = () => {
   const { can, canAccessAdmin, role } = usePermission()
   const { organization } = useOrg()
 
-  // Guard: if user is not authorized for admin
-  if (!canAccessAdmin()) {
-    return <ForbiddenPage />
-  }
-
   const isVolunteer = role === 'volunteer'
   const isOrgOrPlatformAdmin = role === 'org_admin' || role === 'platform_admin'
+  const hasAdminAccess = canAccessAdmin()
+
+  const { data: approvals = [] } = useQuery<Event[]>({
+    queryKey: ['admin-approvals', session?.orgId],
+    queryFn: () => api.eventsAdmin.getAdminEvents({ orgId: session?.orgId || 'org-1' }),
+    enabled: hasAdminAccess && isOrgOrPlatformAdmin,
+  })
+  const pendingApprovalsCount = approvals.filter((e) => e.status === 'in_review' || e.status === 'submitted').length
+
+  const { data: payoutAccount } = useQuery<PayoutAccount | null>({
+    queryKey: ['payout-account', session?.clubId || 'apex-design-lab'],
+    queryFn: () => api.payouts.getPayoutAccount(session?.clubId || 'apex-design-lab'),
+    enabled: hasAdminAccess,
+  })
+  const kycNeedsAttention = !payoutAccount || payoutAccount.status !== 'VERIFIED'
+
+  // Guard: if user is not authorized for admin
+  if (!hasAdminAccess) {
+    return <ForbiddenPage />
+  }
 
   // 4 Plain Headings (Section 7.8)
   const navSections = [
@@ -56,7 +73,13 @@ export const AdminShell: React.FC = () => {
         { label: 'Dashboard', path: '/admin', icon: <SquaresFour className="w-4 h-4" weight="bold" />, show: !isVolunteer, exact: true },
         { label: 'Events', path: '/admin/events', icon: <CalendarCheck className="w-4 h-4" weight="bold" />, show: !isVolunteer },
         { label: 'Registrations', path: '/admin/registrations', icon: <Users className="w-4 h-4" weight="bold" />, show: !isVolunteer },
-        { label: 'Payouts & KYC', path: '/admin/payouts', icon: <Bank className="w-4 h-4" weight="bold" />, show: !isVolunteer },
+        {
+          label: 'Payouts & KYC',
+          path: '/admin/payouts',
+          icon: <Bank className="w-4 h-4" weight="bold" />,
+          show: !isVolunteer,
+          badge: kycNeedsAttention ? <span className="w-2 h-2 rounded-full bg-warning animate-pulse" title="KYC Verification Needed" /> : undefined,
+        },
         { label: 'Check-in Desk', path: '/admin/checkin', icon: <QrCode className="w-4 h-4" weight="bold" />, show: can('checkin') },
       ],
     },
@@ -65,7 +88,17 @@ export const AdminShell: React.FC = () => {
       items: [
         { label: 'Club Profile', path: '/admin/club', icon: <Buildings className="w-4 h-4" weight="bold" />, show: can('edit_club_profile') },
         { label: 'Clubs Overview', path: '/admin/clubs', icon: <Buildings className="w-4 h-4" weight="bold" />, show: isOrgOrPlatformAdmin },
-        { label: 'Approvals Queue', path: '/admin/approvals', icon: <CheckSquare className="w-4 h-4" weight="bold" />, show: isOrgOrPlatformAdmin },
+        {
+          label: 'Approvals Queue',
+          path: '/admin/approvals',
+          icon: <CheckSquare className="w-4 h-4" weight="bold" />,
+          show: isOrgOrPlatformAdmin,
+          badge: pendingApprovalsCount > 0 ? (
+            <span className="px-1.5 py-0.2 text-[10px] font-mono font-bold bg-accent text-on-accent rounded-full">
+              {pendingApprovalsCount}
+            </span>
+          ) : undefined,
+        },
         { label: 'Roles & Staff', path: '/admin/roles', icon: <ShieldCheck className="w-4 h-4" weight="bold" />, show: isOrgOrPlatformAdmin },
       ],
     },
@@ -94,14 +127,13 @@ export const AdminShell: React.FC = () => {
           {/* Sidebar Header */}
           <div className="h-14 px-4 border-b border-line flex items-center justify-between flex-shrink-0">
             <div>
-              <h1 className="font-display font-extrabold text-sm text-ink tracking-wide">
+              <h1 className="font-semibold text-sm text-ink tracking-tight">
                 EventMesh Studio
               </h1>
-              <p className="text-xs text-ink-muted">
+              <p className="text-caption text-text-3 font-normal">
                 Event operations
               </p>
             </div>
-
           </div>
 
           {/* Grouped Nav Items */}
@@ -112,7 +144,7 @@ export const AdminShell: React.FC = () => {
 
               return (
                 <div key={section.heading} className="space-y-1">
-                  <h3 className="px-3 text-xs font-mono font-extrabold text-ink-muted uppercase tracking-widest">
+                  <h3 className="px-3 text-[11px] font-mono font-semibold text-text-3 uppercase tracking-wider">
                     {section.heading}
                   </h3>
                   <div className="space-y-0.5 pt-1">
@@ -129,16 +161,19 @@ export const AdminShell: React.FC = () => {
                           to={item.path}
                           aria-current={isActive ? 'page' : undefined}
                           onClick={() => setSidebarOpen(false)}
-                          className={`flex items-center gap-3 px-3 py-2 rounded-input text-sm font-medium transition-colors ${
+                          className={`flex items-center justify-between px-3 py-2 rounded-btn text-small font-medium transition-all ${
                             isActive
-                              ? 'bg-[var(--color-accent)] text-on-accent shadow-sm'
-                              : 'text-ink-soft hover:bg-surface-subtle hover:text-ink'
+                              ? 'bg-accent text-on-accent shadow-sm'
+                              : 'text-text-2 hover:bg-surface-subtle hover:text-text'
                           }`}
                         >
-                          <span className={isActive ? 'text-on-accent' : 'text-ink-soft'}>
-                            {item.icon}
-                          </span>
-                          <span>{item.label}</span>
+                          <div className="flex items-center gap-3 min-w-0">
+                            <span className={isActive ? 'text-on-accent' : 'text-text-3'}>
+                              {item.icon}
+                            </span>
+                            <span className="truncate">{item.label}</span>
+                          </div>
+                          {item.badge}
                         </Link>
                       )
                     })}
@@ -165,7 +200,7 @@ export const AdminShell: React.FC = () => {
                 await logout()
                 navigate('/')
               }}
-              className="p-1.5 text-ink-soft hover:text-[var(--color-accent)] hover:bg-surface-subtle rounded-[8px] transition-colors"
+              className="p-1.5 text-text-2 hover:text-accent hover:bg-surface-subtle rounded-btn transition-colors"
               title="Sign Out"
               aria-label="Sign out"
             >
@@ -176,13 +211,13 @@ export const AdminShell: React.FC = () => {
   </>
 
   return (
-    <div className="min-h-screen bg-paper text-ink font-body flex flex-col admin-scope antialiased selection:bg-accent selection:text-on-accent">
+    <div className="min-h-screen bg-paper text-ink font-sans flex flex-col admin-scope antialiased selection:bg-accent selection:text-on-accent">
       <OfflineBanner />
 
       {/* Top Console Strip */}
-      <header className="min-h-11 gap-2 bg-paper text-ink-soft px-4 flex items-center justify-between text-xs border-b border-line select-none z-50">
+      <header className="min-h-11 gap-2 bg-paper text-text-2 px-4 flex items-center justify-between text-xs border-b border-line select-none z-50">
         <div className="flex items-center gap-2.5 truncate">
-          <span className="font-display font-bold text-[var(--color-accent)] tracking-wider text-xs uppercase">
+          <span className="font-mono font-semibold text-accent tracking-wider text-xs uppercase">
             ADMIN CONSOLE
           </span>
           <span className="opacity-30">·</span>
@@ -201,12 +236,12 @@ export const AdminShell: React.FC = () => {
 
         <div className="flex items-center gap-3 flex-shrink-0">
           <ThemeToggle />
-          <span className="text-xs bg-[var(--color-accent)] text-on-accent px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+          <span className="text-caption bg-accent text-on-accent px-2.5 py-0.5 rounded-full font-semibold uppercase tracking-wider">
             {session?.role?.replace('_', ' ')}
           </span>
           <Link
             to="/"
-            className="text-ink-soft hover:text-[var(--color-accent)] inline-flex items-center gap-1 transition-colors text-xs font-semibold"
+            className="text-text-2 hover:text-accent inline-flex items-center gap-1 transition-colors text-xs font-semibold"
           >
             <span className="hidden sm:inline">Public site</span>
             <ArrowSquareOut className="w-3.5 h-3.5" weight="bold" />

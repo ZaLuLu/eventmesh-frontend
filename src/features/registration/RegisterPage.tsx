@@ -19,6 +19,7 @@ import { downloadICS } from '@/lib/ics'
 import { useToast } from '@/design-system/primitives/Toast'
 import { Icon } from '@/design-system/Icon'
 import { appConfig } from '@/config/appConfig'
+import { StampActionOverlay, PrintMark } from '@/components/stamp'
 
 interface TeamMemberItem {
   id: string
@@ -41,6 +42,7 @@ export const RegisterPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1)
   const [createdRegistration, setCreatedRegistration] = useState<Registration | null>(null)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [stampOverlayOpen, setStampOverlayOpen] = useState(false)
 
   // Step 1: Attendee Profile (pre-filled from active session, email locked: F-01)
   const [name, setName] = useState('')
@@ -259,6 +261,7 @@ export const RegisterPage: React.FC = () => {
 
       const res = await registerMutation.mutateAsync(payload)
       setCreatedRegistration(res)
+      setStampOverlayOpen(true)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (err: any) {
       console.error('Registration failed:', err)
@@ -399,6 +402,21 @@ export const RegisterPage: React.FC = () => {
 
           {/* Minimal Digital Pass Ticket Object */}
           <div className="bg-surface-subtle rounded-3xl p-6 sm:p-8 text-left relative overflow-hidden">
+            {/* Organic Rubber Stamp Print Mark Imprint */}
+            <div className="absolute top-4 right-4 sm:top-5 sm:right-6 z-20">
+              <PrintMark
+                print={{
+                  status: isPaidEvent ? 'paid' : 'approved',
+                  dateText: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase(),
+                  subtitle: isPaidEvent ? 'PAYMENT VERIFIED' : 'CAMPUS PASS ISSUED',
+                  seed: 88,
+                }}
+                className="rotate-[-6deg] hover:rotate-0 transition-transform duration-300 drop-shadow-sm cursor-pointer"
+                onClick={() => setStampOverlayOpen(true)}
+                title="Click to replay 3D physical desk stamp"
+              />
+            </div>
+
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line/20 pb-4">
               <div className="flex items-center gap-2">
                 <Badge variant="neutral" size="sm">
@@ -467,6 +485,15 @@ export const RegisterPage: React.FC = () => {
                 View in My Tickets & 3D Badge
               </Button>
             </Link>
+            <Button
+              variant="secondary"
+              size="default"
+              onClick={() => setStampOverlayOpen(true)}
+              className="w-full sm:w-auto font-mono text-xs flex items-center gap-1.5"
+            >
+              <Icon name="Sparkle" size={16} className="text-accent" />
+              <span>Replay Desk Stamp</span>
+            </Button>
             <button
               type="button"
               onClick={handleDownloadCalendar}
@@ -1027,6 +1054,18 @@ export const RegisterPage: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {/* 3D Physical Desk Stamp Simulation Modal */}
+      {createdRegistration && (
+        <StampActionOverlay
+          isOpen={stampOverlayOpen}
+          onClose={() => setStampOverlayOpen(false)}
+          status={isPaidEvent ? 'paid' : 'approved'}
+          title={isPaidEvent ? 'Payment Confirmed' : 'Registration Approved'}
+          subtitle={(event?.title || 'CAMPUS PASS').slice(0, 32).toUpperCase()}
+          dateText={new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
+        />
       )}
     </PageShell>
   )

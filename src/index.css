@@ -1,13 +1,7 @@
+@import '@fontsource-variable/plus-jakarta-sans';
+@import '@fontsource-variable/inter';
 @import '@fontsource/jetbrains-mono/400.css';
 @import '@fontsource/jetbrains-mono/600.css';
-
-@font-face {
-  font-family: 'Geist';
-  src: url('/node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2') format('woff2');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
 
 @tailwind base;
 @tailwind components;
@@ -15,6 +9,8 @@
 
 /* EventMesh semantic system — REDESIGN_TEMPLATE.md */
 :root {
+  --font-sans: 'Plus Jakarta Sans Variable', 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
   --color-canvas: #FAF8FF;
   --color-canvas-subtle: #F3EDFD;
   --color-surface: #FFFFFF;
@@ -95,7 +91,7 @@
 html {
   background-color: var(--paper);
   color: var(--ink);
-  font-family: 'Geist', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: clip;
@@ -108,17 +104,18 @@ body {
   background-color: var(--paper);
   color: var(--ink);
   overflow-x: clip;
+  font-family: var(--font-sans);
 }
 
 /* Typography Floors & Display Rules (Gate 38a: Display & Accent always roman) */
 h1, h2, h3, h4, h5, h6, .font-display {
-  font-family: 'Geist', system-ui, sans-serif;
+  font-family: var(--font-sans);
   font-style: normal;
   letter-spacing: -0.025em;
 }
 
 .font-mono {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-feature-settings: 'tnum' 1;
 }
 

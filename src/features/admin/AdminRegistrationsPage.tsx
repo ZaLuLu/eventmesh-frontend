@@ -70,45 +70,45 @@ export const AdminRegistrationsPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-line">
         <div>
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[var(--color-accent)] block mb-1">
+          <span className="text-caption font-mono uppercase tracking-wider text-accent font-semibold block mb-0.5">
             ATTENDEE ROSTER
           </span>
-          <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-white tracking-tight">
+          <h1 className="text-h2 font-semibold text-text">
             Registration Management
           </h1>
-          <p className="text-xs sm:text-sm text-white/60 mt-0.5">
+          <p className="text-small text-text-2 mt-0.5">
             Audit attendee quotas, manage entry credentials, promote waitlists, and export CSV rosters.
           </p>
         </div>
 
-        <button
-          type="button"
+        <Button
+          surface="admin"
+          size="sm"
+          icon={<DownloadSimple size={16} weight="bold" />}
           onClick={handleExportCSV}
           disabled={registrations.length === 0}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-[12px] bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-[var(--color-canvas)] text-xs font-bold transition-[background-color,transform] disabled:opacity-40"
         >
-          <DownloadSimple className="w-4 h-4" weight="bold" />
-          <span>Export CSV Roster</span>
-        </button>
+          Export CSV Roster
+        </Button>
       </div>
 
       {/* Filter / Search Bar */}
-      <div className="p-3 bg-[var(--color-surface)] border border-white/10 rounded-[16px] flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 text-xs overflow-x-auto scrollbar-none">
+      <div className="p-3 bg-surface border border-line rounded-panel flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 text-small overflow-x-auto no-scrollbar">
           {(['all', 'registered', 'checked_in', 'waitlisted', 'cancelled'] as (RegistrationStatus | 'all')[]).map(
             (st) => (
               <button
                 key={st}
                 type="button"
                 onClick={() => setStatusFilter(st)}
-                className={`px-3 py-1.5 rounded-[8px] font-bold text-xs transition-colors capitalize ${
+                className={`px-3 py-1.5 rounded-btn font-medium transition-colors capitalize ${
                   statusFilter === st
-                    ? 'bg-[var(--color-accent)] text-[var(--color-canvas)]'
-                    : 'text-white/60 hover:text-white hover:bg-white/5'
+                    ? 'bg-accent text-on-accent'
+                    : 'text-text-2 hover:text-text hover:bg-subtle'
                 }`}
               >
                 {st.replace('_', ' ')}
@@ -118,109 +118,111 @@ export const AdminRegistrationsPage: React.FC = () => {
         </div>
 
         <div className="relative max-w-xs w-full">
-          <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" weight="bold" />
+          <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-3" weight="bold" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search attendee or ticket..."
-            className="w-full bg-[var(--color-canvas-subtle)] text-white text-xs pl-9 pr-3 py-2 border border-white/20 rounded-[10px] focus:outline-none focus:border-[var(--color-accent)] placeholder:text-white/30"
+            className="w-full bg-surface text-text text-small pl-9 pr-3 py-1.5 border border-line rounded-btn focus:outline-none focus:border-accent placeholder:text-text-3"
           />
         </div>
       </div>
 
       {/* Registrations Table */}
-      <div className="bg-[var(--color-surface)] border border-white/10 rounded-[16px] overflow-x-auto shadow-sm">
+      <div className="bg-surface border border-line rounded-panel overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[750px]">
           <thead>
-            <tr className="border-b border-white/10 bg-[var(--color-canvas-subtle)] text-[11px] font-mono font-bold text-white/50 uppercase tracking-wider sticky top-0">
-              <th className="py-3 px-4">Pass & Attendee</th>
-              <th className="py-3 px-4">Event</th>
-              <th className="py-3 px-4">Status</th>
-              <th className="py-3 px-4">Registered Date</th>
-              <th className="py-3 px-4 text-right">Actions</th>
+            <tr className="border-b border-line bg-subtle text-caption font-medium text-text-2 sticky top-0">
+              <th className="py-3 px-4 font-semibold">Pass & Attendee</th>
+              <th className="py-3 px-4 font-semibold">Event</th>
+              <th className="py-3 px-4 font-semibold">Status</th>
+              <th className="py-3 px-4 font-semibold">Registered Date</th>
+              <th className="py-3 px-4 text-right font-semibold">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5 text-xs">
+          <tbody className="divide-y divide-line text-small">
             {isLoading ? (
               <tr>
-                <td colSpan={5} className="py-12 text-center text-white/40">
+                <td colSpan={5} className="py-12 text-center text-text-3">
                   Loading registration roster...
                 </td>
               </tr>
             ) : registrations.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-12 text-center text-white/40">
+                <td colSpan={5} className="py-12 text-center text-text-3">
                   No registrations found matching this filter query.
                 </td>
               </tr>
             ) : (
               registrations.map((reg) => (
-                <tr key={reg.id} className="hover:bg-white/[0.02] transition-colors">
+                <tr key={reg.id} className="hover:bg-subtle/50 transition-colors">
                   <td className="py-3 px-4 space-y-0.5">
-                    <p className="font-mono font-extrabold text-[var(--color-accent)] text-xs">{reg.ticketCode}</p>
-                    <p className="font-bold text-white text-xs">{reg.userName}</p>
-                    <p className="text-[11px] text-white/50 font-mono">{reg.userEmail}</p>
+                    <p className="font-mono font-bold text-accent text-xs">{reg.ticketCode}</p>
+                    <p className="font-semibold text-text text-small">{reg.userName}</p>
+                    <p className="text-caption text-text-3 font-mono">{reg.userEmail}</p>
                     {reg.team && (
-                      <span className="text-[10px] bg-white/10 text-white/80 px-1.5 py-0.5 rounded mt-0.5 inline-block font-mono">
+                      <span className="text-[10px] bg-subtle text-text-2 border border-line px-1.5 py-0.5 rounded-sm mt-0.5 inline-block font-mono">
                         Team: {reg.team.teamName}
                       </span>
                     )}
                   </td>
 
                   <td className="py-3 px-4">
-                    <p className="font-bold text-white line-clamp-1">{reg.eventTitle}</p>
-                    <p className="text-xs text-white/50">
+                    <p className="font-medium text-text line-clamp-1">{reg.eventTitle}</p>
+                    <p className="text-caption text-text-3">
                       {reg.organizerName}
                     </p>
                   </td>
 
                   <td className="py-3 px-4">
                     <span
-                      className={`inline-block text-xs px-2.5 py-0.5 rounded-full border capitalize font-bold ${
+                      className={`inline-block text-caption px-2 py-0.5 rounded-full border capitalize font-medium ${
                         reg.status === 'checked_in'
-                          ? 'bg-card text-success border-success'
+                          ? 'bg-success/10 text-success border-success/30'
                           : reg.status === 'registered'
-                          ? 'bg-card text-accent border-accent'
+                          ? 'bg-accent/10 text-accent border-accent/30'
                           : reg.status === 'waitlisted'
-                          ? 'bg-card text-warning border-warning'
-                          : 'bg-white/5 text-white/60 border-white/10'
+                          ? 'bg-warning/10 text-warning border-warning/30'
+                          : 'bg-subtle text-text-3 border-line'
                       }`}
                     >
                       {reg.status.replace('_', ' ')}
                     </span>
                   </td>
 
-                  <td className="py-3 px-4 text-white/50 font-mono text-xs tabular-nums">
+                  <td className="py-3 px-4 text-text-2 font-mono text-caption tabular-nums">
                     {formatDate(reg.createdAt, 'medium')}
                   </td>
 
                   <td className="py-3 px-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       {reg.status === 'waitlisted' && (
-                        <button
-                          type="button"
+                        <Button
+                          surface="admin"
+                          size="dense"
+                          variant="secondary"
                           onClick={() => handlePromoteWaitlist(reg.id, reg.userName)}
-                          className="px-2.5 py-1 bg-success text-[var(--color-canvas)] font-extrabold rounded-[6px] text-[11px] hover:opacity-90"
                         >
                           Promote
-                        </button>
+                        </Button>
                       )}
 
                       {reg.status === 'registered' && (
-                        <button
-                          type="button"
+                        <Button
+                          surface="admin"
+                          size="dense"
+                          variant="primary"
                           onClick={() => handleStatusChange(reg.id, 'checked_in')}
-                          className="px-2.5 py-1 bg-[var(--color-accent)] text-[var(--color-canvas)] font-extrabold rounded-[6px] text-[11px] hover:opacity-90"
                         >
                           Check In
-                        </button>
+                        </Button>
                       )}
 
                       <select
                         value={reg.status}
                         onChange={(e) => handleStatusChange(reg.id, e.target.value as any)}
-                        className="p-1 border border-white/20 bg-[var(--color-canvas-subtle)] rounded-[6px] text-[11px] font-bold text-white focus:outline-none"
+                        className="bg-surface text-text text-caption border border-line rounded-btn px-2 py-1 focus:outline-none focus:border-accent"
                       >
                         <option value="registered">Registered</option>
                         <option value="checked_in">Checked In</option>

@@ -25,6 +25,7 @@ import { useToast } from '@/design-system/primitives/Toast'
 import { triggerBurstConfetti } from '@/lib/confetti'
 import { playSound } from '@/lib/sound'
 import { Registration } from '@/api'
+import { StampActionOverlay, PrintMark } from '@/components/stamp'
 
 interface ScanResultState {
   status: 'admitted' | 'already_admitted' | 'queued' | 'wrong_event' | 'invalid'
@@ -51,6 +52,12 @@ export const AdminCheckinPage: React.FC = () => {
   const [cameraActive, setCameraActive] = useState(true)
   const [cameraError, setCameraError] = useState<string | null>(null)
   const [offlineCount, setOfflineCount] = useState<number>(0)
+  const [stampOverlayOpen, setStampOverlayOpen] = useState(false)
+  const [stampDetails, setStampDetails] = useState<{
+    status: 'admitted' | 'void'
+    reg?: Registration
+    title?: string
+  }>({ status: 'admitted' })
 
   // Last scanned code debounce timestamp map
   const lastScannedRef = useRef<{ code: string; time: number }>({ code: '', time: 0 })
@@ -204,6 +211,14 @@ export const AdminCheckinPage: React.FC = () => {
           registration: reg,
           scannedAt: new Date().toLocaleTimeString(),
         })
+
+        // Trigger celebratory 3D physical desk stamp
+        setStampDetails({
+          status: 'admitted',
+          reg,
+          title: 'Gate Admission Verified',
+        })
+        setStampOverlayOpen(true)
       } else {
         if (navigator.vibrate) navigator.vibrate([200, 100, 200])
         playSound('error')
@@ -442,28 +457,69 @@ export const AdminCheckinPage: React.FC = () => {
           </div>
 
           {lastScanResult.registration && (
-            <div className="p-3 rounded-lg bg-paper-2 border border-line flex items-center justify-between text-xs">
-              <div className="space-y-0.5">
-                <p className="font-bold text-ink text-sm">
-                  {lastScanResult.registration.userName}
-                </p>
-                <p className="text-[11px] font-mono text-ink-muted">
-                  {lastScanResult.registration.ticketCode} · {lastScanResult.registration.tierName || 'Hacker Pass'}
+            <div className="relative overflow-hidden p-4 rounded-card bg-surface border border-line flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+              <div className="space-y-1 z-10">
+                <div className="flex items-center gap-2">
+                  <p className="font-bold text-text text-base">
+                    {lastScanResult.registration.userName}
+                  </p>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-500/20">
+                    ADMITTED
+                  </span>
+                </div>
+                <p className="text-[11px] font-mono text-text-3">
+                  {lastScanResult.registration.ticketCode} · {lastScanResult.registration.tierName || 'Standard Admission Pass'}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() =>
-                  handleUndo(
-                    lastScanResult.registration!.id,
-                    lastScanResult.registration!.userName
-                  )
-                }
-                className="px-2.5 py-1 rounded bg-surface-subtle hover:bg-white/20 text-ink font-bold text-[11px] flex items-center gap-1 transition-colors"
-              >
-                <ArrowCounterClockwise className="w-3.5 h-3.5" weight="bold" />
-                <span>Undo</span>
-              </button>
+
+              {/* Ink Print Stamp Mark positioned organically on the verification slip */}
+              <div className="self-end sm:self-auto flex items-center gap-3 z-10">
+                <PrintMark
+                  print={{
+                    status: 'admitted',
+                    dateText: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase(),
+                    subtitle: 'GATE ADMITTED',
+                    seed: 77,
+                  }}
+                  scale={0.85}
+                  className="rotate-[-3deg] hover:rotate-0 transition-transform duration-200"
+                />
+
+                <div className="flex flex-col gap-1.5">
+                  <Button
+                    surface="admin"
+                    variant="secondary"
+                    size="dense"
+                    onClick={() => {
+                      setStampDetails({
+                        status: 'admitted',
+                        reg: lastScanResult.registration,
+                        title: 'Gate Admission Re-Verified',
+                      })
+                      setStampOverlayOpen(true)
+                    }}
+                    className="font-mono text-[10px]"
+                  >
+                    <Sparkle className="w-3 h-3 text-accent" weight="bold" />
+                    <span>Re-Stamp</span>
+                  </Button>
+
+                  <Button
+                    surface="admin"
+                    variant="danger"
+                    size="dense"
+                    onClick={() =>
+                      handleUndo(
+                        lastScanResult.registration!.id,
+                        lastScanResult.registration!.userName
+                      )
+                    }
+                  >
+                    <ArrowCounterClockwise className="w-3 h-3" weight="bold" />
+                    <span>Undo</span>
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -541,19 +597,31 @@ export const AdminCheckinPage: React.FC = () => {
                   </div>
                 </div>
 
-                <button
-                  type="button"
+                <Button
+                  surface="admin"
+                  variant="ghost"
+                  size="dense"
                   onClick={() => handleUndo(reg.id, reg.userName)}
-                  className="text-[11px] font-semibold text-ink-soft hover:text-ink flex items-center gap-1"
+                  className="font-mono text-[11px]"
                 >
                   <ArrowCounterClockwise className="w-3.5 h-3.5" />
                   <span>Undo</span>
-                </button>
+                </Button>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      {/* 3D Physical Desk Stamp Modal */}
+      <StampActionOverlay
+        isOpen={stampOverlayOpen}
+        onClose={() => setStampOverlayOpen(false)}
+        status={stampDetails.status === 'admitted' ? 'admitted' : 'void'}
+        title="Gate Admission Verified"
+        subtitle={stampDetails.reg?.userName || 'GATE ADMISSION CLEARANCE'}
+        dateText={new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
+      />
     </div>
   )
 }

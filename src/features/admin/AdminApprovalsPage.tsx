@@ -77,16 +77,18 @@ export const AdminApprovalsPage: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    disabled={rejectMutation.isPending}
-                    onClick={() => rejectMutation.mutate(evt.id)}
-                    className="px-3 py-1.5 rounded-btn border border-line text-caption font-medium text-text-2 hover:text-text hover:bg-subtle transition-colors"
-                  >
-                    Return to Draft
-                  </button>
                   <Button
                     surface="admin"
+                    variant="secondary"
+                    size="sm"
+                    loading={rejectMutation.isPending}
+                    onClick={() => rejectMutation.mutate(evt.id)}
+                  >
+                    Return to Draft
+                  </Button>
+                  <Button
+                    surface="admin"
+                    variant="primary"
                     size="sm"
                     loading={approveMutation.isPending}
                     icon={<Check size={16} weight="bold" />}
