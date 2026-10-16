@@ -92,6 +92,15 @@ export const RegisterPage: React.FC = () => {
   })
   const [isOnboardingSubmitting, setIsOnboardingSubmitting] = useState(false)
 
+  const isPaidEvent = Boolean(event && !event.isFree && event.price && event.price > 0)
+  const baseAmountCents = isPaidEvent && event?.price ? Math.round(event.price * 100) : 0
+
+  const { data: feeQuote } = useQuery<FeeQuote | null>({
+    queryKey: ['fee-quote', baseAmountCents],
+    queryFn: () => (isPaidEvent && baseAmountCents > 0 ? api.payments.getFeeQuote(baseAmountCents) : null),
+    enabled: isPaidEvent && baseAmountCents > 0,
+  })
+
   if (isLoading) {
     return (
       <PageShell className="py-12">
@@ -117,15 +126,6 @@ export const RegisterPage: React.FC = () => {
 
   // Check if existing registration is on record
   const existingReg = myRegistrations.find((r) => r.eventId === event.id && r.status !== 'cancelled')
-
-  const isPaidEvent = !event.isFree && Boolean(event.price && event.price > 0)
-  const baseAmountCents = isPaidEvent ? Math.round(event.price! * 100) : 0
-
-  const { data: feeQuote } = useQuery<FeeQuote | null>({
-    queryKey: ['fee-quote', baseAmountCents],
-    queryFn: () => (isPaidEvent && baseAmountCents > 0 ? api.payments.getFeeQuote(baseAmountCents) : null),
-    enabled: isPaidEvent && baseAmountCents > 0,
-  })
 
   const handleDynamicChange = (id: string, val: any) => {
     setFormAnswers((prev) => ({ ...prev, [id]: val }))
