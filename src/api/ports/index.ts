@@ -27,6 +27,15 @@ import {
   AttendeeRead,
   ProfileRead,
   ProfileUpdatePayload,
+  PayoutAccount,
+  PayoutAccountCreate,
+  SettlementRecord,
+  FeeQuote,
+  OrderCreateRequest,
+  OrderCreateResponse,
+  PaymentStatusResponse,
+  InAppNotification,
+  InAppNotificationListResponse,
 } from '../contracts'
 
 export interface EventsFilter {
@@ -38,6 +47,8 @@ export interface EventsFilter {
   search?: string
   cursor?: string
   limit?: number
+  free?: boolean
+  city?: string
 }
 
 export interface EventsApi {
@@ -160,8 +171,22 @@ export interface NotificationsApi {
   getNotifications(filter?: { orgId: string; clubId?: string }): Promise<Notification[]>
   sendNotification(notification: Partial<Notification>): Promise<Notification>
   getMyNotifications?(): Promise<Notification[]>
+  getInAppNotifications?(unreadOnly?: boolean): Promise<InAppNotificationListResponse>
+  getUnreadCount?(): Promise<number>
   markNotificationRead?(id: string): Promise<boolean>
   markAllNotificationsRead?(): Promise<boolean>
+}
+
+export interface PaymentsApi {
+  getFeeQuote(baseAmountCents: number): Promise<FeeQuote>
+  createOrder(payload: OrderCreateRequest): Promise<OrderCreateResponse>
+  getOrderStatus(orderId: string): Promise<PaymentStatusResponse>
+}
+
+export interface PayoutsApi {
+  getPayoutAccount(orgSlug: string): Promise<PayoutAccount | null>
+  registerPayoutAccount(orgSlug: string, payload: PayoutAccountCreate): Promise<PayoutAccount>
+  listSettlements(orgSlug: string): Promise<SettlementRecord[]>
 }
 
 export interface ClubsApi {

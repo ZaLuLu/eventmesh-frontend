@@ -51,20 +51,23 @@ export const NotificationInbox: React.FC<{ className?: string }> = ({ className 
     },
   })
 
-  const unreadCount = notifications.filter((n) => !n.read).length
+  const unreadCount = notifications.filter((n) => !(n.read ?? (n as any).is_read)).length
 
-  const getNotificationIcon = (kind?: string) => {
-    switch (kind) {
-      case 'waitlist_promoted':
-        return <Ticket size={16} weight="bold" className="text-mint" />
-      case 'certificate_issued':
-        return <Certificate size={16} weight="bold" className="text-mustard" />
-      case 'reminder':
-        return <Clock size={16} weight="bold" className="text-sky" />
-      case 'announcement':
-      default:
-        return <Megaphone size={16} weight="bold" className="text-cobalt" />
+  const getNotificationIcon = (kind?: string, type?: string) => {
+    const k = kind || type || ''
+    if (k.includes('payout') || k.includes('settle')) {
+      return <Sparkle size={16} weight="bold" className="text-accent" />
     }
+    if (k.includes('pass') || k.includes('ticket') || k === 'waitlist_promoted') {
+      return <Ticket size={16} weight="bold" className="text-mint" />
+    }
+    if (k === 'certificate_issued') {
+      return <Certificate size={16} weight="bold" className="text-mustard" />
+    }
+    if (k === 'reminder') {
+      return <Clock size={16} weight="bold" className="text-sky" />
+    }
+    return <Megaphone size={16} weight="bold" className="text-accent" />
   }
 
   return (
@@ -122,50 +125,56 @@ export const NotificationInbox: React.FC<{ className?: string }> = ({ className 
               </p>
             </div>
           ) : (
-            notifications.slice(0, 15).map((n) => (
-              <div
-                key={n.id}
-                onClick={() => {
-                  if (!n.read) markReadMutation.mutate(n.id)
-                }}
-                className={`p-3.5 flex items-start gap-3 transition-colors cursor-pointer hover:bg-paper-2 ${
-                  n.read ? 'opacity-70 bg-card' : 'bg-paper font-medium'
-                }`}
-              >
-                <div className="p-2 rounded-full bg-paper border border-ink/15 flex-shrink-0 mt-0.5">
-                  {getNotificationIcon((n as any).kind)}
-                </div>
-
-                <div className="flex-1 min-w-0 space-y-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <h4 className="text-xs sm:text-sm font-sans font-bold text-ink truncate">
-                      {n.title}
-                    </h4>
-                    <span className="text-[10px] font-mono text-ink-soft flex-shrink-0">
-                      {formatRelativeDays(n.sentAt)}
-                    </span>
+            notifications.slice(0, 15).map((n) => {
+              const isRead = Boolean(n.read ?? (n as any).is_read)
+              const bodyText = n.body || (n as any).message || ''
+              const timestamp = n.sentAt || (n as any).created_at || new Date().toISOString()
+              const eventSlug = n.eventId || (n as any).data?.event_slug
+              return (
+                <div
+                  key={n.id}
+                  onClick={() => {
+                    if (!isRead) markReadMutation.mutate(n.id)
+                  }}
+                  className={`p-3.5 flex items-start gap-3 transition-colors cursor-pointer hover:bg-surface-subtle ${
+                    isRead ? 'opacity-70 bg-card' : 'bg-surface-subtle/50 font-medium'
+                  }`}
+                >
+                  <div className="p-2 rounded-full bg-card border border-line flex-shrink-0 mt-0.5">
+                    {getNotificationIcon((n as any).kind, (n as any).type)}
                   </div>
 
-                  <p className="text-xs text-ink-soft line-clamp-2 leading-relaxed">
-                    {n.body}
-                  </p>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <h4 className="text-xs sm:text-sm font-sans font-bold text-ink truncate">
+                        {n.title}
+                      </h4>
+                      <span className="text-[10px] font-mono text-ink-soft flex-shrink-0">
+                        {formatRelativeDays(timestamp)}
+                      </span>
+                    </div>
 
-                  {n.eventId && (
-                    <Link
-                      to={`/events/${n.eventId}`}
-                      onClick={() => setOpen(false)}
-                      className="inline-block text-[11px] font-mono font-semibold text-cobalt hover:underline pt-0.5"
-                    >
-                      View event details →
-                    </Link>
+                    <p className="text-xs text-ink-soft line-clamp-2 leading-relaxed">
+                      {bodyText}
+                    </p>
+
+                    {eventSlug && (
+                      <Link
+                        to={`/events/${eventSlug}`}
+                        onClick={() => setOpen(false)}
+                        className="inline-block text-[11px] font-mono font-semibold text-accent hover:underline pt-0.5"
+                      >
+                        View event details →
+                      </Link>
+                    )}
+                  </div>
+
+                  {!isRead && (
+                    <span className="w-2 h-2 rounded-full bg-accent flex-shrink-0 mt-2" />
                   )}
                 </div>
-
-                {!n.read && (
-                  <span className="w-2 h-2 rounded-full bg-cobalt flex-shrink-0 mt-2" />
-                )}
-              </div>
-            ))
+              )
+            })
           )}
         </div>
 

@@ -1,0 +1,487 @@
+import React, { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  Bank,
+  CheckCircle,
+  Clock,
+  WarningCircle,
+  ShieldCheck,
+  ArrowSquareOut,
+  CurrencyInr,
+  Sparkle,
+  ArrowsClockwise,
+} from '@phosphor-icons/react'
+import { api, PayoutAccount, SettlementRecord, PayoutAccountCreate } from '@/api'
+import { useAuth } from '@/hooks/useAuth'
+import { usePermission } from '@/hooks/usePermission'
+import { Button } from '@/design-system/primitives/Button'
+import { Field } from '@/design-system/primitives/Field'
+import { Badge } from '@/design-system/primitives/Badge'
+import { useToast } from '@/design-system/primitives/Toast'
+import { formatCurrency, formatDate } from '@/lib/format'
+
+export const AdminPayoutsPage: React.FC = () => {
+  const { session } = useAuth()
+  const { clubId } = usePermission()
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+
+  const orgSlug = clubId || session?.clubId || 'apex-design-lab'
+
+  const [isEditing, setIsEditing] = useState(false)
+  const [accountHolderName, setAccountHolderName] = useState('')
+  const [bankName, setBankName] = useState('')
+  const [accountNumber, setAccountNumber] = useState('')
+  const [confirmAccountNumber, setConfirmAccountNumber] = useState('')
+  const [ifscCode, setIfscCode] = useState('')
+  const [pan, setPan] = useState('')
+  const [businessType, setBusinessType] = useState<'INDIVIDUAL' | 'PROPRIETORSHIP' | 'PRIVATE_LIMITED'>('INDIVIDUAL')
+  const [formError, setFormError] = useState<string | null>(null)
+
+  // Query Payout Account
+  const {
+    data: account,
+    isLoading: isAccountLoading,
+    refetch: refetchAccount,
+  } = useQuery<PayoutAccount | null>({
+    queryKey: ['payout-account', orgSlug],
+    queryFn: () => api.payouts.getPayoutAccount(orgSlug),
+  })
+
+  // Query Settlements
+  const {
+    data: settlements = [],
+    isLoading: isSettlementsLoading,
+    refetch: refetchSettlements,
+  } = useQuery<SettlementRecord[]>({
+    queryKey: ['settlements', orgSlug],
+    queryFn: () => api.payouts.listSettlements(orgSlug),
+  })
+
+  // Register / Update Payout Account Mutation
+  const registerMutation = useMutation({
+    mutationFn: (payload: PayoutAccountCreate) =>
+      api.payouts.registerPayoutAccount(orgSlug, payload),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(['payout-account', orgSlug], updated)
+      queryClient.invalidateQueries({ queryKey: ['payout-account', orgSlug] })
+      setIsEditing(false)
+      setAccountNumber('')
+      setConfirmAccountNumber('')
+      setPan('')
+      setFormError(null)
+      toast({
+        title: 'Bank Account Linked',
+        message: 'Your account has been submitted to Cashfree Easy Split for automated payouts.',
+        type: 'success',
+      })
+    },
+    onError: (err: any) => {
+      setFormError(err.message || err.detail || 'Failed to link bank account. Please check your details.')
+    },
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setFormError(null)
+
+    if (!accountHolderName.trim()) {
+      setFormError('Account holder name is required.')
+      return
+    }
+    if (!accountNumber.trim()) {
+      setFormError('Account number is required.')
+      return
+    }
+    if (accountNumber.trim() !== confirmAccountNumber.trim()) {
+      setFormError('Account numbers do not match.')
+      return
+    }
+    const cleanIfsc = ifscCode.trim().toUpperCase()
+    if (!cleanIfsc || cleanIfsc.length < 5) {
+      setFormError('Please enter a valid IFSC code (e.g. HDFC0001234).')
+      return
+    }
+    const cleanPan = pan.trim().toUpperCase()
+    if (cleanPan) {
+      const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/
+      if (!panRegex.test(cleanPan)) {
+        setFormError('Invalid PAN format. Must be 10 characters (e.g. ABCDE1234F).')
+        return
+      }
+    }
+
+    registerMutation.mutate({
+      account_holder_name: accountHolderName.trim(),
+      bank_name: bankName.trim() || undefined,
+      account_number: accountNumber.trim(),
+      ifsc_code: cleanIfsc,
+      pan: cleanPan || undefined,
+      business_type: businessType,
+    })
+  }
+
+  const startEdit = () => {
+    if (account) {
+      setAccountHolderName(account.account_holder_name)
+      setBankName(account.bank_name || '')
+      setIfscCode(account.ifsc_code)
+    }
+    setIsEditing(true)
+  }
+
+  // Calculate ledger metrics
+  const totalSettledInr = settlements
+    .filter((s) => s.status === 'SUCCESS')
+    .reduce((acc, s) => acc + s.amount_inr, 0)
+
+  const pendingSettlementInr = settlements
+    .filter((s) => s.status === 'PENDING')
+    .reduce((acc, s) => acc + s.amount_inr, 0)
+
+  const isVerified = account?.status === 'VERIFIED'
+
+  return (
+    <div className="space-y-8 max-w-6xl pb-12">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-line">
+        <div>
+          <span className="text-caption font-semibold text-accent block mb-1">
+            Financial Operations & Marketplace
+          </span>
+          <h1 className="text-h2 font-semibold text-text">
+            Payouts & Bank KYC
+          </h1>
+          <p className="text-small text-text-2 mt-0.5">
+            Manage linked bank accounts, Cashfree Easy Split vendor verification, and ticket revenue payouts.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Button
+            surface="admin"
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              refetchAccount()
+              refetchSettlements()
+            }}
+            icon={<ArrowsClockwise size={15} />}
+          >
+            Refresh Ledger
+          </Button>
+          {!account && !isEditing && (
+            <Button surface="admin" size="sm" onClick={() => setIsEditing(true)}>
+              Link Bank Account
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Overview Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-5 bg-surface border border-line rounded-panel space-y-1.5">
+          <p className="text-caption text-text-3 font-medium">Total Settled (Net INR)</p>
+          <p className="text-2xl font-semibold text-text tabular-nums">
+            {formatCurrency(totalSettledInr)}
+          </p>
+          <p className="text-caption text-success font-medium flex items-center gap-1">
+            <CheckCircle size={14} weight="fill" />
+            Reconciled via Cashfree Easy Split
+          </p>
+        </div>
+
+        <div className="p-5 bg-surface border border-line rounded-panel space-y-1.5">
+          <p className="text-caption text-text-3 font-medium">Pending Settlement</p>
+          <p className="text-2xl font-semibold text-text tabular-nums">
+            {formatCurrency(pendingSettlementInr)}
+          </p>
+          <p className="text-caption text-text-2">Dispatched to bank within 24h of event completion</p>
+        </div>
+
+        <div className="p-5 bg-surface border border-line rounded-panel space-y-1.5">
+          <p className="text-caption text-text-3 font-medium">Platform Commission</p>
+          <p className="text-2xl font-semibold text-text tabular-nums">5.0%</p>
+          <p className="text-caption text-text-2">Marketplace fee on ticket sales (95% net to host)</p>
+        </div>
+      </div>
+
+      {/* KYC Vendor Status Banner */}
+      <div className="p-6 bg-surface border border-line rounded-panel space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className={`p-2.5 rounded-lg border ${
+              isVerified
+                ? 'bg-success-bg border-success-border text-success'
+                : account
+                ? 'bg-amber-500/10 border-amber-500/20 text-amber-500'
+                : 'bg-surface-subtle border-line text-text-3'
+            }`}>
+              {isVerified ? (
+                <ShieldCheck size={24} weight="fill" />
+              ) : account ? (
+                <Clock size={24} weight="bold" />
+              ) : (
+                <Bank size={24} weight="bold" />
+              )}
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-sans font-semibold text-base text-text">
+                  Cashfree Easy Split Vendor Account
+                </h3>
+                {isVerified ? (
+                  <Badge variant="success" size="sm">KYC Verified</Badge>
+                ) : account ? (
+                  <Badge variant="warning" size="sm">Verification Pending</Badge>
+                ) : (
+                  <Badge variant="neutral" size="sm">Setup Required</Badge>
+                )}
+              </div>
+              <p className="text-small text-text-2 mt-1">
+                {isVerified
+                  ? `Vendor ID: ${account?.vendor_id} • Linked to ${account?.bank_name || 'Bank'} (${account?.account_number_masked})`
+                  : account
+                  ? `Verification in progress for vendor ${account?.vendor_id}. Automated payouts will activate once approved.`
+                  : 'Link your club or society bank account with PAN verification to accept paid registrations.'}
+              </p>
+            </div>
+          </div>
+
+          <div>
+            {account && !isEditing ? (
+              <Button surface="admin" variant="secondary" size="sm" onClick={startEdit}>
+                Update Details
+              </Button>
+            ) : !account && !isEditing ? (
+              <Button surface="admin" size="sm" onClick={() => setIsEditing(true)}>
+                Onboard Bank Account
+              </Button>
+            ) : null}
+          </div>
+        </div>
+
+        {/* Account Details pill if linked */}
+        {account && !isEditing && (
+          <div className="pt-4 border-t border-line grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+            <div>
+              <span className="text-text-3 block mb-0.5">Account Holder</span>
+              <span className="font-semibold text-text">{account.account_holder_name}</span>
+            </div>
+            <div>
+              <span className="text-text-3 block mb-0.5">Bank Name</span>
+              <span className="font-semibold text-text">{account.bank_name || 'Bank of Record'}</span>
+            </div>
+            <div>
+              <span className="text-text-3 block mb-0.5">Account Number</span>
+              <span className="font-mono font-semibold text-text">{account.account_number_masked}</span>
+            </div>
+            <div>
+              <span className="text-text-3 block mb-0.5">IFSC Code</span>
+              <span className="font-mono font-semibold text-text">{account.ifsc_code}</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Bank Account Onboarding / Edit Form */}
+      {isEditing && (
+        <div className="p-6 bg-surface border border-line rounded-panel space-y-6">
+          <div className="flex items-center justify-between border-b border-line pb-4">
+            <div>
+              <h3 className="font-sans font-semibold text-base text-text">
+                {account ? 'Update Payout Bank Account' : 'Link Payout Bank Account'}
+              </h3>
+              <p className="text-small text-text-2 mt-0.5">
+                Funds from paid event passes will be automatically credited to this verified account.
+              </p>
+            </div>
+            <Button surface="admin" variant="secondary" size="sm" onClick={() => setIsEditing(false)}>
+              Cancel
+            </Button>
+          </div>
+
+          {formError && (
+            <div className="p-3.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-small flex items-center gap-2">
+              <WarningCircle size={18} weight="fill" className="shrink-0" />
+              <span>{formError}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field
+                surface="admin"
+                label="Account Holder Name"
+                helpText="As registered in official bank records"
+                required
+                value={accountHolderName}
+                onChange={(e) => setAccountHolderName(e.target.value)}
+                placeholder="e.g. Apex Design Collective"
+              />
+
+              <Field
+                surface="admin"
+                label="Bank Name"
+                helpText="e.g. HDFC Bank, SBI, ICICI"
+                value={bankName}
+                onChange={(e) => setBankName(e.target.value)}
+                placeholder="e.g. HDFC Bank"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field
+                surface="admin"
+                label="Bank Account Number"
+                required
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value)}
+                placeholder="Enter account number"
+                className="font-mono"
+              />
+
+              <Field
+                surface="admin"
+                type="password"
+                label="Confirm Account Number"
+                required
+                value={confirmAccountNumber}
+                onChange={(e) => setConfirmAccountNumber(e.target.value)}
+                placeholder="Re-enter account number"
+                className="font-mono"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Field
+                surface="admin"
+                label="IFSC Code"
+                helpText="11-character bank code"
+                required
+                value={ifscCode}
+                onChange={(e) => setIfscCode(e.target.value.toUpperCase())}
+                placeholder="e.g. HDFC0001234"
+                maxLength={11}
+                className="font-mono uppercase"
+              />
+
+              <Field
+                surface="admin"
+                label="PAN (Permanent Account Number)"
+                helpText="10-character PAN for KYC (ABCDE1234F)"
+                value={pan}
+                onChange={(e) => setPan(e.target.value.toUpperCase())}
+                placeholder="e.g. ABCDE1234F"
+                maxLength={10}
+                className="font-mono uppercase"
+              />
+
+              <div className="w-full flex flex-col gap-1.5">
+                <label className="text-small font-medium text-text select-none">
+                  Business Entity Type
+                </label>
+                <select
+                  value={businessType}
+                  onChange={(e) => setBusinessType(e.target.value as any)}
+                  className="w-full bg-surface text-text font-normal border border-line rounded-input px-3.5 h-12 text-small focus:outline-none focus:ring-2 focus:ring-accent"
+                >
+                  <option value="INDIVIDUAL">Individual / Student Club</option>
+                  <option value="PROPRIETORSHIP">Proprietorship / Society</option>
+                  <option value="PRIVATE_LIMITED">Private Limited / Institution</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-line">
+              <Button
+                type="button"
+                surface="admin"
+                variant="secondary"
+                size="sm"
+                onClick={() => setIsEditing(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                surface="admin"
+                size="sm"
+                disabled={registerMutation.isPending}
+              >
+                {registerMutation.isPending ? 'Linking Account...' : 'Save & Verify Account'}
+              </Button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Settlements & Dispatches Ledger */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-h3 font-semibold text-text">Settlements & Payout Ledger</h2>
+            <p className="text-small text-text-2">
+              Itemized history of reconciled marketplace payouts and bank transfers.
+            </p>
+          </div>
+          <span className="text-xs font-mono text-text-3">
+            {settlements.length} total dispatches
+          </span>
+        </div>
+
+        <div className="border border-line rounded-panel overflow-hidden bg-surface">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-surface-subtle border-b border-line text-xs font-semibold text-text-2">
+                <tr>
+                  <th className="px-4 py-3">Reference / Settlement ID</th>
+                  <th className="px-4 py-3">Date Dispatched</th>
+                  <th className="px-4 py-3">UTR Reference</th>
+                  <th className="px-4 py-3">Net Payout (INR)</th>
+                  <th className="px-4 py-3">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {settlements.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-8 text-center text-text-3">
+                      No payout settlements recorded yet. Once ticket sales close, payouts will appear here.
+                    </td>
+                  </tr>
+                ) : (
+                  settlements.map((s) => (
+                    <tr key={s.id} className="hover:bg-surface-subtle/50 transition-colors">
+                      <td className="px-4 py-3.5 font-mono text-xs font-semibold text-text">
+                        {s.cf_settlement_id}
+                      </td>
+                      <td className="px-4 py-3.5 text-text-2 text-xs">
+                        {s.settled_at ? formatDate(s.settled_at, 'full') : 'Processing'}
+                      </td>
+                      <td className="px-4 py-3.5 font-mono text-xs text-text-2">
+                        {s.utr || '—'}
+                      </td>
+                      <td className="px-4 py-3.5 font-semibold text-text tabular-nums">
+                        {formatCurrency(s.amount_inr)}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        {s.status === 'SUCCESS' ? (
+                          <Badge variant="success" size="sm">Settled</Badge>
+                        ) : s.status === 'PENDING' ? (
+                          <Badge variant="warning" size="sm">In Transit</Badge>
+                        ) : (
+                          <Badge variant="danger" size="sm">{s.status}</Badge>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

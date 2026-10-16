@@ -21,6 +21,8 @@ import {
   DashboardStats,
   UserRoleRecord,
   SearchResults,
+  PaymentsApi,
+  PayoutsApi,
 } from '../../ports'
 import {
   Organization,
@@ -37,6 +39,15 @@ import {
   FormField,
   OrganizerGalleryItem,
   PaginatedResult,
+  PayoutAccount,
+  PayoutAccountCreate,
+  SettlementRecord,
+  FeeQuote,
+  OrderCreateRequest,
+  OrderCreateResponse,
+  PaymentStatusResponse,
+  InAppNotification,
+  InAppNotificationListResponse,
 } from '../../contracts'
 import { SEED_ORGANIZATION, SEED_CLUBS, SEED_DEMO_USERS } from './seedData'
 import {
@@ -77,7 +88,112 @@ async function simulateLatency(): Promise<void> {
 // -------------------------------------------------------------
 // IN-MEMORY / LOCALSTORAGE STORE
 // -------------------------------------------------------------
-const SCHEMA_VERSION = 'v5_city_and_paid_events'
+const SCHEMA_VERSION = 'v6_marketplace_payments_payouts_notifs'
+
+const SEED_PAYOUT_ACCOUNTS: Record<string, PayoutAccount> = {
+  'apex-design-lab': {
+    id: 'payout-acc-001',
+    organization_id: 'org-club-1',
+    vendor_id: 'CF_VND_APEX_DESIGN',
+    account_holder_name: 'Apex Design Collective',
+    bank_name: 'HDFC Bank',
+    ifsc_code: 'HDFC0001234',
+    account_number_masked: '••••••••8912',
+    status: 'VERIFIED',
+    created_at: '2026-09-15T10:00:00Z',
+    updated_at: '2026-09-15T10:00:00Z',
+  },
+  'cyber-security-alliance': {
+    id: 'payout-acc-002',
+    organization_id: 'org-club-2',
+    vendor_id: 'CF_VND_CYBER_SEC',
+    account_holder_name: 'Cyber Security Alliance',
+    bank_name: 'ICICI Bank',
+    ifsc_code: 'ICIC0004321',
+    account_number_masked: '••••••••4532',
+    status: 'VERIFIED',
+    created_at: '2026-09-20T11:30:00Z',
+    updated_at: '2026-09-20T11:30:00Z',
+  },
+}
+
+const SEED_SETTLEMENTS: SettlementRecord[] = [
+  {
+    id: 'settle-001',
+    cf_settlement_id: 'CF_SETTLE_98214',
+    vendor_id: 'CF_VND_APEX_DESIGN',
+    amount_cents: 1425000,
+    amount_inr: 14250.0,
+    currency: 'INR',
+    status: 'SUCCESS',
+    utr: 'UTR98765432101',
+    settled_at: '2026-10-14T14:30:00Z',
+    created_at: '2026-10-14T10:00:00Z',
+  },
+  {
+    id: 'settle-002',
+    cf_settlement_id: 'CF_SETTLE_98102',
+    vendor_id: 'CF_VND_APEX_DESIGN',
+    amount_cents: 890000,
+    amount_inr: 8900.0,
+    currency: 'INR',
+    status: 'SUCCESS',
+    utr: 'UTR98765432102',
+    settled_at: '2026-10-11T16:15:00Z',
+    created_at: '2026-10-11T12:00:00Z',
+  },
+  {
+    id: 'settle-003',
+    cf_settlement_id: 'CF_SETTLE_98005',
+    vendor_id: 'CF_VND_APEX_DESIGN',
+    amount_cents: 475000,
+    amount_inr: 4750.0,
+    currency: 'INR',
+    status: 'PENDING',
+    utr: null,
+    settled_at: null,
+    created_at: '2026-10-15T09:00:00Z',
+  },
+]
+
+const SEED_IN_APP_NOTIFICATIONS: InAppNotification[] = [
+  {
+    id: 'ian-001',
+    user_id: 'usr-admin',
+    type: 'payout_kyc_approved',
+    organization_id: 'org-club-1',
+    title: 'Payout Account Verified',
+    message: 'Cashfree Easy Split vendor verification complete. Instant automated splits are active for paid ticket tiers.',
+    data: { vendor_id: 'CF_VND_APEX_DESIGN', status: 'VERIFIED' },
+    is_read: false,
+    read_at: null,
+    created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
+  },
+  {
+    id: 'ian-002',
+    user_id: 'usr-admin',
+    type: 'settlement_processed',
+    organization_id: 'org-club-1',
+    title: 'Settlement Dispatched (₹14,250)',
+    message: 'Automated marketplace split settlement CF_SETTLE_98214 has been reconciled and transferred via UTR98765432101.',
+    data: { settlement_id: 'CF_SETTLE_98214', amount_inr: 14250.0 },
+    is_read: false,
+    read_at: null,
+    created_at: new Date(Date.now() - 3600000 * 18).toISOString(),
+  },
+  {
+    id: 'ian-003',
+    user_id: 'usr-admin',
+    type: 'pass_purchased',
+    organization_id: 'org-club-1',
+    title: 'New Paid Registration',
+    message: 'Student registered for AI & Design Systems Summit 2026 (Tier 1 Pass, ₹249.00).',
+    data: { event_slug: 'ai-design-systems-summit-2026', ticket_code: 'PASS-89127' },
+    is_read: true,
+    read_at: new Date(Date.now() - 3600000 * 24).toISOString(),
+    created_at: new Date(Date.now() - 3600000 * 25).toISOString(),
+  },
+]
 
 class MockDataStore {
   organization: Organization
@@ -87,6 +203,9 @@ class MockDataStore {
   certificates: Certificate[]
   announcements: Announcement[]
   notifications: Notification[]
+  inAppNotifications: InAppNotification[]
+  payoutAccounts: Record<string, PayoutAccount>
+  settlements: SettlementRecord[]
   auditLogs: AuditLog[]
   currentSession: UserSession | null
 
@@ -101,6 +220,9 @@ class MockDataStore {
       this.certificates = SEED_CERTIFICATES
       this.announcements = SEED_ANNOUNCEMENTS
       this.notifications = SEED_NOTIFICATIONS
+      this.inAppNotifications = SEED_IN_APP_NOTIFICATIONS
+      this.payoutAccounts = { ...SEED_PAYOUT_ACCOUNTS }
+      this.settlements = [...SEED_SETTLEMENTS]
       this.auditLogs = SEED_AUDIT_LOGS
       this.currentSession = SEED_DEMO_USERS[0]
       setStored('schema_version', SCHEMA_VERSION)
@@ -113,6 +235,9 @@ class MockDataStore {
       this.certificates = getStored('certificates', SEED_CERTIFICATES)
       this.announcements = getStored('announcements', SEED_ANNOUNCEMENTS)
       this.notifications = getStored('notifications', SEED_NOTIFICATIONS)
+      this.inAppNotifications = getStored('in_app_notifications', SEED_IN_APP_NOTIFICATIONS)
+      this.payoutAccounts = getStored('payout_accounts', SEED_PAYOUT_ACCOUNTS)
+      this.settlements = getStored('settlements', SEED_SETTLEMENTS)
       this.auditLogs = getStored('audit_logs', SEED_AUDIT_LOGS)
       this.currentSession = getStored('session', SEED_DEMO_USERS[0])
     }
@@ -127,6 +252,9 @@ class MockDataStore {
     setStored('certificates', this.certificates)
     setStored('announcements', this.announcements)
     setStored('notifications', this.notifications)
+    setStored('in_app_notifications', this.inAppNotifications)
+    setStored('payout_accounts', this.payoutAccounts)
+    setStored('settlements', this.settlements)
     setStored('audit_logs', this.auditLogs)
     setStored('session', this.currentSession)
   }
@@ -139,6 +267,9 @@ class MockDataStore {
     this.certificates = SEED_CERTIFICATES
     this.announcements = SEED_ANNOUNCEMENTS
     this.notifications = SEED_NOTIFICATIONS
+    this.inAppNotifications = [...SEED_IN_APP_NOTIFICATIONS]
+    this.payoutAccounts = { ...SEED_PAYOUT_ACCOUNTS }
+    this.settlements = [...SEED_SETTLEMENTS]
     this.auditLogs = SEED_AUDIT_LOGS
     this.currentSession = SEED_DEMO_USERS[0]
     setStored('schema_version', SCHEMA_VERSION)
@@ -961,11 +1092,35 @@ export const mockNotificationsApi: NotificationsApi = {
     return [...mockStore.notifications]
   },
 
+  async getInAppNotifications(unreadOnly?: boolean): Promise<InAppNotificationListResponse> {
+    await simulateLatency()
+    let items = [...mockStore.inAppNotifications]
+    if (unreadOnly) {
+      items = items.filter((n) => !n.is_read)
+    }
+    const unreadCount = mockStore.inAppNotifications.filter((n) => !n.is_read).length
+    return {
+      total: items.length,
+      unread_count: unreadCount,
+      total_unread: unreadCount,
+      items,
+    }
+  },
+
+  async getUnreadCount(): Promise<number> {
+    await simulateLatency()
+    return mockStore.inAppNotifications.filter((n) => !n.is_read).length
+  },
+
   async markNotificationRead(id: string): Promise<boolean> {
     await simulateLatency()
     const notif = mockStore.notifications.find((n) => n.id === id)
-    if (!notif) return false
-    notif.read = true
+    if (notif) notif.read = true
+    const ian = mockStore.inAppNotifications.find((n) => n.id === id)
+    if (ian) {
+      ian.is_read = true
+      ian.read_at = new Date().toISOString()
+    }
     mockStore.save()
     return true
   },
@@ -975,8 +1130,129 @@ export const mockNotificationsApi: NotificationsApi = {
     mockStore.notifications.forEach((n) => {
       n.read = true
     })
+    mockStore.inAppNotifications.forEach((n) => {
+      n.is_read = true
+      n.read_at = new Date().toISOString()
+    })
     mockStore.save()
     return true
+  },
+}
+
+export const mockPaymentsApi: PaymentsApi = {
+  async getFeeQuote(baseAmountCents: number): Promise<FeeQuote> {
+    await simulateLatency()
+    const orgRate = 5.0
+    const attRate = 3.0
+    const txRate = 0.0
+
+    const platformFeeCents = Math.round(baseAmountCents * (attRate / 100.0))
+    const taxAmountCents = txRate > 0 ? Math.round(platformFeeCents * (txRate / 100.0)) : 0
+    const totalPayableCents = baseAmountCents + platformFeeCents + taxAmountCents
+    const organizerCommCents = Math.round(baseAmountCents * (orgRate / 100.0))
+    const organizerShareCents = baseAmountCents - organizerCommCents
+    const platformGrossCents = organizerCommCents + platformFeeCents + taxAmountCents
+
+    return {
+      base_amount_cents: baseAmountCents,
+      platform_fee_cents: platformFeeCents,
+      organizer_commission_cents: organizerCommCents,
+      tax_amount_cents: taxAmountCents,
+      total_payable_cents: totalPayableCents,
+      organizer_share_cents: organizerShareCents,
+      platform_gross_cents: platformGrossCents,
+      base_amount_inr: Math.round(baseAmountCents) / 100.0,
+      platform_fee_inr: Math.round(platformFeeCents) / 100.0,
+      organizer_commission_inr: Math.round(organizerCommCents) / 100.0,
+      tax_amount_inr: Math.round(taxAmountCents) / 100.0,
+      total_payable_inr: Math.round(totalPayableCents) / 100.0,
+      organizer_share_inr: Math.round(organizerShareCents) / 100.0,
+      platform_gross_inr: Math.round(platformGrossCents) / 100.0,
+      organizer_commission_rate: orgRate,
+      attendee_fee_rate: attRate,
+      tax_rate: txRate,
+    }
+  },
+
+  async createOrder(payload: OrderCreateRequest): Promise<OrderCreateResponse> {
+    await simulateLatency()
+    let amountCents = 24900
+    if (payload.event_slug) {
+      const ev = mockStore.events.find((e) => e.slug === payload.event_slug)
+      if (ev && ev.price) {
+        amountCents = Math.round(ev.price * 100)
+      }
+    }
+    const quote = await mockPaymentsApi.getFeeQuote(amountCents)
+    return {
+      order_id: `order_cf_${Date.now()}`,
+      payment_session_id: `session_${Date.now()}`,
+      amount_cents: quote.total_payable_cents,
+      currency: 'INR',
+      status: 'PENDING',
+      environment: 'sandbox',
+    }
+  },
+
+  async getOrderStatus(orderId: string): Promise<PaymentStatusResponse> {
+    await simulateLatency()
+    return {
+      order_id: orderId,
+      status: 'PAID',
+      amount_cents: 25647,
+      currency: 'INR',
+      payment_type: 'event_registration',
+      is_paid: true,
+      ticket_code: `PASS-${Math.floor(100000 + Math.random() * 900000)}`,
+      registration_status: 'confirmed',
+    }
+  },
+}
+
+export const mockPayoutsApi: PayoutsApi = {
+  async getPayoutAccount(orgSlug: string): Promise<PayoutAccount | null> {
+    await simulateLatency()
+    const target = mockStore.payoutAccounts[orgSlug]
+    return target || null
+  },
+
+  async registerPayoutAccount(orgSlug: string, payload: PayoutAccountCreate): Promise<PayoutAccount> {
+    await simulateLatency()
+    const last4 = payload.account_number.slice(-4)
+    const record: PayoutAccount = {
+      id: `payout-acc-${Date.now()}`,
+      organization_id: `org-${orgSlug}`,
+      vendor_id: `CF_VND_${orgSlug.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`,
+      account_holder_name: payload.account_holder_name,
+      bank_name: payload.bank_name || 'Bank of Baroda',
+      ifsc_code: payload.ifsc_code.toUpperCase(),
+      account_number_masked: `••••••••${last4}`,
+      status: 'VERIFIED',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    mockStore.payoutAccounts[orgSlug] = record
+    
+    // Add notification
+    const notif: InAppNotification = {
+      id: `ian-${Date.now()}`,
+      user_id: mockStore.currentSession?.id || 'usr-admin',
+      type: 'payout_kyc_approved',
+      organization_id: `org-${orgSlug}`,
+      title: 'Bank Account Linked & Verified',
+      message: `Cashfree vendor ${record.vendor_id} linked with ${record.bank_name} (${record.account_number_masked}). Split payouts active.`,
+      is_read: false,
+      read_at: null,
+      created_at: new Date().toISOString(),
+    }
+    mockStore.inAppNotifications.unshift(notif)
+    mockStore.save()
+    return record
+  },
+
+  async listSettlements(_orgSlug: string): Promise<SettlementRecord[]> {
+    await simulateLatency()
+    return [...mockStore.settlements]
   },
 }
 

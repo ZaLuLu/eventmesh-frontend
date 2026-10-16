@@ -15,6 +15,8 @@ import {
   mockAuthApi,
   mockSearchApi,
   mockOrganizationsApi,
+  mockPaymentsApi,
+  mockPayoutsApi,
   mockStore,
 } from './adapters/mock'
 
@@ -35,6 +37,8 @@ import {
   httpAuthApi,
   httpSearchApi,
   httpOrganizationsApi,
+  httpPaymentsApi,
+  httpPayoutsApi,
 } from './adapters/http'
 
 const isMock = import.meta.env.VITE_API_MODE !== 'http'
@@ -57,6 +61,8 @@ export const api = {
   auth: isMock ? mockAuthApi : httpAuthApi,
   search: isMock ? mockSearchApi : httpSearchApi,
   organizations: isMock ? mockOrganizationsApi : httpOrganizationsApi,
+  payments: isMock ? mockPaymentsApi : httpPaymentsApi,
+  payouts: isMock ? mockPayoutsApi : httpPayoutsApi,
   // Helper for mock reset in dev mode
   mockStore: isMock ? mockStore : null,
 }

@@ -1,17 +1,24 @@
 // Hallmark macrostructure: AdminConsole-Dashboard
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, PaperPlaneRight } from '@phosphor-icons/react'
+import { Plus, PaperPlaneRight, Bank, ArrowRight, ShieldCheck } from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { useQuery } from '@tanstack/react-query'
-import { api } from '@/api'
+import { api, PayoutAccount } from '@/api'
 import { Button } from '@/design-system/primitives/Button'
+import { Badge } from '@/design-system/primitives/Badge'
 import { formatDate } from '@/lib/dates'
 
 export const AdminDashboardPage: React.FC = () => {
   const { session } = useAuth()
   const { role, clubId } = usePermission()
+  const orgSlug = clubId || session?.clubId || 'apex-design-lab'
+
+  const { data: payoutAccount } = useQuery<PayoutAccount | null>({
+    queryKey: ['payout-account', orgSlug],
+    queryFn: () => api.payouts.getPayoutAccount(orgSlug),
+  })
 
   const { data: stats } = useQuery({
     queryKey: ['admin-stats', { orgId: session?.orgId || 'org-1', clubId: clubId || undefined }],
@@ -61,6 +68,40 @@ export const AdminDashboardPage: React.FC = () => {
             </Button>
           </Link>
         </div>
+      </div>
+
+      {/* Cashfree Payout & KYC Status Callout */}
+      <div className="p-4 bg-surface border border-line rounded-panel flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-surface-subtle border border-line text-accent shrink-0">
+            <Bank size={20} weight="bold" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-small font-semibold text-text">
+                Cashfree Marketplace Payouts
+              </span>
+              {payoutAccount?.status === 'VERIFIED' ? (
+                <Badge variant="success" size="sm">KYC Active</Badge>
+              ) : payoutAccount ? (
+                <Badge variant="warning" size="sm">KYC Pending</Badge>
+              ) : (
+                <Badge variant="neutral" size="sm">Bank Unlinked</Badge>
+              )}
+            </div>
+            <p className="text-caption text-text-2 mt-0.5">
+              {payoutAccount
+                ? `Linked to ${payoutAccount.bank_name || 'Bank'} (${payoutAccount.account_number_masked}) for automated split settlements.`
+                : 'Complete bank account and PAN KYC onboarding to accept paid attendee tickets.'}
+            </p>
+          </div>
+        </div>
+
+        <Link to="/admin/payouts" className="shrink-0">
+          <Button surface="admin" variant="secondary" size="sm" icon={<ArrowRight size={14} />}>
+            Manage Payouts & Settlements
+          </Button>
+        </Link>
       </div>
 
       {/* Flat Square Stat Cards */}

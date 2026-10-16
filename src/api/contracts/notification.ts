@@ -48,3 +48,27 @@ export const NotificationSchema = z.object({
 })
 
 export type Notification = z.infer<typeof NotificationSchema>
+
+export const InAppNotificationSchema = z.object({
+  id: z.string(),
+  user_id: z.string(),
+  type: z.string(),
+  organization_id: z.string().nullable().optional(),
+  title: z.string(),
+  message: z.string(),
+  data: z.record(z.any()).nullable().optional(),
+  is_read: z.boolean().default(false),
+  read_at: z.string().nullable().optional(),
+  created_at: z.string(),
+})
+
+export type InAppNotification = z.infer<typeof InAppNotificationSchema>
+
+export const InAppNotificationListResponseSchema = z.object({
+  total: z.number(),
+  unread_count: z.number(),
+  total_unread: z.number().default(0),
+  items: z.array(InAppNotificationSchema),
+})
+
+export type InAppNotificationListResponse = z.infer<typeof InAppNotificationListResponseSchema>

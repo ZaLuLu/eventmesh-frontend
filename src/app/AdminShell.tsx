@@ -20,6 +20,7 @@ import {
   X,
   CheckSquare,
   FileText,
+  Bank,
 } from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
@@ -55,6 +56,7 @@ export const AdminShell: React.FC = () => {
         { label: 'Dashboard', path: '/admin', icon: <SquaresFour className="w-4 h-4" weight="bold" />, show: !isVolunteer, exact: true },
         { label: 'Events', path: '/admin/events', icon: <CalendarCheck className="w-4 h-4" weight="bold" />, show: !isVolunteer },
         { label: 'Registrations', path: '/admin/registrations', icon: <Users className="w-4 h-4" weight="bold" />, show: !isVolunteer },
+        { label: 'Payouts & KYC', path: '/admin/payouts', icon: <Bank className="w-4 h-4" weight="bold" />, show: !isVolunteer },
         { label: 'Check-in Desk', path: '/admin/checkin', icon: <QrCode className="w-4 h-4" weight="bold" />, show: can('checkin') },
       ],
     },

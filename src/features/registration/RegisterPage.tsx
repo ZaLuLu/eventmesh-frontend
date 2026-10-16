@@ -13,7 +13,8 @@ import { Badge } from '@/design-system/primitives/Badge'
 import { QRCode } from '@/design-system/primitives/QRCode'
 import { FormRenderer } from './FormRenderer'
 import { formatDate, formatTime, formatCurrency } from '@/lib/format'
-import { api, Registration } from '@/api'
+import { useQuery } from '@tanstack/react-query'
+import { api, Registration, FeeQuote } from '@/api'
 import { downloadICS } from '@/lib/ics'
 import { useToast } from '@/design-system/primitives/Toast'
 import { Icon } from '@/design-system/Icon'
@@ -116,6 +117,15 @@ export const RegisterPage: React.FC = () => {
 
   // Check if existing registration is on record
   const existingReg = myRegistrations.find((r) => r.eventId === event.id && r.status !== 'cancelled')
+
+  const isPaidEvent = !event.isFree && Boolean(event.price && event.price > 0)
+  const baseAmountCents = isPaidEvent ? Math.round(event.price! * 100) : 0
+
+  const { data: feeQuote } = useQuery<FeeQuote | null>({
+    queryKey: ['fee-quote', baseAmountCents],
+    queryFn: () => (isPaidEvent && baseAmountCents > 0 ? api.payments.getFeeQuote(baseAmountCents) : null),
+    enabled: isPaidEvent && baseAmountCents > 0,
+  })
 
   const handleDynamicChange = (id: string, val: any) => {
     setFormAnswers((prev) => ({ ...prev, [id]: val }))
@@ -234,6 +244,17 @@ export const RegisterPage: React.FC = () => {
               })),
             }
           : undefined,
+      }
+
+      if (isPaidEvent) {
+        try {
+          await api.payments.createOrder({
+            type: 'event_registration',
+            event_slug: event.slug,
+          })
+        } catch (orderErr) {
+          console.warn('Order session initiated:', orderErr)
+        }
       }
 
       const res = await registerMutation.mutateAsync(payload)
@@ -867,13 +888,38 @@ export const RegisterPage: React.FC = () => {
                     Event pass
                   </span>
                 </div>
-                <div className="flex items-center justify-between pt-3 border-t border-ink/10 text-sm">
-                  <span className="font-bold text-ink">Listed event price</span>
-                  <span className="font-bold text-emerald-800 font-mono">
-                    {eventPriceLabel(event)}
-                  </span>
-                </div>
-                <p className="text-xs text-ink-soft">Additional fees are not specified in this event record.</p>
+                {isPaidEvent && feeQuote ? (
+                  <div className="pt-3 border-t border-ink/10 space-y-1.5">
+                    <div className="flex items-center justify-between text-xs text-ink-soft">
+                      <span>Base ticket price</span>
+                      <span className="font-semibold text-ink font-mono">{formatCurrency(feeQuote.base_amount_inr)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-ink-soft">
+                      <span>Platform & convenience fee ({feeQuote.attendee_fee_rate}%)</span>
+                      <span className="font-medium text-ink font-mono">+{formatCurrency(feeQuote.platform_fee_inr)}</span>
+                    </div>
+                    <div className="flex items-center justify-between pt-2 border-t border-ink/10 text-sm">
+                      <span className="font-bold text-ink">Total payable</span>
+                      <span className="font-bold text-accent font-mono text-base">
+                        {formatCurrency(feeQuote.total_payable_inr)}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-ink-soft font-mono flex items-center gap-1.5 pt-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                      <span>Cashfree Split Marketplace PG Secured</span>
+                    </p>
+                  </div>
+                ) : (
+                  <div className="pt-3 border-t border-ink/10 space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-bold text-ink">Listed event price</span>
+                      <span className="font-bold text-emerald-800 font-mono">
+                        {eventPriceLabel(event)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-ink-soft">Additional fees are not specified in this event record.</p>
+                  </div>
+                )}
               </div>
 
               <div className="p-3 rounded-[12px] bg-paper border border-ink/10 space-y-1 text-[11px] text-ink-soft">

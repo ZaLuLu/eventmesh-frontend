@@ -16,6 +16,8 @@ import {
   AuthApi,
   SearchApi,
   OrganizationsApi,
+  PaymentsApi,
+  PayoutsApi,
 } from '../../ports'
 import {
   ApiError,
@@ -36,6 +38,14 @@ import {
   CreateClubPayload,
   UserSession,
   normalizeBackendOrganization,
+  FeeQuote,
+  OrderCreateRequest,
+  OrderCreateResponse,
+  PaymentStatusResponse,
+  PayoutAccount,
+  PayoutAccountCreate,
+  SettlementRecord,
+  InAppNotificationListResponse,
 } from '../../contracts'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://eventmesh-api.onrender.com'
@@ -129,6 +139,9 @@ export const httpEventsApi: EventsApi = {
     if (filter?.dateFilter && filter.dateFilter !== 'all') {
       query.set('date_range', filter.dateFilter === 'weekend' ? 'week' : filter.dateFilter)
     }
+    if (filter?.free !== undefined) query.set('free', String(filter.free))
+    if (filter?.city) query.set('city', filter.city)
+    if (filter?.cursor) query.set('offset', filter.cursor)
     const qs = query.toString()
     const browseRes = await requestJson<EventBrowseResponse>(`${V1}/events${qs ? `?${qs}` : ''}`)
     const items = (browseRes.items || []).map(normalizeBackendEvent)
@@ -530,6 +543,102 @@ export const httpNotificationsApi: NotificationsApi = {
       method: 'POST',
       body: JSON.stringify(notif),
     }),
+  getMyNotifications: async () => {
+    try {
+      const res = await requestJson<InAppNotificationListResponse>(`${V1}/notifications`)
+      return (res.items || []).map((n) => ({
+        id: n.id,
+        orgId: n.organization_id || 'org-1',
+        title: n.title,
+        body: n.message,
+        audience: { type: 'all' as const },
+        includes: { poster: false, registrationLink: false, contact: false },
+        channel: 'inapp' as const,
+        sentAt: n.created_at,
+        sentBy: 'System',
+        read: n.is_read,
+        stats: { recipientsCount: 1, deliveredCount: 1, openedCount: n.is_read ? 1 : 0 },
+      }))
+    } catch {
+      return []
+    }
+  },
+  getInAppNotifications: (unreadOnly) =>
+    requestJson<InAppNotificationListResponse>(
+      `${V1}/notifications${unreadOnly ? '?unread_only=true' : ''}`
+    ),
+  getUnreadCount: async () => {
+    try {
+      const res = await requestJson<{ unread_count?: number; total_unread?: number }>(
+        `${V1}/notifications/unread-count`
+      )
+      return res.unread_count ?? res.total_unread ?? 0
+    } catch {
+      return 0
+    }
+  },
+  markNotificationRead: async (id) => {
+    try {
+      await requestJson(`${V1}/notifications/${id}/read`, { method: 'POST' })
+      return true
+    } catch {
+      return false
+    }
+  },
+  markAllNotificationsRead: async () => {
+    try {
+      await requestJson(`${V1}/notifications/read-all`, { method: 'POST' })
+      return true
+    } catch {
+      return false
+    }
+  },
+}
+
+export const httpPaymentsApi: PaymentsApi = {
+  getFeeQuote: (baseAmountCents: number) =>
+    requestJson<FeeQuote>(`${V1}/payments/quote`, {
+      method: 'POST',
+      body: JSON.stringify({ base_amount_cents: baseAmountCents }),
+    }),
+
+  createOrder: (payload: OrderCreateRequest) =>
+    requestJson<OrderCreateResponse>(`${V1}/payments/orders`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  getOrderStatus: (orderId: string) =>
+    requestJson<PaymentStatusResponse>(`${V1}/payments/orders/${orderId}`),
+}
+
+export const httpPayoutsApi: PayoutsApi = {
+  getPayoutAccount: async (orgSlug: string) => {
+    const slug = await resolveTargetOrgSlug(orgSlug)
+    try {
+      return await requestJson<PayoutAccount>(`${V1}/organizers/${slug}/payout-account`)
+    } catch (err: any) {
+      if (err?.code === 'HTTP_404' || err?.status === 404) return null
+      throw err
+    }
+  },
+
+  registerPayoutAccount: async (orgSlug: string, payload: PayoutAccountCreate) => {
+    const slug = await resolveTargetOrgSlug(orgSlug)
+    return requestJson<PayoutAccount>(`${V1}/organizers/${slug}/payout-account`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  },
+
+  listSettlements: async (orgSlug: string) => {
+    const slug = await resolveTargetOrgSlug(orgSlug)
+    try {
+      return await requestJson<SettlementRecord[]>(`${V1}/organizers/${slug}/settlements`)
+    } catch {
+      return []
+    }
+  },
 }
 
 export const httpOrganizationsApi: OrganizationsApi = {

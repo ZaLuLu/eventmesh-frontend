@@ -106,6 +106,9 @@ const AdminAuditPage = lazy(() =>
 const AdminSettingsPage = lazy(() =>
   import('@/features/admin/AdminSettingsPage').then((m) => ({ default: m.AdminSettingsPage }))
 )
+const AdminPayoutsPage = lazy(() =>
+  import('@/features/admin/AdminPayoutsPage').then((m) => ({ default: m.AdminPayoutsPage }))
+)
 
 export const router = createBrowserRouter([
   // 1. PUBLIC SITE ROUTES
@@ -401,6 +404,14 @@ export const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <AdminSettingsPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'payouts',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <AdminPayoutsPage />
           </Suspense>
         ),
       },
