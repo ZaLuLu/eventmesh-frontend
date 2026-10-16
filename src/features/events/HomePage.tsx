@@ -1,218 +1,130 @@
-// EventMesh campus programme and discovery
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
-import { useSearchParams, Link } from 'react-router-dom'
+// EventMesh flagship homepage & premiere showcase
+import React, { useState, useEffect, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { usePromotedEvents } from '@/hooks/useEvents'
 import { api, Event, PaginatedResult } from '@/api'
 import { CinematicHeroStage } from './components/CinematicHeroStage'
-import { ResponsiveMasonryLayout } from '@/design-system/ResponsiveMasonryLayout'
-import { ClubsStrip } from './components/ClubsStrip'
+import { VerticalPosterCard } from '@/design-system/VerticalPosterCard'
 import { SectionHeader } from '@/design-system/SectionHeader'
-import { ArrowRight } from '@/design-system/Icon'
+import { ArrowRight, Sparkle } from '@/design-system/Icon'
 
 export const HomePage: React.FC = () => {
-  const [searchParams, setSearchParams] = useSearchParams()
-
-  // 1. Filter State (synced with URL)
-  const category = searchParams.get('category') || 'all'
-  const searchQuery = searchParams.get('q') || ''
-  const dateFilter = searchParams.get('date') || 'all'
-  const freeOnly = searchParams.get('free') === 'true'
-  const sortBy = searchParams.get('sort') || 'date-asc'
-
-  // 2. Promoted / Featured Events (for Top Sliding Stage)
+  // 1. Promoted / Featured Events (for Top Sliding Stage with Dual Peeks)
   const { data: promoted = [] } = usePromotedEvents()
 
-  // 3. Discovery Events: Cursor Pagination & Filter Fetching
-  const [discoveryEvents, setDiscoveryEvents] = useState<Event[]>([])
-  const [totalCount, setTotalCount] = useState<number>(0)
-  const [nextCursor, setNextCursor] = useState<string | undefined>(undefined)
+  // 2. Discovery Events Pool
+  const [allEvents, setAllEvents] = useState<Event[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false)
-  const [loadMoreError, setLoadMoreError] = useState(false)
-  const [loadError, setLoadError] = useState(false)
+  const [loadError, setLoadError] = useState<boolean>(false)
 
   useEffect(() => {
     let isCancelled = false
     setIsLoading(true)
     setLoadError(false)
 
-    const fetchDiscovery = async () => {
+    const fetchEvents = async () => {
       try {
         const res: PaginatedResult<Event> = api.events.list
-          ? await api.events.list({
-              category: category !== 'all' ? category : undefined,
-              q: searchQuery || undefined,
-              date: dateFilter !== 'all' ? dateFilter : undefined,
-              free: freeOnly ? true : undefined,
-              sort: sortBy,
-              limit: 16,
-            })
-          : await api.events.getEvents({
-              category: category !== 'all' ? category : undefined,
-              search: searchQuery || undefined,
-              limit: 16,
-            })
+          ? await api.events.list({ limit: 30 })
+          : await api.events.getEvents({ limit: 30 })
 
         if (!isCancelled) {
-          setDiscoveryEvents(res.items || [])
-          setTotalCount(res.totalCount || res.items.length)
-          setNextCursor(res.nextCursor)
+          setAllEvents(res.items || [])
           setIsLoading(false)
         }
       } catch (err) {
         if (!isCancelled) {
-          console.error('Failed to fetch discovery events:', err)
-          setDiscoveryEvents([])
-          setTotalCount(0)
-          setNextCursor(undefined)
+          console.error('Failed to fetch events for homepage:', err)
+          setAllEvents([])
           setLoadError(true)
           setIsLoading(false)
         }
       }
     }
 
-    fetchDiscovery()
+    fetchEvents()
 
     return () => {
       isCancelled = true
     }
-  }, [category, searchQuery, dateFilter, freeOnly, sortBy])
+  }, [])
 
-  const handleLoadMore = async () => {
-    if (!nextCursor || isLoadingMore) return
-    setIsLoadingMore(true)
-    setLoadMoreError(false)
-    try {
-      const res: PaginatedResult<Event> = api.events.list
-        ? await api.events.list({
-            category: category !== 'all' ? category : undefined,
-            q: searchQuery || undefined,
-            date: dateFilter !== 'all' ? dateFilter : undefined,
-            free: freeOnly ? true : undefined,
-            sort: sortBy,
-            cursor: nextCursor,
-            limit: 12,
-          })
-        : await api.events.getEvents({
-            category: category !== 'all' ? category : undefined,
-            search: searchQuery || undefined,
-            cursor: nextCursor,
-            limit: 12,
-          })
-
-      setDiscoveryEvents((prev) => [...prev, ...(res.items || [])])
-      setNextCursor(res.nextCursor)
-    } catch (err) {
-      console.error('Failed to load more events:', err)
-      setLoadMoreError(true)
-    } finally {
-      setIsLoadingMore(false)
-    }
-  }
-
-  const handleResetFilters = () => {
-    setSearchParams(new URLSearchParams(), { replace: true })
-  }
-
-  // 4. Strict Deduplication: Hero sliding cards vs Discovery masonry cards
+  // 3. Featured Hero Carousel Events
   const heroSlideEvents = useMemo(() => {
-    const pool = promoted.length > 0 ? promoted : discoveryEvents
+    const pool = promoted.length > 0 ? promoted : allEvents
     const featured = pool.filter((e) => e.isSignature || e.promotion?.label || e.banner || e.poster)
     return (featured.length ? featured : pool).slice(0, 6)
-  }, [promoted, discoveryEvents])
+  }, [promoted, allEvents])
 
-  const featuredIds = useMemo(() => {
-    return new Set(heroSlideEvents.map((e) => e.id))
-  }, [heroSlideEvents])
-
-  // Filter out featured events from masonry to eliminate duplicate cards
-  const masonryEvents = useMemo(() => {
-    const filtered = discoveryEvents.filter((e) => !featuredIds.has(e.id))
-    // If filtering leaves very few cards, allow discoveryEvents to show so masonry stays rich
-    return filtered.length > 0 ? filtered : discoveryEvents
-  }, [discoveryEvents, featuredIds])
+  // 4. Strictly 4 Paid Premier Ticketed Events for Homepage
+  const paidPremiereEvents = useMemo(() => {
+    const pool = allEvents.length > 0 ? allEvents : promoted
+    // Filter strictly for paid ticketed events
+    const paid = pool.filter((e) => !e.isFree && (e.price || 0) > 0)
+    if (paid.length >= 4) return paid.slice(0, 4)
+    // Fallback if fewer than 4 paid are marked in store
+    const nonFree = pool.filter((e) => !e.isFree)
+    if (nonFree.length >= 4) return nonFree.slice(0, 4)
+    return pool.slice(0, 4)
+  }, [allEvents, promoted])
 
   return (
     <div className="w-full bg-paper text-ink min-h-screen flex flex-col select-none">
       {/* 1. Flagship Featured Section (Horizontal Sliding Cards with Dual Left & Right Peeks) */}
       <CinematicHeroStage events={heroSlideEvents} />
 
-      {/* 2. High-Visibility Campus Events Masonry Showcase with Integrated Filter Ribbon */}
-      <ResponsiveMasonryLayout
-        events={masonryEvents}
-        title="Explore Campus Events & Productions"
-        subtitle="Filter by category or timing to reserve passes for hackathons, workshops, and student fests"
-        category={category}
-        onCategoryChange={(val) => {
-          const next = new URLSearchParams(searchParams)
-          if (val === 'all') next.delete('category')
-          else next.set('category', val)
-          setSearchParams(next, { replace: true })
-        }}
-        dateFilter={dateFilter}
-        onDateFilterChange={(val) => {
-          const next = new URLSearchParams(searchParams)
-          if (val === 'all') next.delete('date')
-          else next.set('date', val)
-          setSearchParams(next, { replace: true })
-        }}
-        freeOnly={freeOnly}
-        onFreeOnlyChange={(val) => {
-          const next = new URLSearchParams(searchParams)
-          if (!val) next.delete('free')
-          else next.set('free', 'true')
-          setSearchParams(next, { replace: true })
-        }}
-        sortBy={sortBy}
-        onSortByChange={(val) => {
-          const next = new URLSearchParams(searchParams)
-          next.set('sort', val)
-          setSearchParams(next, { replace: true })
-        }}
-        totalCount={totalCount}
-        isLoading={isLoading}
-        hasMore={Boolean(nextCursor)}
-        isLoadingMore={isLoadingMore}
-        onLoadMore={handleLoadMore}
-        onResetFilters={handleResetFilters}
-      />
-
-      {loadError && (
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-8">
-          <p role="alert" className="rounded-2xl border border-line bg-card p-6 text-center text-ink-soft">
-            Events could not be loaded. Please refresh to try again.
-          </p>
-        </div>
-      )}
-
-      {loadMoreError && (
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-8">
-          <p role="alert" className="text-sm text-danger text-center">
-            More events could not be loaded.{' '}
-            <button type="button" className="underline font-medium" onClick={handleLoadMore}>
-              Try again
-            </button>
-          </p>
-        </div>
-      )}
-
-      {/* 3. Campus Collectives & Societies Spotlight */}
-      <section className="relative w-full py-10 sm:py-14 border-b border-line bg-paper-2">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
+      {/* 2. Curated Premieres Showcase (Strictly 4 Paid Ticketed Events in Vertical Poster Ratio) */}
+      <section className="relative w-full py-12 sm:py-16 border-b border-line bg-paper">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <SectionHeader
-            title="Campus Collectives & Societies"
-            subtitle="Autonomous student guilds, competitive programming labs, and creative code studios."
+            title="Curated Premieres"
+            subtitle="Top ticketed hackathons, tech summits, and creative masterclasses happening across campus and the city."
             action={
               <Link
-                to="/clubs"
+                to="/explore?free=false"
                 className="text-xs sm:text-sm font-semibold text-accent hover:underline inline-flex items-center gap-1"
               >
-                <span>View all clubs</span>
+                <span>View all paid passes</span>
                 <ArrowRight size={14} weight="bold" />
               </Link>
             }
           />
-          <ClubsStrip />
+
+          {isLoading ? (
+            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div
+                  key={i}
+                  className="aspect-[2/3] w-full rounded-[22px] border border-line bg-surface-subtle animate-pulse"
+                />
+              ))}
+            </div>
+          ) : loadError ? (
+            <div className="mt-8 rounded-2xl border border-line bg-card p-8 text-center text-ink-soft">
+              <p>Unable to load premieres right now. Please refresh.</p>
+            </div>
+          ) : (
+            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {paidPremiereEvents.map((event, idx) => (
+                <VerticalPosterCard
+                  key={event.id}
+                  event={event}
+                  priority={idx < 2}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* 3. Short & Minimal "Explore more" CTA Button */}
+          <div className="mt-12 flex flex-col items-center justify-center">
+            <Link
+              to="/explore"
+              className="inline-flex items-center gap-2 px-7 py-3 rounded-full border border-line bg-card text-ink font-medium text-sm hover:border-accent hover:text-accent transition-all shadow-xs hover:shadow-md group"
+            >
+              <span>Explore more</span>
+              <ArrowRight size={14} weight="bold" className="transition-transform group-hover:translate-x-1 text-accent" />
+            </Link>
+          </div>
         </div>
       </section>
     </div>

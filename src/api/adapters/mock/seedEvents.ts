@@ -133,8 +133,8 @@ export const SEED_EVENTS: Event[] = [
     "promotion": { "label": "Promoted", "priority": 2, "startsAt": "2026-10-01T00:00:00Z", "endsAt": "2026-11-10T00:00:00Z" },
     "publishedAt": "2026-10-09T09:00:00Z",
     "registrationsCount": 162,
-    "isFree": true,
-    "price": 0,
+    "isFree": false,
+    "price": 349,
     "createdAt": "2026-10-02T10:00:00Z"
   },
   {
@@ -187,7 +187,7 @@ export const SEED_EVENTS: Event[] = [
     ],
     "contact": { "name": "Aryan Kapoor", "phone": "+91 98765 00003", "email": "lead@pixelforge.org" },
     "certificateInfo": "Excellence in Spatial Interface Craftsmanship Certificate.",
-    "features": { "certificate": true, "checkin": true, "paid": false, "team": true },
+    "features": { "certificate": true, "checkin": true, "paid": true, "team": true },
     "teamConfig": { "minSize": 1, "maxSize": 2 },
     "formSchema": [
       { "id": "f-portfolio", "type": "text", "label": "Portfolio or Dribbble/Figma Link", "required": true },
@@ -199,8 +199,8 @@ export const SEED_EVENTS: Event[] = [
     "promotion": { "label": "Featured", "priority": 3, "startsAt": "2026-10-01T00:00:00Z", "endsAt": "2026-11-15T00:00:00Z" },
     "publishedAt": "2026-10-10T09:00:00Z",
     "registrationsCount": 128,
-    "isFree": true,
-    "price": 0,
+    "isFree": false,
+    "price": 199,
     "createdAt": "2026-10-03T10:00:00Z"
   },
   {
@@ -253,7 +253,7 @@ export const SEED_EVENTS: Event[] = [
     ],
     "contact": { "name": "Divya Krishnan", "phone": "+91 98765 00004", "email": "lead@cyberguard.org" },
     "certificateInfo": "Verifiable Red Team Security Competency Credential.",
-    "features": { "certificate": true, "checkin": true, "paid": false, "team": true },
+    "features": { "certificate": true, "checkin": true, "paid": true, "team": true },
     "teamConfig": { "minSize": 1, "maxSize": 4 },
     "formSchema": [
       { "id": "f-handle", "type": "text", "label": "CTFtime Handle or Alias", "required": true }
@@ -264,8 +264,8 @@ export const SEED_EVENTS: Event[] = [
     "promotion": { "label": "Promoted", "priority": 4, "startsAt": "2026-10-01T00:00:00Z", "endsAt": "2026-11-20T00:00:00Z" },
     "publishedAt": "2026-10-11T09:00:00Z",
     "registrationsCount": 286,
-    "isFree": true,
-    "price": 0,
+    "isFree": false,
+    "price": 249,
     "createdAt": "2026-10-04T10:00:00Z"
   },
   {
@@ -912,6 +912,121 @@ export const SEED_EVENTS: Event[] = [
     "isFree": false,
     "price": 299,
     "createdAt": "2026-10-01T10:00:00Z"
+  },
+  {
+    "id": "evt-city-1",
+    "slug": "metropolis-indie-tech-summit-2026",
+    "orgId": "org-city",
+    "organizerId": "org-city-tech",
+    "organizerName": "Bangalore Dev Community",
+    "organizerColor": "#0052CC",
+    "club": {
+      "id": "org-city-tech",
+      "name": "Bangalore Dev Community",
+      "color": "#0052CC",
+      "verified": true
+    },
+    "isSignature": true,
+    "title": "METROPOLIS INDIE TECH & AI SUMMIT 2026",
+    "subtitle": "City-Wide Engineering Summit on LLM Inference, Web3 Protocols & Rust",
+    "category": "conference",
+    "type": "other",
+    "tags": ["AI Systems", "Rust", "LLM Inference", "City Event", "Summit"],
+    "description": "Full-day premier engineering conference bringing together 500+ builders, indie researchers, and tech leads from top startups across the city.",
+    "poster": "/images/events/demo-voxelforge.jpg",
+    "banner": "/images/events/demo-voxelforge.jpg",
+    "venue": {
+      "name": "Koramangala Convention Centre",
+      "address": "80 Feet Rd, 4th Block, Koramangala, Bengaluru",
+      "mapUrl": "https://maps.google.com"
+    },
+    "startsAt": "2026-11-14T09:00:00Z",
+    "endsAt": "2026-11-14T18:30:00Z",
+    "eligibility": "Open to all software engineers, developers, and tech founders.",
+    "capacity": 500,
+    "seatsLeft": 38,
+    "waitlistEnabled": true,
+    "registrationOpensAt": "2026-10-01T00:00:00Z",
+    "registrationClosesAt": "2026-11-13T23:59:00Z",
+    "schedule": [
+      { "time": "09:30 AM", "title": "Opening Keynote: State of Distributed Inference" },
+      { "time": "02:00 PM", "title": "Rust in High-Frequency Systems Workshop" },
+      { "time": "05:00 PM", "title": "Founder Networking & Panel" }
+    ],
+    "people": [
+      { "name": "Varun Sethi", "role": "speaker", "bio": "Staff Infrastructure Architect" }
+    ],
+    "rules": ["All attendees must present QR pass at security gate."],
+    "contact": { "name": "Varun Sethi", "email": "summit@bangaloredev.org" },
+    "certificateInfo": "City Developer Summit Delegate Pass.",
+    "features": { "certificate": true, "checkin": true, "paid": true, "team": false },
+    "formSchema": [],
+    "status": "published",
+    "results": [],
+    "photos": [],
+    "promotion": { "label": "Featured", "priority": 1, "startsAt": "2026-10-01T00:00:00Z", "endsAt": "2026-11-20T00:00:00Z" },
+    "publishedAt": "2026-10-12T09:00:00Z",
+    "registrationsCount": 462,
+    "isFree": false,
+    "price": 499,
+    "createdAt": "2026-10-05T10:00:00Z"
+  },
+  {
+    "id": "evt-city-2",
+    "slug": "sonic-horizons-indie-music-fest",
+    "orgId": "org-city",
+    "organizerId": "org-city-music",
+    "organizerName": "Frontier Sound Collective",
+    "organizerColor": "#8A2BE2",
+    "club": {
+      "id": "org-city-music",
+      "name": "Frontier Sound Collective",
+      "color": "#8A2BE2",
+      "verified": true
+    },
+    "isSignature": true,
+    "title": "SONIC HORIZONS: CITY INDIE MUSIC FEST",
+    "subtitle": "Live Electronic, Synthwave & Ambient Visual Showcases",
+    "category": "cultural",
+    "type": "other",
+    "tags": ["Live Music", "Synthwave", "Visuals", "City Festival"],
+    "description": "An open-air evening celebrating indie electronic producers, synth-pop acts, and responsive generative visual artists.",
+    "poster": "/images/events/demo-prismatica.jpg",
+    "banner": "/images/events/demo-prismatica.jpg",
+    "venue": {
+      "name": "Indiranagar Open Amphitheatre",
+      "address": "100 Feet Rd, Indiranagar, Bengaluru",
+      "mapUrl": "https://maps.google.com"
+    },
+    "startsAt": "2026-11-21T17:30:00Z",
+    "endsAt": "2026-11-21T23:00:00Z",
+    "eligibility": "Open to all music enthusiasts and the general public.",
+    "capacity": 400,
+    "seatsLeft": 18,
+    "waitlistEnabled": true,
+    "registrationOpensAt": "2026-10-01T00:00:00Z",
+    "registrationClosesAt": "2026-11-21T12:00:00Z",
+    "schedule": [
+      { "time": "05:30 PM", "title": "Gates Open & Ambient Audio Sets" },
+      { "time": "08:00 PM", "title": "Headline Live Synthwave Performance" }
+    ],
+    "people": [
+      { "name": "Maya Rao", "role": "guest", "bio": "Electronic Producer & Composer" }
+    ],
+    "rules": ["E-Ticket QR required for entry."],
+    "contact": { "name": "Maya Rao", "email": "contact@frontiersound.io" },
+    "certificateInfo": "VIP Concert Pass Credential.",
+    "features": { "certificate": false, "checkin": true, "paid": true, "team": false },
+    "formSchema": [],
+    "status": "published",
+    "results": [],
+    "photos": [],
+    "promotion": { "label": "Featured", "priority": 2, "startsAt": "2026-10-01T00:00:00Z", "endsAt": "2026-11-25T00:00:00Z" },
+    "publishedAt": "2026-10-12T11:00:00Z",
+    "registrationsCount": 382,
+    "isFree": false,
+    "price": 699,
+    "createdAt": "2026-10-05T12:00:00Z"
   }
 ]
 
