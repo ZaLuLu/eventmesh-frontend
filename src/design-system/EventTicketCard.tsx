@@ -105,10 +105,14 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
         {/* Split Utility Dock */}
         <div className="mt-auto flex items-end justify-between gap-3 border-t border-line/60 pt-3 text-xs">
           <div className="min-w-0 space-y-1 font-mono text-ink-soft text-[11px]">
-            <p className="flex items-center gap-1.5 truncate">
-              <CalendarBlank size={13} className="shrink-0 text-accent" aria-hidden="true" />
-              <span>{formatDate(event.startsAt)} · {formatTime(event.startsAt)}</span>
-            </p>
+            <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+              <span className="inline-flex items-center gap-1 font-medium text-ink">
+                <CalendarBlank size={13} className="shrink-0 text-accent" aria-hidden="true" />
+                <span className="whitespace-nowrap">{formatDate(event.startsAt)}</span>
+              </span>
+              <span className="text-ink-muted">·</span>
+              <span className="whitespace-nowrap text-ink-muted">{formatTime(event.startsAt)}</span>
+            </div>
             <p className="flex items-center gap-1.5 truncate">
               <MapPin size={13} className="shrink-0 text-ink-muted" aria-hidden="true" />
               <span className="truncate">{event.venue?.name || (event.isOnline ? 'Online' : 'Venue TBA')}</span>
@@ -126,9 +130,9 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
 
           <EventLink
             event={event}
-            className="btn-minimal-primary shrink-0 px-4 py-1.5 text-xs font-mono font-medium shadow-xs"
+            className="inline-flex items-center justify-center gap-1 shrink-0 rounded-full bg-accent hover:bg-accent-hover text-white px-3.5 py-1.5 text-xs font-mono font-semibold transition-all shadow-xs hover:shadow-sm active:scale-95"
           >
-            {event.kind === 'imported' ? 'Inspect ↗' : 'View Pass'}
+            {event.kind === 'imported' ? 'Inspect ↗' : 'Get Pass →'}
           </EventLink>
         </div>
       </div>
