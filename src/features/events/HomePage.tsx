@@ -7,6 +7,7 @@ import { CinematicHeroStage } from './components/CinematicHeroStage'
 import { VerticalPosterCard } from '@/design-system/VerticalPosterCard'
 import { SectionHeader } from '@/design-system/SectionHeader'
 import { ArrowRight, Sparkle } from '@/design-system/Icon'
+import { EventCarousel3D, type EventCarouselItem } from '@/design-system/3d'
 
 export const HomePage: React.FC = () => {
   // 1. Promoted / Featured Events (for Top Sliding Stage with Dual Peeks)
@@ -70,7 +71,7 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="w-full bg-paper text-ink min-h-screen flex flex-col select-none">
-      {/* 1. Flagship Featured Section (Horizontal Sliding Cards with Dual Left & Right Peeks) */}
+      {/* 1. Flagship Featured Cinematic Hero Stage */}
       <CinematicHeroStage events={heroSlideEvents} />
 
       {/* 2. Curated Premieres Showcase (Strictly 4 Paid Ticketed Events in Vertical Poster Ratio) */}

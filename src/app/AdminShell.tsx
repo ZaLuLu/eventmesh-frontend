@@ -28,6 +28,7 @@ import { useOrg } from '@/hooks/useOrg'
 import { useQuery } from '@tanstack/react-query'
 import { api, PayoutAccount, Event } from '@/api'
 import { ToastContainer } from '@/design-system/primitives/Toast'
+import { NotificationInbox } from '@/features/notifications/NotificationInbox'
 import { ForbiddenPage } from './ForbiddenPage'
 import { ErrorBoundary } from './ErrorBoundary'
 import { Modal } from '@/design-system/primitives/Modal'
@@ -235,6 +236,7 @@ export const AdminShell: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3 flex-shrink-0">
+          <NotificationInbox className="text-text-2 hover:text-ink border-line" />
           <ThemeToggle />
           <span className="text-caption bg-accent text-on-accent px-2.5 py-0.5 rounded-full font-semibold uppercase tracking-wider">
             {session?.role?.replace('_', ' ')}

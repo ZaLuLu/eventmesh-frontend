@@ -1,168 +1,276 @@
-/**
- * Zero-asset procedural Web Audio synthesizer for the 3D Stamp.
- * Synthesizes air swoosh, physical rubber thump, paper impact, and wheel clicks
- * using native Web Audio API without loading any external .mp3/.wav files.
- * Based on mortspace/stamp audio physics.
- */
+import { clamp01 } from './math'
 
-class ProceduralStampSound {
-  private ctx: AudioContext | null = null
+type Sample = { buffer: AudioBuffer; peak: number }
+type Filter = [BiquadFilterType, number]
+type Graph = { ctx: AudioContext; master: GainNode; bus: GainNode }
+type Wave = (t: number) => number
 
-  private getContext(): AudioContext | null {
-    if (typeof window === 'undefined') return null
-    if (!this.ctx) {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext
-      if (!AudioCtx) return null
-      this.ctx = new AudioCtx()
-    }
-    if (this.ctx.state === 'suspended') {
-      void this.ctx.resume()
-    }
-    return this.ctx
-  }
+const TAU = 2 * Math.PI
+const noise = () => Math.random() * 2 - 1
+const fromDb = (db: number) => 10 ** (db / 20)
 
-  /**
-   * Heavy rubber stamp desk impact thump.
-   * Deep bass transient (45-55 Hz sine pitch drop) + muffled rubber surface slap.
-   */
-  playThump(volume = 1) {
-    const ctx = this.getContext()
-    if (!ctx) return
-
-    const now = ctx.currentTime
-
-    // 1. Bass body drop (sine pitch sweep)
-    const osc = ctx.createOscillator()
-    const oscGain = ctx.createGain()
-
-    osc.type = 'sine'
-    osc.frequency.setValueAtTime(140, now)
-    osc.frequency.exponentialRampToValueAtTime(42, now + 0.14)
-
-    oscGain.gain.setValueAtTime(0.85 * volume, now)
-    oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.22)
-
-    osc.connect(oscGain)
-    oscGain.connect(ctx.destination)
-
-    osc.start(now)
-    osc.stop(now + 0.23)
-
-    // 2. Rubber slap noise burst (lowpass filtered noise)
-    const bufferSize = Math.floor(ctx.sampleRate * 0.08)
-    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
-    const output = noiseBuffer.getChannelData(0)
-    for (let i = 0; i < bufferSize; i++) {
-      output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.015))
-    }
-
-    const whiteNoise = ctx.createBufferSource()
-    whiteNoise.buffer = noiseBuffer
-
-    const filter = ctx.createBiquadFilter()
-    filter.type = 'lowpass'
-    filter.frequency.setValueAtTime(850, now)
-    filter.frequency.exponentialRampToValueAtTime(200, now + 0.08)
-
-    const noiseGain = ctx.createGain()
-    noiseGain.gain.setValueAtTime(0.7 * volume, now)
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08)
-
-    whiteNoise.connect(filter)
-    filter.connect(noiseGain)
-    noiseGain.connect(ctx.destination)
-
-    whiteNoise.start(now)
-    whiteNoise.stop(now + 0.08)
-  }
-
-  /**
-   * Air swoosh as stamp plummets down to paper.
-   */
-  playSwoosh(volume = 0.5) {
-    const ctx = this.getContext()
-    if (!ctx) return
-
-    const now = ctx.currentTime
-    const duration = 0.22
-    const bufferSize = Math.floor(ctx.sampleRate * duration)
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
-    const data = buffer.getChannelData(0)
-
-    for (let i = 0; i < bufferSize; i++) {
-      const t = i / bufferSize
-      const envelope = Math.sin(Math.PI * t)
-      data[i] = (Math.random() * 2 - 1) * envelope
-    }
-
-    const source = ctx.createBufferSource()
-    source.buffer = buffer
-
-    const filter = ctx.createBiquadFilter()
-    filter.type = 'bandpass'
-    filter.frequency.setValueAtTime(450, now)
-    filter.frequency.exponentialRampToValueAtTime(1400, now + duration)
-    filter.Q.value = 1.2
-
-    const gain = ctx.createGain()
-    gain.gain.setValueAtTime(0.35 * volume, now)
-
-    source.connect(filter)
-    filter.connect(gain)
-    gain.connect(ctx.destination)
-
-    source.start(now)
-    source.stop(now + duration)
-  }
-
-  /**
-   * Resonant paper contact chime when lifted away.
-   */
-  playChime(volume = 0.4) {
-    const ctx = this.getContext()
-    if (!ctx) return
-
-    const now = ctx.currentTime
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
-
-    osc.type = 'triangle'
-    osc.frequency.setValueAtTime(880, now)
-    osc.frequency.exponentialRampToValueAtTime(1320, now + 0.06)
-
-    gain.gain.setValueAtTime(0.2 * volume, now)
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15)
-
-    osc.connect(gain)
-    gain.connect(ctx.destination)
-
-    osc.start(now)
-    osc.stop(now + 0.16)
-  }
-
-  /**
-   * Tactile wheel scroll tick.
-   */
-  playTick(volume = 0.3) {
-    const ctx = this.getContext()
-    if (!ctx) return
-
-    const now = ctx.currentTime
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
-
-    osc.type = 'square'
-    osc.frequency.setValueAtTime(1200, now)
-
-    gain.gain.setValueAtTime(0.08 * volume, now)
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.015)
-
-    osc.connect(gain)
-    gain.connect(ctx.destination)
-
-    osc.start(now)
-    osc.stop(now + 0.016)
+const pinkSwell = (length: number, fadeIn: number, fadeOut: number): Wave => {
+  let b0 = 0
+  let b1 = 0
+  let b2 = 0
+  return (t) => {
+    const white = noise()
+    b0 = 0.99765 * b0 + white * 0.099046
+    b1 = 0.963 * b1 + white * 0.2965164
+    b2 = 0.57 * b2 + white * 1.0526913
+    const pink = b0 + b1 + b2 + white * 0.1848
+    const envelope =
+      t < fadeIn
+        ? Math.sin((Math.PI / 2) * (t / fadeIn))
+        : t > length - fadeOut
+          ? Math.sin((Math.PI / 2) * clamp01((length - t) / fadeOut))
+          : 1
+    return pink * envelope
   }
 }
 
-export const stampSound = new ProceduralStampSound()
+const AIR: Record<
+  'fall' | 'rise',
+  { name: string; fadeIn: number; fadeOut: number; db: number; filters: Filter[] }
+> = {
+  fall: {
+    name: 'air',
+    fadeIn: 0.4,
+    fadeOut: 0.4,
+    db: -43,
+    filters: [
+      ['highpass', 500],
+      ['lowpass', 3200],
+    ],
+  },
+  rise: {
+    name: 'air-rise',
+    fadeIn: 0.35,
+    fadeOut: 0.45,
+    db: -47,
+    filters: [
+      ['highpass', 700],
+      ['lowpass', 4000],
+    ],
+  },
+}
+
+class StampSound {
+  private graph: Graph | null = null
+  private samples = new Map<string, Sample>()
+  private lastTick = 0
+
+  private wake() {
+    if (typeof window === 'undefined') return null
+    if (!this.graph) {
+      const Context =
+        window.AudioContext ??
+        (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+      if (!Context) return null
+      const ctx = new Context()
+      const master = ctx.createGain()
+      master.connect(ctx.destination)
+      const bus = ctx.createGain()
+      bus.connect(master)
+      this.graph = { ctx, master, bus }
+    }
+    if (this.graph.ctx.state === 'suspended') void this.graph.ctx.resume()
+    return this.graph
+  }
+
+  cancel() {
+    if (!this.graph) return
+    const { ctx, master, bus } = this.graph
+    bus.disconnect()
+    this.graph.bus = ctx.createGain()
+    this.graph.bus.connect(master)
+  }
+
+  private sample(ctx: AudioContext, name: string, seconds: number, wave: Wave) {
+    const cached = this.samples.get(name)
+    if (cached) return cached
+    const length = Math.ceil(seconds * ctx.sampleRate)
+    const buffer = ctx.createBuffer(1, length, ctx.sampleRate)
+    const data = buffer.getChannelData(0)
+    let peak = 0
+    for (let i = 0; i < length; i++) {
+      data[i] = wave(i / ctx.sampleRate)
+      peak = Math.max(peak, Math.abs(data[i]))
+    }
+    const sample = { buffer, peak: peak || 1 }
+    this.samples.set(name, sample)
+    return sample
+  }
+
+  private route(
+    { ctx }: Graph,
+    sample: Sample,
+    at: number,
+    gain: number,
+    filters: Filter[],
+    out: AudioNode,
+  ) {
+    const source = ctx.createBufferSource()
+    source.buffer = sample.buffer
+    let node: AudioNode = source
+    for (const [type, frequency] of filters) {
+      const filter = ctx.createBiquadFilter()
+      filter.type = type
+      filter.frequency.value = frequency
+      node.connect(filter)
+      node = filter
+    }
+    const level = ctx.createGain()
+    level.gain.value = gain
+    node.connect(level)
+    level.connect(out)
+    source.start(ctx.currentTime + Math.max(0, at))
+  }
+
+  private play(graph: Graph, sample: Sample, at: number, db: number, filters: Filter[]) {
+    this.route(graph, sample, at, fromDb(db) / sample.peak, filters, graph.bus)
+  }
+
+  tick() {
+    const graph = this.wake()
+    if (!graph) return
+    const now = performance.now()
+    if (now - this.lastTick < 45) return
+    this.lastTick = now
+    const tick = this.sample(
+      graph.ctx,
+      'tick',
+      0.035,
+      (t) =>
+        0.55 * Math.exp(-t * 1100) * noise() + 0.3 * Math.sin(TAU * 3900 * t) * Math.exp(-t * 320),
+    )
+    this.play(graph, tick, 0, -27, [
+      ['highpass', 1400],
+      ['lowpass', 11000],
+    ])
+  }
+
+  tap(at = 0, db = -23) {
+    const graph = this.wake()
+    if (!graph) return
+    const tap = this.sample(
+      graph.ctx,
+      'tap',
+      0.07,
+      (t) =>
+        0.4 * Math.sin(TAU * 620 * t) * Math.exp(-t * 70) +
+        0.18 * Math.sin(TAU * 1240 * t) * Math.exp(-t * 110) +
+        0.25 * Math.exp(-t * 1500) * noise(),
+    )
+    this.play(graph, tap, at, db, [
+      ['lowpass', 6000],
+      ['highpass', 180],
+    ])
+  }
+
+  air(at = 0, rising = false) {
+    const graph = this.wake()
+    if (!graph) return
+    const { name, fadeIn, fadeOut, db, filters } = rising ? AIR.rise : AIR.fall
+    const air = this.sample(graph.ctx, name, 0.8, pinkSwell(0.8, fadeIn, fadeOut))
+    this.play(graph, air, at, db, filters)
+  }
+
+  impact(at = 0, db = -5) {
+    const graph = this.wake()
+    if (!graph) return
+    const { ctx, bus } = graph
+    const compressor = ctx.createDynamicsCompressor()
+    compressor.threshold.value = -8
+    compressor.knee.value = 0
+    compressor.ratio.value = 2.5
+    compressor.attack.value = 0.001
+    compressor.release.value = 0.06
+    const out = ctx.createGain()
+    out.gain.value = fromDb(db) / 0.9
+    compressor.connect(out)
+    out.connect(bus)
+    const thud = this.sample(
+      ctx,
+      'thud',
+      0.22,
+      (t) =>
+        0.9 * Math.sin(TAU * (55 * t + (65 / 30) * (1 - Math.exp(-30 * t)))) * Math.exp(-t * 22),
+    )
+    const body = this.sample(
+      ctx,
+      'body',
+      0.12,
+      (t) => 0.45 * Math.sin(TAU * 260 * t) * Math.exp(-t * 45),
+    )
+    const paper = this.sample(
+      ctx,
+      'paper',
+      0.06,
+      (t) => noise() * Math.pow(clamp01(1 - t / 0.055), 3),
+    )
+    const click = this.sample(ctx, 'click', 0.012, (t) => 0.6 * Math.exp(-t * 2400) * noise())
+    this.route(graph, thud, at, 1, [['lowpass', 220]], compressor)
+    this.route(graph, body, at, 1, [], compressor)
+    this.route(
+      graph,
+      paper,
+      at,
+      0.28,
+      [
+        ['highpass', 1600],
+        ['lowpass', 7000],
+      ],
+      compressor,
+    )
+    this.route(graph, click, at, 1, [['highpass', 2500]], compressor)
+  }
+
+  peel(at = 0) {
+    const graph = this.wake()
+    if (!graph) return
+    const peel = this.sample(
+      graph.ctx,
+      'peel',
+      0.16,
+      (t) =>
+        noise() * Math.min(1, t / 0.008) * Math.exp(-t * 28) +
+        0.35 * Math.sin(TAU * 150 * t) * Math.exp(-t * 40),
+    )
+    this.play(graph, peel, at, -31, [
+      ['highpass', 300],
+      ['lowpass', 2400],
+    ])
+  }
+
+  chime(at = 0) {
+    const graph = this.wake()
+    if (!graph) return
+    const low = this.sample(
+      graph.ctx,
+      'chime-low',
+      0.45,
+      (t) =>
+        (Math.sin(TAU * 1318.5 * t) + 0.25 * Math.sin(TAU * 2637 * t)) *
+        Math.exp(-t * 10) *
+        Math.min(1, t * 300),
+    )
+    const high = this.sample(
+      graph.ctx,
+      'chime-high',
+      0.55,
+      (t) =>
+        (Math.sin(TAU * 1975.5 * t) + 0.25 * Math.sin(TAU * 3951 * t)) *
+        Math.exp(-t * 8) *
+        Math.min(1, t * 300),
+    )
+    this.play(graph, low, at, -19, [['lowpass', 9000]])
+    this.play(graph, high, at + 0.085, -19, [['lowpass', 9000]])
+  }
+}
+
+let shared: StampSound | null = null
+
+export const stampSound = () => (shared ??= new StampSound())
+
+export const silenceStampSound = () => shared?.cancel()

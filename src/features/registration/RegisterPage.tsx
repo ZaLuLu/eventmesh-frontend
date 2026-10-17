@@ -19,7 +19,9 @@ import { downloadICS } from '@/lib/ics'
 import { useToast } from '@/design-system/primitives/Toast'
 import { Icon } from '@/design-system/Icon'
 import { appConfig } from '@/config/appConfig'
-import { StampActionOverlay, PrintMark } from '@/components/stamp'
+import { Stamp } from '@/components/stamp'
+import { downloadStampedTicketAndInvoicePDF } from './downloadStampedInvoice'
+import { DownloadSimple, X, Sparkle } from '@phosphor-icons/react'
 
 interface TeamMemberItem {
   id: string
@@ -370,6 +372,35 @@ export const RegisterPage: React.FC = () => {
     }
   }
 
+  const totalAmountText = isPaidEvent && feeQuote
+    ? formatCurrency(feeQuote.total_payable_inr)
+    : isPaidEvent && event?.price
+      ? formatCurrency(event.price)
+      : 'INR 0.00 (Campus Pass)'
+
+  const handleDownloadPdfReceipt = () => {
+    if (!createdRegistration || !event) return
+    downloadStampedTicketAndInvoicePDF({
+      event: {
+        title: event.title,
+        startsAt: event.startsAt,
+        venue: event.venue,
+        price: event.price,
+        isFree: event.isFree,
+      },
+      registration: createdRegistration,
+      attendeeName: name || session?.name || 'Student Attendee',
+      attendeeEmail: email || session?.email || '',
+      totalAmountText,
+      paymentDate: new Date(),
+    })
+    toast({
+      title: 'PDF Downloaded',
+      message: 'Stamped ticket and payment clearance saved.',
+      type: 'success',
+    })
+  }
+
   return (
     <PageShell className="py-6 sm:py-8 space-y-6">
       {/* Breadcrumb (V-07) */}
@@ -402,19 +433,16 @@ export const RegisterPage: React.FC = () => {
 
           {/* Minimal Digital Pass Ticket Object */}
           <div className="bg-surface-subtle rounded-3xl p-6 sm:p-8 text-left relative overflow-hidden">
-            {/* Organic Rubber Stamp Print Mark Imprint */}
+            {/* Digital Pass Status Seal */}
             <div className="absolute top-4 right-4 sm:top-5 sm:right-6 z-20">
-              <PrintMark
-                print={{
-                  status: isPaidEvent ? 'paid' : 'approved',
-                  dateText: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase(),
-                  subtitle: isPaidEvent ? 'PAYMENT VERIFIED' : 'CAMPUS PASS ISSUED',
-                  seed: 88,
-                }}
-                className="rotate-[-6deg] hover:rotate-0 transition-transform duration-300 drop-shadow-sm cursor-pointer"
-                onClick={() => setStampOverlayOpen(true)}
-                title="Click to replay 3D physical desk stamp"
-              />
+              <div className="px-3.5 py-1.5 rounded-xl border-2 border-dashed border-mint/40 bg-mint/5 flex flex-col items-center rotate-[-6deg]">
+                <span className="text-[10px] font-mono font-bold text-mint tracking-wider">
+                  {isPaidEvent ? 'PAYMENT VERIFIED' : 'CAMPUS PASS ISSUED'}
+                </span>
+                <span className="text-[9px] font-mono text-text-3">
+                  {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
+                </span>
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line/20 pb-4">
@@ -479,34 +507,37 @@ export const RegisterPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-            <Link to="/attendee/dashboard" className="w-full sm:w-auto">
-              <Button variant="primary" size="default">
-                View in My Tickets & 3D Badge
-              </Button>
-            </Link>
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <button
+              type="button"
+              onClick={handleDownloadPdfReceipt}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-accent text-white font-bold text-sm hover:bg-accent/90 transition-all shadow-md active:scale-95"
+            >
+              <DownloadSimple size={16} weight="bold" />
+              <span>Save Stamped Ticket & Invoice (PDF)</span>
+            </button>
             <Button
               variant="secondary"
               size="default"
               onClick={() => setStampOverlayOpen(true)}
               className="w-full sm:w-auto font-mono text-xs flex items-center gap-1.5"
             >
-              <Icon name="Sparkle" size={16} className="text-accent" />
-              <span>Replay Desk Stamp</span>
+              <Sparkle size={15} weight="bold" className="text-accent" />
+              <span>Inspect 3D Desk Stamp</span>
             </Button>
+            <Link to="/attendee/dashboard" className="w-full sm:w-auto">
+              <Button variant="secondary" size="default">
+                View in My Tickets
+              </Button>
+            </Link>
             <button
               type="button"
               onClick={handleDownloadCalendar}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-card border border-ink text-ink font-bold text-sm hover:bg-paper-2 transition-colors"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-card border border-ink/20 text-ink font-semibold text-xs hover:bg-paper-2 transition-colors"
             >
-              <Icon name="CalendarPlus" size={16} />
+              <Icon name="CalendarPlus" size={15} />
               <span>Add to calendar (.ics)</span>
             </button>
-            <Link to="/explore" className="w-full sm:w-auto">
-              <Button variant="secondary" size="default">
-                Explore more events
-              </Button>
-            </Link>
           </div>
         </div>
       ) : (
@@ -1056,17 +1087,107 @@ export const RegisterPage: React.FC = () => {
         </div>
       )}
 
-      {/* 3D Physical Desk Stamp Simulation Modal */}
-      {createdRegistration && (
-        <StampActionOverlay
-          isOpen={stampOverlayOpen}
-          onClose={() => setStampOverlayOpen(false)}
-          status={isPaidEvent ? 'paid' : 'approved'}
-          title={isPaidEvent ? 'Payment Confirmed' : 'Registration Approved'}
-          subtitle={(event?.title || 'CAMPUS PASS').slice(0, 32).toUpperCase()}
-          dateText={new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
-        />
+      {/* 3D DESK STAMP PAYMENT CLEARANCE MODAL */}
+      {stampOverlayOpen && createdRegistration && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto select-none animate-in fade-in duration-200"
+          role="dialog"
+          aria-modal="true"
+          aria-label="3D Payment Clearance Stamp"
+        >
+          <div className="relative w-full max-w-[1020px] bg-card border border-line rounded-3xl p-4 sm:p-6 shadow-2xl my-auto flex flex-col gap-4">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-xl bg-accent/10 text-accent font-bold font-mono text-xs flex items-center justify-center border border-accent/20">
+                  <Sparkle weight="bold" size={16} />
+                </span>
+                <div>
+                  <h3 className="font-display font-bold text-base text-ink flex items-center gap-2">
+                    <span>EventMesh 3D Desk Stamp</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-mint/20 text-emerald-600 dark:text-emerald-400 font-semibold border border-mint/40">
+                      Payment Clearance
+                    </span>
+                  </h3>
+                  <p className="text-xs text-ink-soft">
+                    Auto-synchronized date wheels. Mechanical imprint of EventMesh payment clearance.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleDownloadPdfReceipt}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-line bg-surface hover:bg-surface-subtle text-xs font-mono font-medium text-ink transition-colors shadow-xs hover:border-accent/40"
+                >
+                  <DownloadSimple size={14} weight="bold" className="text-accent" />
+                  <span>Download Stamped PDF</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStampOverlayOpen(false)}
+                  className="p-1.5 rounded-full text-ink-soft hover:text-ink hover:bg-surface-subtle transition-colors"
+                  aria-label="Close desk stamp"
+                >
+                  <X size={18} weight="bold" />
+                </button>
+              </div>
+            </div>
+
+            {/* Stamp Stage with real dimensions and auto-stamp trigger */}
+            <div className="w-full flex justify-center py-2 overflow-hidden">
+              <Stamp
+                autoStamp={true}
+                defaultDate={new Date()}
+                defaultStatus="paid"
+                defaultInk="red"
+                motion="cinematic"
+                sound={true}
+                invoices={[
+                  {
+                    id: `INV-${createdRegistration.id.slice(0, 8).toUpperCase()}`,
+                    client: name || session?.name || 'Student Passholder',
+                    total: isPaidEvent && feeQuote
+                      ? formatCurrency(feeQuote.total_payable_inr)
+                      : isPaidEvent && event.price
+                        ? formatCurrency(event.price)
+                        : 'INR 0.00 (Campus Pass)',
+                    issued: new Date().toLocaleDateString('en-GB'),
+                    due: new Date().toLocaleDateString('en-GB'),
+                    lines: [
+                      {
+                        description: `${event.title} - Admission Pass`,
+                        quantity: '1',
+                        unitPrice: isPaidEvent && event.price ? formatCurrency(event.price) : 'INR 0',
+                        total: isPaidEvent && event.price ? formatCurrency(event.price) : 'INR 0',
+                      },
+                      ...(isPaidEvent && feeQuote
+                        ? [
+                            {
+                              description: `Platform & Convenience Fee (${feeQuote.attendee_fee_rate}%)`,
+                              quantity: '1',
+                              unitPrice: formatCurrency(feeQuote.platform_fee_inr),
+                              total: formatCurrency(feeQuote.platform_fee_inr),
+                            },
+                          ]
+                        : []),
+                    ],
+                  },
+                ]}
+                onStamp={(result) => {
+                  toast({
+                    title: 'Clearance Stamped!',
+                    message: `Official EventMesh mark printed for ${event.title}.`,
+                    type: 'success',
+                  })
+                }}
+              />
+            </div>
+          </div>
+        </div>
       )}
+
     </PageShell>
   )
 }

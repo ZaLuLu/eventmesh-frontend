@@ -36,13 +36,11 @@ export const ClubsPage: React.FC = () => {
   return (
     <PageShell className="py-8 sm:py-12 space-y-10">
       {/* Editorial Header */}
-      <div className="space-y-4">
-        <SectionHeader
-          badge="Campus Collectives"
-          title="Student Clubs & Creative Studios"
-          subtitle="Student-run engineering guilds, open-source collectives, and creative societies. Find your community and build real projects."
-        />
-      </div>
+      <SectionHeader
+        badge="Campus Collectives"
+        title="Student Clubs & Creative Studios"
+        subtitle="Student-run engineering guilds, open-source collectives, and creative societies. Find your community and build real projects."
+      />
 
       {/* Modern Minimal Club Cards Grid */}
       {isLoading ? (

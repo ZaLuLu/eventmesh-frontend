@@ -51,10 +51,16 @@ const StyleguidePage = lazy(() =>
 const DevAccountsPage = lazy(() =>
   import('@/features/auth/DevAccountsPage').then((m) => ({ default: m.DevAccountsPage }))
 )
+const StampPage = lazy(() =>
+  import('@/features/stamp/StampPage').then((m) => ({ default: m.StampPage }))
+)
 
 // Auth Pages (Lazy)
 const LoginPage = lazy(() =>
   import('@/features/auth/LoginPage').then((m) => ({ default: m.LoginPage }))
+)
+const InviteAcceptPage = lazy(() =>
+  import('@/features/auth/InviteAcceptPage').then((m) => ({ default: m.InviteAcceptPage }))
 )
 
 // Admin Pages (Lazy)
@@ -191,6 +197,7 @@ export const router = createBrowserRouter([
           </Suspense>
         ),
       },
+      { path: 'dashboard', element: <Navigate to="/attendee/dashboard" replace /> },
       {
         path: 'me',
         element: (
@@ -215,6 +222,7 @@ export const router = createBrowserRouter([
           </Suspense>
         ),
       },
+      { path: 'stamp', element: <Navigate to="/explore" replace /> },
       ...(import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEV_TOOLS === 'true'
         ? [
             {
@@ -265,7 +273,17 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // 3. ADMIN CONSOLE ROUTES
+  // 3. INVITATION ACCEPTANCE ROUTE
+  {
+    path: 'invite/:token',
+    element: (
+      <Suspense fallback={<LoadingFallback />}>
+        <InviteAcceptPage />
+      </Suspense>
+    ),
+  },
+
+  // 4. ADMIN CONSOLE ROUTES
   {
     path: 'admin',
     element: <AdminShell />,
@@ -415,6 +433,7 @@ export const router = createBrowserRouter([
           </Suspense>
         ),
       },
+
     ],
   },
 ])

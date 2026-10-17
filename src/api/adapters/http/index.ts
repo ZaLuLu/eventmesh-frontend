@@ -46,6 +46,12 @@ import {
   PayoutAccountCreate,
   SettlementRecord,
   InAppNotificationListResponse,
+  InvitationCreate,
+  InvitationRead,
+  InvitationCreatedResponse,
+  ProposalCreate,
+  ProposalRead,
+  ProposalReview,
 } from '../../contracts'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://eventmesh-api.onrender.com'
@@ -682,6 +688,46 @@ export const httpOrganizationsApi: OrganizationsApi = {
     requestJson(`/admin/organization/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(updates),
+    }),
+
+  // Staff Invitations
+  listInvitations: (slug: string) =>
+    requestJson<InvitationRead[]>(`${V1}/organizations/${slug}/invitations`),
+
+  createInvitation: (slug: string, payload: InvitationCreate) =>
+    requestJson<InvitationCreatedResponse>(`${V1}/organizations/${slug}/invitations`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  revokeInvitation: (slug: string, invitationId: string) =>
+    requestJson<InvitationRead>(`${V1}/organizations/${slug}/invitations/${invitationId}`, {
+      method: 'DELETE',
+    }),
+
+  acceptInvitation: (token: string) =>
+    requestJson<InvitationRead>(`${V1}/organizations/invitations/accept`, {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    }),
+
+  // Organization Proposals
+  createProposal: (parentSlug: string, payload: ProposalCreate) =>
+    requestJson<ProposalRead>(`${V1}/organizations/${parentSlug}/proposals`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  listMyProposals: () =>
+    requestJson<ProposalRead[]>(`${V1}/organizations/my-proposals`),
+
+  listOrgProposals: (slug: string) =>
+    requestJson<ProposalRead[]>(`${V1}/organizations/${slug}/proposals`),
+
+  reviewProposal: (proposalId: string, review: ProposalReview) =>
+    requestJson<ProposalRead>(`${V1}/organizations/proposals/${proposalId}/review`, {
+      method: 'POST',
+      body: JSON.stringify(review),
     }),
 }
 

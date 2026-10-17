@@ -289,7 +289,8 @@ export function TearTicket({
 
   const tiltX = useSpring(0, TILT_SPRING);
   const tiltY = useSpring(0, TILT_SPRING);
-  const plane = useMotionTemplate`perspective(${perspective}px) rotate(${rotate}deg) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+  const plane3D = useMotionTemplate`perspective(${perspective}px) rotate(${rotate}deg) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+  const plane = (tilt || rotate !== 0) ? plane3D : undefined;
   const depth = tiltMax > 0 ? parallax / tiltMax : 0;
   const artX = useTransform(tiltY, (v: number) => -v * depth);
   const artY = useTransform(tiltX, (v: number) => v * depth);
@@ -716,6 +717,9 @@ export function TearTicket({
             onPointerCancel={onStubUp}
             onLostPointerCapture={onStubUp}
             onKeyDown={onStubKey}
+            onClick={() => {
+              if (!disabled && !used) tearNow();
+            }}
             onDragStart={e => e.preventDefault()}
           >
             {border ? (

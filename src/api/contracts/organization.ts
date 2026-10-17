@@ -106,3 +106,74 @@ export interface CreateClubPayload {
   contact_email?: string
 }
 
+/* =========================================================================
+   INVITATION & PROPOSAL SCHEMAS
+   ========================================================================= */
+
+export type OrgRoleType = 'head_admin' | 'main_admin' | 'co_admin' | 'manager' | 'member' | string
+
+export interface InvitationCreate {
+  role?: OrgRoleType
+  recipient_email?: string | null
+  expires_in_days?: number
+}
+
+export interface InvitationRead {
+  id: string
+  organization_id: string
+  organization_name?: string | null
+  organization_slug?: string | null
+  role: OrgRoleType
+  recipient_email?: string | null
+  invited_by_id: string
+  invited_by_name?: string | null
+  status: 'pending' | 'accepted' | 'revoked' | 'expired' | string
+  expires_at: string
+  created_at: string
+}
+
+export interface InvitationCreatedResponse extends InvitationRead {
+  token: string
+  invite_url: string
+}
+
+export interface InvitationAccept {
+  token: string
+}
+
+export interface ProposalCreate {
+  name: string
+  slug?: string | null
+  description?: string | null
+  type?: string | null
+  contact_email?: string | null
+  phone?: string | null
+  city?: string | null
+  region?: string | null
+  country?: string | null
+  logo_url?: string | null
+  reason?: string | null
+}
+
+export interface ProposalRead {
+  id: string
+  parent_organization_id: string
+  parent_organization_name?: string | null
+  parent_organization_slug?: string | null
+  proposed_organization_id: string
+  proposed_organization_name?: string | null
+  proposed_organization_slug?: string | null
+  proposer_id: string
+  proposer_name?: string | null
+  status: 'pending' | 'approved' | 'rejected' | string
+  reason?: string | null
+  reviewed_by_id?: string | null
+  reviewed_at?: string | null
+  created_at: string
+}
+
+export interface ProposalReview {
+  action: 'approve' | 'reject'
+  reason?: string | null
+}
+

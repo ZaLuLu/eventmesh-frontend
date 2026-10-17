@@ -36,6 +36,13 @@ import {
   PaymentStatusResponse,
   InAppNotification,
   InAppNotificationListResponse,
+  InvitationCreate,
+  InvitationRead,
+  InvitationCreatedResponse,
+  InvitationAccept,
+  ProposalCreate,
+  ProposalRead,
+  ProposalReview,
 } from '../contracts'
 
 export interface EventsFilter {
@@ -279,5 +286,17 @@ export interface OrganizationsApi {
   addMember?(slug: string, payload: { user_id: string; role: 'member' | 'manager' }): Promise<MemberRead>
   removeMember?(slug: string, userId: string): Promise<void>
   updateOrganization(id: string, updates: Partial<Organization>): Promise<Organization>
+
+  // Staff Invitations
+  listInvitations?(slug: string): Promise<InvitationRead[]>
+  createInvitation?(slug: string, payload: InvitationCreate): Promise<InvitationCreatedResponse>
+  revokeInvitation?(slug: string, invitationId: string): Promise<InvitationRead>
+  acceptInvitation?(token: string): Promise<InvitationRead>
+
+  // Organization Proposals
+  createProposal?(parentSlug: string, payload: ProposalCreate): Promise<ProposalRead>
+  listMyProposals?(): Promise<ProposalRead[]>
+  listOrgProposals?(slug: string): Promise<ProposalRead[]>
+  reviewProposal?(proposalId: string, review: ProposalReview): Promise<ProposalRead>
 }
 

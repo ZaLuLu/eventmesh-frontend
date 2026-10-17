@@ -48,6 +48,12 @@ import {
   PaymentStatusResponse,
   InAppNotification,
   InAppNotificationListResponse,
+  InvitationCreate,
+  InvitationRead,
+  InvitationCreatedResponse,
+  ProposalCreate,
+  ProposalRead,
+  ProposalReview,
 } from '../../contracts'
 import { SEED_ORGANIZATION, SEED_CLUBS, SEED_DEMO_USERS } from './seedData'
 import {
@@ -195,6 +201,42 @@ const SEED_IN_APP_NOTIFICATIONS: InAppNotification[] = [
   },
 ]
 
+const SEED_INVITATIONS: (InvitationRead & { token?: string })[] = [
+  {
+    id: 'inv-seed-001',
+    organization_id: 'org-club-1',
+    organization_name: 'Design Systems Club',
+    organization_slug: 'design-systems-club',
+    role: 'co_admin',
+    recipient_email: 'designer@apex.edu',
+    invited_by_id: 'usr-admin',
+    invited_by_name: 'Alex Rivera',
+    status: 'pending',
+    expires_at: new Date(Date.now() + 86400000 * 6).toISOString(),
+    created_at: new Date(Date.now() - 86400000).toISOString(),
+    token: 'tok_demo_invitation_dsc_2026',
+  },
+]
+
+const SEED_PROPOSALS: ProposalRead[] = [
+  {
+    id: 'prop-seed-001',
+    parent_organization_id: 'org-1',
+    parent_organization_name: 'Apex Institute of Technology',
+    parent_organization_slug: 'apex-institute',
+    proposed_organization_id: 'org-club-3',
+    proposed_organization_name: 'Quantum Computing Research Cell',
+    proposed_organization_slug: 'quantum-computing-research-cell',
+    proposer_id: 'usr_dev_001',
+    proposer_name: 'Alex Rivera',
+    status: 'pending',
+    reason: 'Interdisciplinary research club dedicated to quantum algorithms and hackathons.',
+    reviewed_by_id: null,
+    reviewed_at: null,
+    created_at: new Date(Date.now() - 86400000 * 2).toISOString(),
+  },
+]
+
 class MockDataStore {
   organization: Organization
   clubs: Organizer[]
@@ -206,6 +248,8 @@ class MockDataStore {
   inAppNotifications: InAppNotification[]
   payoutAccounts: Record<string, PayoutAccount>
   settlements: SettlementRecord[]
+  invitations: (InvitationRead & { token?: string })[]
+  proposals: ProposalRead[]
   auditLogs: AuditLog[]
   currentSession: UserSession | null
 
@@ -223,6 +267,8 @@ class MockDataStore {
       this.inAppNotifications = SEED_IN_APP_NOTIFICATIONS
       this.payoutAccounts = { ...SEED_PAYOUT_ACCOUNTS }
       this.settlements = [...SEED_SETTLEMENTS]
+      this.invitations = [...SEED_INVITATIONS]
+      this.proposals = [...SEED_PROPOSALS]
       this.auditLogs = SEED_AUDIT_LOGS
       this.currentSession = SEED_DEMO_USERS[0]
       setStored('schema_version', SCHEMA_VERSION)
@@ -238,6 +284,8 @@ class MockDataStore {
       this.inAppNotifications = getStored('in_app_notifications', SEED_IN_APP_NOTIFICATIONS)
       this.payoutAccounts = getStored('payout_accounts', SEED_PAYOUT_ACCOUNTS)
       this.settlements = getStored('settlements', SEED_SETTLEMENTS)
+      this.invitations = getStored('invitations', SEED_INVITATIONS)
+      this.proposals = getStored('proposals', SEED_PROPOSALS)
       this.auditLogs = getStored('audit_logs', SEED_AUDIT_LOGS)
       this.currentSession = getStored('session', SEED_DEMO_USERS[0])
     }
@@ -255,6 +303,8 @@ class MockDataStore {
     setStored('in_app_notifications', this.inAppNotifications)
     setStored('payout_accounts', this.payoutAccounts)
     setStored('settlements', this.settlements)
+    setStored('invitations', this.invitations)
+    setStored('proposals', this.proposals)
     setStored('audit_logs', this.auditLogs)
     setStored('session', this.currentSession)
   }
@@ -1509,5 +1559,119 @@ export const mockOrganizationsApi: OrganizationsApi = {
     mockStore.organization = { ...mockStore.organization, ...updates }
     mockStore.save()
     return mockStore.organization
+  },
+
+  async listInvitations(slug: string): Promise<InvitationRead[]> {
+    await simulateLatency()
+    return mockStore.invitations.filter((i) => i.organization_slug === slug || !i.organization_slug)
+  },
+
+  async createInvitation(slug: string, payload: InvitationCreate): Promise<InvitationCreatedResponse> {
+    await simulateLatency()
+    const token = `tok_inv_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
+    const newInv: InvitationRead & { token: string } = {
+      id: `inv-${Date.now()}`,
+      organization_id: mockStore.organization.id,
+      organization_name: mockStore.organization.name,
+      organization_slug: slug,
+      role: payload.role || 'co_admin',
+      recipient_email: payload.recipient_email || null,
+      invited_by_id: mockStore.currentSession?.id || 'usr-admin',
+      invited_by_name: mockStore.currentSession?.name || 'Administrator',
+      status: 'pending',
+      expires_at: new Date(Date.now() + 86400000 * (payload.expires_in_days || 7)).toISOString(),
+      created_at: new Date().toISOString(),
+      token,
+    }
+    mockStore.invitations.unshift(newInv)
+    mockStore.save()
+    return {
+      ...newInv,
+      invite_url: `${window.location.origin}/invite/${token}`,
+    }
+  },
+
+  async revokeInvitation(slug: string, invitationId: string): Promise<InvitationRead> {
+    await simulateLatency()
+    const inv = mockStore.invitations.find((i) => i.id === invitationId)
+    if (inv) {
+      inv.status = 'revoked'
+      mockStore.save()
+      return inv
+    }
+    throw new Error('Invitation not found')
+  },
+
+  async acceptInvitation(token: string): Promise<InvitationRead> {
+    await simulateLatency()
+    const inv = mockStore.invitations.find((i) => i.token === token || i.id === token)
+    if (!inv) {
+      // Create a mock fallback invitation for token testing
+      const accepted: InvitationRead = {
+        id: `inv-accepted-${Date.now()}`,
+        organization_id: mockStore.organization.id,
+        organization_name: mockStore.organization.name,
+        organization_slug: mockStore.organization.slug,
+        role: 'co_admin',
+        recipient_email: mockStore.currentSession?.email || 'admin@apex.edu',
+        invited_by_id: 'usr-admin',
+        invited_by_name: 'Lead Administrator',
+        status: 'accepted',
+        expires_at: new Date(Date.now() + 86400000).toISOString(),
+        created_at: new Date().toISOString(),
+      }
+      return accepted
+    }
+    inv.status = 'accepted'
+    mockStore.save()
+    return inv
+  },
+
+  async createProposal(parentSlug: string, payload: ProposalCreate): Promise<ProposalRead> {
+    await simulateLatency()
+    const newProp: ProposalRead = {
+      id: `prop-${Date.now()}`,
+      parent_organization_id: mockStore.organization.id,
+      parent_organization_name: mockStore.organization.name,
+      parent_organization_slug: parentSlug,
+      proposed_organization_id: `org-prop-${Date.now()}`,
+      proposed_organization_name: payload.name,
+      proposed_organization_slug: payload.slug || payload.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      proposer_id: mockStore.currentSession?.id || 'usr_dev_001',
+      proposer_name: mockStore.currentSession?.name || 'Alex Rivera',
+      status: 'pending',
+      reason: payload.reason || payload.description || null,
+      reviewed_by_id: null,
+      reviewed_at: null,
+      created_at: new Date().toISOString(),
+    }
+    mockStore.proposals.unshift(newProp)
+    mockStore.save()
+    return newProp
+  },
+
+  async listMyProposals(): Promise<ProposalRead[]> {
+    await simulateLatency()
+    return [...mockStore.proposals]
+  },
+
+  async listOrgProposals(slug: string): Promise<ProposalRead[]> {
+    await simulateLatency()
+    return mockStore.proposals.filter(
+      (p) => p.parent_organization_slug === slug || !p.parent_organization_slug
+    )
+  },
+
+  async reviewProposal(proposalId: string, review: ProposalReview): Promise<ProposalRead> {
+    await simulateLatency()
+    const prop = mockStore.proposals.find((p) => p.id === proposalId)
+    if (!prop) {
+      throw new Error('Proposal not found')
+    }
+    prop.status = review.action === 'approve' ? 'approved' : 'rejected'
+    prop.reviewed_by_id = mockStore.currentSession?.id || 'usr-admin'
+    prop.reviewed_at = new Date().toISOString()
+    mockStore.save()
+    return prop
   },
 }

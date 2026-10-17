@@ -1,39 +1,66 @@
-export type StampStatus =
-  | 'paid'
-  | 'received'
-  | 'approved'
-  | 'due'
-  | 'admitted'
-  | 'verified'
-  | 'void'
+import type { ReactNode } from 'react'
+
+export type StampStatus = 'paid' | 'received' | 'approved' | 'due'
 
 export type StampInk = 'red' | 'blue' | 'green' | 'violet' | 'graphite'
 
-export interface PrintData {
-  status: StampStatus
-  dateText?: string
-  ink?: StampInk
-  seed?: number
-  rotate?: number
-  dx?: number
-  dy?: number
-  subtitle?: string
+export type StampMotion = 'auto' | 'cinematic' | 'quick'
+
+export type StampField = {
+  label: string
+  value: string
 }
 
-export const STAMP_INKS: Record<StampInk, { name: string; color: string; border: string }> = {
-  red: { name: 'Crimson Red', color: '#D8342B', border: '#C02921' },
-  blue: { name: 'Cobalt Blue', color: '#2463D6', border: '#1D53B5' },
-  green: { name: 'Emerald Green', color: '#16A34A', border: '#15803D' },
-  violet: { name: 'Iris Violet', color: '#7C3AED', border: '#6D28D9' },
-  graphite: { name: 'Graphite Black', color: '#374151', border: '#1F2937' },
+export type StampIssuer = {
+  name: string
+  logo?: ReactNode
+  details: StampField[]
+  payment: StampField[]
+  website?: string
 }
 
-export const STATUS_WORDS: Record<StampStatus, { word: string; defaultInk: StampInk }> = {
-  paid: { word: 'PAID', defaultInk: 'red' },
-  admitted: { word: 'ADMITTED', defaultInk: 'green' },
-  verified: { word: 'VERIFIED', defaultInk: 'violet' },
-  approved: { word: 'APPROVED', defaultInk: 'blue' },
-  received: { word: 'RECEIVED', defaultInk: 'green' },
-  due: { word: 'DUE', defaultInk: 'red' },
-  void: { word: 'VOID', defaultInk: 'graphite' },
+export type StampInvoiceLine = {
+  description: string
+  quantity: string
+  unitPrice: string
+  total: string
+}
+
+export type StampInvoice = {
+  id: string
+  client: string
+  total: string
+  issued: string
+  due: string
+  lines: StampInvoiceLine[]
+}
+
+export type StampResult = {
+  invoiceId: string
+  status: StampStatus | 'void'
+  date: Date
+  ink: StampInk
+}
+
+export type StampTiming = {
+  tilt: number
+  press: number
+  bounce: number
+  liftAway: number
+  rise: number
+}
+
+export type StampProps = {
+  invoices?: StampInvoice[]
+  issuer?: StampIssuer
+  motion?: StampMotion
+  sound?: boolean
+  timing?: Partial<StampTiming>
+  defaultDate?: Date
+  defaultStatus?: StampStatus
+  defaultInk?: StampInk
+  onStamp?: (result: StampResult) => void
+  onUndo?: (result: StampResult) => void
+  autoStamp?: boolean
+  className?: string
 }

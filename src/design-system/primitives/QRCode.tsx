@@ -20,12 +20,13 @@ export const QRCode: React.FC<QRCodeProps> = ({
 
   useEffect(() => {
     if (!canvasRef.current || !value) return
+    const dpr = typeof window !== 'undefined' ? Math.max(window.devicePixelRatio || 1, 2) : 2
 
     QRCodeLib.toCanvas(
       canvasRef.current,
       value,
       {
-        width: size,
+        width: Math.round(size * dpr),
         margin: 1,
         color: {
           dark: colorDark,
@@ -42,9 +43,13 @@ export const QRCode: React.FC<QRCodeProps> = ({
 
   return (
     <div
-      className={`inline-flex items-center justify-center p-3 border border-line rounded-[10px] bg-surface ${className}`}
+      className={`inline-flex items-center justify-center p-2.5 border border-line rounded-xl bg-white shadow-xs ${className}`}
     >
-      <canvas ref={canvasRef} className="block" />
+      <canvas
+        ref={canvasRef}
+        style={{ width: `${size}px`, height: `${size}px`, imageRendering: 'pixelated' }}
+        className="block"
+      />
     </div>
   )
 }

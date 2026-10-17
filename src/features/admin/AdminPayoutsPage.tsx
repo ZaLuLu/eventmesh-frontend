@@ -12,6 +12,7 @@ import {
   ArrowsClockwise,
 } from '@phosphor-icons/react'
 import { api, PayoutAccount, SettlementRecord, PayoutAccountCreate } from '@/api'
+import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { Button } from '@/design-system/primitives/Button'
@@ -158,6 +159,16 @@ export const AdminPayoutsPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          <Link to="/admin/stamp">
+            <Button
+              surface="admin"
+              variant="secondary"
+              size="sm"
+              icon={<Sparkle size={15} weight="duotone" className="text-accent" />}
+            >
+              3D Stamp Desk
+            </Button>
+          </Link>
           <Button
             surface="admin"
             variant="secondary"

@@ -25,7 +25,6 @@ import { useToast } from '@/design-system/primitives/Toast'
 import { triggerBurstConfetti } from '@/lib/confetti'
 import { playSound } from '@/lib/sound'
 import { Registration } from '@/api'
-import { StampActionOverlay, PrintMark } from '@/components/stamp'
 
 interface ScanResultState {
   status: 'admitted' | 'already_admitted' | 'queued' | 'wrong_event' | 'invalid'
@@ -472,18 +471,14 @@ export const AdminCheckinPage: React.FC = () => {
                 </p>
               </div>
 
-              {/* Ink Print Stamp Mark positioned organically on the verification slip */}
+              {/* Verification badge positioned on the slip */}
               <div className="self-end sm:self-auto flex items-center gap-3 z-10">
-                <PrintMark
-                  print={{
-                    status: 'admitted',
-                    dateText: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase(),
-                    subtitle: 'GATE ADMITTED',
-                    seed: 77,
-                  }}
-                  scale={0.85}
-                  className="rotate-[-3deg] hover:rotate-0 transition-transform duration-200"
-                />
+                <div className="px-3.5 py-1.5 rounded-lg border-2 border-dashed border-mint/40 bg-mint/5 flex flex-col items-center rotate-[-3deg]">
+                  <span className="text-[10px] font-mono font-bold text-mint tracking-wider">GATE ADMITTED</span>
+                  <span className="text-[9px] font-mono text-text-3">
+                    {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
+                  </span>
+                </div>
 
                 <div className="flex flex-col gap-1.5">
                   <Button
@@ -613,15 +608,6 @@ export const AdminCheckinPage: React.FC = () => {
         </div>
       )}
 
-      {/* 3D Physical Desk Stamp Modal */}
-      <StampActionOverlay
-        isOpen={stampOverlayOpen}
-        onClose={() => setStampOverlayOpen(false)}
-        status={stampDetails.status === 'admitted' ? 'admitted' : 'void'}
-        title="Gate Admission Verified"
-        subtitle={stampDetails.reg?.userName || 'GATE ADMISSION CLEARANCE'}
-        dateText={new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
-      />
     </div>
   )
 }

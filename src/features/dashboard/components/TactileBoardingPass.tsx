@@ -5,11 +5,13 @@ import {
   ArrowsClockwise,
   ShieldCheck,
   CheckCircle,
+  Cube,
 } from '@phosphor-icons/react'
 import { Registration } from '@/api'
 import { formatDate } from '@/lib/dates'
 import { Badge } from '@/design-system/primitives/Badge'
-import { CodeSlots } from '@/design-system/micro/CodeSlots'
+import { QRCode } from '@/design-system/primitives/QRCode'
+import { Ticket3D } from '@/design-system/3d'
 
 export interface TactileBoardingPassProps {
   registration: Registration
@@ -27,15 +29,42 @@ export const TactileBoardingPass: React.FC<TactileBoardingPassProps> = ({
   onCancel,
 }) => {
   const [isFlipped, setIsFlipped] = useState(false)
-
-  // Derive stable 6-digit OTP code for gate check-in
-  const otpCode = String(
-    Math.abs(reg.id.split('').reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7) % 900000) + 100000
-  )
+  const [show3D, setShow3D] = useState(false)
 
   const passSerial = reg.id.slice(0, 8).toUpperCase()
+  const ticketCode = reg.ticketCode || `PASS-${passSerial}`
   const isCheckedIn = reg.status === 'checked_in'
   const isCancelled = reg.status === 'cancelled'
+
+  if (show3D) {
+    return (
+      <div className="relative w-full rounded-2xl bg-surface-subtle p-2 border border-border-default shadow-lg">
+        <div className="flex items-center justify-between px-3 pt-2">
+          <span className="text-[11px] font-mono text-accent font-semibold uppercase tracking-wider flex items-center gap-1.5">
+            <Cube size={14} weight="bold" />
+            3D Holographic Pass
+          </span>
+          <button
+            type="button"
+            onClick={() => setShow3D(false)}
+            className="text-xs font-mono text-text-2 hover:text-ink px-2 py-0.5 rounded bg-surface border border-border-subtle"
+          >
+            ← 2D Card
+          </button>
+        </div>
+        <Ticket3D
+          eventTitle={reg.eventTitle || 'Campus Flagship Event'}
+          attendeeName={reg.userName || 'Verified Attendee'}
+          ticketCode={`PASS-${passSerial}`}
+          tierName={reg.tierName || 'GENERAL ADMISSION'}
+          dateText={reg.eventStartsAt ? formatDate(reg.eventStartsAt) : 'UPCOMING'}
+          color="#8FE3C6"
+          isVip={Boolean(reg.tierName?.toLowerCase().includes('vip'))}
+          height={260}
+        />
+      </div>
+    )
+  }
 
   return (
     <div
@@ -63,10 +92,21 @@ export const TactileBoardingPass: React.FC<TactileBoardingPassProps> = ({
           <div className="p-5 flex-1 flex flex-col justify-between">
             {/* Pass Serial & Status Header */}
             <div className="flex items-center justify-between border-b border-line/30 pb-3">
-              <span className="font-mono text-xs font-medium px-2 py-0.5 rounded-md bg-surface text-ink flex items-center gap-1.5">
-                <Ticket className="h-3.5 w-3.5 text-primary" weight="bold" />
-                PASS-{passSerial}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs font-medium px-2 py-0.5 rounded-md bg-surface text-ink flex items-center gap-1.5">
+                  <Ticket className="h-3.5 w-3.5 text-primary" weight="bold" />
+                  PASS-{passSerial}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShow3D(true)}
+                  className="font-mono text-[11px] font-semibold px-2 py-0.5 rounded-md bg-accent/10 text-accent hover:bg-accent/20 transition-colors flex items-center gap-1"
+                  title="Inspect in 3D WebGL"
+                >
+                  <Cube size={12} weight="bold" />
+                  <span>3D</span>
+                </button>
+              </div>
 
               <div className="flex items-center gap-2">
                 {isCheckedIn ? (
@@ -187,40 +227,30 @@ export const TactileBoardingPass: React.FC<TactileBoardingPassProps> = ({
           </div>
 
           {/* Center Gate Verification Content */}
-          <div className="my-auto space-y-3">
-            <div>
-              <p className="text-[10px] font-mono text-white/50 uppercase tracking-wider">
-                GATE OTP (SERVER ISSUED)
-              </p>
-              <div className="mt-1 flex justify-center">
-                <CodeSlots
-                  value={otpCode}
-                  length={6}
-                  status={isCheckedIn ? 'success' : 'idle'}
-                  slotSize={26}
-                  radius={4}
-                  gap={5}
-                  className="bg-black/40 border border-white/20 text-white"
-                />
-              </div>
+          <div className="my-auto flex flex-col items-center gap-2">
+            <div className="p-2 rounded-xl bg-white shadow-xs">
+              <QRCode
+                value={JSON.stringify({
+                  v: 1,
+                  ticketId: ticketCode,
+                  code: ticketCode,
+                  registrationId: reg.id,
+                  eventId: reg.eventId || '',
+                })}
+                size={96}
+              />
             </div>
-
-            <div className="p-2.5 rounded-lg bg-white/5 border border-white/10 space-y-1">
-              <p className="text-[10px] font-mono text-white/40 uppercase tracking-wide">
-                SIGNED VERIFICATION TOKEN
-              </p>
-              <p className="font-mono text-[11px] text-emerald-400 font-medium truncate">
-                {(reg as any).verificationToken || `0x${reg.id.slice(0, 16)}...sig_ok`}
-              </p>
-              <p className="text-[10px] text-white/60 font-sans">
-                Signed by EventMesh admission service for venue gate verification.
-              </p>
-            </div>
+            <span className="font-mono text-xs font-bold text-white tracking-wider">
+              {ticketCode}
+            </span>
+            <p className="text-[10px] text-white/60 font-sans text-center">
+              Signed by EventMesh admission service for venue gate verification.
+            </p>
           </div>
 
           {/* Back Footer */}
           <div className="pt-2.5 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-white/50">
-            <span>ISO/IEC GATE PROTOCOL</span>
+            <span>GATE READY</span>
             <button
               type="button"
               onClick={() => setIsFlipped(false)}
