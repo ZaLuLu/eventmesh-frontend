@@ -79,7 +79,7 @@ export const AttendeeDashboardPage: React.FC = () => {
     }
   }, [session])
 
-  const [lanyardMode, setLanyardMode] = useState<'3d' | '2d'>('3d')
+  const [lanyardMode, setLanyardMode] = useState<'3d' | '2d'>('2d')
 
   const frontTexture = useMemo(() => {
     if (lanyardMode !== '3d') return ''
@@ -260,137 +260,116 @@ export const AttendeeDashboardPage: React.FC = () => {
 
   return (
     <PageShell className="py-6 sm:py-8 space-y-8">
+      {/* ========================================================================= */}
+      {/* 1. NEXT UP IMMINENT PASS (QUICK GATE ACCESS)                              */}
+      {/* ========================================================================= */}
       {nextEvent && nextPass && (
-        <section className="flex flex-col gap-4 rounded-panel border border-line bg-card p-5 sm:flex-row sm:items-center sm:justify-between" aria-label="Next event">
-          <div><p className="font-mono text-xs uppercase tracking-widest text-accent">Next up</p><h1 className="mt-1 text-xl font-semibold text-ink">{nextEvent.title}</h1><p className="mt-1 text-sm text-ink-soft">{formatDate(nextEvent.startsAt)} · {nextEvent.venue?.name || 'Venue to be announced'}</p></div>
-          <button type="button" onClick={() => setSelectedTicket(nextPass)} className="shrink-0 rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white hover:bg-accent-hover">View ticket</button>
+        <section
+          className="rounded-2xl border-2 border-primary/20 bg-gradient-to-r from-primary/5 via-surface to-surface p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm"
+          aria-label="Next event quick access"
+        >
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <Ticket size={22} weight="bold" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  NEXT UP
+                </span>
+                <span className="text-xs text-ink-soft font-mono">
+                  {formatDate(nextEvent.startsAt)}
+                </span>
+              </div>
+              <h2 className="text-base sm:text-lg font-bold text-ink truncate mt-0.5">
+                {nextEvent.title}
+              </h2>
+              <p className="text-xs text-ink-muted truncate font-mono">
+                {nextEvent.venue?.name || 'Main Campus Venue'}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedTicket(nextPass)
+              fireCelebrationConfetti()
+            }}
+            className="shrink-0 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-ink text-surface hover:opacity-90 font-semibold text-xs tracking-wide uppercase transition-all shadow-sm active:scale-98"
+          >
+            <Ticket size={16} weight="bold" />
+            <span>Present Pass</span>
+            <ArrowRight size={14} weight="bold" />
+          </button>
         </section>
       )}
+
       {/* ========================================================================= */}
-      {/* PROFILE BENTO HEADER                                                      */}
+      {/* 2. STREAMLINED STUDENT WALLET IDENTITY SECTION                            */}
       {/* ========================================================================= */}
-      <section className="bg-surface-subtle rounded-3xl p-6 sm:p-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Left Column (5 cols): Academic Profile Summary & Counters */}
-          <div className="lg:col-span-5 space-y-6">
-            {/* Header Chips */}
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="neutral" size="sm">
-                Campus Identity
-              </Badge>
-              {session?.role !== 'platform_admin' && session?.role !== 'org_admin' && session?.role !== 'club_admin' && (
-                <button
-                  type="button"
-                  onClick={handleBecomeOrganizer}
-                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors border border-accent/30 shadow-xs"
-                >
-                  <Sparkle className="w-3.5 h-3.5" weight="bold" />
-                  <span>Become an Organizer</span>
-                </button>
-              )}
-            </div>
+      <section className="rounded-3xl bg-surface-subtle border border-line/40 p-6 sm:p-8 flex flex-col items-center">
+        {/* Minimal Identity Bar */}
+        <div className="w-full max-w-[460px] flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-surface border border-line/50 text-ink shadow-xs">
+              <ShieldCheck size={14} weight="fill" className="text-emerald-500" />
+              <span>Campus Identity</span>
+            </span>
+            <span className="text-xs font-mono text-ink-muted hidden sm:inline">
+              {studentData.degreeBranch || 'Verified Passholder'}
+            </span>
+          </div>
 
-            {/* Student Name & Academic Affiliation */}
-            <div>
-              <h1 className="font-display font-semibold text-3xl sm:text-4xl text-ink tracking-tight leading-tight">
-                {studentData.name}
-              </h1>
-              <p className="font-mono text-xs text-ink-soft mt-1">
-                {studentData.email}
-              </p>
-              <p className="font-mono text-xs text-accent font-semibold mt-1.5">
-                {studentData.degreeBranch} {studentData.semester ? `· Semester 0${studentData.semester}` : ''}
-              </p>
-            </div>
+          {/* Mode Switcher (Tactile 2D vs 3D Lanyard) */}
+          <button
+            type="button"
+            onClick={() => setLanyardMode(lanyardMode === '3d' ? '2d' : '3d')}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono text-ink-soft hover:text-ink bg-surface border border-line/50 transition-colors shadow-xs"
+            title="Switch display between 2D Tactile Pass and 3D Interactive Lanyard"
+          >
+            <Cube size={13} weight="bold" />
+            <span>{lanyardMode === '3d' ? 'Tactile 2D' : '3D Lanyard'}</span>
+          </button>
+        </div>
 
-            {/* Metric Summary Counters */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <div className="px-4 py-2.5 rounded-xl bg-surface text-center min-w-[100px] flex-1 sm:flex-none">
-                <p className="font-display font-medium text-2xl text-ink font-mono">{activePasses.length}</p>
-                <p className="text-[11px] text-ink-soft">Active Passes</p>
-              </div>
-              <div className="px-4 py-2.5 rounded-xl bg-surface text-center min-w-[100px] flex-1 sm:flex-none">
-                <p className="font-display font-medium text-2xl text-emerald-600 dark:text-emerald-400 font-mono">
-                  {attendedPasses.length}
-                </p>
-                <p className="text-[11px] text-ink-soft">Admitted at Gate</p>
-              </div>
-              <div className="px-4 py-2.5 rounded-xl bg-surface text-center min-w-[100px] flex-1 sm:flex-none">
-                <p className="font-display font-medium text-2xl text-ink font-mono">{certificates.length}</p>
-                <p className="text-[11px] text-ink-soft">Credentials</p>
-              </div>
-            </div>
-
-            {/* Micro Instruction Note */}
-            <p className="text-[11px] font-mono text-ink-muted">
-              Official 3D Native ID Card · Click directly on the badge to copy your registration number.
+        {/* Central Identity Card Artifact */}
+        {lanyardMode === '2d' ? (
+          <div className="w-full flex flex-col items-center">
+            <StudentIDCard2D
+              name={studentData.name}
+              registrationNumber={studentData.registrationNumber || 'EM-2026-0814'}
+              degreeBranch={studentData.degreeBranch}
+              semester={studentData.semester}
+              email={studentData.email}
+              role={studentData.role}
+              campus={studentData.campus}
+              avatarUrl={avatarUrl}
+              interactive={true}
+            />
+            <p className="mt-3 text-[11px] font-mono text-ink-muted text-center flex items-center gap-1">
+              <span>Click or tap card to flip 3D (Front / Back)</span>
             </p>
           </div>
-
-          {/* Right Column (7 cols): Free-Floating 3D Native Campus ID (Zero Bento Box Cage) */}
-          <div className="lg:col-span-7 flex flex-col items-center justify-center relative min-h-[580px] sm:min-h-[660px]">
-            {/* Minimal Floating Mode Toggle Pill */}
-            <div className="absolute top-2 right-2 z-20 flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setLanyardMode(lanyardMode === '3d' ? '2d' : '3d')}
-                className="px-3 py-1.5 rounded-full border border-line bg-surface/90 hover:bg-surface text-ink text-xs font-mono shadow-sm backdrop-blur-none transition-all hover:border-line-strong active:scale-95"
-                title="Switch between 3D Physics Lanyard and 2D Pass View"
-              >
-                {lanyardMode === '3d' ? 'Switch to 2D Pass' : 'View in 3D Lanyard'}
-              </button>
-            </div>
-
-            {/* Direct On-Card Copied Toast Notification */}
-            {copiedRegNo && (
-              <div className="absolute top-12 z-30 px-4 py-2 rounded-full bg-ink text-paper text-xs font-mono shadow-lg flex items-center gap-2 animate-in fade-in zoom-in-95 duration-200">
-                <Check className="w-4 h-4 text-emerald-400" weight="bold" />
-                <span>Copied {studentData.registrationNumber} to clipboard!</span>
-              </div>
-            )}
-
-            {/* Free-Floating Canvas Container (Uncaged, Expansive Stage) */}
-            <div className="w-full h-[560px] sm:h-[640px] relative flex items-center justify-center">
-              {lanyardMode === '3d' ? (
-                <div
-                  className="w-full h-full cursor-grab active:cursor-grabbing"
-                  title="Click card to copy registration number | Drag to swing"
-                >
-                  <Lanyard
-                    frontImage={frontTexture}
-                    backImage={backTexture}
-                    imageFit="cover"
-                    cardColor="#0B0814"
-                    strapColor="#7C3AED"
-                    strapWidth={0.15}
-                    strapLength={0.16}
-                    size={0.72}
-                    metal="silver"
-                    interactive={true}
-                    onCardClick={handleCopyRegNo}
-                    className="w-full h-full"
-                  />
-                </div>
-              ) : (
-                <div
-                  onClick={handleCopyRegNo}
-                  className="cursor-pointer transition-transform hover:scale-102 active:scale-98"
-                  title="Click card to copy registration number"
-                >
-                  <StudentIDCard2D
-                    name={studentData.name}
-                    registrationNumber={studentData.registrationNumber}
-                    degreeBranch={studentData.degreeBranch}
-                    semester={studentData.semester}
-                    email={studentData.email}
-                    role={studentData.role}
-                    campus={studentData.campus}
-                  />
-                </div>
-              )}
-            </div>
+        ) : (
+          <div className="w-full max-w-[460px] h-[340px] relative rounded-2xl bg-[#0B0814] border border-neutral-800 overflow-hidden flex flex-col items-center justify-center">
+            <Lanyard
+              frontImage={frontTexture}
+              backImage={backTexture}
+              imageFit="cover"
+              cardColor="#0B0814"
+              strapColor="#7C3AED"
+              strapWidth={0.15}
+              strapLength={0.16}
+              size={0.72}
+              metal="silver"
+              interactive={true}
+              onCardClick={handleCopyRegNo}
+              className="w-full h-full"
+            />
           </div>
-        </div>
+        )}
       </section>
 
       {/* ========================================================================= */}
