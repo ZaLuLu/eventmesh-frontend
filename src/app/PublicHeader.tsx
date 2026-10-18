@@ -15,7 +15,6 @@ interface PublicHeaderProps {
 const destinations = [
   { label: 'Home', path: '/' },
   { label: 'Explore', path: '/explore' },
-  { label: 'Calendar', path: '/schedule' },
   { label: 'Clubs', path: '/clubs' },
 ]
 

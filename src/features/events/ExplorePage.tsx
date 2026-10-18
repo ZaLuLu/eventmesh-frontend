@@ -459,7 +459,38 @@ export const ExplorePage: React.FC = () => {
         </aside>
 
         {/* Right Column: Catalog Controls + 3-Column Event Grid */}
-        <div className="min-w-0 space-y-5">
+        <div className="min-w-0 space-y-4">
+          {/* Quick Schedule / Time Filter Chips */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <span className="text-xs font-mono font-medium text-ink-muted flex items-center gap-1.5 shrink-0 mr-1">
+              <CalendarBlank size={13} className="text-accent" />
+              <span>When:</span>
+            </span>
+            {[
+              { value: 'ALL', label: 'All Dates' },
+              { value: 'today', label: 'Today' },
+              { value: 'weekend', label: 'This Weekend' },
+              { value: 'next-week', label: 'Next Week' },
+            ].map((d) => {
+              const active = date === d.value || (date === 'ALL' && d.value === 'ALL')
+              return (
+                <button
+                  key={d.value}
+                  type="button"
+                  onClick={() => setParam('date', d.value)}
+                  className={cn(
+                    'shrink-0 px-3 py-1 rounded-full text-xs font-mono transition-all',
+                    active
+                      ? 'bg-ink text-paper font-semibold shadow-xs'
+                      : 'bg-card text-ink-soft hover:text-ink border border-line hover:border-line-strong'
+                  )}
+                >
+                  {d.label}
+                </button>
+              )
+            })}
+          </div>
+
           {/* Top Catalog Toolbar: Active Filters summary + Sort Selector */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-line bg-card p-3 shadow-xs">
             {/* Active Filters Badges */}

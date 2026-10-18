@@ -16,6 +16,7 @@ import {
   ArrowRight,
   CalendarBlank,
   PencilSimple,
+  ArrowsClockwise,
 } from '@phosphor-icons/react'
 import { useMyRegistrations, useCancelRegistration, useUpdateRegistrationStatus } from '@/hooks/useRegistrations'
 import { useMyCertificates } from '@/hooks/useCertificates'
@@ -32,7 +33,7 @@ import { EmptyState } from '@/design-system/primitives/EmptyState'
 import { fireCelebrationConfetti } from '@/lib/confetti'
 import { TactileBoardingPass } from './components/TactileBoardingPass'
 import { EventAdmissionTicket } from '@/design-system/micro/EventAdmissionTicket'
-import { Lanyard, StudentIDCard2D, generateStudentIDTexture } from '@/design-system/3d'
+import { StudentIDCard2D } from '@/design-system/3d/StudentIDCard2D'
 import { AvatarSelectorModal } from './components/AvatarSelectorModal'
 import { resolveUserAvatar } from '@/lib/avatars'
 
@@ -79,43 +80,6 @@ export const AttendeeDashboardPage: React.FC = () => {
     }
   }, [session])
 
-  const [lanyardMode, setLanyardMode] = useState<'3d' | '2d'>('2d')
-
-  const frontTexture = useMemo(() => {
-    if (lanyardMode !== '3d') return ''
-    return generateStudentIDTexture(
-      {
-        ...studentData,
-        avatarUrl,
-        attendedEvents: registrations
-          .filter((r) => r.status === 'checked_in')
-          .map((r) => ({
-            title: r.eventTitle || 'Campus Session',
-            date: formatDate(r.checkedInAt || r.createdAt),
-          })),
-        earnedBadges: certificates.length ? [`${certificates.length} credentials`] : [],
-      },
-      'front'
-    )
-  }, [lanyardMode, studentData, avatarUrl, registrations, certificates.length])
-
-  const backTexture = useMemo(() => {
-    if (lanyardMode !== '3d') return ''
-    return generateStudentIDTexture(
-      {
-        ...studentData,
-        avatarUrl,
-        attendedEvents: registrations
-          .filter((r) => r.status === 'checked_in')
-          .map((r) => ({
-            title: r.eventTitle || 'Campus Session',
-            date: formatDate(r.checkedInAt || r.createdAt),
-          })),
-        earnedBadges: certificates.length ? [`${certificates.length} credentials`] : [],
-      },
-      'back'
-    )
-  }, [lanyardMode, studentData, avatarUrl, registrations, certificates.length])
 
   const handleCopyRegNo = () => {
     navigator.clipboard.writeText(studentData.registrationNumber)
@@ -322,54 +286,36 @@ export const AttendeeDashboardPage: React.FC = () => {
             </span>
           </div>
 
-          {/* Mode Switcher (Tactile 2D vs 3D Lanyard) */}
           <button
             type="button"
-            onClick={() => setLanyardMode(lanyardMode === '3d' ? '2d' : '3d')}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono text-ink-soft hover:text-ink bg-surface border border-line/50 transition-colors shadow-xs"
-            title="Switch display between 2D Tactile Pass and 3D Interactive Lanyard"
+            onClick={() => setIsAvatarModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-ink-soft hover:text-ink bg-surface border border-line/60 transition-colors shadow-xs"
+            title="Edit student avatar photo"
           >
-            <Cube size={13} weight="bold" />
-            <span>{lanyardMode === '3d' ? 'Tactile 2D' : '3D Lanyard'}</span>
+            <PencilSimple size={12} />
+            <span>Change Photo</span>
           </button>
         </div>
 
         {/* Central Identity Card Artifact */}
-        {lanyardMode === '2d' ? (
-          <div className="w-full flex flex-col items-center">
-            <StudentIDCard2D
-              name={studentData.name}
-              registrationNumber={studentData.registrationNumber || 'EM-2026-0814'}
-              degreeBranch={studentData.degreeBranch}
-              semester={studentData.semester}
-              email={studentData.email}
-              role={studentData.role}
-              campus={studentData.campus}
-              avatarUrl={avatarUrl}
-              interactive={true}
-            />
-            <p className="mt-3 text-[11px] font-mono text-ink-muted text-center flex items-center gap-1">
-              <span>Click or tap card to flip 3D (Front / Back)</span>
-            </p>
-          </div>
-        ) : (
-          <div className="w-full max-w-[460px] h-[340px] relative rounded-2xl bg-[#0B0814] border border-neutral-800 overflow-hidden flex flex-col items-center justify-center">
-            <Lanyard
-              frontImage={frontTexture}
-              backImage={backTexture}
-              imageFit="cover"
-              cardColor="#0B0814"
-              strapColor="#7C3AED"
-              strapWidth={0.15}
-              strapLength={0.16}
-              size={0.72}
-              metal="silver"
-              interactive={true}
-              onCardClick={handleCopyRegNo}
-              className="w-full h-full"
-            />
-          </div>
-        )}
+        <div className="w-full flex flex-col items-center">
+          <StudentIDCard2D
+            name={studentData.name}
+            registrationNumber={studentData.registrationNumber || 'EM-2026-0814'}
+            degreeBranch={studentData.degreeBranch}
+            semester={studentData.semester}
+            email={studentData.email}
+            role={studentData.role}
+            campus={studentData.campus}
+            avatarUrl={avatarUrl}
+            onAvatarClick={() => setIsAvatarModalOpen(true)}
+            interactive={true}
+          />
+          <p className="mt-3 text-[11px] font-mono text-ink-muted text-center flex items-center justify-center gap-1.5">
+            <ArrowsClockwise size={12} className="text-accent" />
+            <span>Click or tap card to flip 3D (Front / Back)</span>
+          </p>
+        </div>
       </section>
 
       {/* ========================================================================= */}
