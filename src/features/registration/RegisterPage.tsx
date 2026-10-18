@@ -57,10 +57,24 @@ export const RegisterPage: React.FC = () => {
     if (session) {
       setName(session.name || '')
       setEmail(session.email || '')
+      const s = session as any
+      if (s.registrationNumber) setRegNumber(s.registrationNumber)
+      if (s.degreeBranch) setBranch(s.degreeBranch)
+      if (s.phone) setPhone(s.phone)
     } else {
       setName('')
       setEmail('')
     }
+
+    try {
+      const saved = localStorage.getItem('eventmesh_student_profile')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (parsed.regNumber) setRegNumber((prev) => prev || parsed.regNumber)
+        if (parsed.branch) setBranch((prev) => prev || parsed.branch)
+        if (parsed.phone) setPhone((prev) => prev || parsed.phone)
+      }
+    } catch {}
   }, [session])
 
   // Step 2: Team info (F-02)
@@ -125,6 +139,7 @@ export const RegisterPage: React.FC = () => {
   const selectedTier = 'tier-standard'
   const isSoldOut = event.registrationState ? event.registrationState === 'full' : event.seatsLeft === 0
   const isTeamEvent = Boolean(event.features?.team)
+  const isSimpleFreeEvent = !isPaidEvent && !isTeamEvent && (!event.formSchema || event.formSchema.length === 0)
   const minTeamSize = event.teamConfig?.minSize || 2
   const maxTeamSize = event.teamConfig?.maxSize || 4
 
@@ -227,6 +242,13 @@ export const RegisterPage: React.FC = () => {
     }
 
     try {
+      try {
+        localStorage.setItem(
+          'eventmesh_student_profile',
+          JSON.stringify({ phone, regNumber, branch })
+        )
+      } catch {}
+
       const payload = {
         eventId: event.id,
         answers: {
@@ -549,13 +571,19 @@ export const RegisterPage: React.FC = () => {
             <div className="border-b border-ink/10 pb-5">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-ink-soft block">
-                    Step {currentStep} of 3
+                  <span className="text-xs font-bold uppercase tracking-wider text-ink-soft block font-mono">
+                    {isSimpleFreeEvent ? 'Fast Admission' : `Step ${currentStep} of 3`}
                   </span>
                   <h1 className="font-display text-2xl sm:text-3xl font-semibold text-ink tracking-tight">
-                    {currentStep === 1 && 'Your particulars'}
-                    {currentStep === 2 && (isTeamEvent ? 'Team collective & questionnaire' : 'Session questions')}
-                    {currentStep === 3 && 'Review & confirm pass'}
+                    {isSimpleFreeEvent
+                      ? 'Confirm details & claim pass'
+                      : currentStep === 1
+                      ? 'Your particulars'
+                      : currentStep === 2
+                      ? isTeamEvent
+                        ? 'Team collective & questionnaire'
+                        : 'Session questions'
+                      : 'Review & confirm pass'}
                   </h1>
                 </div>
                 <Badge variant="neutral" size="sm">
@@ -563,12 +591,14 @@ export const RegisterPage: React.FC = () => {
                 </Badge>
               </div>
 
-              {/* Step indicator progress bar */}
-              <div className="grid grid-cols-3 gap-2">
-                <div className={`h-1.5 rounded-full transition-colors ${currentStep >= 1 ? 'bg-cobalt' : 'bg-paper-2'}`} />
-                <div className={`h-1.5 rounded-full transition-colors ${currentStep >= 2 ? 'bg-cobalt' : 'bg-paper-2'}`} />
-                <div className={`h-1.5 rounded-full transition-colors ${currentStep === 3 ? 'bg-cobalt' : 'bg-paper-2'}`} />
-              </div>
+              {/* Step indicator progress bar (only when multi-step) */}
+              {!isSimpleFreeEvent && (
+                <div className="grid grid-cols-3 gap-2">
+                  <div className={`h-1.5 rounded-full transition-colors ${currentStep >= 1 ? 'bg-cobalt' : 'bg-paper-2'}`} />
+                  <div className={`h-1.5 rounded-full transition-colors ${currentStep >= 2 ? 'bg-cobalt' : 'bg-paper-2'}`} />
+                  <div className={`h-1.5 rounded-full transition-colors ${currentStep === 3 ? 'bg-cobalt' : 'bg-paper-2'}`} />
+                </div>
+              )}
             </div>
 
             {/* Existing Registration Banner (F-03) */}
@@ -708,15 +738,40 @@ export const RegisterPage: React.FC = () => {
                   />
                 </div>
 
-                <div className="pt-4 flex justify-end">
-                  <Button
-                    type="button"
-                    variant="primary"
-                    size="default"
-                    onClick={handleNextStep}
-                  >
-                    Continue to Details
-                  </Button>
+                <div className="pt-4 flex items-center justify-between gap-3 flex-wrap">
+                  {isSimpleFreeEvent ? (
+                    <>
+                      <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-mono">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span>Free student admission · Instant QR pass</span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="primary"
+                        size="default"
+                        loading={registerMutation.isPending}
+                        onClick={(e) => {
+                          if (validateStep1()) {
+                            handleFormSubmit(e as any)
+                          }
+                        }}
+                        className="bg-ink hover:bg-accent text-paper font-semibold"
+                      >
+                        Claim Free Campus Pass →
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="ml-auto">
+                      <Button
+                        type="button"
+                        variant="primary"
+                        size="default"
+                        onClick={handleNextStep}
+                      >
+                        Continue to Details
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

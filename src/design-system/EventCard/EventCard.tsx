@@ -67,7 +67,8 @@ export const EventCard: React.FC<EventCardProps> = ({
   const eventLink = `/events/${event.slug || event.id}`
   const dateFormatted = formatCardDate(event.startsAt)
   const isFillingFast =
-    event.seatsLeft != null && event.seatsLeft > 0 && event.seatsLeft <= 5
+    event.seatsLeft != null && event.seatsLeft > 0 && event.seatsLeft <= 10
+  const seatsLeftLabel = event.seatsLeft != null && event.seatsLeft > 0 ? `${event.seatsLeft} left` : 'Filling fast'
   const isPromoted = Boolean(event.promotion?.label || event.isSignature)
   const isFree = event.isFree || event.price === 0 || !event.features?.paid
   const hasImage = Boolean(event.poster && event.poster.trim().length > 0)
@@ -100,16 +101,16 @@ export const EventCard: React.FC<EventCardProps> = ({
           {/* Badges on thumbnail */}
           <div className="absolute top-2 left-2 flex items-center gap-1.5 z-10 pointer-events-none font-mono text-xs">
             {isFillingFast && (
-              <span className="px-2 py-0.5 bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 rounded-full text-[10px] font-medium">
-                Filling fast
+              <span className="px-2 py-0.5 bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 rounded-full text-[10px] font-medium backdrop-blur-xs">
+                {seatsLeftLabel}
               </span>
             )}
             {isFree ? (
-              <span className="px-2 py-0.5 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 rounded-full text-[10px] font-medium">
+              <span className="px-2 py-0.5 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 rounded-full text-[10px] font-medium backdrop-blur-xs">
                 Free
               </span>
             ) : (
-              <span className="px-2 py-0.5 bg-surface text-ink border border-line rounded-full text-[10px] font-medium shadow-xs">
+              <span className="px-2 py-0.5 bg-card/90 text-ink border border-line rounded-full text-[10px] font-medium shadow-xs backdrop-blur-xs">
                 {formatPrice(event)}
               </span>
             )}
@@ -223,22 +224,17 @@ export const EventCard: React.FC<EventCardProps> = ({
           {/* Top badges & actions */}
           <div className="absolute top-2.5 inset-x-2.5 flex items-center justify-between z-10 pointer-events-none font-mono text-xs">
             <div className="flex items-center gap-1.5 flex-wrap pointer-events-auto">
-              {isPromoted && (
-                <span className="px-2 py-0.5 rounded-full bg-surface text-accent border border-line font-medium text-[10px]">
-                  PROMOTED
-                </span>
-              )}
               {isFillingFast && (
-                <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-medium">
-                  Filling fast
+                <span className="px-2 py-0.5 rounded-full bg-amber-500/25 text-amber-300 border border-amber-500/40 text-[10px] font-medium backdrop-blur-xs">
+                  {seatsLeftLabel}
                 </span>
               )}
               {isFree ? (
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-medium">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/25 text-emerald-300 border border-emerald-500/40 text-[10px] font-medium backdrop-blur-xs">
                   FREE
                 </span>
               ) : (
-                <span className="px-2 py-0.5 rounded-full bg-surface text-ink border border-line text-[10px] font-medium shadow-xs">
+                <span className="px-2 py-0.5 rounded-full bg-card/90 text-ink border border-line text-[10px] font-medium shadow-xs backdrop-blur-xs">
                   {formatPrice(event)}
                 </span>
               )}
@@ -348,22 +344,17 @@ export const EventCard: React.FC<EventCardProps> = ({
             {/* Top Badges & Actions */}
             <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none z-10 font-mono text-xs">
               <div className="flex items-center gap-1.5 flex-wrap pointer-events-auto">
-                {isPromoted && (
-                  <span className="px-2.5 py-1 rounded-full bg-card text-accent border border-line font-mono font-bold text-[10px] tracking-wider uppercase shadow-xs">
-                    PROMOTED
-                  </span>
-                )}
                 {isFillingFast && (
-                  <span className="px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[10px] font-mono font-medium shadow-xs">
-                    Filling fast
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40 text-[10px] font-mono font-medium shadow-xs backdrop-blur-xs">
+                    {seatsLeftLabel}
                   </span>
                 )}
                 {isFree ? (
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-medium shadow-xs">
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40 text-[10px] font-mono font-medium shadow-xs backdrop-blur-xs">
                     Free
                   </span>
                 ) : (
-                  <span className="px-2.5 py-1 rounded-full bg-card text-ink border border-line text-[10px] font-mono font-medium shadow-xs">
+                  <span className="px-2.5 py-0.5 rounded-full bg-card/90 text-ink border border-line text-[10px] font-mono font-medium shadow-xs backdrop-blur-xs">
                     {formatPrice(event)}
                   </span>
                 )}
@@ -447,9 +438,9 @@ export const EventCard: React.FC<EventCardProps> = ({
 
         <EventLink
           event={event}
-          className="flex-shrink-0 rounded-full bg-accent px-3.5 py-1.5 font-mono text-xs font-semibold text-white hover:bg-accent-hover active:scale-[0.98] transition-all shadow-xs"
+          className="flex-shrink-0 rounded-full bg-ink px-4 py-1.5 font-mono text-xs font-semibold text-paper hover:bg-accent hover:text-white active:scale-[0.98] transition-all shadow-xs"
         >
-          {event.kind === 'imported' ? 'Book ↗' : 'Book +'}
+          {event.kind === 'imported' ? 'Book ↗' : 'Get Pass'}
         </EventLink>
       </div>
     </article>

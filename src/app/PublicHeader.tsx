@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { CaretDown, List, MagnifyingGlass, MapPin, X } from '@/design-system/Icon'
+import { CaretDown, List, MagnifyingGlass, MapPin, Ticket, X } from '@/design-system/Icon'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { APP_CONFIG, hasMultipleCampuses } from '@/config/appConfig'
@@ -79,7 +79,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
         </div>
 
         {/* Right: Actions & Auth */}
-        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           {/* Mobile Search Icon Button */}
           <button
             type="button"
@@ -90,30 +90,60 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             <MagnifyingGlass size={16} />
           </button>
           
-          <div className="hidden sm:block"><ThemeToggle /></div>
           <NotificationInbox />
+
+          {/* Mobile Direct Fast-Pass Access */}
+          {isAuthenticated ? (
+            <Link
+              to="/attendee/dashboard"
+              onClick={closeMenus}
+              aria-label="My Passes"
+              className="sm:hidden inline-flex items-center gap-1.5 h-9 px-2.5 rounded-lg bg-ink text-paper text-xs font-semibold hover:bg-ink-soft active:scale-[0.98] transition-transform shadow-xs"
+            >
+              <Ticket size={15} weight="bold" />
+              <span>Passes</span>
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              onClick={closeMenus}
+              className="sm:hidden inline-flex items-center h-9 px-3 rounded-lg bg-ink text-paper text-xs font-semibold hover:bg-ink-soft active:scale-[0.98]"
+            >
+              Sign In
+            </Link>
+          )}
 
           {/* Desktop & Tablet Passes / Auth */}
           <div className="hidden sm:block">
             {isAuthenticated ? (
               <div className="relative">
-                <Link to="/attendee/dashboard" onClick={closeMenus} className="inline-flex h-9 items-center rounded-full bg-ink px-4 text-xs font-semibold text-paper hover:bg-ink-soft">My Passes</Link>
+                <Link to="/attendee/dashboard" onClick={closeMenus} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-ink px-4 text-xs font-semibold text-paper hover:bg-ink-soft active:scale-[0.98] transition-transform">
+                  <Ticket size={14} weight="bold" />
+                  <span>My Passes</span>
+                </Link>
                 <button type="button" onClick={() => setAccountOpen(!accountOpen)} aria-label="Account menu" aria-expanded={accountOpen} className="ml-1 inline-flex h-9 w-8 items-center justify-center rounded-lg text-ink-soft hover:bg-surface-subtle"><CaretDown size={14} /></button>
                 {accountOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-52 rounded-lg border border-line bg-card p-2 text-sm shadow-lg">
-                    <p className="truncate px-2 py-2 text-xs text-ink-soft">{session?.name || session?.email}</p>
-                    {canAccessAdmin() && <Link to="/admin" onClick={closeMenus} className="block rounded-lg px-2 py-2 hover:bg-surface-subtle">Admin console</Link>}
-                    <button type="button" onClick={() => { closeMenus(); logout() }} className="block w-full rounded-lg px-2 py-2 text-left hover:bg-surface-subtle">Sign out</button>
+                  <div className="absolute right-0 top-full mt-2 w-52 rounded-xl border border-line bg-card p-2 text-sm shadow-xl z-50">
+                    <p className="truncate px-2 py-2 text-xs text-ink-soft border-b border-line mb-1 font-mono">{session?.name || session?.email}</p>
+                    {canAccessAdmin() && <Link to="/admin" onClick={closeMenus} className="block rounded-lg px-2 py-2 text-xs font-medium hover:bg-surface-subtle">Admin console</Link>}
+                    <div className="flex items-center justify-between px-2 py-1.5 my-1 rounded-lg bg-surface-subtle/60">
+                      <span className="text-xs text-ink-soft font-medium">Appearance</span>
+                      <ThemeToggle />
+                    </div>
+                    <button type="button" onClick={() => { closeMenus(); logout() }} className="block w-full rounded-lg px-2 py-2 text-left text-xs font-medium text-accent hover:bg-surface-subtle">Sign out</button>
                   </div>
                 )}
               </div>
             ) : (
-              <Link to="/login" onClick={closeMenus} className="inline-flex h-9 items-center rounded-full bg-ink px-4 text-xs font-semibold text-paper hover:bg-ink-soft active:scale-[0.98]">Sign In</Link>
+              <div className="flex items-center gap-2">
+                <div className="p-1"><ThemeToggle /></div>
+                <Link to="/login" onClick={closeMenus} className="inline-flex h-9 items-center rounded-full bg-ink px-4 text-xs font-semibold text-paper hover:bg-ink-soft active:scale-[0.98]">Sign In</Link>
+              </div>
             )}
           </div>
 
           {/* Mobile Drawer Toggle */}
-          <button type="button" onClick={() => setMobileOpen(!mobileOpen)} aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={mobileOpen} className="grid h-10 w-10 place-items-center rounded-lg text-ink lg:hidden">{mobileOpen ? <X size={20} /> : <List size={20} />}</button>
+          <button type="button" onClick={() => setMobileOpen(!mobileOpen)} aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={mobileOpen} className="grid h-9 w-9 place-items-center rounded-lg border border-line text-ink lg:hidden">{mobileOpen ? <X size={18} /> : <List size={18} />}</button>
         </div>
       </div>
       {mobileOpen && (
