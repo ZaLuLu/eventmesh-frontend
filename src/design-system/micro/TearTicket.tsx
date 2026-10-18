@@ -73,11 +73,15 @@ export const buildGeometry = (
   const n = Math.max(1, Math.round(holes));
   const span = cross - 2 * notch;
   const bridge = Math.max(2, (span - n * hole) / (n + 1));
-  const random = noise(n * 7919 + Math.round(cross));
+  const cornerNotch = Math.min(R || 14, 16);
+  const sideNotch = Math.min(notch || 12, 14);
+  const midCross = cross / 2;
+
   const at = (u: number, v: number) => (vertical ? { x: v, y: u } : { x: u, y: v });
   const pt = (u: number, v: number) => (vertical ? `${f(v)},${f(u)}` : `${f(u)},${f(v)}`);
   const arc = (r: number, sweep: number, u: number, v: number) =>
     `A${f(r)},${f(r)} 0 0 ${vertical ? 1 - sweep : sweep} ${pt(u, v)}`;
+
   const bridges: Bridge[] = [];
   for (let i = 0; i <= n; i += 1) {
     const y0 = notch + i * (bridge + hole);
@@ -87,25 +91,63 @@ export const buildGeometry = (
     pts.push([x, y1]);
     bridges.push({ y0, y1, mid: (y0 + y1) / 2, pts, ...at(x, (y0 + y1) / 2) });
   }
-  let body = `M${pt(R, 0)}L${pt(x - notch, 0)}${arc(notch, 0, x, notch)}`;
+
+  // 1. Keepsake Body (Left): Notched corners, center side notch, and tear line perforation
+  let body = `M${pt(0, cornerNotch)}`;
+  // Top-left concave notch
+  body += `${arc(cornerNotch, 0, cornerNotch, 0)}`;
+  // Top edge to tear notch
+  body += `L${pt(x - notch, 0)}${arc(notch, 0, x, notch)}`;
+  // Perforation line down along tear
   bridges.forEach((b, i) => {
     body += `L${pt(x, b.y0)}L${pt(x, b.y1)}`;
     if (i < n) body += arc(hr, 0, x, b.y1 + hole);
   });
-  body += `${arc(notch, 0, x - notch, cross)}L${pt(R, cross)}${arc(R, 1, 0, cross - R)}L${pt(0, R)}${arc(R, 1, R, 0)}Z`;
-  let stub = `M${pt(x + notch, 0)}L${pt(main - R, 0)}${arc(R, 1, main, R)}L${pt(main, cross - R)}${arc(R, 1, main - R, cross)}L${pt(x + notch, cross)}${arc(notch, 0, x, cross - notch)}`;
+  // Bottom tear notch
+  body += `${arc(notch, 0, x - notch, cross)}`;
+  // Bottom edge to bottom-left corner
+  body += `L${pt(cornerNotch, cross)}`;
+  // Bottom-left concave notch
+  body += `${arc(cornerNotch, 0, 0, cross - cornerNotch)}`;
+  // Left edge with center scalloped notch
+  body += `L${pt(0, midCross + sideNotch)}`;
+  body += `${arc(sideNotch, 0, 0, midCross - sideNotch)}`;
+  body += `L${pt(0, cornerNotch)}Z`;
+
+  // 2. Tear-off Stub (Right): Matching top/bottom tear notches, right center notch, and notched right corners
+  let stub = `M${pt(x, notch)}`;
+  stub += `${arc(notch, 0, x + notch, 0)}`;
+  // Top edge of stub to top-right corner
+  stub += `L${pt(main - cornerNotch, 0)}`;
+  // Top-right concave notch
+  stub += `${arc(cornerNotch, 0, main, cornerNotch)}`;
+  // Right edge with center scalloped notch
+  stub += `L${pt(main, midCross - sideNotch)}`;
+  stub += `${arc(sideNotch, 0, main, midCross + sideNotch)}`;
+  stub += `L${pt(main, cross - cornerNotch)}`;
+  // Bottom-right concave notch
+  stub += `${arc(cornerNotch, 0, main - cornerNotch, cross)}`;
+  // Bottom edge of stub to tear notch
+  stub += `L${pt(x + notch, cross)}`;
+  stub += `${arc(notch, 0, x, cross - notch)}`;
+  // Bridges along tear back up to top
   for (let i = n; i >= 0; i -= 1) {
     const b = bridges[i];
     stub += `L${pt(x, b.y1)}L${pt(x, b.y0)}`;
     if (i > 0) stub += arc(hr, 0, x, b.y0 - hole);
   }
-  stub += `${arc(notch, 0, x + notch, 0)}Z`;
+  stub += `Z`;
+
   const ends = [
     { ...at(x, notch), v: notch },
     { ...at(x, cross - notch), v: cross - notch }
   ];
-  const bodyOutline = `M${pt(x, cross - notch)}${arc(notch, 0, x - notch, cross)}L${pt(R, cross)}${arc(R, 1, 0, cross - R)}L${pt(0, R)}${arc(R, 1, R, 0)}L${pt(x - notch, 0)}${arc(notch, 0, x, notch)}`;
-  const stubOutline = `M${pt(x, notch)}${arc(notch, 0, x + notch, 0)}L${pt(main - R, 0)}${arc(R, 1, main, R)}L${pt(main, cross - R)}${arc(R, 1, main - R, cross)}L${pt(x + notch, cross)}${arc(notch, 0, x, cross - notch)}`;
+
+  // Outlines for border rendering
+  const bodyOutline = `M${pt(x, cross - notch)}${arc(notch, 0, x - notch, cross)}L${pt(cornerNotch, cross)}${arc(cornerNotch, 0, 0, cross - cornerNotch)}L${pt(0, midCross + sideNotch)}${arc(sideNotch, 0, 0, midCross - sideNotch)}L${pt(0, cornerNotch)}${arc(cornerNotch, 0, cornerNotch, 0)}L${pt(x - notch, 0)}${arc(notch, 0, x, notch)}`;
+
+  const stubOutline = `M${pt(x, notch)}${arc(notch, 0, x + notch, 0)}L${pt(main - cornerNotch, 0)}${arc(cornerNotch, 0, main, cornerNotch)}L${pt(main, midCross - sideNotch)}${arc(sideNotch, 0, main, midCross + sideNotch)}L${pt(main, cross - cornerNotch)}${arc(cornerNotch, 0, main - cornerNotch, cross)}L${pt(x + notch, cross)}${arc(notch, 0, x, cross - notch)}`;
+
   return { vertical, cross, body, stub, bridges, ends, bodyOutline, stubOutline };
 };
 
@@ -510,7 +552,10 @@ export function TearTicket({
   useEffect(() => {
     if (used) {
       const s = sim.current;
-      if (s.phase === 'idle' && stubRef.current) stubRef.current.style.visibility = 'hidden';
+      cancelAnimationFrame(s.raf);
+      s.raf = 0;
+      s.phase = 'idle';
+      if (stubRef.current) stubRef.current.style.visibility = 'hidden';
       return;
     }
     setInstant(false);

@@ -1,62 +1,46 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { TearTicket } from './TearTicket'
-import { QRCode } from '@/design-system/primitives/QRCode'
-import { formatDate } from '@/lib/dates'
-import { formatTime } from '@/lib/format'
 import {
-  playGateAdmissionChime,
-  playPaperTearSound,
-  playTearImpulse,
-} from '@/lib/sound'
+  DownloadSimple,
+  CalendarBlank,
+  X,
+  ArrowsClockwise,
+  CheckCircle,
+  Scissors,
+  User,
+  Lightning,
+} from '@phosphor-icons/react'
+import { jsPDF } from 'jspdf'
+import { Registration } from '@/api'
+import { QRCode } from '@/design-system/primitives/QRCode'
+import { TearTicket } from './TearTicket'
+import { stampSound } from '@/components/stamp/sound'
 import { fireCelebrationConfetti } from '@/lib/confetti'
 import { downloadICS } from '@/lib/ics'
-import {
-  CheckCircle,
-  CalendarBlank,
-  User,
-  DownloadSimple,
-  ArrowsClockwise,
-  X,
-  Scissors,
-} from '@phosphor-icons/react'
+import { formatDate, formatTime } from '@/lib/dates'
 import { cn } from '@/lib/utils'
-import jsPDF from 'jspdf'
 
 export interface EventAdmissionTicketProps {
-  registration: {
-    id: string
-    ticketCode?: string
-    eventId?: string
-    eventTitle?: string
-    eventStartsAt?: string
-    eventEndsAt?: string
-    createdAt: string
-    venueName?: string
-    venueAddress?: string
-    status: string
-    userName?: string
-    userEmail?: string
-    checkedInAt?: string
-    tierName?: string
-    teamName?: string
-    verificationToken?: string
-  }
-  state?: 'intact' | 'checked_in'
-  demoMode?: boolean
+  registration: Registration
+  state?: 'pending' | 'confirmed' | 'waitlisted' | 'cancelled' | 'checked_in'
   onAdmit?: () => void
   disabled?: boolean
   className?: string
   floatingCanvas?: boolean
+  demoMode?: boolean
   onClose?: () => void
 }
 
 /**
- * EventAdmissionTicket:
- * Premium physical concert & flagship hackathon admission pass.
- * Styled with an authentic cardstock ticket aesthetic, proportional QR code,
- * clean event typography, detachable gate stub with real tear physics,
- * and a centered, docked frosted glass action bar.
+ * EventAdmissionTicket
+ *
+ * Authentic physical event ticket with:
+ * - Scalloped notch cutouts & serrated physical ridges
+ * - Mobile-responsive layout (Vertical on mobile, Horizontal on desktop)
+ * - Tear-off Gate Stub hosting the scannable QR Code
+ * - Intact Keepsake Pass containing all event & attendee details
+ * - Interactive manual tear (can re-attach) vs Irreversible Gate Scan (auto-tears & cannot be put back)
+ * - "EVENT PASS APPROVED" official clearance seal upon gate admission
  */
 export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
   registration,
@@ -65,10 +49,25 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
   disabled = false,
   className = '',
   floatingCanvas = false,
+  demoMode = false,
   onClose,
 }) => {
   const backendAdmitted = state ? state === 'checked_in' : registration.status === 'checked_in'
-  const [isVisualTorn, setIsVisualTorn] = useState(false)
+  
+  // Gate check-in status (once scanned, permanent and irreversible)
+  const [isGateScanned, setIsGateScanned] = useState(backendAdmitted)
+  const [isVisualTorn, setIsVisualTorn] = useState(backendAdmitted)
+
+  // Mobile viewport detection
+  const [isMobile, setIsMobile] = useState(() => (typeof window !== 'undefined' ? window.innerWidth < 768 : false))
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const ticketCode = registration.ticketCode || `PASS-${registration.id.slice(0, 8).toUpperCase()}`
   const passSerial = registration.id.slice(0, 8).toUpperCase()
@@ -88,38 +87,51 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
     ? formatTime(registration.checkedInAt)
     : formatTime(new Date().toISOString())
 
-  // Visual tear interaction
-  const triggerVisualTear = () => {
-    if (backendAdmitted || isVisualTorn || disabled) return
-    playPaperTearSound()
-    playTearImpulse()
+  // Manual tear trigger (for user preview / interaction)
+  const triggerManualTear = () => {
+    if (isGateScanned || isVisualTorn || disabled) return
+    stampSound().peel()
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([25, 15, 30])
+    }
     setIsVisualTorn(true)
   }
 
-  const resetVisualTear = () => {
-    if (backendAdmitted) return
+  // Restore stub (only allowed if NOT yet scanned by gatekeeper)
+  const resetManualTear = () => {
+    if (isGateScanned) return
     setIsVisualTorn(false)
   }
 
-  // Real-time venue gate listener
+  // Gatekeeper Scan Admission Handler (Irreversible)
+  const handleGateAdmission = () => {
+    if (isGateScanned) return
+    stampSound().chime()
+    stampSound().peel()
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([40, 30, 60, 30, 80])
+    }
+    fireCelebrationConfetti()
+    setIsGateScanned(true)
+    setIsVisualTorn(true)
+    if (onAdmit) onAdmit()
+  }
+
+  // Real-time venue gate Broadcast listener
   useEffect(() => {
     let channel: BroadcastChannel | null = null
     try {
       channel = new BroadcastChannel('eventmesh_gate_admission')
       channel.onmessage = (event) => {
         if (event.data?.registrationId === registration.id || event.data?.ticketCode === ticketCode) {
-          playGateAdmissionChime()
-          fireCelebrationConfetti()
-          if (onAdmit) onAdmit()
+          handleGateAdmission()
         }
       }
     } catch {}
 
     const handleCustomAdmitted = (e: any) => {
       if (e.detail?.registrationId === registration.id || e.detail?.ticketCode === ticketCode) {
-        playGateAdmissionChime()
-        fireCelebrationConfetti()
-        if (onAdmit) onAdmit()
+        handleGateAdmission()
       }
     }
     window.addEventListener('eventmesh_gate_admitted', handleCustomAdmitted)
@@ -128,7 +140,7 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
       channel?.close()
       window.removeEventListener('eventmesh_gate_admitted', handleCustomAdmitted)
     }
-  }, [registration.id, ticketCode, onAdmit])
+  }, [registration.id, ticketCode])
 
   // ESC key listener
   useEffect(() => {
@@ -145,220 +157,303 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
     const doc = new jsPDF({
       orientation: 'landscape',
       unit: 'mm',
-      format: [120, 210],
+      format: [170, 75],
     })
 
-    doc.setFillColor(248, 249, 250)
-    doc.rect(0, 0, 210, 120, 'F')
+    doc.setFillColor(253, 253, 253)
+    doc.rect(0, 0, 170, 75, 'F')
 
-    doc.setFillColor(47, 75, 214)
-    doc.rect(0, 0, 210, 10, 'F')
-
-    doc.setTextColor(255, 255, 255)
+    // Header badge
+    doc.setFillColor(9, 9, 11)
+    doc.roundedRect(8, 8, 38, 7, 1.5, 1.5, 'F')
     doc.setFont('helvetica', 'bold')
-    doc.setFontSize(12)
-    doc.text('EVENTMESH OFFICIAL DIGITAL ADMISSION PASS', 15, 7)
-
-    doc.setFillColor(255, 255, 255)
-    doc.setDrawColor(220, 224, 230)
-    doc.roundedRect(12, 18, 60, 90, 4, 4, 'FD')
-
-    doc.setTextColor(30, 41, 59)
-    doc.setFontSize(9)
-    doc.text('GATE SCAN CODE', 42, 26, { align: 'center' })
-    doc.setFontSize(11)
-    doc.text(ticketCode, 42, 32, { align: 'center' })
-
-    doc.roundedRect(78, 18, 120, 90, 4, 4, 'FD')
-
-    doc.setFontSize(14)
-    doc.setTextColor(15, 23, 42)
-    doc.text(registration.eventTitle || 'Campus Flagship Gathering', 85, 30)
-
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(10)
-    doc.setTextColor(71, 85, 105)
-    doc.text(`Date: ${formatDate(registration.eventStartsAt || registration.createdAt, 'medium')}`, 85, 42)
-    doc.text(`Time: ${registration.eventStartsAt ? formatTime(registration.eventStartsAt) : 'Doors open 09:00 AM'}`, 85, 50)
-    doc.text(`Venue: ${registration.venueName || 'Main Campus Auditorium'}`, 85, 58)
-    doc.text(`Attendee: ${registration.userName || 'Student Passholder'}`, 85, 68)
-    doc.text(`Tier: ${registration.tierName || 'VIP PASS'}`, 85, 76)
-    doc.text(`Status: ${backendAdmitted ? 'ADMITTED & VERIFIED' : 'ACTIVE / CONFIRMED'}`, 85, 84)
-
     doc.setFontSize(8)
-    doc.setTextColor(148, 163, 184)
-    doc.text(`Serial: #${passSerial} · EventMesh Cryptographic Pass Protocol v2`, 85, 98)
+    doc.setTextColor(255, 255, 255)
+    doc.text('EVENTMESH PASS', 10, 13)
 
-    doc.save(`EventMesh_Pass_${ticketCode}.pdf`)
+    // Tier pill
+    doc.setFillColor(109, 40, 217)
+    doc.roundedRect(50, 8, 28, 7, 1.5, 1.5, 'F')
+    doc.setFontSize(7)
+    doc.setTextColor(255, 255, 255)
+    doc.text(registration.tierName ? registration.tierName.toUpperCase() : 'VIP PASS', 52, 13)
+
+    // Event title
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(13)
+    doc.setTextColor(9, 9, 11)
+    const splitTitle = doc.splitTextToSize((registration.eventTitle || 'Campus Event').toUpperCase(), 100)
+    doc.text(splitTitle, 8, 23)
+
+    // Event details
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(8)
+    doc.setTextColor(70, 70, 80)
+    doc.text(`DATE:   ${formatDate(registration.eventStartsAt || registration.createdAt, 'medium').toUpperCase()}`, 8, 35)
+    doc.text(`VENUE:  ${(registration.venueName || 'Main Campus Venue').toUpperCase()}`, 8, 41)
+    doc.text(`ATTENDEE: ${(registration.userName || 'Verified Member').toUpperCase()}`, 8, 47)
+    doc.text(`SERIAL:   #${passSerial}`, 8, 53)
+
+    // Perforation divider line
+    doc.setDrawColor(180, 180, 190)
+    doc.setLineDashPattern([1.5, 1.5], 0)
+    doc.line(116, 0, 116, 75)
+
+    // Right stub section
+    doc.setFillColor(18, 21, 30)
+    doc.rect(116, 0, 54, 75, 'F')
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(9)
+    doc.setTextColor(255, 255, 255)
+    doc.text('GATE STUB', 124, 12)
+    doc.setFontSize(7)
+    doc.setTextColor(180, 180, 200)
+    doc.text('SCAN AT ENTRY', 124, 18)
+
+    // Status stamp
+    if (isGateScanned) {
+      doc.setDrawColor(16, 185, 129)
+      doc.setFillColor(236, 253, 245)
+      doc.roundedRect(8, 57, 85, 12, 2, 2, 'FD')
+      doc.setTextColor(5, 150, 105)
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(9)
+      doc.text('APPROVED · ADMITTED AT GATE', 12, 64)
+    }
+
+    doc.save(`EventMesh-${passSerial}.pdf`)
   }
 
-  // Add to Calendar helper
   const handleDownloadCalendar = () => {
     downloadICS({
-      title: registration.eventTitle || 'Campus Flagship Event',
+      title: registration.eventTitle || 'EventMesh Campus Event',
+      description: `Admission ticket #${passSerial} for ${registration.userName || 'Attendee'}.\nTicket Tier: ${registration.tierName || 'Standard'}\nTicket Code: ${ticketCode}`,
       startsAt: registration.eventStartsAt || registration.createdAt,
-      endsAt: registration.eventEndsAt || registration.eventStartsAt || registration.createdAt,
+      endsAt: registration.eventStartsAt || registration.createdAt,
       venueName: registration.venueName,
-      venueAddress: registration.venueAddress,
       url: window.location.href,
     })
   }
 
-  const isPhysicallyTorn = backendAdmitted ? false : isVisualTorn
+  // Dimensions matching responsive orientation
+  const ticketWidth = isMobile ? 340 : 800
+  const ticketHeight = isMobile ? 640 : 380
+  const stubSize = isMobile ? 280 : 280
+  const orientation = isMobile ? 'vertical' : 'horizontal'
+
+  const isPhysicallyTorn = isGateScanned ? true : isVisualTorn
 
   const ticketContent = (
     <TearTicket
-      width={780}
-      height={340}
-      stubSize={210}
+      width={ticketWidth}
+      height={ticketHeight}
+      stubSize={stubSize}
+      orientation={orientation}
       radius={16}
-      holes={12}
-      holeSize={7}
-      notch={10}
-      roughness={0.55}
-      tearAngle={20}
-      stretch={24}
+      holes={isMobile ? 11 : 14}
+      holeSize={isMobile ? 8 : 7.5}
+      notch={isMobile ? 13 : 13}
+      roughness={0.6}
+      tearAngle={18}
+      stretch={22}
       resistance={0.2}
       tilt={false}
       rotate={0}
       torn={isPhysicallyTorn}
-      disabled={backendAdmitted || disabled}
-      background="#FDFDFD"
-      stubBackground="#12151E"
+      disabled={isGateScanned || disabled}
+      background="#FFFFFF"
+      stubBackground="#FFFFFF"
       color="#09090B"
-      borderColor="rgba(0, 0, 0, 0.12)"
+      borderColor="rgba(0, 0, 0, 0.15)"
       borderWidth={1.2}
       className="mx-auto"
-      onTear={triggerVisualTear}
+      onTear={triggerManualTear}
       stub={
-        /* Authentic Gate Stub (Matches Approved Design Mockup) */
+        /* ================= TEAR-OFF GATE STUB WITH VIEWFINDER QR CODE ================= */
         <div
-          onClick={!backendAdmitted && !isVisualTorn ? triggerVisualTear : undefined}
+          onClick={!isGateScanned && !isVisualTorn ? triggerManualTear : undefined}
           className={cn(
-            'h-full flex flex-col justify-between items-center text-center p-5 font-mono bg-[#12151E] text-white select-none relative',
-            !backendAdmitted && !isVisualTorn ? 'cursor-pointer hover:bg-[#1A1F2C] transition-colors' : ''
+            'h-full w-full flex flex-col justify-between items-center text-center p-3 sm:p-4 font-sans bg-white text-neutral-900 select-none relative',
+            !isGateScanned && !isVisualTorn ? 'cursor-pointer hover:bg-neutral-50/80 transition-colors' : ''
           )}
-          title={backendAdmitted ? 'Official admission validated' : 'Drag or pull to tear admission stub'}
+          title={isGateScanned ? 'Official admission validated at gate' : 'Scan QR at gate or click/drag to tear stub'}
         >
-          {/* Top Label */}
-          <div className="text-[10px] tracking-widest text-white/50 uppercase font-semibold">
-            GATE STUB
+          {/* Top Gate Header */}
+          <div className="w-full flex items-center justify-center pt-0.5">
+            <span className="text-[10px] sm:text-[11px] font-mono tracking-widest text-neutral-700 uppercase font-bold">
+              GATE STUB · SCAN AT ENTRY
+            </span>
           </div>
 
-          {/* Center Admission Content */}
-          <div className="my-auto space-y-1.5">
-            <div className="text-2xl sm:text-3xl font-black font-display tracking-tight text-white leading-none">
-              ADMIT
+          {/* Center Scannable QR Code in Viewfinder Frame */}
+          <div className="my-auto flex flex-col items-center justify-center space-y-1.5 py-0.5">
+            <div className="relative p-2.5 bg-white">
+              {/* Four Viewfinder Brackets */}
+              <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-neutral-900 pointer-events-none" />
+              <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-neutral-900 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-neutral-900 pointer-events-none" />
+              <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-neutral-900 pointer-events-none" />
+
+              <QRCode
+                value={qrValue}
+                size={isMobile ? 114 : 118}
+                className="block"
+              />
             </div>
-            <div className="text-2xl sm:text-3xl font-black font-display tracking-tight text-white leading-none">
-              ONE
+
+            {/* Perforation Hint & Event Identifier */}
+            <div className="flex items-center gap-1 text-neutral-400 font-mono text-[8.5px] tracking-wider uppercase font-medium">
+              <Scissors size={10} weight="bold" />
+              <span>··· TEAR TO SCAN ···</span>
             </div>
-            <div className="pt-1.5 text-[11px] text-violet-400 font-bold uppercase tracking-wider">
-              {registration.tierName ? registration.tierName.toUpperCase() : 'VIP ACCESS'}
-            </div>
-            <div className="text-[9px] text-white/40 tracking-wider">
-              #{passSerial}
+            <div className="text-[9px] font-mono font-extrabold text-neutral-900 tracking-wider uppercase leading-none">
+              {registration.eventTitle ? `${registration.eventTitle.slice(0, 22)} 2026` : 'EVENTMESH HACKATHON 2026'}
             </div>
           </div>
 
-          {/* Bottom Pull to Tear Guide */}
-          <div className="text-[10px] text-white/60 tracking-wider uppercase font-semibold flex items-center gap-1.5 pt-2 border-t border-white/10 w-full justify-center">
-            <Scissors size={13} weight="bold" className="text-amber-400" />
-            <span>PULL TO TEAR</span>
+          {/* Bottom Attendee Info & Pass Tier */}
+          <div className="w-full pt-1 border-t border-neutral-200 flex flex-col items-center justify-center space-y-0.5">
+            <p className="text-xs sm:text-sm font-black uppercase text-neutral-950 tracking-tight leading-tight truncate max-w-[210px]">
+              {registration.userName || 'Alex Rivera'}
+            </p>
+            <p className="text-[10px] font-extrabold uppercase text-violet-700 tracking-wider">
+              {registration.tierName ? registration.tierName.toUpperCase() : 'VIP PASS'}
+            </p>
+            <p className="text-[8.5px] font-mono text-neutral-500 uppercase tracking-widest">
+              TICKET ID: {passSerial}
+            </p>
           </div>
         </div>
       }
     >
-      {/* Main Ticket Body: Alabaster Finish with Proportional Layout */}
-      <div className="h-full p-5 sm:p-6 flex flex-col justify-between bg-[#FDFDFD] text-[#09090B] select-none relative overflow-hidden">
+      {/* ================= INTACT KEEPSAKE PASS (EVENT DETAILS) ================= */}
+      <div className="h-full w-full p-6 sm:p-7 flex flex-col justify-between bg-white text-neutral-900 select-none relative overflow-hidden">
+        {/* Subtle Tech Blueprint Watermark Background */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.04]"
+          style={{
+            backgroundImage: `radial-gradient(#000000 1.2px, transparent 1.2px), linear-gradient(to right, rgba(0,0,0,0.06) 1px, transparent 1px)`,
+            backgroundSize: '20px 20px, 40px 40px'
+          }}
+        />
+
         {/* Top Header Strip: Black EVENTMESH Badge (Left) & Purple VIP Pill (Right) */}
-        <div className="flex items-center justify-between pb-2.5 border-b border-black/8">
+        <div className="flex items-center justify-between relative z-10">
           <div className="flex items-center gap-2">
-            <div className="px-2.5 py-1 rounded-lg bg-[#09090B] text-white flex items-center gap-1.5 shadow-xs">
-              <div className="w-3.5 h-3.5 rounded-sm bg-gradient-to-tr from-accent to-cobalt flex items-center justify-center font-bold text-[8px] text-white">
+            <div className="px-3 py-1.5 rounded-lg bg-black text-white flex items-center gap-2 shadow-sm">
+              <div className="w-4 h-4 rounded-sm bg-gradient-to-tr from-accent to-cobalt flex items-center justify-center font-bold text-[9px] text-white">
                 EM
               </div>
-              <span className="font-display font-extrabold text-[11px] tracking-wider uppercase">
+              <span className="font-display font-black text-xs tracking-wider uppercase">
                 EVENTMESH
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full bg-violet-600 text-white font-mono font-bold text-[11px] uppercase tracking-wider shadow-xs">
-              {registration.tierName ? registration.tierName.toUpperCase() : 'VIP'}
+            <span className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-violet-700 to-purple-800 text-white font-sans font-extrabold text-xs uppercase tracking-widest shadow-sm">
+              {registration.tierName ? registration.tierName.toUpperCase() : 'VIP PASS'}
             </span>
           </div>
         </div>
 
-        {/* Middle Section: Event Info (Left) & Neatly Proportioned QR Code (Right) */}
-        <div className="flex items-center justify-between gap-5 my-auto py-1">
-          {/* Left Column: Event Title, Date, Venue, Attendee */}
-          <div className="flex-1 min-w-0 space-y-2.5">
-            <h2 className="font-display font-black text-xl sm:text-2xl text-black leading-tight tracking-tight uppercase line-clamp-2">
-              {registration.eventTitle || 'THE GRAND TURING HACKATHON 2026'}
-            </h2>
+        {/* Middle Section: Event Info (Title) */}
+        <div className="my-auto py-2 relative z-10 space-y-3">
+          <h2 className="font-display font-black text-2xl sm:text-3xl text-neutral-950 leading-[1.08] tracking-tight uppercase line-clamp-2">
+            {registration.eventTitle || 'THE GRAND TURING HACKATHON 2026'}
+          </h2>
 
-            <div className="space-y-1 text-xs font-mono">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-black/50 uppercase text-[10px] w-14">DATE:</span>
-                <span className="font-bold text-black tracking-wide">
+          {/* Tabular Metadata Grid with Hairline Dividers (Matching Reference Mockup) */}
+          <div className="border border-neutral-300 rounded-lg overflow-hidden bg-neutral-50/50">
+            {/* Top Row: DATE | TIME | ACCESS */}
+            <div className="grid grid-cols-3 divide-x divide-neutral-300 border-b border-neutral-300">
+              <div className="p-2 sm:p-2.5">
+                <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 font-bold block">
+                  DATE
+                </span>
+                <span className="text-xs sm:text-sm font-extrabold text-neutral-900 tracking-tight block truncate">
                   {formatDate(registration.eventStartsAt || registration.createdAt, 'medium').toUpperCase()}
-                  {registration.eventStartsAt ? ` · ${formatTime(registration.eventStartsAt)}` : ''}
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-black/50 uppercase text-[10px] w-14">VENUE:</span>
-                <span className="font-bold text-black tracking-wide truncate">
-                  {(registration.venueName || 'The Innovation Center, Campus 4B').toUpperCase()}
+              <div className="p-2 sm:p-2.5">
+                <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 font-bold block">
+                  TIME
+                </span>
+                <span className="text-xs sm:text-sm font-extrabold text-neutral-900 tracking-tight block truncate">
+                  {registration.eventStartsAt ? formatTime(registration.eventStartsAt).toUpperCase() : '09:00 AM'}
+                </span>
+              </div>
+
+              <div className="p-2 sm:p-2.5">
+                <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 font-bold block">
+                  ACCESS
+                </span>
+                <span className="text-xs sm:text-sm font-extrabold text-neutral-900 tracking-tight block truncate">
+                  HALL B, LEVEL 3
                 </span>
               </div>
             </div>
 
-            {/* Attendee Clearance Badge */}
-            <div className="pt-2 border-t border-black/8 flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-black text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-                <User size={14} weight="bold" />
+            {/* Bottom Row: VENUE | ATTENDEE */}
+            <div className="grid grid-cols-2 divide-x divide-neutral-300">
+              <div className="p-2 sm:p-2.5">
+                <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 font-bold block">
+                  VENUE
+                </span>
+                <span className="text-xs sm:text-sm font-extrabold text-neutral-900 tracking-tight block truncate">
+                  {(registration.venueName || 'TECH ARENA, LEVEL 3').toUpperCase()}
+                </span>
               </div>
-              <div className="min-w-0">
-                <p className="font-bold text-xs text-black leading-none truncate">
-                  {registration.userName || 'Verified Attendee'}
-                </p>
-                <p className="text-[10px] text-black/50 font-mono mt-0.5">
-                  DevPass #{passSerial}
-                </p>
+
+              <div className="p-2 sm:p-2.5">
+                <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 font-bold block">
+                  ATTENDEE
+                </span>
+                <span className="text-xs sm:text-sm font-extrabold text-neutral-900 tracking-tight block truncate">
+                  {(registration.userName || 'ALEX RIVERA').toUpperCase()}
+                </span>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Right Column inside Main Body: Crisp Proportional QR Code with Scan to Admit Label */}
-          <div className="shrink-0 flex flex-col items-center justify-center pl-1">
-            <div className="p-2 bg-white rounded-xl border border-black/15 shadow-sm">
-              <QRCode
-                value={qrValue}
-                size={98}
-                className="rounded"
-              />
-            </div>
-            <span className="text-[9px] font-mono font-bold text-black/60 mt-1 tracking-wider uppercase">
-              Scan to Admit
+        {/* Bottom Section: Keepsake Tag */}
+        <div className="pt-2 border-t border-neutral-200 flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
+              DEV-CLEARANCE: #{passSerial}
+            </span>
+          </div>
+
+          <div className="text-right">
+            <span className="text-[9px] font-mono font-bold text-neutral-400 uppercase tracking-widest block">
+              KEEPSAKE PASS
             </span>
           </div>
         </div>
 
-        {/* Permanent Verified Admission Seal (when admitted) */}
+        {/* Official Verified Admission Stamp (when scanned by gatekeeper) */}
         <AnimatePresence>
-          {backendAdmitted && (
+          {isGateScanned && (
             <motion.div
-              initial={{ scale: 1.6, opacity: 0, rotate: -12 }}
-              animate={{ scale: 1, opacity: 1, rotate: -4 }}
-              transition={{ type: 'spring', stiffness: 280, damping: 20 }}
-              className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
+              initial={{ scale: 1.5, opacity: 0, rotate: -10 }}
+              animate={{ scale: 1, opacity: 1, rotate: -2 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+              className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 p-4"
             >
-              <div className="px-6 py-2.5 rounded-2xl border-4 border-emerald-500 bg-white/95 text-emerald-600 font-display font-extrabold text-base tracking-widest shadow-2xl flex items-center gap-2 rotate-[-4deg]">
-                <CheckCircle size={20} weight="bold" />
-                <span>ADMITTED AT {admissionTimestamp}</span>
+              <div className="px-5 py-3 rounded-2xl border-3 border-emerald-500 bg-white/95 text-emerald-600 font-display font-extrabold shadow-2xl flex items-center gap-3 backdrop-blur-md">
+                <div className="w-9 h-9 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+                  <CheckCircle size={22} weight="bold" />
+                </div>
+                <div>
+                  <div className="text-sm font-black tracking-wider leading-none uppercase text-emerald-700">
+                    EVENT PASS APPROVED
+                  </div>
+                  <div className="text-[10px] font-mono text-emerald-600/90 mt-1">
+                    ADMITTED AT {admissionTimestamp}
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
@@ -367,11 +462,16 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
     </TearTicket>
   )
 
+  // Underlay depth container sized strictly to the intact section so zero white backing bleeds through after tearing
+  const underlayWidthClass = isMobile
+    ? 'w-full h-[calc(100%-280px)] top-0 left-0'
+    : 'h-full w-[calc(100%-280px)] top-0 left-0'
+
   // Floating Overlay Presentation (Grounded Studio Backdrop + Docked Action Bar)
   if (floatingCanvas) {
     return (
       <div
-        className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 sm:p-6 select-none overflow-y-auto"
+        className="fixed inset-0 z-50 flex flex-col items-center justify-center p-3 sm:p-6 select-none overflow-y-auto"
         style={{
           background: 'radial-gradient(ellipse at 50% 45%, rgba(45, 52, 75, 0.45) 0%, rgba(13, 15, 22, 0.96) 55%, rgba(6, 7, 10, 0.99) 100%)',
           backdropFilter: 'blur(24px)',
@@ -384,43 +484,58 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
         aria-modal="true"
         aria-label="Official Admission Ticket"
       >
-        <div className="relative my-auto flex flex-col items-center">
-          {/* Subtle Stacked Card Layers Underneath for Physical 3D Depth */}
-          <div className="relative">
-            <div className="absolute inset-0 translate-y-2.5 scale-[0.985] bg-white/80 rounded-[18px] border border-black/10 pointer-events-none -z-10 shadow-xl" />
-            <div className="absolute inset-0 translate-y-5 scale-[0.97] bg-white/40 rounded-[20px] border border-black/5 pointer-events-none -z-20 shadow-lg" />
+        <div className="relative my-auto flex flex-col items-center w-full max-w-[800px] px-2">
+          {/* Ticket Container with Physical Drop Shadows */}
+          <div className="relative max-w-full">
+            {/* Scoped Underlay Cardstock Depth (Strictly under keepsake section - zero white backing leakage) */}
+            <div className={cn('absolute rounded-2xl bg-white/20 border border-white/10 blur-[1px] pointer-events-none -z-10 translate-y-2', underlayWidthClass)} />
+            
             {ticketContent}
           </div>
 
           {/* Sleek Docked Action Bar Directly Below Ticket */}
-          <div className="mt-7 flex items-center gap-2 p-1.5 rounded-full bg-white/10 backdrop-blur-2xl border border-white/20 shadow-2xl animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="mt-5 sm:mt-7 flex flex-wrap items-center justify-center gap-2 p-1.5 rounded-full bg-white/10 backdrop-blur-2xl border border-white/20 shadow-2xl animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-full">
             <button
               type="button"
               onClick={handleDownloadPDF}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold tracking-wide transition-all active:scale-95 shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold tracking-wide transition-all active:scale-95 shadow-xs"
             >
-              <DownloadSimple size={15} weight="bold" />
+              <DownloadSimple size={14} weight="bold" />
               <span>Download PDF</span>
             </button>
 
             <button
               type="button"
               onClick={handleDownloadCalendar}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold tracking-wide transition-all active:scale-95 shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold tracking-wide transition-all active:scale-95 shadow-xs"
             >
-              <CalendarBlank size={15} weight="bold" />
+              <CalendarBlank size={14} weight="bold" />
               <span>Add to Calendar</span>
             </button>
 
-            {isVisualTorn && !backendAdmitted && (
+            {/* Re-attach button: Only rendered if manually torn and NOT yet gate scanned */}
+            {isVisualTorn && !isGateScanned && (
               <button
                 type="button"
-                onClick={resetVisualTear}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold tracking-wide transition-all active:scale-95 shadow-xs"
-                title="Re-attach stub"
+                onClick={resetManualTear}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-violet-600/60 hover:bg-violet-600 text-white text-xs font-semibold tracking-wide transition-all active:scale-95 shadow-xs"
+                title="Put stub back"
               >
                 <ArrowsClockwise size={14} weight="bold" />
                 <span>Re-attach</span>
+              </button>
+            )}
+
+            {/* Simulation button for rapid gatekeeper scan testing */}
+            {!isGateScanned && (
+              <button
+                type="button"
+                onClick={handleGateAdmission}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 text-xs font-semibold tracking-wide transition-all active:scale-95 border border-emerald-500/30 shadow-xs"
+                title="Simulate gatekeeper QR scan"
+              >
+                <Lightning size={14} weight="fill" />
+                <span>Simulate Scan</span>
               </button>
             )}
 
@@ -428,7 +543,7 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-semibold tracking-wide transition-all active:scale-95 shadow-xs"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-semibold tracking-wide transition-all active:scale-95 shadow-xs"
               >
                 <X size={14} weight="bold" />
                 <span>Close</span>
@@ -443,9 +558,8 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
   return (
     <div className={cn('relative select-none flex flex-col items-center w-full max-w-full', className)}>
       <div className="w-full max-w-[800px] overflow-visible flex justify-center items-center py-4 my-auto">
-        <div className="relative">
-          <div className="absolute inset-0 translate-y-2.5 scale-[0.985] bg-white/80 rounded-[18px] border border-black/10 pointer-events-none -z-10 shadow-xl" />
-          <div className="absolute inset-0 translate-y-5 scale-[0.97] bg-white/40 rounded-[20px] border border-black/5 pointer-events-none -z-20 shadow-lg" />
+        <div className="relative max-w-full">
+          <div className={cn('absolute rounded-2xl bg-white/20 border border-white/10 blur-[1px] pointer-events-none -z-10 translate-y-2', underlayWidthClass)} />
           {ticketContent}
         </div>
       </div>
