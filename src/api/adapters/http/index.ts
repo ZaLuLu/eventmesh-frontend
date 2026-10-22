@@ -453,6 +453,25 @@ export const httpRegistrationsApi: RegistrationsApi = {
     const list = await requestJson<RegistrationRead[]>(`${V1}/registrations`)
     return list.map(normalizeBackendRegistration)
   },
+
+  getMyEvents: async () => {
+    try {
+      const res = await requestJson<{
+        upcoming: EventRead[]
+        ongoing: EventRead[]
+        previous: EventRead[]
+        past?: EventRead[]
+      }>(`${V1}/users/me/events`)
+      return {
+        upcoming: (res.upcoming || []).map(normalizeBackendEvent),
+        ongoing: (res.ongoing || []).map(normalizeBackendEvent),
+        previous: (res.previous || []).map(normalizeBackendEvent),
+        past: (res.past || []).map(normalizeBackendEvent),
+      }
+    } catch {
+      return { upcoming: [], ongoing: [], previous: [], past: [] }
+    }
+  },
 }
 
 export const httpCheckinApi: CheckinApi = {
@@ -622,7 +641,7 @@ export const httpPayoutsApi: PayoutsApi = {
   getPayoutAccount: async (orgSlug: string) => {
     const slug = await resolveTargetOrgSlug(orgSlug)
     try {
-      return await requestJson<PayoutAccount>(`${V1}/organizers/${slug}/payout-account`)
+      return await requestJson<PayoutAccount>(`${V1}/organizations/${slug}/payout-account`)
     } catch (err: any) {
       if (err?.code === 'HTTP_404' || err?.status === 404) return null
       throw err
@@ -631,7 +650,7 @@ export const httpPayoutsApi: PayoutsApi = {
 
   registerPayoutAccount: async (orgSlug: string, payload: PayoutAccountCreate) => {
     const slug = await resolveTargetOrgSlug(orgSlug)
-    return requestJson<PayoutAccount>(`${V1}/organizers/${slug}/payout-account`, {
+    return requestJson<PayoutAccount>(`${V1}/organizations/${slug}/payout-account`, {
       method: 'POST',
       body: JSON.stringify(payload),
     })
@@ -640,7 +659,7 @@ export const httpPayoutsApi: PayoutsApi = {
   listSettlements: async (orgSlug: string) => {
     const slug = await resolveTargetOrgSlug(orgSlug)
     try {
-      return await requestJson<SettlementRecord[]>(`${V1}/organizers/${slug}/settlements`)
+      return await requestJson<SettlementRecord[]>(`${V1}/organizations/${slug}/settlements`)
     } catch {
       return []
     }
@@ -683,9 +702,9 @@ export const httpOrganizationsApi: OrganizationsApi = {
       method: 'DELETE',
     }),
   getOrganization: (idOrSlug) =>
-    requestJson(`/organizations/${idOrSlug || 'current'}`),
+    requestJson<any>(`${V1}/organizations/${idOrSlug || 'current'}`),
   updateOrganization: (id, updates) =>
-    requestJson(`/admin/organization/${id}`, {
+    requestJson<any>(`${V1}/organizations/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(updates),
     }),
@@ -897,6 +916,11 @@ export const httpAuthApi: AuthApi = {
   becomeOrganizer: () =>
     requestJson<ProfileRead>(`${V1}/users/me/become-organizer`, {
       method: 'POST',
+    }),
+
+  deleteAccount: () =>
+    requestJson<void>(`${V1}/users/me`, {
+      method: 'DELETE',
     }),
 
   sendOtp: (email) =>

@@ -130,6 +130,12 @@ export interface RegistrationsApi {
   }): Promise<Registration[]>
   updateStatus(id: string, status: RegistrationStatus): Promise<Registration>
   getMyRegistrations(): Promise<Registration[]>
+  getMyEvents?(): Promise<{
+    upcoming: Event[]
+    ongoing: Event[]
+    previous: Event[]
+    past: Event[]
+  }>
 }
 
 export interface CheckinResult {
@@ -251,6 +257,7 @@ export interface AuthApi {
   getProfile?(): Promise<ProfileRead | null>
   updateProfile?(payload: ProfileUpdatePayload): Promise<ProfileRead>
   becomeOrganizer?(): Promise<ProfileRead>
+  deleteAccount?(): Promise<void>
 }
 
 export interface SearchResultItem {
