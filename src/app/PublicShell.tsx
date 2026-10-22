@@ -45,10 +45,10 @@ export const PublicShell: React.FC = () => {
       {/* Minimal Inline Footer */}
       <PublicFooter />
 
-      {/* Mobile Bottom Navigation Bar */}
+      {/* Mobile Bottom Navigation Bar (Hallmark Gate 51: min 44px touch targets) */}
       <nav
         aria-label="Mobile Bottom Navigation"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-paper border-t border-line px-2 py-1.5 flex items-center justify-around select-none shadow-sm"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-line px-2 py-1 flex items-center justify-around select-none shadow-sm"
       >
         {mobileTabs.map((tab) => {
           const isActive =
@@ -60,14 +60,19 @@ export const PublicShell: React.FC = () => {
               key={tab.label}
               to={tab.path}
               className={cn(
-                'flex flex-col items-center justify-center py-1 px-3 transition-colors',
+                'flex flex-col items-center justify-center min-h-[44px] min-w-[56px] py-1 px-2 rounded-[8px] transition-all active:scale-95',
                 isActive
-                  ? 'text-accent font-semibold'
+                  ? 'text-accent font-bold'
                   : 'text-ink-soft hover:text-ink'
               )}
             >
-              {tab.icon}
-              <span className="text-[11px] mt-0.5 tracking-tight font-sans">{tab.label}</span>
+              <span className="relative flex items-center justify-center">
+                {tab.icon}
+                {isActive && (
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent" />
+                )}
+              </span>
+              <span className="text-[10px] mt-1 font-mono tracking-tight uppercase">{tab.label}</span>
             </Link>
           )
         })}

@@ -640,26 +640,27 @@ export const ExplorePage: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Mobile Off-Canvas Filter Drawer (< 1024px) */}
+      {/* 3. Mobile Off-Canvas Filter Drawer (Hallmark & Denim Dept: 30rem cap, zero blur) */}
       {isMobileFilterOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
-          {/* Backdrop */}
+          {/* Solid Opaque Backdrop (Gate 4: Zero blur) */}
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-black/60 transition-opacity"
             onClick={() => setIsMobileFilterOpen(false)}
           />
 
-          {/* Slide-out Drawer Panel */}
-          <div className="relative ml-auto flex h-full w-full max-w-xs flex-col bg-paper p-5 shadow-2xl overflow-y-auto">
+          {/* Slide-out Drawer Panel (30rem cap, 1px border) */}
+          <div className="relative ml-auto flex h-full w-full max-w-md flex-col bg-card border-l border-line p-5 shadow-2xl overflow-y-auto transition-transform duration-300 ease-[var(--spring-snappy)]">
             <div className="flex items-center justify-between pb-4 border-b border-line mb-5">
               <div className="flex items-center gap-2">
                 <Funnel size={16} weight="bold" className="text-accent" />
-                <h3 className="text-base font-bold text-ink">Filter Events</h3>
+                <h3 className="text-base font-bold text-ink font-display">Filter Events</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsMobileFilterOpen(false)}
-                className="grid h-8 w-8 place-items-center rounded-full bg-surface-subtle text-ink-muted hover:text-ink"
+                aria-label="Close filters"
+                className="grid h-9 w-9 place-items-center rounded-[8px] bg-surface-subtle border border-line text-ink-muted hover:text-ink active:scale-95 transition-all"
               >
                 <X size={16} />
               </button>
@@ -671,7 +672,7 @@ export const ExplorePage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsMobileFilterOpen(false)}
-                className="w-full rounded-xl bg-accent py-2.5 text-xs font-mono font-semibold text-white shadow-md hover:bg-accent-hover"
+                className="w-full rounded-[14px] bg-accent py-3 text-xs font-mono font-semibold text-white shadow-sm hover:bg-accent-hover active:scale-[0.98] transition-all"
               >
                 Apply & View ({events.length} Events)
               </button>

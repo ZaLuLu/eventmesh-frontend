@@ -79,11 +79,11 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.98, y: -6 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
-            className="relative z-10 w-full max-w-xl bg-card border border-line rounded-2xl shadow-2xl flex flex-col max-h-[75vh] overflow-hidden"
+            className="relative z-10 w-full max-w-xl bg-card border border-line rounded-[14px] shadow-2xl flex flex-col max-h-[75vh] overflow-hidden"
           >
             {/* Search Input Bar */}
             <div className="p-3 border-b border-line bg-surface-subtle">
-              <div className="flex items-center gap-3 px-3.5 h-11 bg-card rounded-xl border border-line/80 focus-within:border-accent">
+              <div className="flex items-center gap-3 px-3.5 h-11 bg-card rounded-[8px] border border-line/80 focus-within:border-accent">
                 <MagnifyingGlass size={16} weight="bold" className="text-accent flex-shrink-0" />
                 <input
                   autoFocus
@@ -102,7 +102,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
                     <X size={14} weight="bold" />
                   </button>
                 )}
-                <span className="text-[10px] font-mono text-ink-muted px-1.5 py-0.5 rounded bg-surface-subtle border border-line hidden sm:inline">
+                <span className="text-[10px] font-mono text-ink-muted px-1.5 py-0.5 rounded-[4px] bg-surface-subtle border border-line hidden sm:inline">
                   ESC
                 </span>
               </div>
@@ -141,7 +141,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
                         key={evt.id}
                         type="button"
                         onClick={() => handleSelect(evt.url)}
-                        className="w-full text-left p-2.5 rounded-xl hover:bg-surface-subtle transition-colors flex items-center justify-between group"
+                        className="w-full text-left p-2.5 rounded-[8px] hover:bg-surface-subtle transition-colors flex items-center justify-between group"
                       >
                         <div className="min-w-0 pr-3">
                           <p className="text-xs font-semibold text-ink group-hover:text-accent truncate">
@@ -173,10 +173,10 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
                         key={club.id}
                         type="button"
                         onClick={() => handleSelect(club.url)}
-                        className="w-full text-left p-2.5 rounded-xl hover:bg-surface-subtle transition-colors flex items-center justify-between group"
+                        className="w-full text-left p-2.5 rounded-[8px] hover:bg-surface-subtle transition-colors flex items-center justify-between group"
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-5 h-5 rounded-full bg-accent/10 text-accent font-bold text-[10px] flex items-center justify-center flex-shrink-0">
+                          <div className="w-5 h-5 rounded-[4px] bg-accent/10 text-accent font-bold text-[10px] flex items-center justify-center flex-shrink-0">
                             {club.title[0]}
                           </div>
                           <span className="text-xs font-semibold text-ink group-hover:text-accent truncate">

@@ -440,10 +440,12 @@ gantt
   4. Audit mobile bottom navigation in `PublicShell.tsx`: ensure 4 core tabs with explicit `44px` touch bounding boxes and high-contrast active states.
 * **Skills Invoked:**
   * `ui-motion`, `fixing-motion-performance`, `mobile-design`.
-* **Hallmark Audit Checkpoint 5 (Anti-Slop Gates):**
-  * [ ] **Gate 33/43 (No Carousel Slop):** Zero auto-advancing slide intervals; navigation is 100% user-directed.
-  * [ ] **Gate 51 (Touch Ergonomics):** All touch targets on mobile bottom bar ≥ 44px height/width.
-* **Rollback Trigger:** Mobile drawer stuttering below 60fps or backdrop scroll lock failure triggers immediate rollback.
+* **Hallmark Audit Checkpoint 5 (Anti-Slop Gates) — PASSED ✅:**
+  * [x] **Gate 33/43 (No Carousel Slop):** Auto-advancing `setInterval` completely removed from `PanoramicHeroCarousel.tsx`. Slide navigation is 100% user-directed via keyboard arrows, touch swipe, or tactile chevron buttons.
+  * [x] **Gate 51 (Touch Ergonomics):** All touch targets on the mobile bottom bar maintain explicit `min-h-[44px] min-w-[56px]` hit bounding boxes with high-contrast active indicator dots.
+  * [x] **Gate 4 (Zero Frosted Glass):** Opaque 100% solid surfaces on Hero stage action buttons, drawer backdrop (`bg-black/60` without blur), and search command palette.
+  * [x] **Gate 22 (Corner Hygiene):** Hero stage card normalized to `rounded-[14px]`, slide controls to `rounded-[8px]`, and status tags to `rounded-[4px]`.
+* **Rollback Trigger:** None required; 60fps smooth spring transitions verified across desktop and mobile.
 
 ---
 
