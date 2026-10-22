@@ -84,6 +84,10 @@ export const RegistrationSchema = z.object({
   organizerColor: z.string().optional(),
   eventStartsAt: z.string().optional(),
   venueName: z.string().optional(),
+  orderId: z.string().optional(),
+  paidAmountCents: z.number().optional(),
+  isPaid: z.boolean().optional(),
+  refundStatus: z.enum(['not_refunded', 'pending', 'refunded', 'failed']).optional(),
 })
 
 export type Registration = z.infer<typeof RegistrationSchema>
@@ -111,6 +115,10 @@ export function normalizeBackendRegistration(raw: RegistrationRead | any): Regis
     organizerColor: raw.organizerColor || '#1A73E8',
     eventStartsAt: raw.event?.start_time || raw.eventStartsAt,
     venueName: raw.event?.venue_name || raw.venueName || 'Main Campus Venue',
+    orderId: raw.orderId || raw.order_id,
+    paidAmountCents: raw.paidAmountCents || raw.amount_cents,
+    isPaid: raw.isPaid ?? raw.is_paid ?? Boolean(raw.orderId || raw.order_id || raw.paidAmountCents),
+    refundStatus: raw.refundStatus || raw.refund_status,
   }
 }
 

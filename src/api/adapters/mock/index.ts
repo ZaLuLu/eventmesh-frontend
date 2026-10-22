@@ -23,6 +23,7 @@ import {
   SearchResults,
   PaymentsApi,
   PayoutsApi,
+  SystemApi,
 } from '../../ports'
 import {
   Organization,
@@ -60,6 +61,16 @@ import {
   OrganizerEarningsSummary,
   PlatformOverview,
   InstitutionCandidate,
+  PlatformAuditLog,
+  PlatformOrganizationItem,
+  AdminWithdrawalReviewPayload,
+  RefundOrderRequest,
+  RefundOrderResponse,
+  SyncRun,
+  TriggerSyncRequest,
+  TriggerSyncResponse,
+  TestEmailRequest,
+  TestEmailResponse,
 } from '../../contracts'
 import { SEED_ORGANIZATION, SEED_CLUBS, SEED_DEMO_USERS } from './seedData'
 import {
@@ -257,9 +268,46 @@ class MockDataStore {
   invitations: (InvitationRead & { token?: string })[]
   proposals: ProposalRead[]
   auditLogs: AuditLog[]
+  syncRuns: SyncRun[]
   currentSession: UserSession | null
 
   constructor() {
+    const defaultSyncRuns: SyncRun[] = [
+      {
+        id: 'sync-01',
+        status: 'success',
+        mode: 'incremental',
+        citiesCount: 23,
+        eventsIngested: 48,
+        startedAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+        completedAt: new Date(Date.now() - 3600000 * 4 + 180000).toISOString(),
+        triggeredBy: 'cron@eventmesh.internal',
+        logExcerpt: 'Harvested 23 cities: BLR (18), BOM (12), DEL (9), HYD (5), MAA (4). 48 new events indexed.',
+      },
+      {
+        id: 'sync-02',
+        status: 'success',
+        mode: 'full',
+        citiesCount: 23,
+        eventsIngested: 142,
+        startedAt: new Date(Date.now() - 86400000).toISOString(),
+        completedAt: new Date(Date.now() - 86400000 + 720000).toISOString(),
+        triggeredBy: 'admin@eventmesh.internal',
+        logExcerpt: 'Full catalog reconciliation. 142 hackathons and conferences synced.',
+      },
+      {
+        id: 'sync-03',
+        status: 'failed',
+        mode: 'incremental',
+        citiesCount: 23,
+        eventsIngested: 0,
+        startedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+        completedAt: new Date(Date.now() - 86400000 * 2 + 60000).toISOString(),
+        triggeredBy: 'cron@eventmesh.internal',
+        logExcerpt: 'Upstream gateway timeout on PNQ aggregator node.',
+      },
+    ]
+
     const currentVer = getStored<string>('schema_version', '')
     if (currentVer !== SCHEMA_VERSION) {
       // Auto-reset store on seed or schema version change (Audit F-19)
@@ -276,6 +324,7 @@ class MockDataStore {
       this.invitations = [...SEED_INVITATIONS]
       this.proposals = [...SEED_PROPOSALS]
       this.auditLogs = SEED_AUDIT_LOGS
+      this.syncRuns = defaultSyncRuns
       this.currentSession = SEED_DEMO_USERS[0]
       setStored('schema_version', SCHEMA_VERSION)
       this.save()
@@ -293,6 +342,7 @@ class MockDataStore {
       this.invitations = getStored('invitations', SEED_INVITATIONS)
       this.proposals = getStored('proposals', SEED_PROPOSALS)
       this.auditLogs = getStored('audit_logs', SEED_AUDIT_LOGS)
+      this.syncRuns = getStored('sync_runs', defaultSyncRuns)
       this.currentSession = getStored('session', SEED_DEMO_USERS[0])
     }
   }
@@ -312,6 +362,7 @@ class MockDataStore {
     setStored('invitations', this.invitations)
     setStored('proposals', this.proposals)
     setStored('audit_logs', this.auditLogs)
+    setStored('sync_runs', this.syncRuns)
     setStored('session', this.currentSession)
   }
 
@@ -1263,6 +1314,25 @@ export const mockPaymentsApi: PaymentsApi = {
       registration_status: 'confirmed',
     }
   },
+
+  async refundOrder(orderId: string, payload?: RefundOrderRequest): Promise<RefundOrderResponse> {
+    await simulateLatency()
+    const reg = mockStore.registrations.find((r) => r.orderId === orderId || r.id === orderId)
+    if (reg) {
+      reg.refundStatus = 'refunded'
+      reg.status = 'cancelled'
+      mockStore.save()
+    }
+    return {
+      status: 'refunded',
+      refund_id: `RFD-${orderId.slice(-6).toUpperCase()}`,
+      amount_inr: payload?.refund_amount_cents
+        ? payload.refund_amount_cents / 100
+        : reg?.paidAmountCents
+        ? reg.paidAmountCents / 100
+        : 499,
+    }
+  },
 }
 
 export const mockPayoutsApi: PayoutsApi = {
@@ -1402,6 +1472,105 @@ export const mockPayoutsApi: PayoutsApi = {
       events_breakdown: [],
     }
   },
+
+  async adminListWithdrawals(status?: string): Promise<WithdrawalRequest[]> {
+    await simulateLatency()
+    const all: WithdrawalRequest[] = (mockStore as any).withdrawals || [
+      {
+        id: 'w-mock-01',
+        request_id: 'REQ-20261022-001',
+        organization_id: 'org-1',
+        organization_name: 'Apex Student Council',
+        organization_slug: 'apex-council',
+        amount: 8500,
+        amount_cents: 850000,
+        currency: 'INR',
+        status: 'PENDING',
+        payout_details_snapshot: {
+          account_type: 'BANK_ACCOUNT',
+          account_holder_name: 'Apex Student Gymkhana',
+          bank_name: 'HDFC Bank',
+          masked_account_number: '••••••••8819',
+          ifsc_code: 'HDFC0000123',
+        },
+        requester_id: 'usr-1',
+        requester_email: 'treasurer@apex.edu',
+        requester_name: 'Aditya Narayan',
+        bank_name: 'HDFC Bank',
+        masked_bank_account: '••••••••8819',
+        ifsc_code: 'HDFC0000123',
+        account_holder_name: 'Apex Student Gymkhana',
+        requested_at: new Date(Date.now() - 3600000 * 4).toISOString(),
+        created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
+      },
+      {
+        id: 'w-mock-02',
+        request_id: 'REQ-20261020-004',
+        organization_id: 'org-2',
+        organization_name: 'Coding & Algorithms Club',
+        organization_slug: 'cp-club',
+        amount: 14200,
+        amount_cents: 1420000,
+        currency: 'INR',
+        status: 'PAID',
+        payout_details_snapshot: {
+          account_type: 'BANK_ACCOUNT',
+          account_holder_name: 'CP Club Activity Fund',
+          bank_name: 'State Bank of India',
+          masked_account_number: '••••••••4190',
+          ifsc_code: 'SBIN0001423',
+        },
+        requester_id: 'usr-2',
+        requester_email: 'lead@cpclub.org',
+        requester_name: 'Sameer Kulkarni',
+        bank_name: 'State Bank of India',
+        masked_bank_account: '••••••••4190',
+        ifsc_code: 'SBIN0001423',
+        account_holder_name: 'CP Club Activity Fund',
+        utr_reference: 'UTR99882211004',
+        requested_at: new Date(Date.now() - 86400000 * 2).toISOString(),
+        paid_at: new Date(Date.now() - 86400000).toISOString(),
+        created_at: new Date(Date.now() - 86400000 * 2).toISOString(),
+      },
+    ]
+    if (status && status !== 'ALL') {
+      return all.filter((w) => w.status === status)
+    }
+    return all
+  },
+
+  async adminReviewWithdrawal(withdrawalId: string, payload: AdminWithdrawalReviewPayload): Promise<WithdrawalRequest> {
+    await simulateLatency()
+    const all: WithdrawalRequest[] = this.adminListWithdrawals ? await this.adminListWithdrawals() : []
+    const match = all.find((w) => w.id === withdrawalId || w.request_id === withdrawalId)
+    if (match) {
+      if (payload.action === 'pay') {
+        match.status = 'PAID'
+        match.utr_reference = payload.transfer_reference || 'UTR-LOCAL-MOCK'
+        match.paid_at = new Date().toISOString()
+      } else if (payload.action === 'reject') {
+        match.status = 'REJECTED'
+        match.rejection_reason = payload.reason || 'Verification criteria not met'
+      } else if (payload.action === 'approve') {
+        match.status = 'APPROVED'
+      }
+      return match
+    }
+    return {
+      id: withdrawalId,
+      request_id: `REQ-${Date.now()}`,
+      organization_id: 'org-1',
+      amount: 5000,
+      amount_cents: 500000,
+      currency: 'INR',
+      status: payload.action === 'pay' ? 'PAID' : payload.action === 'reject' ? 'REJECTED' : 'APPROVED',
+      payout_details_snapshot: {},
+      utr_reference: payload.transfer_reference,
+      rejection_reason: payload.reason,
+      requested_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+    }
+  },
 }
 
 export const mockClubsApi: ClubsApi = {
@@ -1507,9 +1676,31 @@ export const mockAnalyticsApi: AnalyticsApi = {
 }
 
 export const mockAuditApi: AuditApi = {
-  async getAuditLogs(scope): Promise<AuditLog[]> {
+  async getAuditLogs(_scope): Promise<AuditLog[]> {
     await simulateLatency()
     return [...mockStore.auditLogs]
+  },
+
+  async getPlatformAuditLogs(params): Promise<PlatformAuditLog[]> {
+    await simulateLatency()
+    let items: PlatformAuditLog[] = mockStore.auditLogs.map((log) => ({
+      id: log.id,
+      actor_id: log.actorId,
+      actor_name: log.actorName,
+      actor_email: `${log.actorRole.toLowerCase()}@eventmesh.org`,
+      action: log.action,
+      entity_type: log.entity,
+      entity_id: log.entityId,
+      target_organization_id: 'org-1',
+      target_organization_name: 'Apex Student Council',
+      safe_metadata: { role: log.actorRole, origin: 'console' },
+      created_at: log.at,
+    }))
+
+    if (params?.entityType && params.entityType !== 'ALL') {
+      items = items.filter((i) => i.entity_type.toLowerCase() === params.entityType?.toLowerCase())
+    }
+    return items
   },
 }
 
@@ -1833,5 +2024,140 @@ export const mockOrganizationsApi: OrganizationsApi = {
       created_at: new Date().toISOString(),
     }
   },
+
+  async getPlatformOrganizations(status?: string): Promise<PlatformOrganizationItem[]> {
+    await simulateLatency()
+    const items: PlatformOrganizationItem[] = [
+      {
+        id: 'org-1',
+        name: 'Apex Institute of Technology',
+        slug: 'apex-institute',
+        status: 'verified',
+        type: 'college',
+        is_institution: true,
+        is_platform_root: false,
+        owner_id: 'usr-1',
+        owner_email: 'director@apex.edu',
+        owner_name: 'Dr. R. Ramanathan',
+        created_at: '2026-08-15T00:00:00Z',
+        event_count: 24,
+        member_count: 142,
+      },
+      {
+        id: 'org-2',
+        name: 'Apex Student Council',
+        slug: 'apex-council',
+        status: 'verified',
+        type: 'club',
+        is_institution: false,
+        is_platform_root: false,
+        parent_organization_id: 'org-1',
+        parent_name: 'Apex Institute of Technology',
+        parent_slug: 'apex-institute',
+        owner_id: 'usr-2',
+        owner_email: 'president@apex.edu',
+        owner_name: 'Aarav Deshmukh',
+        created_at: '2026-08-20T00:00:00Z',
+        event_count: 14,
+        member_count: 48,
+      },
+      {
+        id: 'org-3',
+        name: 'Coding & Competitive Programming Club',
+        slug: 'cp-club',
+        status: 'verified',
+        type: 'club',
+        is_institution: false,
+        is_platform_root: false,
+        parent_organization_id: 'org-1',
+        parent_name: 'Apex Institute of Technology',
+        parent_slug: 'apex-institute',
+        owner_id: 'usr-3',
+        owner_email: 'lead@cpclub.org',
+        owner_name: 'Sameer Kulkarni',
+        created_at: '2026-09-01T00:00:00Z',
+        event_count: 8,
+        member_count: 86,
+      },
+      {
+        id: 'org-4',
+        name: 'Robotics & Hardware Society',
+        slug: 'robotics-society',
+        status: 'pending',
+        type: 'club',
+        is_institution: false,
+        is_platform_root: false,
+        parent_organization_id: 'org-1',
+        parent_name: 'Apex Institute of Technology',
+        parent_slug: 'apex-institute',
+        owner_id: 'usr-4',
+        owner_email: 'hardware@apex.edu',
+        owner_name: 'Pooja Patel',
+        created_at: '2026-10-18T00:00:00Z',
+        event_count: 0,
+        member_count: 12,
+      },
+    ]
+    if (status && status !== 'ALL') {
+      return items.filter((o) => o.status === status)
+    }
+    return items
+  },
+
+  async listPlatformProposals(status?: string): Promise<ProposalRead[]> {
+    await simulateLatency()
+    return mockStore.proposals.filter((p) => !status || status === 'ALL' || p.status === status)
+  },
+
+  async reviewPlatformProposal(proposalId: string, review: ProposalReview): Promise<ProposalRead> {
+    if (!this.reviewProposal) throw new Error('reviewProposal not implemented')
+    return this.reviewProposal(proposalId, review)
+  },
 }
+
+export const mockSystemApi: SystemApi = {
+  async listSyncRuns(): Promise<SyncRun[]> {
+    await simulateLatency()
+    return mockStore.syncRuns || []
+  },
+  async triggerSync(payload?: TriggerSyncRequest): Promise<TriggerSyncResponse> {
+    await simulateLatency()
+    const newRun: SyncRun = {
+      id: `sync-${Date.now()}`,
+      status: 'running',
+      mode: payload?.mode || 'incremental',
+      citiesCount: payload?.targetCities?.length || 23,
+      eventsIngested: 14,
+      startedAt: new Date().toISOString(),
+      completedAt: null,
+      triggeredBy: mockStore.currentSession?.email || 'admin@eventmesh.internal',
+      logExcerpt: 'Crawler worker dispatched to 23 city edge workers.',
+    }
+    mockStore.syncRuns.unshift(newRun)
+    mockStore.save()
+    setTimeout(() => {
+      newRun.status = 'success'
+      newRun.completedAt = new Date().toISOString()
+      newRun.eventsIngested = 32
+      newRun.logExcerpt = 'Harvest completed: 32 technical hackathons and meetups ingested.'
+      mockStore.save()
+    }, 2000)
+    return {
+      status: 'started',
+      runId: newRun.id,
+      message: 'Crawler sync across 23 cities initiated successfully.',
+    }
+  },
+  async sendTestEmail(payload: TestEmailRequest): Promise<TestEmailResponse> {
+    await simulateLatency()
+    return {
+      status: 'delivered',
+      messageId: `msg_${Date.now()}`,
+      recipient: payload.recipient,
+      template: payload.template,
+      sentAt: new Date().toISOString(),
+    }
+  },
+}
+
 

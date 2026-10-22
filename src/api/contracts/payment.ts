@@ -156,7 +156,7 @@ export const WithdrawalRequestSchema = z.object({
   amount: z.number(),
   amount_cents: z.number(),
   currency: z.string().default('INR'),
-  status: z.enum(['PENDING', 'PROCESSING', 'PAID', 'REJECTED']),
+  status: z.enum(['PENDING', 'APPROVED', 'PROCESSING', 'PAID', 'REJECTED']),
   payout_details_snapshot: z.record(z.any()).default({}),
   admin_notes: z.string().nullable().optional(),
   rejection_reason: z.string().nullable().optional(),
@@ -167,6 +167,14 @@ export const WithdrawalRequestSchema = z.object({
   organization_name: z.string().nullable().optional(),
   organization_slug: z.string().nullable().optional(),
   event_title: z.string().nullable().optional(),
+  requester_id: z.string().nullable().optional(),
+  requester_email: z.string().nullable().optional(),
+  requester_name: z.string().nullable().optional(),
+  masked_bank_account: z.string().nullable().optional(),
+  bank_name: z.string().nullable().optional(),
+  ifsc_code: z.string().nullable().optional(),
+  account_holder_name: z.string().nullable().optional(),
+  available_balance_basis_inr: z.number().nullable().optional(),
 })
 export type WithdrawalRequest = z.infer<typeof WithdrawalRequestSchema>
 
@@ -189,4 +197,24 @@ export const OrganizerEarningsSummarySchema = z.object({
   events_breakdown: z.array(z.any()).default([]),
 })
 export type OrganizerEarningsSummary = z.infer<typeof OrganizerEarningsSummarySchema>
+
+export const AdminWithdrawalReviewSchema = z.object({
+  action: z.enum(['approve', 'reject', 'pay']),
+  reason: z.string().optional(),
+  transfer_reference: z.string().optional(),
+})
+export type AdminWithdrawalReviewPayload = z.infer<typeof AdminWithdrawalReviewSchema>
+
+export const RefundOrderRequestSchema = z.object({
+  reason: z.string().optional(),
+  refund_amount_cents: z.number().optional(),
+})
+export type RefundOrderRequest = z.infer<typeof RefundOrderRequestSchema>
+
+export const RefundOrderResponseSchema = z.object({
+  status: z.string(),
+  refund_id: z.string(),
+  amount_inr: z.number(),
+})
+export type RefundOrderResponse = z.infer<typeof RefundOrderResponseSchema>
 

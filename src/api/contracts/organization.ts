@@ -207,4 +207,37 @@ export interface InstitutionCandidate {
   created_at: string
 }
 
+export interface PlatformAuditLog {
+  id: string
+  actor_id?: string | null
+  actor_email?: string | null
+  actor_name?: string | null
+  action: string
+  entity_type: string
+  entity_id: string
+  target_organization_id?: string | null
+  target_organization_name?: string | null
+  safe_metadata?: Record<string, any> | null
+  created_at: string
+}
+
+export interface PlatformOrganizationItem {
+  id: string
+  name: string
+  slug: string
+  status: string
+  type?: string | null
+  is_institution: boolean
+  is_platform_root: boolean
+  parent_organization_id?: string | null
+  parent_name?: string | null
+  parent_slug?: string | null
+  owner_id: string
+  owner_email?: string | null
+  owner_name?: string | null
+  created_at: string
+  event_count: number
+  member_count: number
+}
+
 

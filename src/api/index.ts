@@ -17,6 +17,7 @@ import {
   mockOrganizationsApi,
   mockPaymentsApi,
   mockPayoutsApi,
+  mockSystemApi,
   mockStore,
 } from './adapters/mock'
 
@@ -39,6 +40,7 @@ import {
   httpOrganizationsApi,
   httpPaymentsApi,
   httpPayoutsApi,
+  httpSystemApi,
 } from './adapters/http'
 
 const isMock = import.meta.env.VITE_API_MODE !== 'http'
@@ -63,6 +65,7 @@ export const api = {
   organizations: isMock ? mockOrganizationsApi : httpOrganizationsApi,
   payments: isMock ? mockPaymentsApi : httpPaymentsApi,
   payouts: isMock ? mockPayoutsApi : httpPayoutsApi,
+  system: isMock ? mockSystemApi : httpSystemApi,
   // Helper for mock reset in dev mode
   mockStore: isMock ? mockStore : null,
 }

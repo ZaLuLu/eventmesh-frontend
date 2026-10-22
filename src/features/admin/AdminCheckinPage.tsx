@@ -18,6 +18,7 @@ import {
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { useCheckinTicket, useUndoCheckin, useCheckinStats } from '@/hooks/useCheckin'
+import { useRegistrations } from '@/hooks/useRegistrations'
 import { useAdminEvents } from '@/hooks/useEvents'
 import { Button } from '@/design-system/primitives/Button'
 import { Sticker } from '@/design-system/primitives/Sticker'
@@ -70,6 +71,13 @@ export const AdminCheckinPage: React.FC = () => {
     selectedEventId || events.find((e) => e.status === 'published')?.id || events[0]?.id || ''
   const activeEvent = events.find((e) => e.id === activeEventId)
   const { data: stats } = useCheckinStats(activeEventId)
+
+  // Passholder Desk Roster state
+  const [rosterSearch, setRosterSearch] = useState('')
+  const { data: eventRegistrations = [], isLoading: isLoadingRoster } = useRegistrations({
+    eventId: activeEventId,
+    search: rosterSearch || undefined,
+  })
 
   const checkinMutation = useCheckinTicket()
   const undoMutation = useUndoCheckin()
@@ -568,6 +576,81 @@ export const AdminCheckinPage: React.FC = () => {
             </button>
           </div>
         )}
+      </div>
+
+      {/* 1-Click Attendee Gate Roster */}
+      <div className="rounded-panel border border-line bg-[var(--color-surface)] p-5 space-y-3 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-line">
+          <div>
+            <h4 className="text-body font-semibold text-ink">
+              Passholder Desk Roster (1-Click Gate Verification)
+            </h4>
+            <p className="text-caption text-ink-soft">
+              Direct admittance for damaged phone screens or manual desk check-in.
+            </p>
+          </div>
+          <div className="w-full sm:w-60">
+            <input
+              type="text"
+              value={rosterSearch}
+              onChange={(e) => setRosterSearch(e.target.value)}
+              placeholder="Search attendee or ticket..."
+              className="w-full bg-[var(--color-canvas-subtle)] border border-line-strong rounded-lg px-3 py-1.5 text-caption font-mono text-ink focus:outline-none focus:border-[var(--color-accent)]"
+            />
+          </div>
+        </div>
+
+        <div className="max-h-72 overflow-y-auto space-y-1.5 divide-y divide-line/60">
+          {isLoadingRoster ? (
+            <p className="text-caption text-ink-muted py-4 text-center">Loading event roster...</p>
+          ) : eventRegistrations.length === 0 ? (
+            <p className="text-caption text-ink-muted py-4 text-center">No passholders found for this event query.</p>
+          ) : (
+            eventRegistrations.map((reg) => (
+              <div key={reg.id} className="pt-2 flex items-center justify-between gap-3 text-small">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-ink">{reg.userName}</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-surface-subtle border border-line text-[var(--color-accent)] font-bold">
+                      {reg.ticketCode}
+                    </span>
+                    {reg.status === 'checked_in' && (
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-success/15 text-success border border-success/30 font-semibold">
+                        ADMITTED
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-caption text-ink-muted font-mono">{reg.userEmail}</span>
+                </div>
+
+                <div className="shrink-0">
+                  {reg.status === 'checked_in' ? (
+                    <Button
+                      surface="admin"
+                      variant="ghost"
+                      size="dense"
+                      onClick={() => handleUndo(reg.id, reg.userName)}
+                      className="font-mono text-caption text-danger hover:text-danger"
+                    >
+                      Undo
+                    </Button>
+                  ) : (
+                    <Button
+                      surface="admin"
+                      variant="primary"
+                      size="dense"
+                      loading={checkinMutation.isPending}
+                      onClick={() => processScanCode(reg.ticketCode)}
+                      className="font-mono text-caption"
+                    >
+                      1-Click Admit
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {/* Recent Scans Strip with Instant Undo */}

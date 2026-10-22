@@ -1067,7 +1067,11 @@ export const SEED_REGISTRATIONS: Registration[] = [
     "organizerName": "CP Club",
     "organizerColor": "#0047FF",
     "eventStartsAt": "2026-10-24T09:00:00Z",
-    "tierName": "General Hacker Pass"
+    "tierName": "General Hacker Pass",
+    "orderId": "order_cf_884192",
+    "isPaid": true,
+    "paidAmountCents": 49900,
+    "refundStatus": "not_refunded"
   },
   {
     "id": "reg-2",
@@ -1106,7 +1110,11 @@ export const SEED_REGISTRATIONS: Registration[] = [
     "organizerName": "CyberGuard",
     "organizerColor": "#151130",
     "eventStartsAt": "2026-09-12T10:00:00Z",
-    "tierName": "Security Operator Pass"
+    "tierName": "Security Operator Pass",
+    "orderId": "order_cf_993411",
+    "isPaid": true,
+    "paidAmountCents": 99900,
+    "refundStatus": "not_refunded"
   },
   {
     "id": "reg-4",

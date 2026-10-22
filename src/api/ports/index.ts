@@ -49,6 +49,16 @@ import {
   OrganizerEarningsSummary,
   PlatformOverview,
   InstitutionCandidate,
+  PlatformAuditLog,
+  PlatformOrganizationItem,
+  AdminWithdrawalReviewPayload,
+  RefundOrderRequest,
+  RefundOrderResponse,
+  SyncRun,
+  TriggerSyncRequest,
+  TriggerSyncResponse,
+  TestEmailRequest,
+  TestEmailResponse,
 } from '../contracts'
 
 export interface EventsFilter {
@@ -200,6 +210,7 @@ export interface PaymentsApi {
   getFeeQuote(baseAmountCents: number): Promise<FeeQuote>
   createOrder(payload: OrderCreateRequest): Promise<OrderCreateResponse>
   getOrderStatus(orderId: string): Promise<PaymentStatusResponse>
+  refundOrder?(orderId: string, payload?: RefundOrderRequest): Promise<RefundOrderResponse>
 }
 
 export interface PayoutsApi {
@@ -210,6 +221,8 @@ export interface PayoutsApi {
   listWithdrawals?(orgSlug: string): Promise<WithdrawalRequest[]>
   requestWithdrawal?(orgSlug: string, payload: WithdrawalRequestCreate): Promise<WithdrawalRequest>
   getEarningsSummary?(orgSlug: string): Promise<OrganizerEarningsSummary>
+  adminListWithdrawals?(status?: string, limit?: number, offset?: number): Promise<WithdrawalRequest[]>
+  adminReviewWithdrawal?(withdrawalId: string, payload: AdminWithdrawalReviewPayload): Promise<WithdrawalRequest>
 }
 
 export interface ClubsApi {
@@ -241,7 +254,8 @@ export interface AnalyticsApi {
 }
 
 export interface AuditApi {
-  getAuditLogs(scope: { orgId: string; clubId?: string }): Promise<AuditLog[]>
+  getAuditLogs(scope?: { orgId?: string; clubId?: string }): Promise<AuditLog[]>
+  getPlatformAuditLogs?(params?: { limit?: number; offset?: number; entityType?: string }): Promise<PlatformAuditLog[]>
 }
 
 export interface UserRoleRecord {
@@ -321,5 +335,15 @@ export interface OrganizationsApi {
   getInstitutionCandidates?(): Promise<InstitutionCandidate[]>
   verifyInstitution?(slug: string, domains: string[]): Promise<InstitutionCandidate>
   rejectInstitution?(slug: string, reason?: string): Promise<InstitutionCandidate>
+  getPlatformOrganizations?(status?: string): Promise<PlatformOrganizationItem[]>
+  listPlatformProposals?(status?: string): Promise<ProposalRead[]>
+  reviewPlatformProposal?(proposalId: string, review: ProposalReview): Promise<ProposalRead>
 }
+
+export interface SystemApi {
+  listSyncRuns(): Promise<SyncRun[]>
+  triggerSync(payload?: TriggerSyncRequest): Promise<TriggerSyncResponse>
+  sendTestEmail(payload: TestEmailRequest): Promise<TestEmailResponse>
+}
+
 

@@ -270,16 +270,72 @@ export const AttendeeDashboardPage: React.FC = () => {
         </section>
       )}
 
+      {/* Become an Organizer Banner */}
+      {!Boolean(session?.clubId || session?.role === 'org_admin' || session?.role === 'platform_admin') && (
+        <section className="rounded-2xl border border-accent/25 bg-gradient-to-r from-accent/10 via-surface to-surface p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-accent/15 text-accent flex items-center justify-center shrink-0">
+              <Sparkle size={22} weight="fill" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-accent text-on-accent">
+                  LEADERSHIP UPGRADE
+                </span>
+                <span className="text-xs font-mono text-text-3">1-Click Fast Charter</span>
+              </div>
+              <h3 className="text-body font-bold text-text mt-0.5">
+                Want to host your own tech meetups or hackathons?
+              </h3>
+              <p className="text-caption text-text-2">
+                Promote your account to Club Organizer. Lead charters, design event registrations, and disburse ticket revenues.
+              </p>
+            </div>
+          </div>
+
+          <div className="shrink-0 flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="primary"
+              icon={<Sparkle size={14} weight="fill" />}
+              onClick={handleBecomeOrganizer}
+            >
+              Become an Organizer
+            </Button>
+          </div>
+        </section>
+      )}
+
+      {/* Organizer Privileges Active Banner */}
+      {Boolean(session?.clubId || session?.role === 'org_admin' || session?.role === 'platform_admin') && (
+        <section className="rounded-2xl border border-line bg-subtle p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-small">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-surface border border-line flex items-center justify-center text-accent">
+              <GraduationCap size={20} weight="bold" />
+            </div>
+            <div>
+              <span className="font-semibold text-text">Organizer Privileges Active</span>
+              <p className="text-caption text-text-3">You manage events and ticket queues for your club.</p>
+            </div>
+          </div>
+          <Link to="/admin">
+            <Button surface="admin" size="dense" arrow>
+              Open Admin Console
+            </Button>
+          </Link>
+        </section>
+      )}
+
       {/* ========================================================================= */}
       {/* 2. STREAMLINED STUDENT WALLET IDENTITY SECTION                            */}
       {/* ========================================================================= */}
       <section className="rounded-3xl bg-surface-subtle border border-line/40 p-6 sm:p-8 flex flex-col items-center">
         {/* Minimal Identity Bar */}
-        <div className="w-full max-w-[460px] flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-surface border border-line/50 text-ink shadow-xs">
+        <div className="w-full max-w-[460px] flex items-center justify-between mb-4 flex-wrap gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-surface border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 shadow-xs">
               <ShieldCheck size={14} weight="fill" className="text-emerald-500" />
-              <span>Campus Identity</span>
+              <span>Campus Verified: {studentData.email.split('@')[1] || 'apex.edu.in'}</span>
             </span>
             <span className="text-xs font-mono text-ink-muted hidden sm:inline">
               {studentData.degreeBranch || 'Verified Passholder'}

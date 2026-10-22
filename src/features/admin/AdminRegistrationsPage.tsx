@@ -1,15 +1,18 @@
 // Hallmark macrostructure: AdminConsole-Registrations
 import React, { useState } from 'react'
-import { DownloadSimple, MagnifyingGlass, UserCheck, ArrowUpRight } from '@phosphor-icons/react'
+import { DownloadSimple, MagnifyingGlass, UserCheck, ArrowUpRight, ArrowsCounterClockwise, CurrencyInr } from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { useRegistrations, useUpdateRegistrationStatus } from '@/hooks/useRegistrations'
+import { useRefundOrder } from '@/hooks/usePayments'
 import { Button } from '@/design-system/primitives/Button'
+import { Modal } from '@/design-system/primitives/Modal'
+import { Field } from '@/design-system/primitives/Field'
 import { Sticker } from '@/design-system/primitives/Sticker'
 import { exportToCSV } from '@/lib/exportCsv'
 import { formatDate } from '@/lib/format'
 import { useToast } from '@/design-system/primitives/Toast'
-import { RegistrationStatus } from '@/api'
+import { Registration, RegistrationStatus } from '@/api'
 
 export const AdminRegistrationsPage: React.FC = () => {
   const { session } = useAuth()
@@ -19,6 +22,13 @@ export const AdminRegistrationsPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<RegistrationStatus | 'all'>('all')
   const [search, setSearch] = useState('')
 
+  // Refund state
+  const [refundModalOpen, setRefundModalOpen] = useState(false)
+  const [selectedRefundReg, setSelectedRefundReg] = useState<Registration | null>(null)
+  const [refundReason, setRefundReason] = useState('Attendee request / schedule conflict')
+  const [refundAmountInr, setRefundAmountInr] = useState<number>(0)
+  const refundMutation = useRefundOrder()
+
   const { data: registrations = [], isLoading } = useRegistrations({
     clubId: clubId || undefined,
     status: statusFilter !== 'all' ? statusFilter : undefined,
@@ -26,6 +36,40 @@ export const AdminRegistrationsPage: React.FC = () => {
   })
 
   const updateStatusMutation = useUpdateRegistrationStatus()
+
+  const openRefundDialog = (reg: Registration) => {
+    setSelectedRefundReg(reg)
+    setRefundAmountInr((reg.paidAmountCents || 49900) / 100)
+    setRefundReason('Attendee request / schedule conflict')
+    setRefundModalOpen(true)
+  }
+
+  const handleConfirmRefund = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedRefundReg) return
+    try {
+      await refundMutation.mutateAsync({
+        orderId: selectedRefundReg.orderId || selectedRefundReg.id,
+        payload: {
+          refund_amount_cents: Math.round(refundAmountInr * 100),
+          reason: refundReason,
+        },
+      })
+      toast({
+        title: 'Refund Processed',
+        message: `₹${refundAmountInr} refunded for ticket ${selectedRefundReg.ticketCode}.`,
+        type: 'success',
+      })
+      setRefundModalOpen(false)
+      setSelectedRefundReg(null)
+    } catch (err: any) {
+      toast({
+        title: 'Refund Failed',
+        message: err.message || 'Could not initiate refund via gateway.',
+        type: 'error',
+      })
+    }
+  }
 
   const handleStatusChange = async (id: string, status: RegistrationStatus) => {
     try {
@@ -158,7 +202,20 @@ export const AdminRegistrationsPage: React.FC = () => {
               registrations.map((reg) => (
                 <tr key={reg.id} className="hover:bg-subtle/50 transition-colors">
                   <td className="py-3 px-4 space-y-0.5">
-                    <p className="font-mono font-bold text-accent text-xs">{reg.ticketCode}</p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-mono font-bold text-accent text-xs">{reg.ticketCode}</span>
+                      {reg.isPaid && (
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-iris/15 text-iris border border-iris/30 font-semibold inline-flex items-center gap-0.5">
+                          <CurrencyInr size={10} weight="bold" />
+                          {((reg.paidAmountCents || 49900) / 100).toFixed(0)}
+                        </span>
+                      )}
+                      {reg.refundStatus === 'refunded' && (
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-danger/15 text-danger border border-danger/30 font-semibold">
+                          REFUNDED
+                        </span>
+                      )}
+                    </div>
                     <p className="font-semibold text-text text-small">{reg.userName}</p>
                     <p className="text-caption text-text-3 font-mono">{reg.userEmail}</p>
                     {reg.team && (
@@ -197,6 +254,18 @@ export const AdminRegistrationsPage: React.FC = () => {
 
                   <td className="py-3 px-4 text-right">
                     <div className="flex items-center justify-end gap-2">
+                      {(reg.isPaid || reg.orderId) && reg.refundStatus !== 'refunded' && (
+                        <Button
+                          surface="admin"
+                          size="dense"
+                          variant="secondary"
+                          icon={<ArrowsCounterClockwise size={13} weight="bold" />}
+                          onClick={() => openRefundDialog(reg)}
+                        >
+                          Refund
+                        </Button>
+                      )}
+
                       {reg.status === 'waitlisted' && (
                         <Button
                           surface="admin"
@@ -237,6 +306,95 @@ export const AdminRegistrationsPage: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      {/* 1-Click Attendee Refund Modal */}
+      <Modal
+        isOpen={refundModalOpen}
+        onClose={() => {
+          setRefundModalOpen(false)
+          setSelectedRefundReg(null)
+        }}
+        title="Issue Attendee Order Refund"
+      >
+        {selectedRefundReg && (
+          <form onSubmit={handleConfirmRefund} className="space-y-4">
+            <div className="p-3 bg-subtle border border-line rounded-btn space-y-1.5 text-small">
+              <div className="flex justify-between">
+                <span className="text-text-3">Attendee:</span>
+                <span className="font-semibold text-text">{selectedRefundReg.userName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-text-3">Ticket / Pass:</span>
+                <span className="font-mono text-accent">{selectedRefundReg.ticketCode}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-text-3">Event:</span>
+                <span className="text-text truncate max-w-[220px]">{selectedRefundReg.eventTitle}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-text-3">Original Order ID:</span>
+                <span className="font-mono text-text-2">{selectedRefundReg.orderId || selectedRefundReg.id}</span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-iris/10 border border-iris/25 rounded-btn flex items-center justify-between">
+              <div>
+                <span className="text-caption text-iris block font-medium">Original Paid Amount</span>
+                <span className="text-h3 font-bold text-text">
+                  ₹{((selectedRefundReg.paidAmountCents || 49900) / 100).toFixed(2)}
+                </span>
+              </div>
+              <span className="text-[11px] font-mono px-2 py-1 bg-iris/20 text-iris rounded-full font-medium">
+                Cashfree Gateway
+              </span>
+            </div>
+
+            <Field
+              surface="admin"
+              type="number"
+              label="Refund Amount (INR)"
+              required
+              value={refundAmountInr}
+              onChange={(e) => setRefundAmountInr(Number(e.target.value))}
+            />
+
+            <Field
+              surface="admin"
+              label="Refund Reason / Audit Note"
+              required
+              value={refundReason}
+              onChange={(e) => setRefundReason(e.target.value)}
+              placeholder="e.g. Verified medical emergency / double charge"
+            />
+
+            <div className="text-caption text-text-3 bg-subtle p-2.5 rounded-btn border border-line">
+              Initiating this refund directly hits the payment gateway. The attendee will receive an email confirmation and funds will revert to their original payment instrument in 3–5 banking days.
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-line">
+              <Button
+                surface="admin"
+                variant="secondary"
+                size="sm"
+                type="button"
+                onClick={() => setRefundModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                surface="admin"
+                variant="danger"
+                size="sm"
+                type="submit"
+                loading={refundMutation.isPending}
+                icon={<ArrowsCounterClockwise size={14} weight="bold" />}
+              >
+                Confirm Automated Refund
+              </Button>
+            </div>
+          </form>
+        )}
+      </Modal>
     </div>
   )
 }

@@ -1,10 +1,10 @@
-// Hallmark macrostructure: AdminConsole-EventWizard
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { Trash, FloppyDisk } from '@phosphor-icons/react'
+import { Trash, FloppyDisk, CurrencyInr, ShieldCheck, Sparkle, Info } from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
 import { useClubs } from '@/hooks/useClubs'
 import { useEvent, useCreateEvent, useUpdateEvent, usePublishEvent } from '@/hooks/useEvents'
+import { useFeeQuote } from '@/hooks/usePayments'
 import { Button } from '@/design-system/primitives/Button'
 import { Field } from '@/design-system/primitives/Field'
 import { Select } from '@/design-system/primitives/Select'
@@ -30,10 +30,11 @@ export const AdminEventWizardPage: React.FC = () => {
   const steps = [
     { id: 'details', label: '1. Details' },
     { id: 'media', label: '2. Media' },
-    { id: 'schedule', label: '3. Schedule & People' },
-    { id: 'form', label: '4. Form Builder' },
-    { id: 'settings', label: '5. Quotas & Settings' },
-    { id: 'review', label: '6. Review & Publish' },
+    { id: 'pricing', label: '3. Tickets & Pricing' },
+    { id: 'schedule', label: '4. Schedule & People' },
+    { id: 'form', label: '5. Form Builder' },
+    { id: 'settings', label: '6. Quotas & Settings' },
+    { id: 'review', label: '7. Review & Publish' },
   ]
 
   // Form State
@@ -79,6 +80,14 @@ export const AdminEventWizardPage: React.FC = () => {
   const [contactName, setContactName] = useState(session?.name || 'Priya Ramanathan')
   const [contactEmail, setContactEmail] = useState(session?.email || 'lead@devcraft.org')
 
+  // Admission & Pricing State
+  const [isPaid, setIsPaid] = useState(false)
+  const [ticketPriceInr, setTicketPriceInr] = useState<number>(499)
+  const { data: feeQuote, isLoading: isQuoteLoading } = useFeeQuote(
+    Math.round(ticketPriceInr * 100),
+    { enabled: isPaid && ticketPriceInr > 0 }
+  )
+
   // Update organizerId when session becomes available
   useEffect(() => {
     if (session?.clubId && !isEditing) {
@@ -112,6 +121,8 @@ export const AdminEventWizardPage: React.FC = () => {
       setIsCheckinEnabled(existingEvent.features.checkin)
       setContactName(existingEvent.contact.name)
       setContactEmail(existingEvent.contact.email)
+      setIsPaid(Boolean(existingEvent.features?.paid || (!existingEvent.isFree && existingEvent.price)))
+      if (existingEvent.price) setTicketPriceInr(existingEvent.price)
     }
   }, [existingEvent])
 
@@ -140,8 +151,11 @@ export const AdminEventWizardPage: React.FC = () => {
           team: isTeamEnabled,
           certificate: isCertificateEnabled,
           checkin: isCheckinEnabled,
-          paid: false,
+          paid: isPaid,
         },
+        isFree: !isPaid,
+        price: isPaid ? ticketPriceInr : 0,
+        currency: 'INR',
         teamConfig: isTeamEnabled ? { minSize: minTeamSize, maxSize: maxTeamSize } : undefined,
         status: 'draft' as const,
       }
@@ -188,8 +202,11 @@ export const AdminEventWizardPage: React.FC = () => {
           team: isTeamEnabled,
           certificate: isCertificateEnabled,
           checkin: isCheckinEnabled,
-          paid: false,
+          paid: isPaid,
         },
+        isFree: !isPaid,
+        price: isPaid ? ticketPriceInr : 0,
+        currency: 'INR',
         teamConfig: isTeamEnabled ? { minSize: minTeamSize, maxSize: maxTeamSize } : undefined,
         status: 'published' as const,
       }
@@ -400,12 +417,143 @@ export const AdminEventWizardPage: React.FC = () => {
         </div>
       )}
 
-      {/* STEP 2: SCHEDULE & PEOPLE */}
+      {/* STEP 2: TICKETS & PRICING */}
       {step === 2 && (
+        <div className="p-5 sm:p-6 bg-surface border border-line rounded-panel space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-line">
+            <div>
+              <h3 className="text-h3 font-semibold text-text">3. Admission & Pricing Architecture</h3>
+              <p className="text-small text-text-2 mt-0.5">
+                Configure ticketing mode, admission fee tiers, and inspect real-time automated split fee deductions.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 bg-subtle p-1 border border-line rounded-btn shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsPaid(false)}
+                className={`px-3 py-1 rounded-btn text-caption font-medium transition-colors ${
+                  !isPaid ? 'bg-surface text-text shadow-sm' : 'text-text-3 hover:text-text'
+                }`}
+              >
+                Free Pass
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsPaid(true)}
+                className={`px-3 py-1 rounded-btn text-caption font-medium transition-colors ${
+                  isPaid ? 'bg-accent text-on-accent shadow-sm' : 'text-text-3 hover:text-text'
+                }`}
+              >
+                Paid Ticket
+              </button>
+            </div>
+          </div>
+
+          {!isPaid ? (
+            <div className="p-6 border border-dashed border-line rounded-panel bg-subtle/40 text-center space-y-2">
+              <ShieldCheck size={32} weight="duotone" className="mx-auto text-success" />
+              <h4 className="text-body font-semibold text-text">Complimentary Free Admission</h4>
+              <p className="text-small text-text-2 max-w-md mx-auto">
+                No payment collection or gateway fee applied. Attendees obtain their pass directly via 1-click confirmation or approval workflow.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field
+                  surface="admin"
+                  type="number"
+                  label="Attendee Ticket Price (INR)"
+                  required
+                  value={ticketPriceInr}
+                  onChange={(e) => setTicketPriceInr(Math.max(0, Number(e.target.value)))}
+                />
+                <div className="flex flex-col justify-end pb-1.5">
+                  <div className="text-caption text-text-3 flex items-center gap-1.5">
+                    <Info size={16} className="text-accent shrink-0" />
+                    <span>Currency locked to Indian Rupee (INR) for automated Cashfree Instant Settlements.</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Fee Quote Breakdown Card */}
+              <div className="p-5 border border-line rounded-panel bg-subtle/50 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CurrencyInr size={20} weight="bold" className="text-accent" />
+                    <h4 className="text-body font-semibold text-text">
+                      Automated Split Settlement Calculation
+                    </h4>
+                  </div>
+                  <span className="text-caption font-mono px-2 py-0.5 rounded-full bg-success/15 text-success border border-success/30 font-medium">
+                    Cashfree Gateway Active
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-small">
+                  <div className="p-3 bg-surface border border-line rounded-btn">
+                    <span className="text-caption text-text-3 block mb-1">Base Price</span>
+                    <span className="text-h3 font-bold text-text">
+                      ₹{feeQuote ? feeQuote.base_amount_inr.toFixed(2) : ticketPriceInr.toFixed(2)}
+                    </span>
+                    <span className="text-[11px] text-text-3 block mt-0.5">Attendee Ticket Face Value</span>
+                  </div>
+
+                  <div className="p-3 bg-surface border border-line rounded-btn">
+                    <span className="text-caption text-text-3 block mb-1">
+                      Gateway & Platform Fee
+                    </span>
+                    <span className="text-h3 font-bold text-danger">
+                      -₹{feeQuote ? (feeQuote.platform_fee_inr + feeQuote.tax_amount_inr).toFixed(2) : ((ticketPriceInr * 0.05) + 3.5).toFixed(2)}
+                    </span>
+                    <span className="text-[11px] text-text-3 block mt-0.5">
+                      Fee ({feeQuote?.attendee_fee_rate || 5}%) + GST
+                    </span>
+                  </div>
+
+                  <div className="p-3 bg-iris/10 border border-iris/25 rounded-btn">
+                    <span className="text-caption text-iris block mb-1 font-medium">
+                      Net Organizer Payout / Ticket
+                    </span>
+                    <span className="text-h3 font-bold text-text">
+                      ₹{feeQuote ? feeQuote.organizer_share_inr.toFixed(2) : (ticketPriceInr * 0.95).toFixed(2)}
+                    </span>
+                    <span className="text-[11px] text-iris block mt-0.5">
+                      Direct disbursement to verified bank
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-surface border border-line rounded-btn flex items-center justify-between text-caption text-text-2">
+                  <div className="flex items-center gap-2">
+                    <Sparkle size={16} weight="fill" className="text-accent" />
+                    <span>Total charged to attendee checkout:</span>
+                  </div>
+                  <span className="font-mono font-bold text-text text-body">
+                    ₹{feeQuote ? feeQuote.total_payable_inr.toFixed(2) : ticketPriceInr.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="pt-4 border-t border-line flex justify-between">
+            <Button surface="admin" variant="secondary" size="sm" onClick={() => setStep(1)}>
+              ← Back
+            </Button>
+            <Button surface="admin" size="sm" arrow onClick={() => setStep(3)}>
+              Next Step
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 3: SCHEDULE & PEOPLE */}
+      {step === 3 && (
         <div className="p-5 sm:p-6 bg-surface border border-line rounded-panel space-y-6">
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-h3 font-semibold text-text">3. Schedule Timeline</h3>
+              <h3 className="text-h3 font-semibold text-text">4. Schedule Timeline</h3>
               <Button
                 surface="admin"
                 variant="secondary"
@@ -517,22 +665,6 @@ export const AdminEventWizardPage: React.FC = () => {
           </div>
 
           <div className="pt-4 border-t border-line flex justify-between">
-            <Button surface="admin" variant="secondary" size="sm" onClick={() => setStep(1)}>
-              ← Back
-            </Button>
-            <Button surface="admin" size="sm" arrow onClick={() => setStep(3)}>
-              Next Step
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 3: REGISTRATION FORM BUILDER */}
-      {step === 3 && (
-        <div className="p-5 sm:p-6 bg-surface border border-line rounded-panel space-y-4">
-          <AdminFormBuilder fields={formSchema} onChange={(newFields) => setFormSchema(newFields)} />
-
-          <div className="pt-4 border-t border-line flex justify-between">
             <Button surface="admin" variant="secondary" size="sm" onClick={() => setStep(2)}>
               ← Back
             </Button>
@@ -543,10 +675,26 @@ export const AdminEventWizardPage: React.FC = () => {
         </div>
       )}
 
-      {/* STEP 4: QUOTAS & SETTINGS */}
+      {/* STEP 4: REGISTRATION FORM BUILDER */}
       {step === 4 && (
         <div className="p-5 sm:p-6 bg-surface border border-line rounded-panel space-y-4">
-          <h3 className="text-h3 font-semibold text-text">5. Quotas & Capabilities</h3>
+          <AdminFormBuilder fields={formSchema} onChange={(newFields) => setFormSchema(newFields)} />
+
+          <div className="pt-4 border-t border-line flex justify-between">
+            <Button surface="admin" variant="secondary" size="sm" onClick={() => setStep(3)}>
+              ← Back
+            </Button>
+            <Button surface="admin" size="sm" arrow onClick={() => setStep(5)}>
+              Next Step
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 5: QUOTAS & SETTINGS */}
+      {step === 5 && (
+        <div className="p-5 sm:p-6 bg-surface border border-line rounded-panel space-y-4">
+          <h3 className="text-h3 font-semibold text-text">6. Quotas & Capabilities</h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field
@@ -627,20 +775,20 @@ export const AdminEventWizardPage: React.FC = () => {
           </div>
 
           <div className="pt-4 border-t border-line flex justify-between">
-            <Button surface="admin" variant="secondary" size="sm" onClick={() => setStep(3)}>
+            <Button surface="admin" variant="secondary" size="sm" onClick={() => setStep(4)}>
               ← Back
             </Button>
-            <Button surface="admin" size="sm" arrow onClick={() => setStep(5)}>
+            <Button surface="admin" size="sm" arrow onClick={() => setStep(6)}>
               Next Step
             </Button>
           </div>
         </div>
       )}
 
-      {/* STEP 5: REVIEW & PUBLISH */}
-      {step === 5 && (
+      {/* STEP 6: REVIEW & PUBLISH */}
+      {step === 6 && (
         <div className="p-5 sm:p-6 bg-surface border border-line rounded-panel space-y-4">
-          <h3 className="text-h3 font-semibold text-text">6. Review & Final Publication</h3>
+          <h3 className="text-h3 font-semibold text-text">7. Review & Final Publication</h3>
 
           <div className="border border-line rounded-panel p-4 space-y-2 text-small bg-subtle">
             <p><strong>Title:</strong> {title}</p>
@@ -648,6 +796,7 @@ export const AdminEventWizardPage: React.FC = () => {
             <p><strong>Format:</strong> {category}</p>
             <p><strong>Venue:</strong> {venueName}</p>
             <p><strong>Dates:</strong> {startsAt} to {endsAt}</p>
+            <p><strong>Admission:</strong> {isPaid ? `Paid Pass (₹${ticketPriceInr} INR)` : 'Free Public Pass'}</p>
             <p><strong>Capacity:</strong> {capacity} attendees ({waitlistEnabled ? 'Waitlist on' : 'Waitlist off'})</p>
             <p><strong>Form Questions:</strong> {formSchema.length} custom fields configured</p>
           </div>
@@ -657,7 +806,7 @@ export const AdminEventWizardPage: React.FC = () => {
           </div>
 
           <div className="pt-4 border-t border-line flex justify-between">
-            <Button surface="admin" variant="secondary" size="sm" onClick={() => setStep(4)}>
+            <Button surface="admin" variant="secondary" size="sm" onClick={() => setStep(5)}>
               ← Back
             </Button>
 
