@@ -13,9 +13,10 @@ export interface VerticalPosterCardProps {
 
 /**
  * VerticalPosterCard
- * Uncluttered, light-mode-first premiere card featuring a full-on image poster,
- * clean title, and a subtle "Click for info →" affordance redirecting to the event detail page.
- * Strictly 0 blur, 0 glassmorphism, 100% solid surfaces.
+ * Hallmark & Denim Dept Standard:
+ * - Solitary 14px outer radius (Gate 22).
+ * - Full 3:4 portrait image frame with zero blur and 100% solid surfaces.
+ * - Clean metadata with "Click for info →" affordance.
  */
 export const VerticalPosterCard: React.FC<VerticalPosterCardProps> = ({
   event,
@@ -26,16 +27,17 @@ export const VerticalPosterCard: React.FC<VerticalPosterCardProps> = ({
     <article
       data-testid="vertical-poster-card"
       className={cn(
-        'group relative flex flex-col w-full rounded-[22px] border border-line bg-card p-3 shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-1',
+        'group relative flex flex-col w-full rounded-[14px] border border-line bg-card overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-1',
         className
       )}
     >
       <EventLink
         event={event}
-        className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-[16px]"
+        aria-label={`View details for ${event.title}`}
+        className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
-        {/* 1. Full-on Image Poster Frame (Zero blur, 100% solid, uninterrupted artwork) */}
-        <div className="relative aspect-[3/4] sm:aspect-[2/3] w-full overflow-hidden rounded-[16px] bg-surface-subtle border border-line/60">
+        {/* 1. Full-on Image Poster Frame (3:4 ratio, 100% solid, uninterrupted artwork) */}
+        <div className="relative aspect-[3/4] w-full overflow-hidden bg-surface-subtle">
           {event.poster ? (
             <img
               src={event.poster}
@@ -49,17 +51,26 @@ export const VerticalPosterCard: React.FC<VerticalPosterCardProps> = ({
               title={event.title}
               category={event.category}
               clubId={event.organizerId}
+              aspectRatio="poster"
               className="h-full w-full"
             />
           )}
+
+          {/* Denim Dept Rectangular Category Tag */}
+          <span className="pointer-events-none absolute left-3 top-3 z-10 rounded-[4px] border border-black bg-white px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-black shadow-xs">
+            {event.category || 'Event'}
+          </span>
         </div>
 
-        {/* 2. Clean Solid Info Dock (Light-mode first: crisp dark text on solid card) */}
-        <div className="pt-3 pb-0.5 px-0.5 flex flex-col">
-          <h3 className="line-clamp-1 text-base font-bold text-ink group-hover:text-accent transition-colors tracking-tight">
+        {/* 2. Clean Solid Info Dock */}
+        <div className="p-3.5 flex flex-col">
+          <div className="text-[11px] font-medium tracking-[0.08em] uppercase text-ink-muted truncate mb-1">
+            {event.club?.name || event.organizerName || 'Organizer'}
+          </div>
+          <h3 className="line-clamp-1 text-base font-bold text-ink group-hover:text-accent transition-colors tracking-tight font-display">
             {event.title}
           </h3>
-          <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-accent">
+          <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-accent">
             <span>Click for info</span>
             <ArrowRight size={13} weight="bold" className="transition-transform duration-200 group-hover:translate-x-1" />
           </div>
@@ -68,4 +79,3 @@ export const VerticalPosterCard: React.FC<VerticalPosterCardProps> = ({
     </article>
   )
 }
-

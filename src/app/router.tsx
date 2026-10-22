@@ -15,9 +15,7 @@ const LoadingFallback = () => (
 )
 
 import { HomePage } from '@/features/events/HomePage'
-const ExplorePage = lazy(() =>
-  import('@/features/events/ExplorePage').then((m) => ({ default: m.ExplorePage }))
-)
+import { ExplorePage } from '@/features/events/ExplorePage'
 const EventDetailPage = lazy(() =>
   import('@/features/events/EventDetailPage').then((m) => ({ default: m.EventDetailPage }))
 )

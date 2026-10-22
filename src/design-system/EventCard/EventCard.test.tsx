@@ -58,7 +58,7 @@ describe('EventCard Component', () => {
     expect(screen.getByTestId('event-card-stacked')).toBeInTheDocument()
     expect(screen.getByText('ALGORITHMIC ENDURANCE SPRINT')).toBeInTheDocument()
     expect(screen.getByText('CP Club')).toBeInTheDocument()
-    expect(screen.getByText('Filling fast')).toBeInTheDocument()
+    expect(screen.getByText('3 left')).toBeInTheDocument()
     expect(screen.getByText('Free')).toBeInTheDocument()
   })
 

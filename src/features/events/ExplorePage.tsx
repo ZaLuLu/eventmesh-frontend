@@ -570,8 +570,19 @@ export const ExplorePage: React.FC = () => {
               {[...Array(6)].map((_, i) => (
                 <div
                   key={i}
-                  className="aspect-[16/11] w-full rounded-[24px] border border-line bg-surface-subtle animate-pulse p-4"
-                />
+                  className="flex flex-col w-full rounded-[14px] border border-line bg-card overflow-hidden animate-pulse"
+                >
+                  <div className="aspect-[3/4] w-full bg-surface-subtle" />
+                  <div className="p-4 space-y-3">
+                    <div className="h-3 w-24 bg-surface-subtle rounded-[4px]" />
+                    <div className="h-5 w-4/5 bg-surface-subtle rounded-[4px]" />
+                    <div className="h-4 w-1/2 bg-surface-subtle rounded-[4px]" />
+                    <div className="pt-2 flex justify-between border-t border-line/40">
+                      <div className="h-3 w-20 bg-surface-subtle rounded-[4px]" />
+                      <div className="h-3 w-12 bg-surface-subtle rounded-[4px]" />
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           )}

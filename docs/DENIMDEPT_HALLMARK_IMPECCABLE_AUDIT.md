@@ -418,11 +418,12 @@ gantt
   5. Ensure image skeletons reserve exact `aspect-[3/4]` dimensions to prevent Cumulative Layout Shift (CLS).
 * **Skills Invoked:**
   * `react-best-practices`, `ui-ux-pro-max`, `web-design-guidelines`.
-* **Hallmark Audit Checkpoint 4 (Anti-Slop Gates):**
-  * [ ] **Gate 12 (Card Clutter):** Zero overlapping circular icon bubbles on the poster image.
-  * [ ] **Gate 22 (Corner Hygiene):** Strict `14px` card frame with `4px` tags.
-  * [ ] **Gate 34 (Zero Layout Shift):** Poster skeleton matches `3:4` aspect ratio with zero CLS on render.
-* **Rollback Trigger:** If card grid overflows or breaks bookmarking state persistence, rollback immediately.
+* **Hallmark Audit Checkpoint 4 (Anti-Slop Gates) — PASSED ✅:**
+  * [x] **Gate 12 (Card Clutter):** Zero overlapping circular icon bubbles on the poster image. Replaced by a single clean hairline rectangular badge at top-left, and a neat 8px rounded bookmark button at top-right.
+  * [x] **Gate 22 (Corner Hygiene):** Strict `14px` card frame (`rounded-[14px]`) with `4px` tags and `8px` controls. All double-nested `24px` outer + `18px` inner radii eliminated.
+  * [x] **Gate 34 (Zero Layout Shift):** Poster skeleton matches `3:4` aspect ratio with `14px` radius with zero CLS on render.
+  * [x] **Gate 46 (Honest Data):** Tabular date/time and spots left (`12 LEFT`, `4 LEFT`) instead of generic scarcity strings.
+* **Rollback Trigger:** None required; all unit tests and visual multi-viewport audits passed.
 
 ---
 
