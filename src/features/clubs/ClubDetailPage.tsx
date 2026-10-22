@@ -363,7 +363,7 @@ export const ClubDetailPage: React.FC = () => {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6 lg:gap-8">
                 {upcomingEvents.map((evt) => (
                   <EventTicketCard key={evt.id} event={evt} />
                 ))}
@@ -380,7 +380,7 @@ export const ClubDetailPage: React.FC = () => {
                 </h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 opacity-80">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6 lg:gap-8 opacity-80">
                 {pastEvents.map((evt) => (
                   <EventTicketCard key={evt.id} event={evt} />
                 ))}

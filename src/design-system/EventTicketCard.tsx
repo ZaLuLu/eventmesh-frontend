@@ -17,10 +17,11 @@ export interface EventTicketCardProps {
 /**
  * EventTicketCard
  * Implements Denim Dept & Hallmark Anti-Slop Card Architecture (Phase 4):
- * - Solitary 14px outer radius frame (Gate 22: eliminated nested 24px/18px clunkiness).
+ * - Solitary 14px outer radius frame (8-10px on compact mobile).
  * - Authentic 3:4 vertical portrait ratio (high content-to-chrome ratio).
  * - Rectangular 1px hairline bordered badge with 4px radius (Denim Dept signature).
  * - Clean non-circular bookmark trigger (8px control radius).
+ * - Responsive 2-column mobile adaptation (Hallmark Gate 18: Discovery Velocity).
  * - Structured metadata hierarchy: Club Tracker -> Bold Display Title -> Tabular Date/Price Dock.
  */
 export const EventTicketCard: React.FC<EventTicketCardProps> = ({
@@ -38,7 +39,7 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
     <article
       data-testid="event-ticket-card"
       className={cn(
-        'group flex min-w-0 flex-col rounded-[14px] border border-line bg-card overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-1',
+        'group flex min-w-0 flex-col rounded-[10px] sm:rounded-[14px] border border-line bg-card overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-1',
         className
       )}
     >
@@ -69,7 +70,7 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
         </EventLink>
 
         {/* Denim Dept Signature Rectangular Tag (1px solid border, 4px radius, pure contrast) */}
-        <span className="pointer-events-none absolute left-3 top-3 z-10 rounded-[4px] border border-black bg-white px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-black shadow-xs">
+        <span className="pointer-events-none absolute left-2 top-2 sm:left-3 sm:top-3 z-10 rounded-[3px] sm:rounded-[4px] border border-black bg-white px-1.5 sm:px-2 py-0.5 font-mono text-[8.5px] sm:text-[10px] font-bold uppercase tracking-wider text-black shadow-xs">
           {event.category || 'Event'}
         </span>
 
@@ -83,54 +84,60 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
               onBookmark(event.id)
             }}
             aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark event'}
-            className="absolute right-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-[8px] border border-black/15 bg-white text-zinc-900 hover:text-accent shadow-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            className="absolute right-2 top-2 sm:right-3 sm:top-3 z-10 grid h-6 w-6 sm:h-8 sm:w-8 place-items-center rounded-[6px] sm:rounded-[8px] border border-black/15 bg-white text-zinc-900 hover:text-accent shadow-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
-            <BookmarkSimple size={16} weight={isBookmarked ? 'fill' : 'regular'} />
+            <BookmarkSimple size={14} className="sm:hidden" weight={isBookmarked ? 'fill' : 'regular'} />
+            <BookmarkSimple size={16} className="hidden sm:block" weight={isBookmarked ? 'fill' : 'regular'} />
           </button>
         )}
       </div>
 
       {/* 2. Typographic Core & Editorial Metadata Dock */}
-      <div className="flex flex-1 flex-col p-3.5 sm:p-4 space-y-2.5">
+      <div className="flex flex-1 flex-col p-2.5 sm:p-4 space-y-1.5 sm:space-y-2.5">
         {/* Host / Organizer Track */}
-        <div className="flex min-w-0 items-center justify-between gap-1.5 text-[11px] font-medium tracking-[0.08em] uppercase text-ink-muted">
-          <div className="flex min-w-0 items-center gap-1.5 truncate">
+        <div className="flex min-w-0 items-center justify-between gap-1 text-[9px] sm:text-[11px] font-medium tracking-[0.05em] sm:tracking-[0.08em] uppercase text-ink-muted">
+          <div className="flex min-w-0 items-center gap-1 truncate">
             <span className="truncate">{host}</span>
             {isVerified && (
-              <CheckCircle size={13} weight="fill" className="shrink-0 text-emerald-500" aria-label="Verified organizer" />
+              <CheckCircle size={11} weight="fill" className="shrink-0 text-emerald-500 sm:hidden" aria-label="Verified organizer" />
+            )}
+            {isVerified && (
+              <CheckCircle size={13} weight="fill" className="shrink-0 text-emerald-500 hidden sm:block" aria-label="Verified organizer" />
             )}
           </div>
           {event.kind === 'imported' && (
-            <span className="shrink-0 text-[10px] font-mono text-ink-muted">via {event.provider}</span>
+            <span className="shrink-0 text-[8.5px] sm:text-[10px] font-mono text-ink-muted">via {event.provider}</span>
           )}
         </div>
 
         {/* Event Title */}
-        <h3 className="line-clamp-2 text-base font-bold leading-snug text-ink font-display group-hover:text-accent transition-colors">
+        <h3 className="line-clamp-2 text-xs sm:text-base font-bold leading-tight sm:leading-snug text-ink font-display group-hover:text-accent transition-colors">
           <EventLink event={event} className="hover:text-accent focus:outline-none">
             {event.title}
           </EventLink>
         </h3>
 
-        {/* Optional Subtitle or Summary */}
+        {/* Optional Subtitle or Summary (Desktop & Tablet) */}
         {(event.subtitle || event.description) && (
-          <p className="line-clamp-2 text-xs text-ink-soft leading-relaxed">
+          <p className="hidden sm:line-clamp-2 text-xs text-ink-soft leading-relaxed">
             {event.subtitle || event.description}
           </p>
         )}
 
         {/* Tabular Bottom Utility Dock */}
-        <div className="mt-auto border-t border-line/60 pt-3 space-y-2.5">
-          <div className="flex items-end justify-between gap-2 font-mono text-xs">
+        <div className="mt-auto border-t border-line/60 pt-2 sm:pt-3 space-y-1.5 sm:space-y-2.5">
+          <div className="flex items-center justify-between gap-1 font-mono text-xs">
             {/* Date & Location */}
-            <div className="min-w-0 space-y-1 text-[11px] text-ink-soft">
-              <div className="flex items-center gap-1.5 text-ink font-medium">
-                <CalendarBlank size={13} className="shrink-0 text-accent" aria-hidden="true" />
-                <span className="whitespace-nowrap">{formatDate(event.startsAt)}</span>
-                <span className="text-ink-muted">·</span>
-                <span className="whitespace-nowrap text-ink-muted font-normal">{formatTime(event.startsAt)}</span>
+            <div className="min-w-0 space-y-0.5 sm:space-y-1 text-[10px] sm:text-[11px] text-ink-soft">
+              <div className="flex items-center gap-1 sm:gap-1.5 text-ink font-medium">
+                <CalendarBlank size={11} className="shrink-0 text-accent sm:hidden" aria-hidden="true" />
+                <CalendarBlank size={13} className="shrink-0 text-accent hidden sm:block" aria-hidden="true" />
+                <span className="whitespace-nowrap sm:hidden">{formatDate(event.startsAt, 'compact')}</span>
+                <span className="hidden sm:inline whitespace-nowrap">{formatDate(event.startsAt)}</span>
+                <span className="hidden sm:inline text-ink-muted">·</span>
+                <span className="hidden sm:inline whitespace-nowrap text-ink-muted font-normal">{formatTime(event.startsAt)}</span>
               </div>
-              <p className="flex items-center gap-1.5 truncate text-ink-muted text-[10px]">
+              <p className="hidden sm:flex items-center gap-1.5 truncate text-ink-muted text-[10px]">
                 <MapPin size={12} className="shrink-0" aria-hidden="true" />
                 <span className="truncate">{event.venue?.name || (event.isOnline ? 'Online' : 'Venue TBA')}</span>
               </p>
@@ -139,16 +146,16 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
             {/* Price / Pass Status */}
             <div className="shrink-0 text-right">
               {soldOut ? (
-                <span className="inline-block rounded-[4px] border border-red-500/30 bg-red-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400">
+                <span className="inline-block rounded-[3px] sm:rounded-[4px] border border-red-500/30 bg-red-500/10 px-1 sm:px-2 py-0.5 font-mono text-[8.5px] sm:text-[10px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400">
                   Sold Out
                 </span>
-              ) : event.seatsLeft != null && event.seatsLeft <= 14 ? (
-                <div className="text-right">
-                  <span className="font-mono text-xs font-bold text-ink">{price}</span>
-                  <p className="font-mono text-[9px] font-bold uppercase text-accent tracking-wider">{event.seatsLeft} left</p>
-                </div>
               ) : (
-                <span className="font-mono text-xs font-bold text-ink">{price}</span>
+                <div className="text-right leading-none">
+                  <span className="font-mono text-[11px] sm:text-xs font-bold text-ink">{price}</span>
+                  {event.seatsLeft != null && event.seatsLeft <= 14 && (
+                    <p className="font-mono text-[8px] sm:text-[9px] font-bold uppercase text-accent tracking-wider pt-0.5">{event.seatsLeft} left</p>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -157,16 +164,17 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
           <div className="flex items-center justify-between pt-1 border-t border-line/30">
             <EventLink
               event={event}
-              className="text-[11px] font-mono font-semibold text-accent hover:text-accent-hover transition-colors inline-flex items-center gap-1 group-hover:translate-x-0.5"
+              className="text-[10px] sm:text-[11px] font-mono font-semibold text-accent hover:text-accent-hover transition-colors inline-flex items-center gap-0.5 sm:gap-1 group-hover:translate-x-0.5"
             >
-              <span>{event.kind === 'imported' ? 'Inspect Details' : 'View Pass'}</span>
-              <ArrowRight size={11} weight="bold" />
+              <span>{event.kind === 'imported' ? 'Inspect' : 'View Pass'}</span>
+              <ArrowRight size={10} className="sm:hidden" weight="bold" />
+              <ArrowRight size={11} className="hidden sm:block" weight="bold" />
             </EventLink>
 
             <EventLink
               event={event}
               aria-label={`Get pass for ${event.title}`}
-              className="inline-flex items-center justify-center rounded-[8px] bg-accent hover:bg-accent-hover text-white px-3 py-1 text-xs font-mono font-semibold transition-all shadow-xs hover:shadow-sm active:scale-95"
+              className="hidden sm:inline-flex items-center justify-center rounded-[8px] bg-accent hover:bg-accent-hover text-white px-3 py-1 text-xs font-mono font-semibold transition-all shadow-xs hover:shadow-sm active:scale-95"
             >
               {event.kind === 'imported' ? 'Inspect ↗' : 'Get Pass →'}
             </EventLink>

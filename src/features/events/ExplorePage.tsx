@@ -564,22 +564,22 @@ export const ExplorePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Loading Skeleton */}
+          {/* Loading Skeleton (2-columns on mobile, 3-columns on desktop) */}
           {isLoading && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 lg:gap-5">
               {[...Array(6)].map((_, i) => (
                 <div
                   key={i}
-                  className="flex flex-col w-full rounded-[14px] border border-line bg-card overflow-hidden animate-pulse"
+                  className="flex flex-col w-full rounded-[10px] sm:rounded-[14px] border border-line bg-card overflow-hidden animate-pulse"
                 >
                   <div className="aspect-[3/4] w-full bg-surface-subtle" />
-                  <div className="p-4 space-y-3">
-                    <div className="h-3 w-24 bg-surface-subtle rounded-[4px]" />
-                    <div className="h-5 w-4/5 bg-surface-subtle rounded-[4px]" />
-                    <div className="h-4 w-1/2 bg-surface-subtle rounded-[4px]" />
-                    <div className="pt-2 flex justify-between border-t border-line/40">
-                      <div className="h-3 w-20 bg-surface-subtle rounded-[4px]" />
-                      <div className="h-3 w-12 bg-surface-subtle rounded-[4px]" />
+                  <div className="p-2.5 sm:p-4 space-y-2 sm:space-y-3">
+                    <div className="h-2.5 sm:h-3 w-16 sm:w-24 bg-surface-subtle rounded-[3px] sm:rounded-[4px]" />
+                    <div className="h-3.5 sm:h-5 w-4/5 bg-surface-subtle rounded-[3px] sm:rounded-[4px]" />
+                    <div className="h-3 sm:h-4 w-1/2 bg-surface-subtle rounded-[3px] sm:rounded-[4px]" />
+                    <div className="pt-1.5 sm:pt-2 flex justify-between border-t border-line/40">
+                      <div className="h-2.5 sm:h-3 w-14 sm:w-20 bg-surface-subtle rounded-[3px] sm:rounded-[4px]" />
+                      <div className="h-2.5 sm:h-3 w-10 sm:w-12 bg-surface-subtle rounded-[3px] sm:rounded-[4px]" />
                     </div>
                   </div>
                 </div>
@@ -624,9 +624,9 @@ export const ExplorePage: React.FC = () => {
             </div>
           )}
 
-          {/* Events Catalog Grid (3-Columns on Desktop) */}
+          {/* Events Catalog Grid (2-Columns on Mobile, 3-Columns on Desktop) */}
           {!isLoading && !isError && events.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 lg:gap-5">
               {events.map((event) => (
                 <EventTicketCard
                   key={event.id}
