@@ -36,7 +36,7 @@ export const PublicShell: React.FC = () => {
       {/* Modern-Minimal Floating Header */}
       <PublicHeader onSearchOpen={() => setIsSearchOpen(true)} />
 
-      <main className="flex-1 pt-16 pb-16 lg:pb-0">
+      <main className="flex-1 pt-14 pb-16 lg:pb-0">
         <ErrorBoundary>
           <Outlet />
         </ErrorBoundary>

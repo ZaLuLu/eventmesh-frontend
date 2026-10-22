@@ -158,15 +158,26 @@ const iconRegistry: Record<string, React.ComponentType<any>> = {
 }
 
 /**
+ * Standard Icon Sizes Scale (Denim Dept & Hallmark Standard)
+ */
+export const ICON_SIZES = {
+  xs: 14, // 0.875rem - Inline metadata & micro-tags
+  sm: 20, // 1.25rem  - Buttons, chips, search docks
+  md: 22, // 1.375rem - Navbar utilities & drawer controls
+  lg: 24, // 1.5rem   - Empty states & modal headers
+} as const
+
+/**
  * Single Unified Icon Wrapper for EventMesh.
- * Uses Phosphor Icons with high-energy "bold" or "duotone" weight by default.
+ * Adheres to Denim Dept 1.5px geometric stroke line standard with strict accessible ARIA attributes.
  */
 export const Icon: React.FC<IconProps> = ({
   name = 'Sparkle',
-  size = 20,
-  weight = 'bold',
+  size = ICON_SIZES.sm,
+  weight = 'regular',
   color = 'currentColor',
   className = '',
+  'aria-label': ariaLabel,
   ...rest
 }) => {
   const resolvedName = name.charAt(0).toUpperCase() + name.slice(1)
@@ -178,6 +189,8 @@ export const Icon: React.FC<IconProps> = ({
       weight={weight}
       color={color}
       className={className}
+      aria-hidden={!ariaLabel}
+      aria-label={ariaLabel}
       {...rest}
     />
   )

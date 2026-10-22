@@ -65,6 +65,33 @@
   --club: var(--color-accent);
   --admin-accent: var(--color-accent);
   --color-paper: var(--color-canvas);
+
+  /* 3-Tier Canonical Border Radii (Hallmark Gate 22 / Denim Dept Standard) */
+  --radius-control: 8px;     /* Inputs, dropdowns, popover triggers, small controls */
+  --radius-small: 8px;       /* Normalized small radius */
+  --radius-card: 14px;       /* Cards, drawers, dialogs, buttons, poster containers */
+  --radius-panel: 14px;      /* Normalized panel radius (replacing rogue 24px) */
+  --radius-poster: 14px;     /* Normalized poster radius (replacing rogue 18px) */
+  --radius-pill: 9999px;     /* Status badges and pill chips only */
+
+  /* Typography Tracking & Pacing Tokens (Denim Dept DNA) */
+  --tracking-kicker: 0.25em;     /* Uppercase section tags & category kickers */
+  --tracking-nav: 0.15em;        /* Brand wordmarks and nav links */
+  --tracking-subheading: 0.08em; /* Subheadings and club host tags */
+  --tracking-heading: -0.02em;   /* Clean display titles */
+
+  /* Perceptual Spring Timing Tokens (Denim Dept Physics) */
+  --spring-snappy: linear(0, 0.0234, 0.0805 4.48%, 0.4865 15.68%, 0.6211 20.16%, 0.7696 26.88%, 0.8064 29.12%, 0.8646, 0.9063, 0.9358, 0.9563 47.04%, 0.9757, 0.9867 60.48%, 0.9941 69.44%, 0.9979 80.64%, 0.9996 98.56%);
+  --spring-snappy-duration: 0.2988s;
+  --spring-gentle: linear(0, 0.0033 0.81%, 0.027 2.42%, 0.0916 4.84%, 0.4745 15.32%, 0.6422 20.97%, 0.7175, 0.7789, 0.8283 30.64%, 0.876, 0.9111 38.71%, 0.941, 0.9611 48.39%, 0.9707, 0.978 54.84%, 0.9885 62.1%, 0.9949 70.97%, 0.9982 82.26%, 0.9997 100%);
+  --spring-gentle-duration: 0.4980s;
+
+  /* Iconography Tokens (Denim Dept Standard) */
+  --icon-stroke-width: 1.5px;
+  --icon-size-xs: 0.85rem;   /* 13.6px - metadata inline */
+  --icon-size-sm: 1.25rem;   /* 20px - buttons, chips, search */
+  --icon-size-md: 1.375rem;  /* 22px - navbar utilities */
+  --icon-size-lg: 1.5rem;    /* 24px - modal headers & empty states */
 }
 
 .dark, .admin-scope, [data-theme="dark"], [data-theme="admin"] {
@@ -117,6 +144,30 @@ h1, h2, h3, h4, h5, h6, .font-display {
 .font-mono {
   font-family: var(--font-mono);
   font-feature-settings: 'tnum' 1;
+}
+
+/* Hallmark & Denim Dept Tracking Utilities */
+.tracking-kicker {
+  letter-spacing: var(--tracking-kicker);
+}
+
+.tracking-nav {
+  letter-spacing: var(--tracking-nav);
+}
+
+.tracking-subheading {
+  letter-spacing: var(--tracking-subheading);
+}
+
+/* Denim Dept Spring Physics Timing Class */
+.transition-spring {
+  transition-timing-function: var(--spring-snappy);
+  transition-duration: var(--spring-snappy-duration);
+}
+
+.transition-spring-gentle {
+  transition-timing-function: var(--spring-gentle);
+  transition-duration: var(--spring-gentle-duration);
 }
 
 /* Focus Visible: 2px Iris ring with 2px offset (Gate 39) */

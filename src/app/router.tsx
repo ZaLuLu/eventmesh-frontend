@@ -14,10 +14,7 @@ const LoadingFallback = () => (
   </div>
 )
 
-// Public Pages (Lazy)
-const HomePage = lazy(() =>
-  import('@/features/events/HomePage').then((m) => ({ default: m.HomePage }))
-)
+import { HomePage } from '@/features/events/HomePage'
 const ExplorePage = lazy(() =>
   import('@/features/events/ExplorePage').then((m) => ({ default: m.ExplorePage }))
 )

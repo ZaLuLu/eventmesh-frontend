@@ -122,8 +122,22 @@ export default {
       },
       borderRadius: {
         sm: 'var(--radius-small)', DEFAULT: 'var(--radius-control)', md: 'var(--radius-control)',
-        lg: 'var(--radius-card)', ticket: 'var(--radius-card)', poster: 'var(--radius-poster, 18px)',
-        input: 'var(--radius-control)', panel: 'var(--radius-panel, 24px)', full: '9999px', pill: '9999px',
+        lg: 'var(--radius-card)', ticket: 'var(--radius-card)', poster: 'var(--radius-poster, 14px)',
+        input: 'var(--radius-control)', panel: 'var(--radius-panel, 14px)', full: '9999px', pill: '9999px',
+      },
+      letterSpacing: {
+        kicker: 'var(--tracking-kicker, 0.25em)',
+        nav: 'var(--tracking-nav, 0.15em)',
+        subheading: 'var(--tracking-subheading, 0.08em)',
+        heading: 'var(--tracking-heading, -0.02em)',
+      },
+      transitionTimingFunction: {
+        spring: 'var(--spring-snappy)',
+        'spring-gentle': 'var(--spring-gentle)',
+      },
+      transitionDuration: {
+        spring: 'var(--spring-snappy-duration, 0.2988s)',
+        'spring-gentle': 'var(--spring-gentle-duration, 0.4980s)',
       },
       maxWidth: {
         container: '1280px',

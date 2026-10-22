@@ -7,6 +7,7 @@ import { CinematicHeroStage } from './components/CinematicHeroStage'
 import { VerticalPosterCard } from '@/design-system/VerticalPosterCard'
 import { SectionHeader } from '@/design-system/SectionHeader'
 import { ArrowRight, Sparkle } from '@/design-system/Icon'
+import { ActiveThemeTrio } from './components/ActiveThemeTrio'
 import { EventCarousel3D, type EventCarouselItem } from '@/design-system/3d'
 
 export const HomePage: React.FC = () => {
@@ -74,7 +75,10 @@ export const HomePage: React.FC = () => {
       {/* 1. Flagship Featured Cinematic Hero Stage */}
       <CinematicHeroStage events={heroSlideEvents} />
 
-      {/* 2. Curated Premieres Showcase (Strictly 4 Paid Ticketed Events in Vertical Poster Ratio) */}
+      {/* 2. Active Theme Trio (3 Featured Category Cards - Denim Dept Spotlight DNA) */}
+      <ActiveThemeTrio />
+
+      {/* 3. Curated Premieres Showcase (Strictly 4 Paid Ticketed Events in Vertical Poster Ratio) */}
       <section className="relative w-full py-12 sm:py-16 border-b border-line bg-paper">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <SectionHeader
