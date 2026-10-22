@@ -43,6 +43,12 @@ import {
   ProposalCreate,
   ProposalRead,
   ProposalReview,
+  OrganizationBalance,
+  WithdrawalRequest,
+  WithdrawalRequestCreate,
+  OrganizerEarningsSummary,
+  PlatformOverview,
+  InstitutionCandidate,
 } from '../contracts'
 
 export interface EventsFilter {
@@ -200,6 +206,10 @@ export interface PayoutsApi {
   getPayoutAccount(orgSlug: string): Promise<PayoutAccount | null>
   registerPayoutAccount(orgSlug: string, payload: PayoutAccountCreate): Promise<PayoutAccount>
   listSettlements(orgSlug: string): Promise<SettlementRecord[]>
+  getPayoutBalance?(orgSlug: string): Promise<OrganizationBalance>
+  listWithdrawals?(orgSlug: string): Promise<WithdrawalRequest[]>
+  requestWithdrawal?(orgSlug: string, payload: WithdrawalRequestCreate): Promise<WithdrawalRequest>
+  getEarningsSummary?(orgSlug: string): Promise<OrganizerEarningsSummary>
 }
 
 export interface ClubsApi {
@@ -305,5 +315,11 @@ export interface OrganizationsApi {
   listMyProposals?(): Promise<ProposalRead[]>
   listOrgProposals?(slug: string): Promise<ProposalRead[]>
   reviewProposal?(proposalId: string, review: ProposalReview): Promise<ProposalRead>
+
+  // Platform SuperAdmin
+  getPlatformOverview?(): Promise<PlatformOverview>
+  getInstitutionCandidates?(): Promise<InstitutionCandidate[]>
+  verifyInstitution?(slug: string, domains: string[]): Promise<InstitutionCandidate>
+  rejectInstitution?(slug: string, reason?: string): Promise<InstitutionCandidate>
 }
 

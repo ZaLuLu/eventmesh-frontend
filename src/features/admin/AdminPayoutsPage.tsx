@@ -10,14 +10,25 @@ import {
   CurrencyInr,
   Sparkle,
   ArrowsClockwise,
+  ArrowDownRight,
+  Wallet,
+  Receipt,
 } from '@phosphor-icons/react'
-import { api, PayoutAccount, SettlementRecord, PayoutAccountCreate } from '@/api'
+import {
+  api,
+  PayoutAccount,
+  SettlementRecord,
+  PayoutAccountCreate,
+  OrganizationBalance,
+  WithdrawalRequest,
+} from '@/api'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { usePermission } from '@/hooks/usePermission'
 import { Button } from '@/design-system/primitives/Button'
 import { Field } from '@/design-system/primitives/Field'
 import { Badge } from '@/design-system/primitives/Badge'
+import { Modal } from '@/design-system/primitives/Modal'
 import { useToast } from '@/design-system/primitives/Toast'
 import { formatCurrency, formatDate } from '@/lib/format'
 
@@ -39,6 +50,43 @@ export const AdminPayoutsPage: React.FC = () => {
   const [businessType, setBusinessType] = useState<'INDIVIDUAL' | 'PROPRIETORSHIP' | 'PRIVATE_LIMITED'>('INDIVIDUAL')
   const [formError, setFormError] = useState<string | null>(null)
 
+  // Withdrawal Modal State
+  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false)
+  const [withdrawAmount, setWithdrawAmount] = useState('')
+  const [withdrawNotes, setWithdrawNotes] = useState('')
+  const [withdrawError, setWithdrawError] = useState<string | null>(null)
+  const [ledgerTab, setLedgerTab] = useState<'withdrawals' | 'settlements'>('withdrawals')
+
+  // Query Payout Balance Ledger
+  const {
+    data: balance,
+    isLoading: isBalanceLoading,
+    refetch: refetchBalance,
+  } = useQuery<OrganizationBalance | null>({
+    queryKey: ['payout-balance', orgSlug],
+    queryFn: async () => {
+      if (api.payouts.getPayoutBalance) {
+        return api.payouts.getPayoutBalance(orgSlug)
+      }
+      return null
+    },
+  })
+
+  // Query Withdrawal Requests Ledger
+  const {
+    data: withdrawals = [],
+    isLoading: isWithdrawalsLoading,
+    refetch: refetchWithdrawals,
+  } = useQuery<WithdrawalRequest[]>({
+    queryKey: ['withdrawals', orgSlug],
+    queryFn: async () => {
+      if (api.payouts.listWithdrawals) {
+        return api.payouts.listWithdrawals(orgSlug)
+      }
+      return []
+    },
+  })
+
   // Query Payout Account
   const {
     data: account,
@@ -57,6 +105,35 @@ export const AdminPayoutsPage: React.FC = () => {
   } = useQuery<SettlementRecord[]>({
     queryKey: ['settlements', orgSlug],
     queryFn: () => api.payouts.listSettlements(orgSlug),
+  })
+
+  // Request Withdrawal Mutation
+  const withdrawMutation = useMutation({
+    mutationFn: async () => {
+      if (!api.payouts.requestWithdrawal) throw new Error('Withdrawal API not available')
+      const amt = Number(withdrawAmount)
+      if (isNaN(amt) || amt <= 0) throw new Error('Please enter a valid withdrawal amount.')
+      return api.payouts.requestWithdrawal(orgSlug, {
+        amount: amt,
+        notes: withdrawNotes.trim() || undefined,
+      })
+    },
+    onSuccess: (newReq) => {
+      queryClient.invalidateQueries({ queryKey: ['payout-balance', orgSlug] })
+      queryClient.invalidateQueries({ queryKey: ['withdrawals', orgSlug] })
+      setIsWithdrawOpen(false)
+      setWithdrawAmount('')
+      setWithdrawNotes('')
+      setWithdrawError(null)
+      toast({
+        title: 'Withdrawal Requested',
+        message: `Request for ₹${newReq.amount.toLocaleString('en-IN')} submitted. Funds will transfer to ${account?.bank_name || 'your bank'}.`,
+        type: 'success',
+      })
+    },
+    onError: (err: any) => {
+      setWithdrawError(err.message || err.detail || 'Failed to submit withdrawal request.')
+    },
   })
 
   // Register / Update Payout Account Mutation
@@ -176,11 +253,28 @@ export const AdminPayoutsPage: React.FC = () => {
             onClick={() => {
               refetchAccount()
               refetchSettlements()
+              refetchBalance()
+              refetchWithdrawals()
             }}
             icon={<ArrowsClockwise size={15} />}
           >
             Refresh Ledger
           </Button>
+
+          <Button
+            surface="admin"
+            variant="primary"
+            size="sm"
+            disabled={!balance || balance.available_balance_inr <= 0 || !isVerified}
+            onClick={() => {
+              setWithdrawAmount(balance?.available_balance_inr ? String(balance.available_balance_inr) : '')
+              setIsWithdrawOpen(true)
+            }}
+            icon={<ArrowDownRight size={15} weight="bold" />}
+          >
+            Withdraw Funds
+          </Button>
+
           {!account && !isEditing && (
             <Button surface="admin" size="sm" onClick={() => setIsEditing(true)}>
               Link Bank Account
@@ -190,26 +284,55 @@ export const AdminPayoutsPage: React.FC = () => {
       </div>
 
       {/* Overview Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-5 bg-surface border border-line rounded-panel space-y-1.5">
-          <p className="text-caption text-text-3 font-medium">Total Settled (Net INR)</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Available Withdrawable Balance */}
+        <div className="p-5 bg-surface border border-accent/30 rounded-panel space-y-1.5 shadow-sm relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <p className="text-caption text-text-3 font-medium">Available Balance</p>
+            <Badge variant="success" size="sm">Withdrawable</Badge>
+          </div>
           <p className="text-2xl font-semibold text-text tabular-nums">
-            {formatCurrency(totalSettledInr)}
+            {formatCurrency(balance?.available_balance_inr ?? 0)}
+          </p>
+          <p className="text-caption text-text-2 flex items-center justify-between">
+            <span>Ready for bank transfer</span>
+            {balance && balance.available_balance_inr > 0 && isVerified && (
+              <button
+                type="button"
+                onClick={() => {
+                  setWithdrawAmount(String(balance.available_balance_inr))
+                  setIsWithdrawOpen(true)
+                }}
+                className="text-xs font-semibold text-accent hover:underline"
+              >
+                Withdraw &rarr;
+              </button>
+            )}
+          </p>
+        </div>
+
+        {/* Pending Withdrawals */}
+        <div className="p-5 bg-surface border border-line rounded-panel space-y-1.5">
+          <p className="text-caption text-text-3 font-medium">Pending Withdrawals</p>
+          <p className="text-2xl font-semibold text-text tabular-nums">
+            {formatCurrency(((balance?.pending_withdrawals_cents ?? 0) / 100) || pendingSettlementInr)}
+          </p>
+          <p className="text-caption text-text-2">Dispatched to bank within 24h of review</p>
+        </div>
+
+        {/* Total Settled */}
+        <div className="p-5 bg-surface border border-line rounded-panel space-y-1.5">
+          <p className="text-caption text-text-3 font-medium">Total Disbursed (Net)</p>
+          <p className="text-2xl font-semibold text-text tabular-nums">
+            {formatCurrency(((balance?.paid_withdrawals_cents ?? 0) / 100) || totalSettledInr)}
           </p>
           <p className="text-caption text-success font-medium flex items-center gap-1">
             <CheckCircle size={14} weight="fill" />
-            Reconciled via Cashfree Easy Split
+            Reconciled via Cashfree Payouts
           </p>
         </div>
 
-        <div className="p-5 bg-surface border border-line rounded-panel space-y-1.5">
-          <p className="text-caption text-text-3 font-medium">Pending Settlement</p>
-          <p className="text-2xl font-semibold text-text tabular-nums">
-            {formatCurrency(pendingSettlementInr)}
-          </p>
-          <p className="text-caption text-text-2">Dispatched to bank within 24h of event completion</p>
-        </div>
-
+        {/* Platform Fee */}
         <div className="p-5 bg-surface border border-line rounded-panel space-y-1.5">
           <p className="text-caption text-text-3 font-medium">Platform Commission</p>
           <p className="text-2xl font-semibold text-text tabular-nums">5.0%</p>
@@ -428,71 +551,276 @@ export const AdminPayoutsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Settlements & Dispatches Ledger */}
+      {/* Settlements & Withdrawals Dual Ledger */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-h3 font-semibold text-text">Settlements & Payout Ledger</h2>
+            <h2 className="text-h3 font-semibold text-text">Financial Ledger & Withdrawals</h2>
             <p className="text-small text-text-2">
-              Itemized history of reconciled marketplace payouts and bank transfers.
+              Itemized history of organizer withdrawal transfers, bank UTR references, and Cashfree settlements.
             </p>
           </div>
-          <span className="text-xs font-mono text-text-3">
-            {settlements.length} total dispatches
-          </span>
-        </div>
 
-        <div className="border border-line rounded-panel overflow-hidden bg-surface">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-surface-subtle border-b border-line text-xs font-semibold text-text-2">
-                <tr>
-                  <th className="px-4 py-3">Reference / Settlement ID</th>
-                  <th className="px-4 py-3">Date Dispatched</th>
-                  <th className="px-4 py-3">UTR Reference</th>
-                  <th className="px-4 py-3">Net Payout (INR)</th>
-                  <th className="px-4 py-3">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {settlements.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-text-3">
-                      No payout settlements recorded yet. Once ticket sales close, payouts will appear here.
-                    </td>
-                  </tr>
-                ) : (
-                  settlements.map((s) => (
-                    <tr key={s.id} className="hover:bg-surface-subtle/50 transition-colors">
-                      <td className="px-4 py-3.5 font-mono text-xs font-semibold text-text">
-                        {s.cf_settlement_id}
-                      </td>
-                      <td className="px-4 py-3.5 text-text-2 text-xs">
-                        {s.settled_at ? formatDate(s.settled_at, 'full') : 'Processing'}
-                      </td>
-                      <td className="px-4 py-3.5 font-mono text-xs text-text-2">
-                        {s.utr || '—'}
-                      </td>
-                      <td className="px-4 py-3.5 font-semibold text-text tabular-nums">
-                        {formatCurrency(s.amount_inr)}
-                      </td>
-                      <td className="px-4 py-3.5">
-                        {s.status === 'SUCCESS' ? (
-                          <Badge variant="success" size="sm">Settled</Badge>
-                        ) : s.status === 'PENDING' ? (
-                          <Badge variant="warning" size="sm">In Transit</Badge>
-                        ) : (
-                          <Badge variant="danger" size="sm">{s.status}</Badge>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+          <div className="flex items-center gap-1.5 p-1 bg-surface-subtle border border-line rounded-lg text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setLedgerTab('withdrawals')}
+              className={`px-3 py-1.5 rounded-md transition-all ${
+                ledgerTab === 'withdrawals'
+                  ? 'bg-surface text-text shadow-sm'
+                  : 'text-text-3 hover:text-text'
+              }`}
+            >
+              Withdrawals ({withdrawals.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setLedgerTab('settlements')}
+              className={`px-3 py-1.5 rounded-md transition-all ${
+                ledgerTab === 'settlements'
+                  ? 'bg-surface text-text shadow-sm'
+                  : 'text-text-3 hover:text-text'
+              }`}
+            >
+              Settlements ({settlements.length})
+            </button>
           </div>
         </div>
+
+        {ledgerTab === 'withdrawals' ? (
+          <div className="border border-line rounded-panel overflow-hidden bg-surface">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-surface-subtle border-b border-line text-xs font-semibold text-text-2">
+                  <tr>
+                    <th className="px-4 py-3">Request ID</th>
+                    <th className="px-4 py-3">Requested At</th>
+                    <th className="px-4 py-3">Bank Reference / UTR</th>
+                    <th className="px-4 py-3">Amount (INR)</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Notes</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {withdrawals.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-8 text-center text-text-3">
+                        No withdrawal requests submitted yet. Use the "Withdraw Funds" button above to transfer revenue.
+                      </td>
+                    </tr>
+                  ) : (
+                    withdrawals.map((w) => (
+                      <tr key={w.id} className="hover:bg-surface-subtle/50 transition-colors">
+                        <td className="px-4 py-3.5 font-mono text-xs font-semibold text-text">
+                          {w.request_id}
+                        </td>
+                        <td className="px-4 py-3.5 text-text-2 text-xs">
+                          {formatDate(w.requested_at, 'full')}
+                        </td>
+                        <td className="px-4 py-3.5 font-mono text-xs text-text-2">
+                          {w.utr_reference ? (
+                            <span className="text-success font-semibold flex items-center gap-1">
+                              <CheckCircle size={13} weight="fill" />
+                              {w.utr_reference}
+                            </span>
+                          ) : (
+                            <span className="text-text-3">Pending Batch Disbursal</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3.5 font-semibold text-text tabular-nums">
+                          {formatCurrency(w.amount)}
+                        </td>
+                        <td className="px-4 py-3.5">
+                          {w.status === 'PAID' ? (
+                            <Badge variant="success" size="sm">Disbursed (PAID)</Badge>
+                          ) : w.status === 'PENDING' ? (
+                            <Badge variant="warning" size="sm">Review Pending</Badge>
+                          ) : w.status === 'PROCESSING' ? (
+                            <Badge variant="iris" size="sm">Processing</Badge>
+                          ) : (
+                            <Badge variant="danger" size="sm">Rejected</Badge>
+                          )}
+                        </td>
+                        <td className="px-4 py-3.5 text-xs text-text-3">
+                          {w.rejection_reason || w.admin_notes || '—'}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className="border border-line rounded-panel overflow-hidden bg-surface">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-surface-subtle border-b border-line text-xs font-semibold text-text-2">
+                  <tr>
+                    <th className="px-4 py-3">Reference / Settlement ID</th>
+                    <th className="px-4 py-3">Date Dispatched</th>
+                    <th className="px-4 py-3">UTR Reference</th>
+                    <th className="px-4 py-3">Net Payout (INR)</th>
+                    <th className="px-4 py-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {settlements.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-4 py-8 text-center text-text-3">
+                        No payout settlements recorded yet. Once ticket sales close, payouts will appear here.
+                      </td>
+                    </tr>
+                  ) : (
+                    settlements.map((s) => (
+                      <tr key={s.id} className="hover:bg-surface-subtle/50 transition-colors">
+                        <td className="px-4 py-3.5 font-mono text-xs font-semibold text-text">
+                          {s.cf_settlement_id}
+                        </td>
+                        <td className="px-4 py-3.5 text-text-2 text-xs">
+                          {s.settled_at ? formatDate(s.settled_at, 'full') : 'Processing'}
+                        </td>
+                        <td className="px-4 py-3.5 font-mono text-xs text-text-2">
+                          {s.utr || '—'}
+                        </td>
+                        <td className="px-4 py-3.5 font-semibold text-text tabular-nums">
+                          {formatCurrency(s.amount_inr)}
+                        </td>
+                        <td className="px-4 py-3.5">
+                          {s.status === 'SUCCESS' ? (
+                            <Badge variant="success" size="sm">Settled</Badge>
+                          ) : s.status === 'PENDING' ? (
+                            <Badge variant="warning" size="sm">In Transit</Badge>
+                          ) : (
+                            <Badge variant="danger" size="sm">{s.status}</Badge>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Withdrawal Request Modal */}
+      <Modal
+        isOpen={isWithdrawOpen}
+        onClose={() => {
+          setIsWithdrawOpen(false)
+          setWithdrawError(null)
+        }}
+        title="Request Revenue Withdrawal"
+        subtitle="Disburse your verified event ticket revenue directly to your destination bank account."
+        surface="admin"
+        maxWidth="max-w-lg"
+      >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            setWithdrawError(null)
+            const amt = Number(withdrawAmount)
+            if (!amt || amt <= 0) {
+              setWithdrawError('Please enter a valid amount.')
+              return
+            }
+            if (balance && amt > balance.available_balance_inr) {
+              setWithdrawError(`Requested amount exceeds available balance (${formatCurrency(balance.available_balance_inr)}).`)
+              return
+            }
+            withdrawMutation.mutate()
+          }}
+          className="space-y-5"
+        >
+          {withdrawError && (
+            <div className="p-3 bg-danger-bg border border-danger-border rounded-lg text-xs text-danger flex items-start gap-2">
+              <WarningCircle size={16} className="shrink-0 mt-0.5" />
+              <span>{withdrawError}</span>
+            </div>
+          )}
+
+          {/* Balance Preview Card */}
+          <div className="p-4 rounded-xl bg-surface-subtle border border-line flex items-center justify-between">
+            <div>
+              <p className="text-xs text-text-3 font-medium">Available Withdrawable Balance</p>
+              <p className="text-xl font-bold text-text tabular-nums mt-0.5">
+                {formatCurrency(balance?.available_balance_inr ?? 0)}
+              </p>
+            </div>
+            {balance && balance.available_balance_inr > 0 && (
+              <Button
+                type="button"
+                surface="admin"
+                variant="secondary"
+                size="sm"
+                onClick={() => setWithdrawAmount(String(balance.available_balance_inr))}
+              >
+                Withdraw Full Balance
+              </Button>
+            )}
+          </div>
+
+          {/* Amount Input */}
+          <Field
+            surface="admin"
+            label="Withdrawal Amount (INR)"
+            required
+            type="number"
+            value={withdrawAmount}
+            onChange={(e) => setWithdrawAmount(e.target.value)}
+            placeholder="e.g. 25000"
+            helpText="Funds will be dispatched via NEFT/RTGS/IMPS to your linked bank account."
+            min={1}
+            max={balance?.available_balance_inr}
+          />
+
+          {/* Destination Account Snapshot */}
+          <div className="p-3.5 rounded-lg border border-line bg-surface space-y-1 text-xs">
+            <span className="font-semibold text-text block text-xs">Transfer Destination:</span>
+            <p className="text-text-2">
+              {account?.bank_name || 'Bank'} &bull; Acc: {account?.account_number_masked}
+            </p>
+            <p className="text-text-3 font-mono">
+              IFSC: {account?.ifsc_code} &bull; Holder: {account?.account_holder_name}
+            </p>
+          </div>
+
+          {/* Memo / Notes */}
+          <Field
+            surface="admin"
+            label="Organizer Notes / Memo"
+            value={withdrawNotes}
+            onChange={(e) => setWithdrawNotes(e.target.value)}
+            placeholder="e.g. Hackathon batch 1 disbursement"
+            helpText="Optional memo stored in the payout audit ledger."
+            maxLength={200}
+          />
+
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-line">
+            <Button
+              type="button"
+              surface="admin"
+              variant="secondary"
+              size="sm"
+              onClick={() => setIsWithdrawOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              surface="admin"
+              variant="primary"
+              size="sm"
+              disabled={withdrawMutation.isPending || !withdrawAmount}
+              icon={<ArrowDownRight size={15} weight="bold" />}
+            >
+              {withdrawMutation.isPending ? 'Submitting Request...' : 'Confirm Withdrawal'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

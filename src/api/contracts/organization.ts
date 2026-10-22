@@ -177,3 +177,34 @@ export interface ProposalReview {
   reason?: string | null
 }
 
+export interface PlatformOverview {
+  pending_proposals_count: number
+  pending_withdrawals_count: number
+  verified_organizations_count: number
+  verified_institutions_count: number
+  total_organizations_count: number
+  platform_root?: OrganizationRead | null
+}
+
+export interface InstitutionCandidate {
+  id: string
+  name: string
+  slug: string
+  status: string
+  type?: string | null
+  is_institution: boolean
+  institution_verified_at?: string | null
+  institution_verified_by_id?: string | null
+  institution_verified_by_email?: string | null
+  institution_rejection_reason?: string | null
+  institution_rejected_at?: string | null
+  domains: string[]
+  contact_email?: string | null
+  website?: string | null
+  avatar_url?: string | null
+  owner_id: string
+  owner_email?: string | null
+  created_at: string
+}
+
+

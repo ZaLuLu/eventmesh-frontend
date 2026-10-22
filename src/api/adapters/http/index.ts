@@ -52,6 +52,12 @@ import {
   ProposalCreate,
   ProposalRead,
   ProposalReview,
+  OrganizationBalance,
+  WithdrawalRequest,
+  WithdrawalRequestCreate,
+  OrganizerEarningsSummary,
+  PlatformOverview,
+  InstitutionCandidate,
 } from '../../contracts'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://eventmesh-api.onrender.com'
@@ -664,6 +670,33 @@ export const httpPayoutsApi: PayoutsApi = {
       return []
     }
   },
+
+  getPayoutBalance: async (orgSlug: string) => {
+    const slug = await resolveTargetOrgSlug(orgSlug)
+    return requestJson<OrganizationBalance>(`${V1}/organizations/${slug}/withdrawals/balance`)
+  },
+
+  listWithdrawals: async (orgSlug: string) => {
+    const slug = await resolveTargetOrgSlug(orgSlug)
+    try {
+      return await requestJson<WithdrawalRequest[]>(`${V1}/organizations/${slug}/withdrawals`)
+    } catch {
+      return []
+    }
+  },
+
+  requestWithdrawal: async (orgSlug: string, payload: WithdrawalRequestCreate) => {
+    const slug = await resolveTargetOrgSlug(orgSlug)
+    return requestJson<WithdrawalRequest>(`${V1}/organizations/${slug}/withdrawals`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  },
+
+  getEarningsSummary: async (orgSlug: string) => {
+    const slug = await resolveTargetOrgSlug(orgSlug)
+    return requestJson<OrganizerEarningsSummary>(`${V1}/organizations/${slug}/earnings-summary`)
+  },
 }
 
 export const httpOrganizationsApi: OrganizationsApi = {
@@ -747,6 +780,24 @@ export const httpOrganizationsApi: OrganizationsApi = {
     requestJson<ProposalRead>(`${V1}/organizations/proposals/${proposalId}/review`, {
       method: 'POST',
       body: JSON.stringify(review),
+    }),
+
+  // Platform SuperAdmin
+  getPlatformOverview: () => requestJson<PlatformOverview>(`${V1}/admin/overview`),
+
+  getInstitutionCandidates: () =>
+    requestJson<InstitutionCandidate[]>(`${V1}/admin/institutions`),
+
+  verifyInstitution: (slug: string, domains: string[]) =>
+    requestJson<InstitutionCandidate>(`${V1}/admin/institutions/${slug}/verify`, {
+      method: 'POST',
+      body: JSON.stringify({ domains }),
+    }),
+
+  rejectInstitution: (slug: string, reason?: string) =>
+    requestJson<InstitutionCandidate>(`${V1}/admin/institutions/${slug}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
     }),
 }
 

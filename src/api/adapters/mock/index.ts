@@ -54,6 +54,12 @@ import {
   ProposalCreate,
   ProposalRead,
   ProposalReview,
+  OrganizationBalance,
+  WithdrawalRequest,
+  WithdrawalRequestCreate,
+  OrganizerEarningsSummary,
+  PlatformOverview,
+  InstitutionCandidate,
 } from '../../contracts'
 import { SEED_ORGANIZATION, SEED_CLUBS, SEED_DEMO_USERS } from './seedData'
 import {
@@ -1304,6 +1310,98 @@ export const mockPayoutsApi: PayoutsApi = {
     await simulateLatency()
     return [...mockStore.settlements]
   },
+
+  async getPayoutBalance(orgSlug: string): Promise<OrganizationBalance> {
+    await simulateLatency()
+    const target = mockStore.payoutAccounts[orgSlug]
+    return {
+      organization_id: `org-${orgSlug}`,
+      gross_sales_cents: 8500000,
+      organizer_share_cents: 8075000,
+      settled_cents: 5500000,
+      refunded_cents: 0,
+      pending_withdrawals_cents: 0,
+      paid_withdrawals_cents: 5500000,
+      available_balance_cents: 2575000,
+      available_balance_inr: 25750.0,
+      currency: 'INR',
+      payout_account_configured: Boolean(target),
+      payout_account_status: target?.status || (target ? 'VERIFIED' : null),
+      masked_bank_account: target?.account_number_masked || null,
+      account_holder_name: target?.account_holder_name || null,
+      bank_name: target?.bank_name || null,
+      ifsc_code: target?.ifsc_code || null,
+    }
+  },
+
+  async listWithdrawals(orgSlug: string): Promise<WithdrawalRequest[]> {
+    await simulateLatency()
+    return (mockStore as any).withdrawals || [
+      {
+        id: 'wd-seed-1',
+        request_id: 'WDR-20261015-8942',
+        organization_id: `org-${orgSlug}`,
+        amount: 55000.0,
+        amount_cents: 5500000,
+        currency: 'INR',
+        status: 'PAID',
+        payout_details_snapshot: { bank_name: 'HDFC Bank', account_number_masked: '••••4829' },
+        admin_notes: 'Processed via Cashfree Payout transfer',
+        utr_reference: 'CFUTR2026101509823471',
+        requested_at: '2026-10-15T10:00:00Z',
+        paid_at: '2026-10-15T14:30:00Z',
+        created_at: '2026-10-15T10:00:00Z',
+      },
+    ]
+  },
+
+  async requestWithdrawal(orgSlug: string, payload: WithdrawalRequestCreate): Promise<WithdrawalRequest> {
+    await simulateLatency()
+    const target = mockStore.payoutAccounts[orgSlug]
+    const amountInr = payload.amount || (payload.amount_cents ? payload.amount_cents / 100 : 25750)
+    const newReq: WithdrawalRequest = {
+      id: `wd-${Date.now()}`,
+      request_id: `WDR-${Date.now().toString().slice(-8)}`,
+      organization_id: `org-${orgSlug}`,
+      amount: amountInr,
+      amount_cents: Math.round(amountInr * 100),
+      currency: 'INR',
+      status: 'PENDING',
+      payout_details_snapshot: target
+        ? { bank_name: target.bank_name, account_number_masked: target.account_number_masked }
+        : {},
+      admin_notes: payload.notes || null,
+      requested_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+    }
+    if (!(mockStore as any).withdrawals) {
+      (mockStore as any).withdrawals = []
+    }
+    ;(mockStore as any).withdrawals.unshift(newReq)
+    return newReq
+  },
+
+  async getEarningsSummary(_orgSlug: string): Promise<OrganizerEarningsSummary> {
+    await simulateLatency()
+    return {
+      gross_revenue: 85000,
+      gross_revenue_cents: 8500000,
+      platform_fee: 4250,
+      platform_fee_cents: 425000,
+      pg_fee: 1700,
+      pg_fee_cents: 170000,
+      net_earnings: 79050,
+      net_earnings_cents: 7905000,
+      total_withdrawn: 55000,
+      total_withdrawn_cents: 5500000,
+      pending_withdrawal: 0,
+      pending_withdrawal_cents: 0,
+      available_balance: 24050,
+      available_balance_cents: 2405000,
+      has_active_request: false,
+      events_breakdown: [],
+    }
+  },
 }
 
 export const mockClubsApi: ClubsApi = {
@@ -1674,4 +1772,66 @@ export const mockOrganizationsApi: OrganizationsApi = {
     mockStore.save()
     return prop
   },
+
+  async getPlatformOverview(): Promise<PlatformOverview> {
+    await simulateLatency()
+    return {
+      pending_proposals_count: mockStore.proposals.filter((p) => p.status === 'pending').length || 2,
+      pending_withdrawals_count: ((mockStore as any).withdrawals || []).filter((w: any) => w.status === 'PENDING').length || 1,
+      verified_organizations_count: 8,
+      verified_institutions_count: 3,
+      total_organizations_count: 12,
+    }
+  },
+
+  async getInstitutionCandidates(): Promise<InstitutionCandidate[]> {
+    await simulateLatency()
+    return [
+      {
+        id: 'inst-cand-1',
+        name: 'Apex Institute of Technology',
+        slug: 'apex-institute',
+        status: 'active',
+        is_institution: true,
+        domains: ['apex.edu.in', 'apex.ac.in'],
+        contact_email: 'admin@apex.edu.in',
+        owner_id: 'usr-1',
+        owner_email: 'dean@apex.edu.in',
+        created_at: '2026-09-01T00:00:00Z',
+      },
+    ]
+  },
+
+  async verifyInstitution(slug: string, domains: string[]): Promise<InstitutionCandidate> {
+    await simulateLatency()
+    return {
+      id: `inst-${slug}`,
+      name: slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+      slug,
+      status: 'active',
+      is_institution: true,
+      institution_verified_at: new Date().toISOString(),
+      institution_verified_by_email: 'platform.admin@eventmesh.xyz',
+      domains,
+      owner_id: 'usr-admin',
+      created_at: new Date().toISOString(),
+    }
+  },
+
+  async rejectInstitution(slug: string, reason?: string): Promise<InstitutionCandidate> {
+    await simulateLatency()
+    return {
+      id: `inst-${slug}`,
+      name: slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+      slug,
+      status: 'rejected',
+      is_institution: false,
+      institution_rejection_reason: reason || 'Domain verification criteria not met',
+      institution_rejected_at: new Date().toISOString(),
+      domains: [],
+      owner_id: 'usr-admin',
+      created_at: new Date().toISOString(),
+    }
+  },
 }
+

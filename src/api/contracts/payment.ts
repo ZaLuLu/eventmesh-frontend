@@ -114,3 +114,79 @@ export const PaymentStatusResponseSchema = z.object({
   metadata: z.record(z.any()).nullable().optional(),
 })
 export type PaymentStatusResponse = z.infer<typeof PaymentStatusResponseSchema>
+
+/* =========================================================================
+   ORGANIZER BALANCE & WITHDRAWAL REQUEST CONTRACTS
+   ========================================================================= */
+
+export const OrganizationBalanceSchema = z.object({
+  organization_id: z.string(),
+  gross_sales_cents: z.number().default(0),
+  organizer_share_cents: z.number().default(0),
+  settled_cents: z.number().default(0),
+  refunded_cents: z.number().default(0),
+  pending_withdrawals_cents: z.number().default(0),
+  paid_withdrawals_cents: z.number().default(0),
+  available_balance_cents: z.number().default(0),
+  available_balance_inr: z.number().default(0),
+  currency: z.string().default('INR'),
+  payout_account_configured: z.boolean().default(false),
+  payout_account_status: z.string().nullable().optional(),
+  masked_bank_account: z.string().nullable().optional(),
+  account_holder_name: z.string().nullable().optional(),
+  bank_name: z.string().nullable().optional(),
+  ifsc_code: z.string().nullable().optional(),
+})
+export type OrganizationBalance = z.infer<typeof OrganizationBalanceSchema>
+
+export const WithdrawalRequestCreateSchema = z.object({
+  amount: z.number().positive().optional(),
+  amount_cents: z.number().int().positive().optional(),
+  event_id: z.string().optional(),
+  notes: z.string().max(250).optional(),
+  idempotency_key: z.string().optional(),
+})
+export type WithdrawalRequestCreate = z.infer<typeof WithdrawalRequestCreateSchema>
+
+export const WithdrawalRequestSchema = z.object({
+  id: z.string(),
+  request_id: z.string(),
+  organization_id: z.string(),
+  event_id: z.string().nullable().optional(),
+  amount: z.number(),
+  amount_cents: z.number(),
+  currency: z.string().default('INR'),
+  status: z.enum(['PENDING', 'PROCESSING', 'PAID', 'REJECTED']),
+  payout_details_snapshot: z.record(z.any()).default({}),
+  admin_notes: z.string().nullable().optional(),
+  rejection_reason: z.string().nullable().optional(),
+  utr_reference: z.string().nullable().optional(),
+  requested_at: z.string(),
+  paid_at: z.string().nullable().optional(),
+  created_at: z.string(),
+  organization_name: z.string().nullable().optional(),
+  organization_slug: z.string().nullable().optional(),
+  event_title: z.string().nullable().optional(),
+})
+export type WithdrawalRequest = z.infer<typeof WithdrawalRequestSchema>
+
+export const OrganizerEarningsSummarySchema = z.object({
+  gross_revenue: z.number().default(0),
+  gross_revenue_cents: z.number().default(0),
+  platform_fee: z.number().default(0),
+  platform_fee_cents: z.number().default(0),
+  pg_fee: z.number().default(0),
+  pg_fee_cents: z.number().default(0),
+  net_earnings: z.number().default(0),
+  net_earnings_cents: z.number().default(0),
+  total_withdrawn: z.number().default(0),
+  total_withdrawn_cents: z.number().default(0),
+  pending_withdrawal: z.number().default(0),
+  pending_withdrawal_cents: z.number().default(0),
+  available_balance: z.number().default(0),
+  available_balance_cents: z.number().default(0),
+  has_active_request: z.boolean().default(false),
+  events_breakdown: z.array(z.any()).default([]),
+})
+export type OrganizerEarningsSummary = z.infer<typeof OrganizerEarningsSummarySchema>
+

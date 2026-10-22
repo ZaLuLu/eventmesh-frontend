@@ -1,11 +1,11 @@
-// Hallmark macrostructure: AdminConsole-Approvals
 import React, { useState } from 'react'
-import { Check, X, Buildings, Plus, ShieldCheck, ArrowRight } from '@phosphor-icons/react'
+import { Check, X, Buildings, Plus, ShieldCheck, ArrowRight, GraduationCap, Globe, Bank, CheckCircle } from '@phosphor-icons/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
 import { useOrg } from '@/hooks/useOrg'
-import { api, ProposalRead, ProposalCreate } from '@/api'
+import { api, ProposalRead, ProposalCreate, PlatformOverview, InstitutionCandidate } from '@/api'
 import { Button } from '@/design-system/primitives/Button'
+import { Badge } from '@/design-system/primitives/Badge'
 import { Modal } from '@/design-system/primitives/Modal'
 import { formatDate } from '@/lib/dates'
 import { useToast } from '@/design-system/primitives/Toast'
@@ -17,7 +17,18 @@ export const AdminApprovalsPage: React.FC = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  const [activeTab, setActiveTab] = useState<'events' | 'proposals'>('events')
+  const [activeTab, setActiveTab] = useState<'events' | 'proposals' | 'institutions'>('events')
+
+  // Platform Overview Query (Main Admin metrics)
+  const { data: overview } = useQuery<PlatformOverview | null>({
+    queryKey: ['platform-overview'],
+    queryFn: async () => {
+      if (api.organizations.getPlatformOverview) {
+        return api.organizations.getPlatformOverview()
+      }
+      return null
+    },
+  })
 
   // Events Approvals Query
   const { data: events = [], isLoading: isLoadingEvents } = useQuery({
@@ -43,6 +54,18 @@ export const AdminApprovalsPage: React.FC = () => {
   })
 
   const pendingProposals = proposals.filter((p) => p.status === 'pending')
+
+  // Institutions Candidates Query
+  const { data: institutions = [], isLoading: isLoadingInstitutions } = useQuery<InstitutionCandidate[]>({
+    queryKey: ['admin-institutions'],
+    queryFn: async () => {
+      if (api.organizations.getInstitutionCandidates) {
+        return api.organizations.getInstitutionCandidates()
+      }
+      return []
+    },
+    enabled: activeTab === 'institutions',
+  })
 
   // Event Mutations
   const approveMutation = useMutation({
@@ -110,6 +133,36 @@ export const AdminApprovalsPage: React.FC = () => {
     },
   })
 
+  const verifyInstitutionMutation = useMutation({
+    mutationFn: ({ slug, domains }: { slug: string; domains: string[] }) => {
+      if (!api.organizations.verifyInstitution) throw new Error('Not implemented')
+      return api.organizations.verifyInstitution(slug, domains)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-institutions'] })
+      queryClient.invalidateQueries({ queryKey: ['platform-overview'] })
+      toast({ title: 'Institution Verified', message: 'The organization has been granted institutional status.', type: 'success' })
+    },
+    onError: (err: any) => {
+      toast({ title: 'Verification Failed', message: err?.message || 'Could not verify institution.', type: 'error' })
+    },
+  })
+
+  const rejectInstitutionMutation = useMutation({
+    mutationFn: ({ slug, reason }: { slug: string; reason?: string }) => {
+      if (!api.organizations.rejectInstitution) throw new Error('Not implemented')
+      return api.organizations.rejectInstitution(slug, reason)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-institutions'] })
+      queryClient.invalidateQueries({ queryKey: ['platform-overview'] })
+      toast({ title: 'Candidate Rejected', message: 'Institution status was declined.', type: 'info' })
+    },
+    onError: (err: any) => {
+      toast({ title: 'Action Failed', message: err?.message || 'Could not reject candidate.', type: 'error' })
+    },
+  })
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -122,7 +175,7 @@ export const AdminApprovalsPage: React.FC = () => {
             Curatorial Approvals Queue
           </h1>
           <p className="text-small text-text-2 mt-0.5">
-            Review event drafts and sub-organization charters awaiting institutional clearance.
+            Review event drafts, sub-organization charters, and institutional verification candidates.
           </p>
         </div>
 
@@ -137,12 +190,34 @@ export const AdminApprovalsPage: React.FC = () => {
         )}
       </div>
 
+      {/* Platform Overview Metrics Cards */}
+      {overview && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="p-4 bg-surface border border-line rounded-panel space-y-1">
+            <span className="text-[11px] font-mono text-text-3 font-semibold uppercase">Pending Proposals</span>
+            <p className="text-xl font-bold text-accent tabular-nums">{overview.pending_proposals_count}</p>
+          </div>
+          <div className="p-4 bg-surface border border-line rounded-panel space-y-1">
+            <span className="text-[11px] font-mono text-text-3 font-semibold uppercase">Pending Withdrawals</span>
+            <p className="text-xl font-bold text-text tabular-nums">{overview.pending_withdrawals_count}</p>
+          </div>
+          <div className="p-4 bg-surface border border-line rounded-panel space-y-1">
+            <span className="text-[11px] font-mono text-text-3 font-semibold uppercase">Verified Orgs</span>
+            <p className="text-xl font-bold text-text tabular-nums">{overview.verified_organizations_count}</p>
+          </div>
+          <div className="p-4 bg-surface border border-line rounded-panel space-y-1">
+            <span className="text-[11px] font-mono text-text-3 font-semibold uppercase">Verified Institutions</span>
+            <p className="text-xl font-bold text-success tabular-nums">{overview.verified_institutions_count}</p>
+          </div>
+        </div>
+      )}
+
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-line">
+      <div className="flex items-center gap-2 border-b border-line overflow-x-auto">
         <button
           type="button"
           onClick={() => setActiveTab('events')}
-          className={`pb-3 px-3 text-xs font-mono font-bold uppercase tracking-wider transition-colors border-b-2 flex items-center gap-1.5 ${
+          className={`pb-3 px-3 text-xs font-mono font-bold uppercase tracking-wider transition-colors border-b-2 flex items-center gap-1.5 whitespace-nowrap ${
             activeTab === 'events'
               ? 'border-accent text-accent'
               : 'border-transparent text-text-3 hover:text-text'
@@ -159,7 +234,7 @@ export const AdminApprovalsPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('proposals')}
-          className={`pb-3 px-3 text-xs font-mono font-bold uppercase tracking-wider transition-colors border-b-2 flex items-center gap-1.5 ${
+          className={`pb-3 px-3 text-xs font-mono font-bold uppercase tracking-wider transition-colors border-b-2 flex items-center gap-1.5 whitespace-nowrap ${
             activeTab === 'proposals'
               ? 'border-accent text-accent'
               : 'border-transparent text-text-3 hover:text-text'
@@ -169,6 +244,23 @@ export const AdminApprovalsPage: React.FC = () => {
           {pendingProposals.length > 0 && (
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-accent text-on-accent font-mono font-bold">
               {pendingProposals.length}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('institutions')}
+          className={`pb-3 px-3 text-xs font-mono font-bold uppercase tracking-wider transition-colors border-b-2 flex items-center gap-1.5 whitespace-nowrap ${
+            activeTab === 'institutions'
+              ? 'border-accent text-accent'
+              : 'border-transparent text-text-3 hover:text-text'
+          }`}
+        >
+          <span>Institutional Clearance</span>
+          {institutions.length > 0 && (
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-surface-subtle border border-line text-text-2 font-mono font-bold">
+              {institutions.length}
             </span>
           )}
         </button>
@@ -330,6 +422,98 @@ export const AdminApprovalsPage: React.FC = () => {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Tab 3: Institutional Clearance & Domain Verification */}
+      {activeTab === 'institutions' && (
+        <div className="bg-surface border border-line rounded-panel p-5 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-line">
+            <div>
+              <h2 className="text-h3 font-semibold text-text">Institution Candidates & Verified Roots</h2>
+              <p className="text-small text-text-2">
+                Authorize apex campus institutions and verify affiliated academic domain namespaces.
+              </p>
+            </div>
+            <span className="text-xs font-mono text-text-3">{institutions.length} candidates registered</span>
+          </div>
+
+          {isLoadingInstitutions ? (
+            <div className="p-8 text-center text-text-3 font-mono text-xs">Loading institutional candidates...</div>
+          ) : institutions.length === 0 ? (
+            <div className="p-8 text-center text-text-3">
+              No institution verification candidates pending review.
+            </div>
+          ) : (
+            <div className="divide-y divide-line">
+              {institutions.map((inst) => (
+                <div key={inst.id} className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-1.5 max-w-xl">
+                    <div className="flex items-center gap-2.5">
+                      <h3 className="font-semibold text-base text-text">{inst.name}</h3>
+                      {inst.is_institution ? (
+                        <Badge variant="success" size="sm">Verified Institution</Badge>
+                      ) : (
+                        <Badge variant="warning" size="sm">Candidate</Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-text-2">
+                      Slug: <span className="font-mono text-text">{inst.slug}</span>
+                      {inst.contact_email && <span> &bull; Contact: {inst.contact_email}</span>}
+                    </p>
+                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                      <span className="text-xs text-text-3 font-medium">Domains:</span>
+                      {inst.domains.length > 0 ? (
+                        inst.domains.map((dom) => (
+                          <span key={dom} className="text-xs font-mono px-2 py-0.5 rounded bg-surface-subtle border border-line text-text">
+                            {dom}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-text-3 italic">No domain rules registered</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    {!inst.is_institution ? (
+                      <>
+                        <Button
+                          surface="admin"
+                          variant="secondary"
+                          size="sm"
+                          loading={rejectInstitutionMutation.isPending}
+                          onClick={() => rejectInstitutionMutation.mutate({ slug: inst.slug })}
+                        >
+                          Decline
+                        </Button>
+                        <Button
+                          surface="admin"
+                          variant="primary"
+                          size="sm"
+                          loading={verifyInstitutionMutation.isPending}
+                          icon={<ShieldCheck size={16} weight="bold" />}
+                          onClick={() =>
+                            verifyInstitutionMutation.mutate({
+                              slug: inst.slug,
+                              domains: inst.domains.length > 0 ? inst.domains : [`${inst.slug}.edu`],
+                            })
+                          }
+                        >
+                          Verify Institution
+                        </Button>
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-1 text-xs text-success font-semibold">
+                        <CheckCircle size={15} weight="fill" />
+                        <span>Charter Verified</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
