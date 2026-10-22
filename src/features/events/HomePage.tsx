@@ -5,6 +5,7 @@ import { usePromotedEvents } from '@/hooks/useEvents'
 import { api, Event, PaginatedResult } from '@/api'
 import { CinematicHeroStage } from './components/CinematicHeroStage'
 import { VerticalPosterCard } from '@/design-system/VerticalPosterCard'
+import { GhostPosterCard } from '@/design-system/primitives/GhostLoader'
 import { SectionHeader } from '@/design-system/SectionHeader'
 import { ArrowRight, Sparkle } from '@/design-system/Icon'
 import { ActiveThemeTrio } from './components/ActiveThemeTrio'
@@ -96,12 +97,14 @@ export const HomePage: React.FC = () => {
           />
 
           {isLoading ? (
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div
+              role="status"
+              aria-live="polite"
+              aria-label="Loading premiere events"
+              className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            >
               {[...Array(4)].map((_, i) => (
-                <div
-                  key={i}
-                  className="aspect-[2/3] w-full rounded-[22px] border border-line bg-surface-subtle animate-pulse"
-                />
+                <GhostPosterCard key={`ghost-poster-${i}`} />
               ))}
             </div>
           ) : loadError ? (

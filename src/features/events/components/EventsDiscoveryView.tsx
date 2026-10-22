@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { Event } from '@/api/contracts'
 import { EventTicketCard } from '@/design-system/EventTicketCard'
 import { EmptyState } from '@/design-system/primitives/EmptyState'
+import { GhostEventGrid, GhostEventRow } from '@/design-system/primitives/GhostLoader'
 import { formatDate, formatTime, formatCurrency } from '@/lib/format'
 import { getClubTheme } from '@/design-system/clubColors'
 import { MapPin, Ticket, ArrowDown, ArrowUpRight } from '@/design-system/Icon'
@@ -110,24 +111,23 @@ export const EventsDiscoveryView: React.FC<EventsDiscoveryViewProps> = ({
   className,
 }) => {
   if (isLoading && events.length === 0) {
+    if (viewMode === 'grid') {
+      return (
+        <GhostEventGrid
+          count={6}
+          className={cn('w-full', className)}
+        />
+      )
+    }
     return (
       <div
-        className={cn(
-          'w-full',
-          viewMode === 'grid'
-            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8'
-            : 'flex flex-col gap-3',
-          className
-        )}
+        role="status"
+        aria-live="polite"
+        aria-label="Loading events list"
+        className={cn('flex flex-col gap-2.5 max-w-4xl mx-auto w-full', className)}
       >
         {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className={cn(
-              'bg-surface-subtle animate-pulse rounded-2xl',
-              viewMode === 'grid' ? 'h-80' : 'h-20'
-            )}
-          />
+          <GhostEventRow key={`ghost-row-${i}`} />
         ))}
       </div>
     )

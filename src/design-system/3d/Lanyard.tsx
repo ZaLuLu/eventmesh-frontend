@@ -1315,7 +1315,11 @@ const Lanyard = ({
       }
       render();
       const resting = sim.calm > 1.2 && !sim.grab && current.breeze === 0;
-      if (visible && !resting) raf = requestAnimationFrame(tick);
+      if (visible && !resting) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        raf = 0;
+      }
     };
 
     const start = () => {

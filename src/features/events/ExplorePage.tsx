@@ -4,6 +4,7 @@ import { useEvents } from '@/hooks/useEvents'
 import { useClubs } from '@/hooks/useClubs'
 import { EventTicketCard } from '@/design-system/EventTicketCard'
 import { PageShell } from '@/design-system/layout/PageShell'
+import { GhostEventGrid } from '@/design-system/primitives/GhostLoader'
 import {
   MagnifyingGlass,
   X,
@@ -61,9 +62,12 @@ export const ExplorePage: React.FC = () => {
   const sort = params.get('sort') || 'date'
 
   const { data: clubs = [] } = useClubs()
-  const { data, isLoading, isError, refetch } = useEvents({
+  const previewLoading = params.get('previewLoading') === 'true'
+  const { data, isLoading: rawLoading, isError, refetch } = useEvents({
     search: query || undefined,
   })
+  const isLoading = rawLoading || previewLoading
+
 
   const setParam = (key: string, value: string) => {
     setParams((previous) => {
@@ -564,28 +568,9 @@ export const ExplorePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Loading Skeleton (2-columns on mobile, 3-columns on desktop) */}
-          {isLoading && (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 lg:gap-5">
-              {[...Array(6)].map((_, i) => (
-                <div
-                  key={i}
-                  className="flex flex-col w-full rounded-[10px] sm:rounded-[14px] border border-line bg-card overflow-hidden animate-pulse"
-                >
-                  <div className="aspect-[3/4] w-full bg-surface-subtle" />
-                  <div className="p-2.5 sm:p-4 space-y-2 sm:space-y-3">
-                    <div className="h-2.5 sm:h-3 w-16 sm:w-24 bg-surface-subtle rounded-[3px] sm:rounded-[4px]" />
-                    <div className="h-3.5 sm:h-5 w-4/5 bg-surface-subtle rounded-[3px] sm:rounded-[4px]" />
-                    <div className="h-3 sm:h-4 w-1/2 bg-surface-subtle rounded-[3px] sm:rounded-[4px]" />
-                    <div className="pt-1.5 sm:pt-2 flex justify-between border-t border-line/40">
-                      <div className="h-2.5 sm:h-3 w-14 sm:w-20 bg-surface-subtle rounded-[3px] sm:rounded-[4px]" />
-                      <div className="h-2.5 sm:h-3 w-10 sm:w-12 bg-surface-subtle rounded-[3px] sm:rounded-[4px]" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          {/* Ghost Loader Grid (Zero-CLS directional shimmer wireframes matching EventTicketCard) */}
+          {isLoading && <GhostEventGrid count={6} />}
+
 
           {/* Error State */}
           {isError && !isLoading && (
