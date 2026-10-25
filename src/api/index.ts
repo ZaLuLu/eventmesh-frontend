@@ -43,7 +43,7 @@ import {
   httpSystemApi,
 } from './adapters/http'
 
-const isMock = import.meta.env.VITE_API_MODE !== 'http'
+const isMock = import.meta.env.VITE_API_MODE === 'mock'
 
 export const api = {
   mode: isMock ? 'mock' : 'http',

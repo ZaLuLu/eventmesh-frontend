@@ -27,7 +27,8 @@ export const QRCode: React.FC<QRCodeProps> = ({
       value,
       {
         width: Math.round(size * dpr),
-        margin: 1,
+        margin: 2,
+        errorCorrectionLevel: 'M',
         color: {
           dark: colorDark,
           light: colorLight,

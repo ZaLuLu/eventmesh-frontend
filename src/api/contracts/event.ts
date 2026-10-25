@@ -31,6 +31,7 @@ export type EventType = z.infer<typeof EventTypeSchema>
 export const VenueSchema = z.object({
   name: z.string().min(1, 'Venue name is required'),
   address: z.string().optional(),
+  city: z.string().optional(),
   mapUrl: z.string().optional(),
 })
 
@@ -307,6 +308,7 @@ export function normalizeBackendEvent(item: VisibleEventRead | EventRead): Event
     venue: {
       name: detail?.venue_name || browse?.venue || item.city || '',
       address: detail?.venue_address || undefined,
+      city: item.city || undefined,
     },
     startsAt: item.start_time || '',
     endsAt: item.end_time || '',

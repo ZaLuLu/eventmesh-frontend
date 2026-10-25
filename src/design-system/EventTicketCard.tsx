@@ -1,7 +1,7 @@
 import React from 'react'
 import { Event } from '@/api'
 import { EventLink } from './EventLink'
-import { eventPriceLabel } from '@/lib/eventPresentation'
+import { eventPriceLabel, providerInfo } from '@/lib/eventPresentation'
 import { BookmarkSimple, CheckCircle, MapPin, CalendarBlank, ArrowRight } from '@/design-system/Icon'
 import { formatDate, formatTime } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -14,26 +14,19 @@ export interface EventTicketCardProps {
   className?: string
 }
 
-/**
- * EventTicketCard
- * Implements Denim Dept & Hallmark Anti-Slop Card Architecture (Phase 4):
- * - Solitary 14px outer radius frame (8-10px on compact mobile).
- * - Authentic 3:4 vertical portrait ratio (high content-to-chrome ratio).
- * - Rectangular 1px hairline bordered badge with 4px radius (Denim Dept signature).
- * - Clean non-circular bookmark trigger (8px control radius).
- * - Responsive 2-column mobile adaptation (Hallmark Gate 18: Discovery Velocity).
- * - Structured metadata hierarchy: Club Tracker -> Bold Display Title -> Tabular Date/Price Dock.
- */
 export const EventTicketCard: React.FC<EventTicketCardProps> = ({
   event,
   onBookmark,
   isBookmarked = false,
   className = '',
 }) => {
-  const host = event.club?.name || event.organizerName || 'Organizer'
+  const host = event.club?.name || event.organizerName || (event.kind === 'imported' ? event.provider : 'Organizer')
   const soldOut = event.seatsLeft === 0
   const price = eventPriceLabel(event)
   const isVerified = event.club?.verified ?? false
+  const pInfo = providerInfo(event.provider)
+
+  const [imgError, setImgError] = React.useState(false)
 
   return (
     <article
@@ -50,11 +43,12 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
           aria-label={`View details for ${event.title}`}
           className="block h-full w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
-          {event.poster ? (
+          {event.poster && !imgError ? (
             <img
               src={event.poster}
               alt={event.title}
               loading="lazy"
+              onError={() => setImgError(true)}
               className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-103"
             />
           ) : (
@@ -69,12 +63,18 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
           )}
         </EventLink>
 
-        {/* Denim Dept Signature Rectangular Tag (1px solid border, 4px radius, pure contrast) */}
-        <span className="pointer-events-none absolute left-2 top-2 sm:left-3 sm:top-3 z-10 rounded-[3px] sm:rounded-[4px] border border-black bg-white px-1.5 sm:px-2 py-0.5 font-mono text-[8.5px] sm:text-[10px] font-bold uppercase tracking-wider text-black shadow-xs">
-          {event.category || 'Event'}
-        </span>
+        {/* Top Badges: Category + Source Provider */}
+        <div className="pointer-events-none absolute left-2 top-2 sm:left-3 sm:top-3 z-10 flex flex-wrap items-center gap-1.5">
+          <span className="rounded-[3px] sm:rounded-[4px] border border-black bg-white px-1.5 sm:px-2 py-0.5 font-mono text-[8.5px] sm:text-[10px] font-bold uppercase tracking-wider text-black shadow-xs">
+            {event.category || 'Event'}
+          </span>
+          <span className={cn('rounded-[3px] sm:rounded-[4px] border px-1.5 sm:px-2 py-0.5 font-mono text-[8.5px] sm:text-[10px] font-bold uppercase tracking-wider shadow-xs flex items-center gap-1 bg-white/95', pInfo.badgeClass)}>
+            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: pInfo.dotColor }} />
+            {pInfo.name}
+          </span>
+        </div>
 
-        {/* Tactile Bookmark Trigger (Normalized 8px control radius, solid white surface) */}
+        {/* Tactile Bookmark Trigger */}
         {onBookmark && (
           <button
             type="button"
@@ -105,9 +105,10 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
               <CheckCircle size={13} weight="fill" className="shrink-0 text-emerald-500 hidden sm:block" aria-label="Verified organizer" />
             )}
           </div>
-          {event.kind === 'imported' && (
-            <span className="shrink-0 text-[8.5px] sm:text-[10px] font-mono text-ink-muted">via {event.provider}</span>
-          )}
+          <span className="shrink-0 text-[8.5px] sm:text-[10px] font-mono font-medium text-ink-muted flex items-center gap-1">
+            <span className="w-1 h-1 rounded-full" style={{ backgroundColor: pInfo.dotColor }} />
+            {pInfo.name}
+          </span>
         </div>
 
         {/* Event Title */}
@@ -166,7 +167,7 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
               event={event}
               className="text-[10px] sm:text-[11px] font-mono font-semibold text-accent hover:text-accent-hover transition-colors inline-flex items-center gap-0.5 sm:gap-1 group-hover:translate-x-0.5"
             >
-              <span>{event.kind === 'imported' ? 'Inspect' : 'View Pass'}</span>
+              <span>{event.kind === 'imported' ? `View on ${pInfo.name} ↗` : 'View Pass'}</span>
               <ArrowRight size={10} className="sm:hidden" weight="bold" />
               <ArrowRight size={11} className="hidden sm:block" weight="bold" />
             </EventLink>
@@ -176,7 +177,7 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
               aria-label={`Get pass for ${event.title}`}
               className="hidden sm:inline-flex items-center justify-center rounded-[8px] bg-accent hover:bg-accent-hover text-white px-3 py-1 text-xs font-mono font-semibold transition-all shadow-xs hover:shadow-sm active:scale-95"
             >
-              {event.kind === 'imported' ? 'Inspect ↗' : 'Get Pass →'}
+              {event.kind === 'imported' ? `${pInfo.name} ↗` : 'Get Pass →'}
             </EventLink>
           </div>
         </div>

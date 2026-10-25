@@ -7,7 +7,30 @@ type Props = Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & { eve
 
 export function EventLink({ event, children, ...props }: Props) {
   const href = eventDestination(event)
-  if (!href) return <span className={props.className} aria-disabled="true">{children}<span className="sr-only"> — event link unavailable</span></span>
-  if (event.kind === 'imported') return <a {...props} href={href}>{children}<span className="sr-only"> — on {event.provider || 'event provider'}</span></a>
-  return <Link {...props} to={href}>{children}</Link>
+  if (!href) {
+    return (
+      <span className={props.className} aria-disabled="true">
+        {children}
+        <span className="sr-only"> — event link unavailable</span>
+      </span>
+    )
+  }
+  if (event.kind === 'imported' || href.startsWith('http')) {
+    return (
+      <a
+        {...props}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {children}
+        <span className="sr-only"> — on {event.provider || 'external provider'}</span>
+      </a>
+    )
+  }
+  return (
+    <Link {...props} to={href}>
+      {children}
+    </Link>
+  )
 }

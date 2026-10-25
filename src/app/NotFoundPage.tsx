@@ -23,10 +23,9 @@ export const NotFoundPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Severed ticket stub representation */}
         <div className="relative py-4 border-y border-dashed border-ink/30 my-4 flex items-center justify-between text-xs font-mono text-ink-soft">
           <span>ZONE: CAMPUS-EXT</span>
-          <span className="text-cobalt font-bold">STATUS: ADMISSION-REVOKED</span>
+          <span className="text-cobalt font-bold">STATUS: TICKET-CANCELLED</span>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">

@@ -38,13 +38,35 @@ export interface RegistrationRead {
  */
 export interface AttendeeRead {
   user_id: string
-  email: string
-  display_name: string
-  handle: string
-  institution_name: string | null
-  student_id: string | null
+  registration_id?: string | null
   status: string
+  qr_ticket_code?: string | null
+  checked_in_at?: string | null
   created_at: string
+  email?: string | null
+  display_name?: string | null
+  first_name?: string | null
+  last_name?: string | null
+  handle?: string | null
+  institution_name?: string | null
+  student_id?: string | null
+}
+
+export interface TeamLookupResult {
+  team_code: string
+  team_name: string
+  leader_name: string
+  leader_id: string
+  members: Array<{
+    user_id: string
+    name: string
+    email?: string | null
+    role: string
+    status: string
+  }>
+  min_size: number
+  max_size: number
+  is_full: boolean
 }
 
 export const TeamInfoSchema = z.object({
@@ -88,37 +110,60 @@ export const RegistrationSchema = z.object({
   paidAmountCents: z.number().optional(),
   isPaid: z.boolean().optional(),
   refundStatus: z.enum(['not_refunded', 'pending', 'refunded', 'failed']).optional(),
+  qrCodeDataUrl: z.string().optional(),
 })
 
 export type Registration = z.infer<typeof RegistrationSchema>
 
 export function normalizeBackendRegistration(raw: RegistrationRead | any): Registration {
-  const ticketCode = raw.ticketCode || `PASS-${(raw.id || '').slice(0, 8).toUpperCase() || 'EM-01'}`
+  const ticketCode =
+    raw.ticketCode ||
+    raw.qr_ticket_code ||
+    raw.ticket_code ||
+    raw.ticketId ||
+    `PASS-${(raw.id || raw.registration_id || '').slice(0, 8).toUpperCase() || 'EM-01'}`
+  const checkedInAt = raw.checkedInAt || raw.checked_in_at
+  const status: RegistrationStatus =
+    checkedInAt || raw.status === 'checked_in'
+      ? 'checked_in'
+      : ((raw.status as RegistrationStatus) || 'registered')
+
   return {
-    id: raw.id || '',
+    id: raw.id || raw.registration_id || '',
     eventId: raw.native_event_id || raw.eventId || '',
     userId: raw.user_id || raw.userId || '',
     userEmail: raw.userEmail || raw.email || '',
-    userName: raw.userName || raw.display_name || 'Passholder',
+    userName:
+      raw.user_display_name ||
+      raw.userName ||
+      raw.display_name ||
+      (raw.first_name ? `${raw.first_name} ${raw.last_name || ''}`.trim() : 'Passholder'),
+    userPhone: raw.userPhone || raw.phone,
     answers: raw.answers || {},
     team: raw.team,
-    status: (raw.status as RegistrationStatus) || 'registered',
+    status,
     ticketCode,
     createdAt: raw.created_at || raw.createdAt || new Date().toISOString(),
-    checkedInAt: raw.checkedInAt,
-    checkedInBy: raw.checkedInBy,
-    tierName: raw.tierName || raw.tier_name,
+    checkedInAt,
+    checkedInBy: raw.checkedInBy || raw.checked_by_user_id,
+    tierName: raw.tierName || raw.tier_name || (raw.event_type ? raw.event_type.toUpperCase() : undefined),
     waitlistPosition: raw.waitlistPosition || raw.waitlist_position,
-    eventTitle: raw.event?.title || raw.eventTitle || 'Event Pass',
-    eventSlug: raw.event?.slug || raw.eventSlug || '',
-    organizerName: raw.event?.organization?.name || raw.organizerName || 'Event Host',
+    eventTitle: raw.event_title || raw.event?.title || raw.eventTitle || raw.title || 'Event Pass',
+    eventSlug: raw.event_slug || raw.event?.slug || raw.eventSlug || raw.slug || '',
+    organizerName:
+      raw.organization_name ||
+      raw.event?.organization?.name ||
+      raw.organizerName ||
+      raw.clubName ||
+      'Campus Host',
     organizerColor: raw.organizerColor || '#1A73E8',
-    eventStartsAt: raw.event?.start_time || raw.eventStartsAt,
-    venueName: raw.event?.venue_name || raw.venueName || 'Main Campus Venue',
+    eventStartsAt: raw.start_time || raw.event?.start_time || raw.eventStartsAt,
+    venueName: raw.venue_name || raw.event?.venue_name || raw.venueName || 'Main Campus Venue',
     orderId: raw.orderId || raw.order_id,
     paidAmountCents: raw.paidAmountCents || raw.amount_cents,
     isPaid: raw.isPaid ?? raw.is_paid ?? Boolean(raw.orderId || raw.order_id || raw.paidAmountCents),
     refundStatus: raw.refundStatus || raw.refund_status,
+    qrCodeDataUrl: raw.qr_code_data_url || raw.qrCodeDataUrl,
   }
 }
 

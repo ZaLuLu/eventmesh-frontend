@@ -1,7 +1,6 @@
-// Hallmark macrostructure: Profile Bento & Physical 3D Lanyard ID Badge
 import React, { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { jsPDF } from 'jspdf'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   Ticket,
   Certificate as CertificateIcon,
@@ -35,22 +34,48 @@ import { TactileBoardingPass } from './components/TactileBoardingPass'
 import { EventAdmissionTicket } from '@/design-system/micro/EventAdmissionTicket'
 import { StudentIDCard2D } from '@/design-system/3d/StudentIDCard2D'
 import { AvatarSelectorModal } from './components/AvatarSelectorModal'
+import { ProfileDetailsModal } from './components/ProfileDetailsModal'
 import { resolveUserAvatar } from '@/lib/avatars'
+import { Modal } from '@/design-system/primitives/Modal'
+import { getUserScheduleWebCalUrl, getUserScheduleIcsUrl } from '@/lib/ics'
 
 export const AttendeeDashboardPage: React.FC = () => {
   const { session, isAuthenticated } = useAuth()
   const { toast } = useToast()
-  const { data: registrations = [], isLoading: regsLoading } = useMyRegistrations()
+  const { data: rawRegistrations = [], isLoading: regsLoading } = useMyRegistrations()
   const { data: certificates = [], isLoading: certsLoading } = useMyCertificates()
   const { data: clubs = [] } = useClubs()
   const { data: upcomingData } = useEvents()
   const cancelMutation = useCancelRegistration()
   const updateStatusMutation = useUpdateRegistrationStatus()
 
+  // Cache passes to localStorage so students can display tickets offline at venue gates
+  useEffect(() => {
+    if (rawRegistrations && rawRegistrations.length > 0) {
+      try {
+        localStorage.setItem('eventmesh_cached_passes', JSON.stringify(rawRegistrations))
+      } catch {}
+    }
+  }, [rawRegistrations])
+
+  const registrations = useMemo<Registration[]>(() => {
+    if (rawRegistrations && rawRegistrations.length > 0) return rawRegistrations
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('eventmesh_cached_passes')
+        if (cached) return JSON.parse(cached)
+      } catch {}
+    }
+    return []
+  }, [rawRegistrations])
+
   const [selectedTicket, setSelectedTicket] = useState<Registration | null>(null)
   const [activeTab, setActiveTab] = useState<'passes' | 'certificates' | 'clubs'>('passes')
   const [copiedRegNo, setCopiedRegNo] = useState(false)
+  const [calendarSyncOpen, setCalendarSyncOpen] = useState(false)
+  const [copiedFeed, setCopiedFeed] = useState(false)
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false)
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState<string>(() => resolveUserAvatar(session))
 
   useEffect(() => {
@@ -69,14 +94,15 @@ export const AttendeeDashboardPage: React.FC = () => {
 
     return {
       name: cleanName,
-      registrationNumber: s?.registrationNumber || '',
-      degreeBranch: s?.degreeBranch || '',
+      registrationNumber: s?.registrationNumber || s?.studentId || '',
+      degreeBranch: s?.degreeBranch || s?.branch || '',
       semester: s?.semester,
       email: s?.email || '',
       role: 'EVENTMESH MEMBER',
-      campus: s?.campus || '',
+      campus: s?.campus || s?.institutionName || '',
       bloodGroup: s?.bloodGroup,
-      emergencyPhone: s?.emergencyPhone,
+      emergencyPhone: s?.emergencyPhone || s?.phone,
+      phone: s?.phone || '',
     }
   }, [session])
 
@@ -114,28 +140,49 @@ export const AttendeeDashboardPage: React.FC = () => {
 
   const followedClubs = clubs.filter((c) => c.isFollowed)
 
+  const queryClient = useQueryClient()
+  const [isPromoting, setIsPromoting] = useState(false)
+  const isOrganizer = Boolean(
+    session?.clubId ||
+    ['org_admin', 'platform_admin', 'club_admin', 'organizer', 'volunteer'].includes(session?.role || '')
+  )
+
   const handleBecomeOrganizer = async () => {
+    setIsPromoting(true)
     try {
       if (api.auth.becomeOrganizer) {
         await api.auth.becomeOrganizer()
-        toast({
-          title: 'Role Promoted',
-          message: 'You have been granted Club Organizer privileges. You can now host events and lead clubs!',
-          type: 'success',
-        })
-        window.location.reload()
       }
+      localStorage.setItem('eventmesh_user_role', 'org_admin')
+      localStorage.setItem('eventmesh_user_club_id', 'club-devcraft')
+
+      queryClient.setQueryData(['auth', 'session'], (old: any) => ({
+        ...(old || {}),
+        role: 'org_admin',
+        clubId: 'club-devcraft',
+      }))
+      queryClient.invalidateQueries({ queryKey: ['auth'] }).catch(() => {})
+
+      toast({
+        title: 'Role Promoted 🎉',
+        message: 'You have been granted Club Organizer privileges. You can now host events and lead clubs!',
+        type: 'success',
+      })
+      fireCelebrationConfetti()
     } catch (err: any) {
       toast({
         title: 'Upgrade failed',
-        message: err.detail || 'Unable to promote role at this time.',
+        message: err?.detail || err?.message || 'Unable to promote role at this time.',
         type: 'error',
       })
+    } finally {
+      setIsPromoting(false)
     }
   }
 
-  const downloadCertificatePDF = (cert: Certificate) => {
+  const downloadCertificatePDF = async (cert: Certificate) => {
     try {
+      const { jsPDF } = await import('jspdf')
       const doc = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
@@ -213,10 +260,53 @@ export const AttendeeDashboardPage: React.FC = () => {
     }
   }
 
-  // Unauthenticated guests see demo passholder identity with permanent 3D lanyard preview
+  // Enriched registrations hydrated with event and attendee details
+  const enrichedRegistrations = useMemo(() => {
+    const events = upcomingData?.items || []
+    const eventsMap = new Map<string, any>()
+    for (const e of events) {
+      if (e.id) eventsMap.set(String(e.id), e)
+      if (e.slug) eventsMap.set(String(e.slug), e)
+    }
 
-  const activePasses = registrations.filter((r) => r.status !== 'cancelled')
-  const attendedPasses = registrations.filter((r) => r.status === 'checked_in')
+    return registrations.map((reg) => {
+      const match = eventsMap.get(String(reg.eventId)) || eventsMap.get(String(reg.eventSlug))
+      const resolvedUserName =
+        reg.userName && reg.userName !== 'Passholder' && reg.userName !== 'Student Passholder'
+          ? reg.userName
+          : studentData.name || session?.name || 'Verified Attendee'
+
+      if (!match) {
+        return {
+          ...reg,
+          userName: resolvedUserName,
+        }
+      }
+
+      return {
+        ...reg,
+        eventTitle:
+          reg.eventTitle && reg.eventTitle !== 'Event Pass'
+            ? reg.eventTitle
+            : match.title || 'Event Pass',
+        eventSlug: reg.eventSlug || match.slug,
+        eventStartsAt: reg.eventStartsAt || match.startsAt,
+        venueName:
+          reg.venueName && reg.venueName !== 'Main Campus Venue'
+            ? reg.venueName
+            : match.venue?.name || match.location || 'Main Campus Venue',
+        organizerName:
+          reg.organizerName && reg.organizerName !== 'Event Host' && reg.organizerName !== 'Campus Host'
+            ? reg.organizerName
+            : match.clubName || match.organization?.name || 'Campus Organization',
+        tierName: reg.tierName || (match.type ? match.type.toUpperCase() : 'GENERAL ADMISSION'),
+        userName: resolvedUserName,
+      }
+    })
+  }, [registrations, upcomingData, session, studentData])
+
+  const activePasses = enrichedRegistrations.filter((r) => r.status !== 'cancelled')
+  const attendedPasses = enrichedRegistrations.filter((r) => r.status === 'checked_in')
   const nextEvent = (upcomingData?.items || [])
     .filter((event) => activePasses.some((pass) => pass.eventId === event.id) && new Date(event.startsAt).getTime() >= Date.now())
     .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())[0]
@@ -271,7 +361,7 @@ export const AttendeeDashboardPage: React.FC = () => {
       )}
 
       {/* Become an Organizer Banner */}
-      {!Boolean(session?.clubId || session?.role === 'org_admin' || session?.role === 'platform_admin') && (
+      {!isOrganizer && (
         <section className="rounded-2xl border border-accent/25 bg-gradient-to-r from-accent/10 via-surface to-surface p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
           <div className="flex items-start sm:items-center gap-3.5">
             <div className="w-10 h-10 rounded-xl bg-accent/15 text-accent flex items-center justify-center shrink-0">
@@ -282,13 +372,13 @@ export const AttendeeDashboardPage: React.FC = () => {
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-accent text-on-accent">
                   LEADERSHIP UPGRADE
                 </span>
-                <span className="text-xs font-mono text-text-3">1-Click Fast Charter</span>
+                <span className="text-xs font-mono text-text-3">Start a Club</span>
               </div>
               <h3 className="text-body font-bold text-text mt-0.5">
                 Want to host your own tech meetups or hackathons?
               </h3>
               <p className="text-caption text-text-2">
-                Promote your account to Club Organizer. Lead charters, design event registrations, and disburse ticket revenues.
+                Promote your account to Club Organizer. Lead a club, design event registrations, and withdraw earnings.
               </p>
             </div>
           </div>
@@ -299,6 +389,7 @@ export const AttendeeDashboardPage: React.FC = () => {
               variant="primary"
               icon={<Sparkle size={14} weight="fill" />}
               onClick={handleBecomeOrganizer}
+              loading={isPromoting}
             >
               Become an Organizer
             </Button>
@@ -307,7 +398,7 @@ export const AttendeeDashboardPage: React.FC = () => {
       )}
 
       {/* Organizer Privileges Active Banner */}
-      {Boolean(session?.clubId || session?.role === 'org_admin' || session?.role === 'platform_admin') && (
+      {isOrganizer && (
         <section className="rounded-2xl border border-line bg-subtle p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-small">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-surface border border-line flex items-center justify-center text-accent">
@@ -342,15 +433,27 @@ export const AttendeeDashboardPage: React.FC = () => {
             </span>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setIsAvatarModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-ink-soft hover:text-ink bg-surface border border-line/60 transition-colors shadow-xs"
-            title="Edit student avatar photo"
-          >
-            <PencilSimple size={12} />
-            <span>Change Photo</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsProfileModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-ink-soft hover:text-ink bg-surface border border-line/60 transition-colors shadow-xs"
+              title="Edit attendee profile details"
+            >
+              <PencilSimple size={12} />
+              <span>Edit Profile</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsAvatarModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-ink-soft hover:text-ink bg-surface border border-line/60 transition-colors shadow-xs"
+              title="Edit student avatar photo"
+            >
+              <PencilSimple size={12} />
+              <span>Change Photo</span>
+            </button>
+          </div>
         </div>
 
         {/* Central Identity Card Artifact */}
@@ -378,60 +481,72 @@ export const AttendeeDashboardPage: React.FC = () => {
       {/* TICKET & CREDENTIAL TABS                                                  */}
       {/* ========================================================================= */}
       <section className="space-y-6">
-        {/* Tab Header Controls */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-line/30 pb-3">
-          <button
-            type="button"
-            onClick={() => setActiveTab('passes')}
-            className={`px-4 py-1.5 rounded-full font-medium text-xs transition-all flex items-center gap-2 ${
-              activeTab === 'passes'
-                ? 'bg-ink text-surface shadow-xs'
-                : 'text-ink-soft hover:text-ink hover:bg-surface-subtle'
-            }`}
-          >
-            <Ticket className="w-3.5 h-3.5" weight="bold" />
-            <span>My Tickets</span>
-            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-              activeTab === 'passes' ? 'bg-accent text-white' : 'bg-surface-subtle text-ink-soft'
-            }`}>
-              {registrations.length}
-            </span>
-          </button>
+        {/* Tab Header Controls & Calendar Sync */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line/30 pb-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab('passes')}
+              className={`px-4 py-1.5 rounded-full font-medium text-xs transition-all flex items-center gap-2 ${
+                activeTab === 'passes'
+                  ? 'bg-ink text-surface shadow-xs'
+                  : 'text-ink-soft hover:text-ink hover:bg-surface-subtle'
+              }`}
+            >
+              <Ticket className="w-3.5 h-3.5" weight="bold" />
+              <span>My Tickets</span>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                activeTab === 'passes' ? 'bg-accent text-white' : 'bg-surface-subtle text-ink-soft'
+              }`}>
+                {enrichedRegistrations.length}
+              </span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setActiveTab('certificates')}
-            className={`px-4 py-1.5 rounded-full font-medium text-xs transition-all flex items-center gap-2 ${
-              activeTab === 'certificates'
-                ? 'bg-ink text-surface shadow-xs'
-                : 'text-ink-soft hover:text-ink hover:bg-surface-subtle'
-            }`}
-          >
-            <CertificateIcon className="w-3.5 h-3.5" weight="bold" />
-            <span>Certificates</span>
-            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-              activeTab === 'certificates' ? 'bg-accent text-white' : 'bg-surface-subtle text-ink-soft'
-            }`}>
-              {certificates.length}
-            </span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('certificates')}
+              className={`px-4 py-1.5 rounded-full font-medium text-xs transition-all flex items-center gap-2 ${
+                activeTab === 'certificates'
+                  ? 'bg-ink text-surface shadow-xs'
+                  : 'text-ink-soft hover:text-ink hover:bg-surface-subtle'
+              }`}
+            >
+              <CertificateIcon className="w-3.5 h-3.5" weight="bold" />
+              <span>Certificates</span>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                activeTab === 'certificates' ? 'bg-accent text-white' : 'bg-surface-subtle text-ink-soft'
+              }`}>
+                {certificates.length}
+              </span>
+            </button>
 
+            <button
+              type="button"
+              onClick={() => setActiveTab('clubs')}
+              className={`px-4 py-1.5 rounded-full font-medium text-xs transition-all flex items-center gap-2 ${
+                activeTab === 'clubs'
+                  ? 'bg-ink text-surface shadow-xs'
+                  : 'text-ink-soft hover:text-ink hover:bg-surface-subtle'
+              }`}
+            >
+              <GraduationCap className="w-3.5 h-3.5" weight="bold" />
+              <span>Followed Clubs</span>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                activeTab === 'clubs' ? 'bg-accent text-white' : 'bg-surface-subtle text-ink-soft'
+              }`}>
+                {followedClubs.length}
+              </span>
+            </button>
+          </div>
+
+          {/* Live Calendar Subscription Action */}
           <button
             type="button"
-            onClick={() => setActiveTab('clubs')}
-            className={`px-4 py-1.5 rounded-full font-medium text-xs transition-all flex items-center gap-2 ${
-              activeTab === 'clubs'
-                ? 'bg-ink text-surface shadow-xs'
-                : 'text-ink-soft hover:text-ink hover:bg-surface-subtle'
-            }`}
+            onClick={() => setCalendarSyncOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line bg-surface hover:bg-card text-ink text-xs font-medium transition-colors"
           >
-            <GraduationCap className="w-3.5 h-3.5" weight="bold" />
-            <span>Followed Clubs</span>
-            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-              activeTab === 'clubs' ? 'bg-accent text-white' : 'bg-surface-subtle text-ink-soft'
-            }`}>
-              {followedClubs.length}
-            </span>
+            <CalendarBlank size={14} className="text-accent" />
+            <span>Sync to Phone / Calendar</span>
           </button>
         </div>
 
@@ -440,7 +555,7 @@ export const AttendeeDashboardPage: React.FC = () => {
           <div>
             {regsLoading ? (
               <p className="text-xs font-mono text-ink-soft">Loading tickets...</p>
-            ) : registrations.length === 0 ? (
+            ) : enrichedRegistrations.length === 0 ? (
               <div className="bg-surface-subtle rounded-3xl p-10 text-center space-y-3">
                 <h3 className="font-display font-medium text-lg text-ink">No active passes yet</h3>
                 <p className="text-sm text-ink-soft max-w-sm mx-auto">
@@ -456,7 +571,7 @@ export const AttendeeDashboardPage: React.FC = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {registrations.map((reg) => (
+                {enrichedRegistrations.map((reg) => (
                   <TactileBoardingPass
                     key={reg.id}
                     registration={reg}
@@ -606,12 +721,130 @@ export const AttendeeDashboardPage: React.FC = () => {
 
 
 
+      {/* Organizer Studio CTA Banner */}
+      <section className="rounded-2xl border border-line bg-surface p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-8">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-accent/15 text-accent">
+              Club Leadership & Management
+            </span>
+          </div>
+          <h4 className="font-display font-bold text-base text-ink">Host Events for Your Student Club</h4>
+          <p className="text-xs text-ink-soft max-w-xl">
+            Organizers get access to real-time QR gate scanning, customizable registration forms, automated attendance rosters, and verified PDF certificates.
+          </p>
+        </div>
+        <Link
+          to="/admin"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-ink text-paper text-xs font-semibold hover:bg-ink-soft active:scale-95 transition-all shrink-0"
+        >
+          <span>Switch to Organizer Studio</span>
+          <ArrowRight size={14} />
+        </Link>
+      </section>
+
+      {/* Profile Details Modal */}
+      <ProfileDetailsModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
+
       {/* Avatar Customizer Modal */}
       <AvatarSelectorModal
         isOpen={isAvatarModalOpen}
         onClose={() => setIsAvatarModalOpen(false)}
         onAvatarSelected={(url) => setAvatarUrl(url)}
       />
+
+      {/* Live Calendar Subscription Modal */}
+      <Modal
+        isOpen={calendarSyncOpen}
+        onClose={() => setCalendarSyncOpen(false)}
+        title="Sync All Passes to Your Calendar"
+        subtitle="Subscribe once with Apple Calendar, Google Calendar, or Outlook to keep your confirmed events automatically synced."
+        maxWidth="max-w-md"
+      >
+        <div className="space-y-4 pt-1">
+          <div className="p-3.5 rounded-xl bg-surface-subtle/80 border border-line text-xs space-y-1.5">
+            <p className="font-semibold text-ink flex items-center gap-1.5">
+              <span>⚡ Live WebCal Feed</span>
+              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">
+                Auto-Refreshing
+              </span>
+            </p>
+            <p className="text-ink-soft">
+              Anytime you RSVP to an event or an organizer modifies session timings, your phone calendar updates automatically without re-downloading.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            {/* 1-Tap Apple Calendar / Outlook */}
+            <a
+              href={getUserScheduleWebCalUrl(session?.id || 'me')}
+              className="flex items-center justify-between p-3.5 rounded-xl border border-line bg-surface hover:bg-card text-ink transition-colors group"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-xl">🍏</span>
+                <div>
+                  <p className="text-sm font-semibold">Apple Calendar / Outlook</p>
+                  <p className="text-xs text-ink-soft">1-tap subscribe via native WebCal</p>
+                </div>
+              </div>
+              <ArrowRight size={15} className="text-ink-muted group-hover:text-ink transition-colors" />
+            </a>
+
+            {/* Direct .ics Download */}
+            <a
+              href={getUserScheduleIcsUrl(session?.id || 'me')}
+              download="eventmesh-my-schedule.ics"
+              className="flex items-center justify-between p-3.5 rounded-xl border border-line bg-surface hover:bg-card text-ink transition-colors group"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-xl">📥</span>
+                <div>
+                  <p className="text-sm font-semibold">Download .ICS Snapshot</p>
+                  <p className="text-xs text-ink-soft">Save all current tickets as a calendar file</p>
+                </div>
+              </div>
+              <span className="text-xs font-mono text-ink-muted group-hover:text-ink">.ics</span>
+            </a>
+          </div>
+
+          {/* Copy WebCal Feed URL */}
+          <div className="pt-2 border-t border-line">
+            <label className="text-[11px] font-mono uppercase tracking-wider text-ink-muted block mb-1.5">
+              Personal WebCal URL
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                readOnly
+                value={getUserScheduleWebCalUrl(session?.id || 'me')}
+                className="flex-1 bg-surface-subtle border border-line rounded-input px-3 py-1.5 text-xs font-mono text-ink-soft select-all"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(getUserScheduleWebCalUrl(session?.id || 'me'))
+                  setCopiedFeed(true)
+                  setTimeout(() => setCopiedFeed(false), 2000)
+                  toast({
+                    title: 'Feed URL copied',
+                    message: 'Add as a subscribed calendar in Google Calendar or Outlook settings.',
+                    type: 'success',
+                  })
+                }}
+                className="px-3 py-1.5 bg-ink text-paper rounded-input text-xs font-medium hover:bg-ink-soft active:scale-95 transition-transform shrink-0 flex items-center gap-1"
+              >
+                {copiedFeed ? <Check size={13} /> : <Copy size={13} />}
+                <span>{copiedFeed ? 'Copied' : 'Copy'}</span>
+              </button>
+            </div>
+            <p className="text-[11px] text-ink-muted mt-1.5">
+              In Google Calendar, go to <i>Other calendars + &gt; From URL</i> and paste this link.
+            </p>
+          </div>
+        </div>
+      </Modal>
     </PageShell>
   )
 }

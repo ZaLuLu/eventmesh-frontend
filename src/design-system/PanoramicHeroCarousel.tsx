@@ -29,7 +29,7 @@ export const PanoramicHeroCarousel: React.FC<PanoramicHeroCarouselProps> = ({
 }) => {
   const slides = useMemo(() => {
     const featured = events.filter((e) => e.isSignature || e.promotion?.label || e.banner || e.poster)
-    return (featured.length ? featured : events).slice(0, 6)
+    return (featured.length ? featured : events).slice(0, 3)
   }, [events])
 
   const count = slides.length

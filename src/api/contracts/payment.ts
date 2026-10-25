@@ -3,6 +3,8 @@ import { z } from 'zod'
 export const PaymentTypeSchema = z.enum([
   'event_registration',
   'organizer_subscription',
+  'EVENT_REGISTRATION',
+  'ORGANIZER_SUBSCRIPTION',
 ])
 export type PaymentType = z.infer<typeof PaymentTypeSchema>
 

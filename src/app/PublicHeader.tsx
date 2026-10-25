@@ -106,6 +106,21 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             <ThemeToggle />
           </div>
 
+          {/* Contextual Role Switcher Pill (Desktop) */}
+          {isAuthenticated && (
+            <div className="hidden lg:flex items-center">
+              <Link
+                to="/admin"
+                onClick={closeMenus}
+                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-[14px] border border-line bg-surface-subtle hover:bg-surface text-ink text-xs font-semibold tracking-wide transition-colors"
+                title="Open Club Organizer Studio"
+              >
+                <span className="w-2 h-2 rounded-full bg-accent" />
+                <span>Host Events</span>
+              </Link>
+            </div>
+          )}
+
           {/* Desktop & Tablet Passes / Auth (Denim Dept 14px Button Standard) */}
           <div className="hidden sm:block">
             {isAuthenticated ? (
@@ -131,25 +146,50 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                 </div>
 
                 {accountOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-52 rounded-[14px] border border-line bg-card p-2 text-sm shadow-xl z-50">
+                  <div className="absolute right-0 top-full mt-2 w-56 rounded-[14px] border border-line bg-card p-2 text-sm shadow-xl z-50">
                     <p className="truncate px-2 py-1.5 text-xs text-ink-soft border-b border-line mb-1 font-mono">
                       {session?.name || session?.email}
                     </p>
-                    {canAccessAdmin() && (
-                      <Link
-                        to="/admin"
-                        onClick={closeMenus}
-                        className="block rounded-[8px] px-2 py-1.5 text-xs font-medium hover:bg-surface-subtle transition-colors"
-                      >
-                        Admin console
-                      </Link>
-                    )}
+
+                    {/* Quick Role Switcher */}
+                    <div className="p-1 mb-1.5 rounded-lg bg-surface-subtle border border-line">
+                      <div className="flex items-center justify-between px-2 py-1 text-[10px]">
+                        <span className="font-mono text-ink-muted uppercase">Workspace</span>
+                        <span className="font-bold text-accent">
+                          {canAccessAdmin() ? 'Organizer' : 'Attendee'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1 pt-0.5">
+                        <Link
+                          to="/attendee/dashboard"
+                          onClick={closeMenus}
+                          className="px-2 py-1 rounded bg-card text-center text-[10px] font-semibold text-ink border border-line hover:bg-surface transition-colors"
+                        >
+                          🎓 Attendee
+                        </Link>
+                        <Link
+                          to="/admin"
+                          onClick={closeMenus}
+                          className="px-2 py-1 rounded bg-card text-center text-[10px] font-semibold text-accent border border-line hover:bg-surface transition-colors"
+                        >
+                          ⚡ Organizer
+                        </Link>
+                      </div>
+                    </div>
+
                     <Link
                       to="/attendee/dashboard"
                       onClick={closeMenus}
                       className="block rounded-[8px] px-2 py-1.5 text-xs font-medium hover:bg-surface-subtle transition-colors"
                     >
-                      Attendee dashboard
+                      Attendee tickets & passes
+                    </Link>
+                    <Link
+                      to="/admin"
+                      onClick={closeMenus}
+                      className="block rounded-[8px] px-2 py-1.5 text-xs font-medium hover:bg-surface-subtle transition-colors"
+                    >
+                      Organizer studio & desk
                     </Link>
                     <button
                       type="button"
@@ -239,17 +279,15 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                 onClick={closeMenus}
                 className="block w-full text-center py-2.5 rounded-[14px] bg-ink text-paper text-xs font-bold uppercase tracking-[0.08em] shadow-xs active:scale-[0.98] transition-transform"
               >
-                My Passes
+                🎓 Attendee Passes
               </Link>
-              {canAccessAdmin() && (
-                <Link
-                  to="/admin"
-                  onClick={closeMenus}
-                  className="block text-center py-2 text-xs font-semibold uppercase tracking-[0.08em] text-ink-soft hover:text-ink"
-                >
-                  Admin console
-                </Link>
-              )}
+              <Link
+                to="/admin"
+                onClick={closeMenus}
+                className="block w-full text-center py-2.5 rounded-[14px] border border-line bg-surface-subtle text-ink text-xs font-bold uppercase tracking-[0.08em] hover:bg-surface transition-colors"
+              >
+                ⚡ Organizer Studio
+              </Link>
               <button
                 type="button"
                 onClick={() => {

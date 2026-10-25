@@ -1,4 +1,3 @@
-import jsPDF from 'jspdf'
 import { formatDate, formatTime } from '@/lib/format'
 
 export interface StampedInvoicePdfOptions {
@@ -20,7 +19,7 @@ export interface StampedInvoicePdfOptions {
   paymentDate?: Date
 }
 
-export function downloadStampedTicketAndInvoicePDF(options: StampedInvoicePdfOptions) {
+export async function downloadStampedTicketAndInvoicePDF(options: StampedInvoicePdfOptions) {
   const {
     event,
     registration,
@@ -38,6 +37,8 @@ export function downloadStampedTicketAndInvoicePDF(options: StampedInvoicePdfOpt
     year: 'numeric',
   }).toUpperCase()
 
+  const { default: jsPDF } = await import('jspdf')
+  const QRCodeLib: any = (await import('qrcode')).default || (await import('qrcode'))
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -97,18 +98,53 @@ export function downloadStampedTicketAndInvoicePDF(options: StampedInvoicePdfOpt
   doc.text(`Authorized Attendee: ${attendeeName} (${attendeeEmail})`, 22, 79)
   doc.text(`Pass Serial: #${passSerial}  |  Gate Protocol: ISO/IEC 18004 Verification Valid`, 22, 85)
 
-  // QR Stand-in visual inside ticket
+  // Generate structured QR payload matching scanner
+  const qrPayload = JSON.stringify({
+    v: 1,
+    ticket: ticketCode,
+    ticketId: ticketCode,
+    code: ticketCode,
+    reg: registration.id,
+    registrationId: registration.id,
+  })
+
+  let qrDataUrl = ''
+  try {
+    qrDataUrl = await QRCodeLib.toDataURL(qrPayload, {
+      margin: 1,
+      width: 256,
+      errorCorrectionLevel: 'M',
+      color: {
+        dark: '#0F172A',
+        light: '#FFFFFF',
+      },
+    })
+  } catch (err) {
+    console.warn('QR code generation warning for PDF invoice:', err)
+  }
+
+  // QR card section inside ticket
   doc.setFillColor(255, 255, 255)
   doc.setDrawColor(203, 213, 225)
-  doc.roundedRect(148, 56, 42, 54, 2, 2, 'FD')
+  doc.roundedRect(148, 54, 42, 58, 2, 2, 'FD')
+
+  if (qrDataUrl) {
+    doc.addImage(qrDataUrl, 'PNG', 152, 57, 34, 34)
+  } else {
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(8)
+    doc.setTextColor(47, 75, 214)
+    doc.text('SCANNABLE QR', 169, 68, { align: 'center' })
+  }
+
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(8)
-  doc.setTextColor(47, 75, 214)
-  doc.text('SCANNABLE QR', 169, 63, { align: 'center' })
-  doc.setFontSize(7)
+  doc.setFontSize(7.5)
+  doc.setTextColor(15, 23, 42)
+  doc.text(ticketCode, 169, 96, { align: 'center' })
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(6.5)
   doc.setTextColor(100, 116, 139)
-  doc.text(ticketCode, 169, 70, { align: 'center' })
-  doc.text('PRESENT AT GATE', 169, 104, { align: 'center' })
+  doc.text('PRESENT AT GATE', 169, 102, { align: 'center' })
 
   // ================= 3. INVOICE TABLE =================
   doc.setFont('helvetica', 'bold')

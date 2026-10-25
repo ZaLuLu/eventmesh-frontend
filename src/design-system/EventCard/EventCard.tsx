@@ -73,6 +73,17 @@ export const EventCard: React.FC<EventCardProps> = ({
   const isFree = event.isFree || event.price === 0 || !event.features?.paid
   const hasImage = Boolean(event.poster && event.poster.trim().length > 0)
 
+  const getCardCtaLabel = () => {
+    if (event.kind !== 'imported') return 'Get Pass'
+    const prov = (event.provider || '').toLowerCase()
+    const url = (event.sourceUrl || '').toLowerCase()
+    if (prov.includes('eventbrite') || url.includes('eventbrite')) return 'Register on Eventbrite ↗'
+    if (prov.includes('meetup') || url.includes('meetup')) return 'View on Meetup ↗'
+    if (prov.includes('luma') || url.includes('lu.ma')) return 'Register on Luma ↗'
+    if (event.provider) return `Register on ${event.provider} ↗`
+    return 'Book ↗'
+  }
+
   // -------------------------------------------------------------
   // VARIANT: LIST-ROW
   // -------------------------------------------------------------
@@ -341,12 +352,16 @@ export const EventCard: React.FC<EventCardProps> = ({
               priority={priority}
             />
 
-            {/* Top Badges & Actions */}
+            {/* Top Badges & Actions (Max 2 badges: date/time or filling fast, and price) */}
             <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none z-10 font-mono text-xs">
               <div className="flex items-center gap-1.5 flex-wrap pointer-events-auto">
-                {isFillingFast && (
+                {isFillingFast ? (
                   <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40 text-[10px] font-mono font-medium shadow-xs backdrop-blur-xs">
                     {seatsLeftLabel}
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-0.5 rounded-full bg-card/90 text-accent border border-line text-[10px] font-mono font-medium shadow-xs backdrop-blur-xs">
+                    {dateFormatted}
                   </span>
                 )}
                 {isFree ? (
@@ -418,6 +433,17 @@ export const EventCard: React.FC<EventCardProps> = ({
               {event.title}
             </EventLink>
           </h3>
+
+          {/* Category & Source subtle text under title */}
+          <div className="flex items-center gap-1.5 text-[11px] font-mono text-ink-muted">
+            <span className="capitalize">{event.category}</span>
+            {(event.provider || event.sourceUrl || event.kind === 'imported') && (
+              <>
+                <span>·</span>
+                <span className="capitalize">{event.provider || 'External'}</span>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -440,7 +466,7 @@ export const EventCard: React.FC<EventCardProps> = ({
           event={event}
           className="flex-shrink-0 rounded-full bg-ink px-4 py-1.5 font-mono text-xs font-semibold text-paper hover:bg-accent hover:text-white active:scale-[0.98] transition-all shadow-xs"
         >
-          {event.kind === 'imported' ? 'Book ↗' : 'Get Pass'}
+          {getCardCtaLabel()}
         </EventLink>
       </div>
     </article>

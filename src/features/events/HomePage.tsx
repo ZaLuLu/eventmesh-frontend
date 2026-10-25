@@ -3,13 +3,12 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { usePromotedEvents } from '@/hooks/useEvents'
 import { api, Event, PaginatedResult } from '@/api'
-import { CinematicHeroStage } from './components/CinematicHeroStage'
+import { CinematicHeroStage, HERO_FEATURED_EVENTS } from './components/CinematicHeroStage'
 import { VerticalPosterCard } from '@/design-system/VerticalPosterCard'
 import { GhostPosterCard } from '@/design-system/primitives/GhostLoader'
 import { SectionHeader } from '@/design-system/SectionHeader'
 import { ArrowRight, Sparkle } from '@/design-system/Icon'
 import { ActiveThemeTrio } from './components/ActiveThemeTrio'
-import { EventCarousel3D, type EventCarouselItem } from '@/design-system/3d'
 
 export const HomePage: React.FC = () => {
   // 1. Promoted / Featured Events (for Top Sliding Stage with Dual Peeks)
@@ -52,12 +51,8 @@ export const HomePage: React.FC = () => {
     }
   }, [])
 
-  // 3. Featured Hero Carousel Events
-  const heroSlideEvents = useMemo(() => {
-    const pool = promoted.length > 0 ? promoted : allEvents
-    const featured = pool.filter((e) => e.isSignature || e.promotion?.label || e.banner || e.poster)
-    return (featured.length ? featured : pool).slice(0, 6)
-  }, [promoted, allEvents])
+  // 3. Featured Hero Carousel Events - Strictly the 3 flagship dummy events
+  const heroSlideEvents = HERO_FEATURED_EVENTS
 
   // 4. Strictly 4 Paid Premier Ticketed Events for Homepage
   const paidPremiereEvents = useMemo(() => {

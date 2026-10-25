@@ -17,7 +17,9 @@ import { Sticker } from '@/design-system/primitives/Sticker'
 import { Button } from '@/design-system/primitives/Button'
 import { formatDate } from '@/lib/format'
 import { getClubTheme } from '@/design-system/clubColors'
-import { WaxSeal3D } from '@/design-system/3d'
+const WaxSeal3D = React.lazy(() =>
+  import('@/design-system/3d/WaxSeal3D').then((m) => ({ default: m.WaxSeal3D }))
+)
 
 export const VerifyCertificatePage: React.FC = () => {
   const { certificateId } = useParams<{ certificateId: string }>()
@@ -97,13 +99,15 @@ export const VerifyCertificatePage: React.FC = () => {
 
             {/* 3D Wax Seal Credential Stamp */}
             <div className="w-full flex flex-col items-center justify-center py-2 bg-surface/50 rounded-2xl border border-border-default/60">
-              <WaxSeal3D
-                issuerName={record.organizerName || 'EVENTMESH ACADEMY'}
-                sealText="AUTHENTICATED"
-                sealYear={record.issuedAt ? new Date(record.issuedAt).getFullYear().toString() : '2026'}
-                color={issuingTheme?.hex || issuingTheme?.color || '#8A1C14'}
-                height={200}
-              />
+              <React.Suspense fallback={<div className="h-[200px] flex items-center justify-center text-xs font-mono text-ink-muted">Loading Wax Seal 3D...</div>}>
+                <WaxSeal3D
+                  issuerName={record.organizerName || 'EVENTMESH ACADEMY'}
+                  sealText="AUTHENTICATED"
+                  sealYear={record.issuedAt ? new Date(record.issuedAt).getFullYear().toString() : '2026'}
+                  color={issuingTheme?.hex || issuingTheme?.color || '#8A1C14'}
+                  height={200}
+                />
+              </React.Suspense>
               <span className="text-[10px] font-mono text-text-3 uppercase tracking-widest mt-1">
                 Interactive 3D University Wax Seal • Drag to inspect
               </span>

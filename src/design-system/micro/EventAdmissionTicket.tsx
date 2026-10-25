@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import {
   DownloadSimple,
@@ -10,8 +10,8 @@ import {
   User,
   Lightning,
 } from '@phosphor-icons/react'
-import { jsPDF } from 'jspdf'
-import { Registration } from '@/api'
+import { Registration, api } from '@/api'
+import { supabase } from '@/lib/supabaseClient'
 import { QRCode } from '@/design-system/primitives/QRCode'
 import { TearTicket } from './TearTicket'
 import { stampSound } from '@/components/stamp/sound'
@@ -75,17 +75,22 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
   // Standardized structured QR payload matching AdminCheckinPage validator
   const qrValue = JSON.stringify({
     v: 1,
+    ticket: ticketCode,
     ticketId: ticketCode,
     code: ticketCode,
-    registrationId: registration.id,
+    event: registration.eventSlug || registration.eventId || '',
     eventId: registration.eventId || '',
+    reg: registration.id,
+    registrationId: registration.id,
     sig: `SIG_${registration.id.slice(0, 8)}`,
   })
 
   // Format admission timestamp
-  const admissionTimestamp = registration.checkedInAt
-    ? formatTime(registration.checkedInAt)
-    : formatTime(new Date().toISOString())
+  const [admissionTimestamp, setAdmissionTimestamp] = useState(() =>
+    registration.checkedInAt
+      ? formatTime(registration.checkedInAt)
+      : formatTime(new Date().toISOString())
+  )
 
   // Manual tear trigger (for user preview / interaction)
   const triggerManualTear = () => {
@@ -104,10 +109,17 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
   }
 
   // Gatekeeper Scan Admission Handler (Irreversible)
-  const handleGateAdmission = () => {
+  const handleGateAdmission = (scannedTime?: string | React.MouseEvent) => {
     if (isGateScanned) return
-    stampSound().chime()
+    if (typeof scannedTime === 'string') {
+      setAdmissionTimestamp(formatTime(scannedTime))
+    }
+    // Authentic audio sensory synergy: peel paper tear sound followed by solid stamp chime
     stampSound().peel()
+    setTimeout(() => {
+      stampSound().chime()
+    }, 180)
+
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate([40, 30, 60, 30, 80])
     }
@@ -117,30 +129,83 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
     if (onAdmit) onAdmit()
   }
 
-  // Real-time venue gate Broadcast listener
+  const handleGateAdmissionRef = useRef(handleGateAdmission)
+  handleGateAdmissionRef.current = handleGateAdmission
+
+  // Real-time venue gate listeners (Supabase cross-device, BroadcastChannel same-device, window events, & smart polling)
   useEffect(() => {
+    if (isGateScanned) return
+
+    const handleBroadcastData = (data: any) => {
+      const regId = data?.registrationId || data?.regId || data?.id
+      const code = data?.ticketCode || data?.ticket || data?.code
+      if (
+        (regId && regId === registration.id) ||
+        (code && code.toUpperCase() === ticketCode.toUpperCase())
+      ) {
+        handleGateAdmissionRef.current(data?.checkedInAt)
+      }
+    }
+
+    // 1. Supabase Realtime cross-device channels (Organizer scanner phone -> Attendee phone)
+    let targetedChannel: any = null
+    let globalChannel: any = null
+    try {
+      targetedChannel = supabase
+        .channel(`ticket_gate_${registration.id}`)
+        .on('broadcast', { event: 'gate_admitted' }, (msg: any) => {
+          handleBroadcastData(msg.payload)
+        })
+        .subscribe()
+
+      globalChannel = supabase
+        .channel('eventmesh_gate_broadcast')
+        .on('broadcast', { event: 'gate_admitted' }, (msg: any) => {
+          handleBroadcastData(msg.payload)
+        })
+        .subscribe()
+    } catch (err) {
+      console.warn('Supabase Realtime subscription error:', err)
+    }
+
+    // 2. Cross-tab BroadcastChannel on same device
     let channel: BroadcastChannel | null = null
     try {
       channel = new BroadcastChannel('eventmesh_gate_admission')
       channel.onmessage = (event) => {
-        if (event.data?.registrationId === registration.id || event.data?.ticketCode === ticketCode) {
-          handleGateAdmission()
-        }
+        handleBroadcastData(event.data)
       }
     } catch {}
 
+    // 3. Same-window custom event
     const handleCustomAdmitted = (e: any) => {
-      if (e.detail?.registrationId === registration.id || e.detail?.ticketCode === ticketCode) {
-        handleGateAdmission()
-      }
+      handleBroadcastData(e.detail)
     }
     window.addEventListener('eventmesh_gate_admitted', handleCustomAdmitted)
 
+    // 4. Smart active polling fallback (guarantees tear even with spotty Wi-Fi or behind campus firewalls)
+    const pollInterval = setInterval(async () => {
+      try {
+        const myRegs = await api.registrations.getMyRegistrations()
+        const current = myRegs.find(
+          (r) =>
+            r.id === registration.id ||
+            (r.ticketCode && r.ticketCode.toUpperCase() === ticketCode.toUpperCase())
+        )
+        if (current && (current.status === 'checked_in' || current.checkedInAt)) {
+          handleGateAdmissionRef.current(current.checkedInAt)
+        }
+      } catch {}
+    }, 2000)
+
     return () => {
+      targetedChannel?.unsubscribe()
+      globalChannel?.unsubscribe()
       channel?.close()
       window.removeEventListener('eventmesh_gate_admitted', handleCustomAdmitted)
+      clearInterval(pollInterval)
     }
-  }, [registration.id, ticketCode])
+  }, [registration.id, ticketCode, isGateScanned])
 
   // ESC key listener
   useEffect(() => {
@@ -153,7 +218,9 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
   }, [floatingCanvas, onClose])
 
   // Download PDF representation of this pass
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
+    const { jsPDF } = await import('jspdf')
+    const QRCodeLib: any = (await import('qrcode')).default || (await import('qrcode'))
     const doc = new jsPDF({
       orientation: 'landscape',
       unit: 'mm',
@@ -203,12 +270,41 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
     doc.setFillColor(18, 21, 30)
     doc.rect(116, 0, 54, 75, 'F')
     doc.setFont('helvetica', 'bold')
-    doc.setFontSize(9)
+    doc.setFontSize(8.5)
     doc.setTextColor(255, 255, 255)
-    doc.text('GATE STUB', 124, 12)
-    doc.setFontSize(7)
+    doc.text('GATE STUB', 143, 11, { align: 'center' })
+    doc.setFontSize(6.5)
     doc.setTextColor(180, 180, 200)
-    doc.text('SCAN AT ENTRY', 124, 18)
+    doc.text('SCAN AT ENTRY', 143, 16, { align: 'center' })
+
+    // Embed real scannable QR code on gate stub
+    try {
+      const qrDataUrl = await QRCodeLib.toDataURL(qrValue, {
+        margin: 1,
+        width: 256,
+        errorCorrectionLevel: 'M',
+        color: {
+          dark: '#0F172A',
+          light: '#FFFFFF',
+        },
+      })
+      if (qrDataUrl) {
+        doc.setFillColor(255, 255, 255)
+        doc.roundedRect(125, 19, 36, 36, 1.5, 1.5, 'F')
+        doc.addImage(qrDataUrl, 'PNG', 126, 20, 34, 34)
+      }
+    } catch (err) {
+      console.warn('QR code generation warning for ticket PDF:', err)
+    }
+
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(7.5)
+    doc.setTextColor(255, 255, 255)
+    doc.text(ticketCode, 143, 61, { align: 'center' })
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(6.5)
+    doc.setTextColor(180, 180, 200)
+    doc.text((registration.userName || 'ATTENDEE').toUpperCase(), 143, 67, { align: 'center' })
 
     // Status stamp
     if (isGateScanned) {
@@ -307,17 +403,17 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
               <span>··· TEAR TO SCAN ···</span>
             </div>
             <div className="text-[9px] font-mono font-extrabold text-neutral-900 tracking-wider uppercase leading-none">
-              {registration.eventTitle ? `${registration.eventTitle.slice(0, 22)} 2026` : 'EVENTMESH HACKATHON 2026'}
+              {registration.eventTitle ? registration.eventTitle.slice(0, 24).toUpperCase() : 'CAMPUS ADMISSION PASS'}
             </div>
           </div>
 
           {/* Bottom Attendee Info & Pass Tier */}
           <div className="w-full pt-1 border-t border-neutral-200 flex flex-col items-center justify-center space-y-0.5">
             <p className="text-xs sm:text-sm font-black uppercase text-neutral-950 tracking-tight leading-tight truncate max-w-[210px]">
-              {registration.userName || 'Alex Rivera'}
+              {registration.userName || 'Attendee'}
             </p>
             <p className="text-[10px] font-extrabold uppercase text-violet-700 tracking-wider">
-              {registration.tierName ? registration.tierName.toUpperCase() : 'VIP PASS'}
+              {registration.tierName ? registration.tierName.toUpperCase() : 'GENERAL ADMISSION'}
             </p>
             <p className="text-[8.5px] font-mono text-neutral-500 uppercase tracking-widest">
               TICKET ID: {passSerial}
@@ -439,7 +535,7 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
             <motion.div
               initial={{ scale: 1.5, opacity: 0, rotate: -10 }}
               animate={{ scale: 1, opacity: 1, rotate: -2 }}
-              transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 22, delay: 0.18 }}
               className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 p-4"
             >
               <div className="px-5 py-3 rounded-2xl border-3 border-emerald-500 bg-white/95 text-emerald-600 font-display font-extrabold shadow-2xl flex items-center gap-3 backdrop-blur-md">
@@ -530,7 +626,7 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
             {!isGateScanned && (
               <button
                 type="button"
-                onClick={handleGateAdmission}
+                onClick={() => handleGateAdmission()}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 text-xs font-semibold tracking-wide transition-all active:scale-95 border border-emerald-500/30 shadow-xs"
                 title="Simulate gatekeeper QR scan"
               >
@@ -549,6 +645,12 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
                 <span>Close</span>
               </button>
             )}
+          </div>
+
+          {/* Emailed ticket status indicator */}
+          <div className="mt-3.5 inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-white/80 text-[11px] font-medium tracking-wide">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Ticket & scannable QR have been mailed to your email address</span>
           </div>
         </div>
       </div>

@@ -30,6 +30,7 @@ import { api, PayoutAccount, Event } from '@/api'
 import { ToastContainer } from '@/design-system/primitives/Toast'
 import { NotificationInbox } from '@/features/notifications/NotificationInbox'
 import { ForbiddenPage } from './ForbiddenPage'
+import { OrganizerOnboardingView } from '@/features/admin/OrganizerOnboardingView'
 import { ErrorBoundary } from './ErrorBoundary'
 import { Modal } from '@/design-system/primitives/Modal'
 import { ThemeToggle } from '@/design-system/ThemeToggle'
@@ -63,6 +64,9 @@ export const AdminShell: React.FC = () => {
 
   // Guard: if user is not authorized for admin
   if (!hasAdminAccess) {
+    if (session) {
+      return <OrganizerOnboardingView />
+    }
     return <ForbiddenPage />
   }
 
@@ -75,11 +79,11 @@ export const AdminShell: React.FC = () => {
         { label: 'Events', path: '/admin/events', icon: <CalendarCheck className="w-4 h-4" weight="bold" />, show: !isVolunteer },
         { label: 'Registrations', path: '/admin/registrations', icon: <Users className="w-4 h-4" weight="bold" />, show: !isVolunteer },
         {
-          label: 'Payouts & KYC',
+          label: 'Payouts & Bank',
           path: '/admin/payouts',
           icon: <Bank className="w-4 h-4" weight="bold" />,
           show: !isVolunteer,
-          badge: kycNeedsAttention ? <span className="w-2 h-2 rounded-full bg-warning animate-pulse" title="KYC Verification Needed" /> : undefined,
+          badge: kycNeedsAttention ? <span className="w-2 h-2 rounded-full bg-warning animate-pulse" title="Bank KYC Verification Needed" /> : undefined,
         },
         { label: 'Check-in Desk', path: '/admin/checkin', icon: <QrCode className="w-4 h-4" weight="bold" />, show: can('checkin') },
       ],

@@ -29,6 +29,8 @@ import {
   Organization,
   Organizer,
   Event,
+  EventBrowseResponse,
+  VisibleEventRead,
   Registration,
   RegistrationStatus,
   Certificate,
@@ -85,6 +87,7 @@ import {
 const STORAGE_PREFIX = 'eventmesh_mock_'
 
 function getStored<T>(key: string, defaultValue: T): T {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') return defaultValue
   try {
     const raw = localStorage.getItem(`${STORAGE_PREFIX}${key}`)
     return raw ? JSON.parse(raw) : defaultValue
@@ -94,6 +97,7 @@ function getStored<T>(key: string, defaultValue: T): T {
 }
 
 function setStored<T>(key: string, value: T): void {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') return
   try {
     localStorage.setItem(`${STORAGE_PREFIX}${key}`, JSON.stringify(value))
   } catch (err) {
@@ -111,7 +115,7 @@ async function simulateLatency(): Promise<void> {
 // -------------------------------------------------------------
 // IN-MEMORY / LOCALSTORAGE STORE
 // -------------------------------------------------------------
-const SCHEMA_VERSION = 'v6_marketplace_payments_payouts_notifs'
+const SCHEMA_VERSION = 'v10_upcoming_default_and_date_presets'
 
 const SEED_PAYOUT_ACCOUNTS: Record<string, PayoutAccount> = {
   'apex-design-lab': {
@@ -391,22 +395,130 @@ export const mockStore = new MockDataStore()
 // -------------------------------------------------------------
 
 export const mockEventsApi: EventsApi = {
+  async getBrowseEvents(params = {}): Promise<EventBrowseResponse> {
+    await simulateLatency()
+    let filtered = [...mockStore.events].filter((e) => e.status !== 'draft')
+
+    if (params.category && params.category !== 'ALL' && params.category !== 'all') {
+      const cat = params.category.toLowerCase()
+      filtered = filtered.filter(
+        (e) =>
+          e.category.toLowerCase().includes(cat) ||
+          e.type.toLowerCase().includes(cat) ||
+          (e.tags && e.tags.some((t) => t.toLowerCase().includes(cat)))
+      )
+    }
+
+    if (params.source && params.source !== 'ALL') {
+      const s = params.source.toLowerCase()
+      filtered = filtered.filter((e) => (e.provider || 'eventmesh').toLowerCase() === s)
+    }
+
+    if (params.city && params.city !== 'ALL') {
+      const c = params.city.toLowerCase()
+      filtered = filtered.filter((e) => {
+        const city = (e.venue?.city || e.venue?.address || '').toLowerCase()
+        const tags = (e.tags || []).map((t) => t.toLowerCase())
+        return city.includes(c) || tags.includes(c)
+      })
+    }
+
+    if (params.free !== undefined) {
+      filtered = filtered.filter((e) => params.free ? (e.isFree || e.price === 0) : (!e.isFree && (e.price || 0) > 0))
+    }
+
+    if (params.online !== undefined) {
+      filtered = filtered.filter((e) => Boolean(e.isOnline) === params.online)
+    }
+
+    if (params.q) {
+      const q = params.q.toLowerCase()
+      filtered = filtered.filter(
+        (e) =>
+          e.title.toLowerCase().includes(q) ||
+          e.description.toLowerCase().includes(q) ||
+          (e.organizerName && e.organizerName.toLowerCase().includes(q)) ||
+          (e.provider && e.provider.toLowerCase().includes(q)) ||
+          (e.venue?.city && e.venue.city.toLowerCase().includes(q)) ||
+          (e.tags && e.tags.some((t) => t.toLowerCase().includes(q)))
+      )
+    }
+
+    const offset = params.offset || 0
+    const limit = params.limit || 20
+    const sliced = filtered.slice(offset, offset + limit)
+    const next_offset = offset + limit < filtered.length ? offset + limit : null
+
+    const items: VisibleEventRead[] = sliced.map((e) => ({
+      id: e.id,
+      kind: e.kind || 'native',
+      title: e.title,
+      slug: e.slug || null,
+      description: e.description || null,
+      start_time: e.startsAt,
+      end_time: e.endsAt || null,
+      is_online: Boolean(e.isOnline),
+      venue: e.venue?.name || null,
+      city: e.venue?.city || (e.venue?.address ? e.venue.address.split(',')[0] : null),
+      category: e.category || null,
+      is_free: Boolean(e.isFree || e.price === 0),
+      price_cents: e.price != null ? Math.round(e.price * 100) : null,
+      currency: e.currency || 'INR',
+      image_url: e.poster || e.banner || null,
+      provider: e.provider || 'eventmesh',
+      url: e.sourceUrl || null,
+      sources: [e.provider || 'eventmesh'],
+      timezone: e.timezone || 'Asia/Kolkata',
+      audience_type: 'open',
+    }))
+
+    return {
+      total: filtered.length,
+      items,
+      next_offset,
+    }
+  },
+
   async getEvents(filter): Promise<PaginatedResult<Event>> {
     await simulateLatency()
     let filtered = [...mockStore.events].filter((e) => e.status !== 'draft')
 
-    if (filter?.category && filter.category !== 'all') {
+    if (filter?.category && filter.category !== 'all' && filter.category !== 'ALL') {
       if (filter.category === 'completed') {
         filtered = filtered.filter((e) => e.status === 'completed')
       } else if (filter.category === 'club_events') {
         filtered = filtered.filter((e) => e.category === 'club_events')
       } else {
+        const cat = filter.category.toLowerCase()
         filtered = filtered.filter(
           (e) =>
-            e.category.toLowerCase() === filter.category?.toLowerCase() ||
-            e.type.toLowerCase() === filter.category?.toLowerCase()
+            e.category.toLowerCase().includes(cat) ||
+            e.type.toLowerCase().includes(cat) ||
+            (e.tags && e.tags.some((t) => t.toLowerCase().includes(cat)))
         )
       }
+    }
+
+    if (filter?.source && filter.source !== 'ALL') {
+      const s = filter.source.toLowerCase()
+      filtered = filtered.filter((e) => (e.provider || 'eventmesh').toLowerCase() === s)
+    }
+
+    if (filter?.city && filter.city !== 'ALL') {
+      const c = filter.city.toLowerCase()
+      filtered = filtered.filter((e) => {
+        const city = (e.venue?.city || e.venue?.address || '').toLowerCase()
+        const tags = (e.tags || []).map((t) => t.toLowerCase())
+        return city.includes(c) || tags.includes(c)
+      })
+    }
+
+    if (filter?.free !== undefined) {
+      filtered = filtered.filter((e) => filter.free ? (e.isFree || e.price === 0) : (!e.isFree && (e.price || 0) > 0))
+    }
+
+    if (filter?.online !== undefined) {
+      filtered = filtered.filter((e) => Boolean(e.isOnline) === filter.online)
     }
 
     if (filter?.clubId) {
@@ -417,13 +529,57 @@ export const mockEventsApi: EventsApi = {
       filtered = filtered.filter((e) => e.status === filter.status)
     }
 
+    if (filter?.dateFilter && filter.dateFilter !== 'all') {
+      const now = new Date()
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
+      const startOfTomorrow = new Date(startOfToday.getTime() + 24 * 3600 * 1000)
+
+      if (filter.dateFilter === 'today') {
+        filtered = filtered.filter((e) => {
+          const d = new Date(e.startsAt)
+          return d >= startOfToday && d < startOfTomorrow
+        })
+      } else if (filter.dateFilter === 'weekend') {
+        const weekendStart = new Date(startOfToday)
+        if (startOfToday.getDay() === 0) {
+          weekendStart.setDate(startOfToday.getDate() - 1)
+        } else {
+          weekendStart.setDate(startOfToday.getDate() + ((6 - startOfToday.getDay() + 7) % 7))
+        }
+        const weekendEnd = new Date(weekendStart)
+        weekendEnd.setDate(weekendStart.getDate() + 2)
+        filtered = filtered.filter((e) => {
+          const d = new Date(e.startsAt)
+          return d >= weekendStart && d < weekendEnd
+        })
+      } else if (filter.dateFilter === 'next-week') {
+        const nextMonday = new Date(startOfToday)
+        const daysUntilMon = (8 - startOfToday.getDay()) % 7 || 7
+        nextMonday.setDate(startOfToday.getDate() + daysUntilMon)
+        const followingMonday = new Date(nextMonday)
+        followingMonday.setDate(nextMonday.getDate() + 7)
+        filtered = filtered.filter((e) => {
+          const d = new Date(e.startsAt)
+          return d >= nextMonday && d < followingMonday
+        })
+      } else if (filter.dateFilter === 'upcoming') {
+        filtered = filtered.filter((e) => new Date(e.startsAt) >= startOfToday)
+      } else if (filter.dateFilter === 'past') {
+        filtered = filtered.filter((e) => new Date(e.startsAt) < startOfToday)
+      }
+    }
+
     if (filter?.search) {
       const q = filter.search.toLowerCase()
       filtered = filtered.filter(
         (e) =>
           e.title.toLowerCase().includes(q) ||
           e.description.toLowerCase().includes(q) ||
-          (e.organizerName && e.organizerName.toLowerCase().includes(q))
+          (e.organizerName && e.organizerName.toLowerCase().includes(q)) ||
+          (e.provider && e.provider.toLowerCase().includes(q)) ||
+          (e.venue?.city && e.venue.city.toLowerCase().includes(q)) ||
+          (e.venue?.name && e.venue.name.toLowerCase().includes(q)) ||
+          (e.tags && e.tags.some((t) => t.toLowerCase().includes(q)))
       )
     }
 
@@ -432,6 +588,7 @@ export const mockEventsApi: EventsApi = {
       totalCount: filtered.length,
     }
   },
+
 
   async getEventBySlug(slug: string): Promise<Event | null> {
     await simulateLatency()
@@ -773,9 +930,65 @@ export const mockFormsApi: FormsApi = {
 }
 
 export const mockRegistrationsApi: RegistrationsApi = {
+  async lookupTeam(eventSlug: string, teamCode: string) {
+    await simulateLatency()
+    const code = teamCode.trim().toUpperCase()
+    const found = mockStore.registrations.find(
+      (r) => (r.team as any)?.teamCode?.toUpperCase() === code || (r.team as any)?.team_code?.toUpperCase() === code
+    )
+    if (found && found.team) {
+      return {
+        team_code: code,
+        team_name: found.team.teamName,
+        leader_name: found.team.leaderName,
+        leader_id: found.userId,
+        members: [
+          {
+            user_id: found.userId,
+            name: found.team.leaderName,
+            email: found.team.leaderEmail,
+            role: 'Team Lead',
+            status: 'Joined',
+          },
+          ...(found.team.members || []).map((m: any, i: number) => ({
+            user_id: `mem-${i}`,
+            name: m.name,
+            email: m.email,
+            role: m.role || 'Member',
+            status: 'Joined',
+          })),
+        ],
+        min_size: 2,
+        max_size: 4,
+        is_full: ((found.team.members?.length || 0) + 1) >= 4,
+      }
+    }
+    if (code.startsWith('EM-') || code.startsWith('HACK-') || code.length >= 4) {
+      return {
+        team_code: code,
+        team_name: 'Alpha Innovators',
+        leader_name: 'Priya Sharma',
+        leader_id: 'usr-lead-1',
+        members: [
+          {
+            user_id: 'usr-lead-1',
+            name: 'Priya Sharma',
+            email: 'priya@example.com',
+            role: 'Team Lead',
+            status: 'Joined',
+          },
+        ],
+        min_size: 2,
+        max_size: 4,
+        is_full: false,
+      }
+    }
+    throw new Error('Team not found')
+  },
+
   async register(payload: RegisterPayload): Promise<Registration> {
     await simulateLatency()
-    const evt = mockStore.events.find((e) => e.id === payload.eventId)
+    const evt = mockStore.events.find((e) => e.id === payload.eventId || (payload.eventSlug && e.slug === payload.eventSlug))
     if (!evt) throw new Error('Event not found')
 
     // Decrement seatsLeft
@@ -1444,10 +1657,11 @@ export const mockPayoutsApi: PayoutsApi = {
       requested_at: new Date().toISOString(),
       created_at: new Date().toISOString(),
     }
-    if (!(mockStore as any).withdrawals) {
-      (mockStore as any).withdrawals = []
+    const store = mockStore as any
+    if (!store.withdrawals) {
+      store.withdrawals = []
     }
-    ;(mockStore as any).withdrawals.unshift(newReq)
+    store.withdrawals.unshift(newReq)
     return newReq
   },
 
@@ -2018,6 +2232,22 @@ export const mockOrganizationsApi: OrganizationsApi = {
       status: 'rejected',
       is_institution: false,
       institution_rejection_reason: reason || 'Domain verification criteria not met',
+      institution_rejected_at: new Date().toISOString(),
+      domains: [],
+      owner_id: 'usr-admin',
+      created_at: new Date().toISOString(),
+    }
+  },
+
+  async revokeInstitution(slug: string, reason?: string): Promise<InstitutionCandidate> {
+    await simulateLatency()
+    return {
+      id: `inst-${slug}`,
+      name: slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+      slug,
+      status: 'active',
+      is_institution: false,
+      institution_rejection_reason: reason || 'Administrative verification revocation',
       institution_rejected_at: new Date().toISOString(),
       domains: [],
       owner_id: 'usr-admin',

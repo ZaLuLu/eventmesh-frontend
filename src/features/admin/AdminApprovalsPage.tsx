@@ -225,6 +225,21 @@ export const AdminApprovalsPage: React.FC = () => {
     },
   })
 
+  const revokeInstitutionMutation = useMutation({
+    mutationFn: ({ slug, reason }: { slug: string; reason?: string }) => {
+      if (!api.organizations.revokeInstitution) throw new Error('Not implemented')
+      return api.organizations.revokeInstitution(slug, reason)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-institutions'] })
+      queryClient.invalidateQueries({ queryKey: ['platform-overview'] })
+      toast({ title: 'Verification Revoked', message: 'Institution status was revoked.', type: 'info' })
+    },
+    onError: (err: any) => {
+      toast({ title: 'Action Failed', message: err?.message || 'Could not revoke verification.', type: 'error' })
+    },
+  })
+
   // Withdrawal Review Mutation (Superadmin payout disburse / reject)
   const [selectedWithdrawal, setSelectedWithdrawal] = useState<WithdrawalRequest | null>(null)
   const [actionModal, setActionModal] = useState<'pay' | 'reject' | null>(null)
@@ -292,7 +307,7 @@ export const AdminApprovalsPage: React.FC = () => {
             Curatorial Approvals & Governance Queue
           </h1>
           <p className="text-small text-text-2 mt-0.5">
-            Review event drafts, organization proposals, institutional clearances, and revenue disbursement requests.
+            Review event drafts, organization proposals, admin approvals, and revenue withdrawal requests.
           </p>
         </div>
 
@@ -374,7 +389,7 @@ export const AdminApprovalsPage: React.FC = () => {
               : 'border-transparent text-text-3 hover:text-text'
           }`}
         >
-          <span>Institutional Clearance</span>
+          <span>Admin Approval</span>
           {institutions.length > 0 && (
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-surface-subtle border border-line text-text-2 font-mono font-bold">
               {institutions.length}
@@ -391,7 +406,7 @@ export const AdminApprovalsPage: React.FC = () => {
               : 'border-transparent text-text-3 hover:text-text'
           }`}
         >
-          <span>Disbursement Queue</span>
+          <span>Withdrawal Queue</span>
           {overview?.pending_withdrawals_count ? (
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-danger text-on-danger font-mono font-bold">
               {overview.pending_withdrawals_count}
@@ -474,7 +489,7 @@ export const AdminApprovalsPage: React.FC = () => {
               <p className="text-small text-text-3 py-8 text-center">Loading organization proposals...</p>
             ) : proposals.length === 0 ? (
               <div className="py-12 text-center text-small text-text-3">
-                ✓ No organization charters currently awaiting approval.
+                ✓ No club proposals currently awaiting approval.
               </div>
             ) : (
               <div className="divide-y divide-line">
@@ -506,7 +521,7 @@ export const AdminApprovalsPage: React.FC = () => {
 
                         {prop.reason && (
                           <div className="p-3 mt-2 bg-subtle border border-line rounded-card text-caption text-text-2">
-                            <span className="font-semibold block text-text mb-0.5">Charter Statement:</span>
+                            <span className="font-semibold block text-text mb-0.5">Club Statement:</span>
                             {prop.reason}
                           </div>
                         )}
@@ -533,7 +548,7 @@ export const AdminApprovalsPage: React.FC = () => {
                             size="dense"
                             onClick={() => reviewProposalMutation.mutate({ proposalId: prop.id, action: 'approve' })}
                           >
-                            Approve Charter
+                            Approve Club
                           </Button>
                         </div>
                       )}
@@ -596,7 +611,7 @@ export const AdminApprovalsPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {!inst.is_institution && (
+                  {!inst.is_institution ? (
                     <div className="flex items-center gap-2 self-start sm:self-auto">
                       <Button
                         surface="admin"
@@ -621,7 +636,23 @@ export const AdminApprovalsPage: React.FC = () => {
                           }
                         }}
                       >
-                        Grant Institutional Clearance
+                        Grant Admin Approval
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                      <Button
+                        surface="admin"
+                        variant="danger"
+                        size="dense"
+                        onClick={() => {
+                          const reason = prompt('Reason for revoking verification (optional):')
+                          if (reason !== null) {
+                            revokeInstitutionMutation.mutate({ slug: inst.slug, reason: reason || undefined })
+                          }
+                        }}
+                      >
+                        Revoke Verification
                       </Button>
                     </div>
                   )}
@@ -1031,7 +1062,7 @@ export const AdminApprovalsPage: React.FC = () => {
       <Modal
         isOpen={isProposeModalOpen}
         onClose={() => setIsProposeModalOpen(false)}
-        title="Propose Sub-Organization / Club Charter"
+        title="Propose New Club or Organization"
       >
         <form
           onSubmit={(e) => {
@@ -1073,7 +1104,7 @@ export const AdminApprovalsPage: React.FC = () => {
 
           <div className="space-y-1.5">
             <label className="block text-caption font-semibold text-text">
-              Charter & Purpose Statement <span className="text-danger">*</span>
+              Club Purpose & Mission Statement <span className="text-danger">*</span>
             </label>
             <textarea
               rows={4}

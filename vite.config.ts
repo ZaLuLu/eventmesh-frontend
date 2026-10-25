@@ -19,6 +19,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          if (id.includes('preload-helper')) {
+            return 'vendor-core'
+          }
           if (id.includes('node_modules')) {
             if (id.includes('three')) {
               return 'vendor-3d'
@@ -26,7 +29,10 @@ export default defineConfig({
             if (id.includes('recharts') || id.includes('d3-')) {
               return 'vendor-charts'
             }
-            if (id.includes('html2canvas') || id.includes('dompurify') || id.includes('qrcode') || id.includes('jspdf') || id.includes('ics')) {
+            if (id.includes('jspdf') || id.includes('html2canvas')) {
+              return 'vendor-pdf'
+            }
+            if (id.includes('dompurify') || id.includes('qrcode') || id.includes('ics')) {
               return 'vendor-export'
             }
             if (id.includes('@dnd-kit')) {
@@ -41,7 +47,7 @@ export default defineConfig({
             if (id.includes('@phosphor-icons')) {
               return 'vendor-icons'
             }
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom') || id.includes('@tanstack/react-query')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom') || id.includes('@tanstack/react-query') || id.includes('zustand') || id.includes('preload-helper')) {
               return 'vendor-core'
             }
           }

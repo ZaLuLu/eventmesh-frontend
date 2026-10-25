@@ -89,7 +89,22 @@ export const ToastContainer: React.FC = () => {
                 </p>
                 {t.message && (
                   <p className="text-caption text-[#D0CCC6] mt-1">
-                    {t.message}
+                    {typeof t.message === 'string'
+                      ? t.message
+                      : Array.isArray(t.message)
+                      ? (t.message as any[])
+                          .map((m) =>
+                            typeof m === 'object' && m !== null
+                              ? m.msg || m.message || JSON.stringify(m)
+                              : String(m)
+                          )
+                          .join(', ')
+                      : typeof t.message === 'object' && t.message !== null
+                      ? (t.message as any).msg ||
+                        (t.message as any).message ||
+                        (t.message as any).detail ||
+                        JSON.stringify(t.message)
+                      : String(t.message)}
                   </p>
                 )}
                 {t.onUndo && (

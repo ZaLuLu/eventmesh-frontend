@@ -16,7 +16,11 @@ export function useCheckinTicket() {
 export function useUndoCheckin() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (registrationId: string) => api.checkin.undoCheckin(registrationId),
+    mutationFn: (args: string | { registrationId: string; eventId?: string }) => {
+      const registrationId = typeof args === 'string' ? args : args.registrationId
+      const eventId = typeof args === 'string' ? undefined : args.eventId
+      return api.checkin.undoCheckin(registrationId, eventId)
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['registrations'] })
       queryClient.invalidateQueries({ queryKey: ['checkin-stats'] })

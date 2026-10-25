@@ -26,6 +26,57 @@ import { useToast } from '@/design-system/primitives/Toast'
 import { triggerBurstConfetti } from '@/lib/confetti'
 import { playSound } from '@/lib/sound'
 import { Registration } from '@/api'
+import { supabase } from '@/lib/supabaseClient'
+
+function broadcastGateAdmission(reg: { id: string; ticketCode: string; eventId?: string; checkedInAt?: string }) {
+  // 1. Local cross-tab BroadcastChannel
+  try {
+    const channel = new BroadcastChannel('eventmesh_gate_admission')
+    channel.postMessage({ registrationId: reg.id, ticketCode: reg.ticketCode, checkedInAt: reg.checkedInAt })
+    channel.close()
+  } catch {}
+
+  // 2. Local window event
+  window.dispatchEvent(
+    new CustomEvent('eventmesh_gate_admitted', {
+      detail: { registrationId: reg.id, ticketCode: reg.ticketCode, checkedInAt: reg.checkedInAt },
+    })
+  )
+
+  // 3. Supabase Realtime broadcast across devices (Organizer scanner -> Attendee open pass)
+  try {
+    const payload = {
+      registrationId: reg.id,
+      ticketCode: reg.ticketCode,
+      eventId: reg.eventId,
+      checkedInAt: reg.checkedInAt || new Date().toISOString(),
+    }
+
+    const globalChannel = supabase.channel('eventmesh_gate_broadcast')
+    globalChannel.subscribe((status: any) => {
+      if (status === 'SUBSCRIBED') {
+        globalChannel.send({
+          type: 'broadcast',
+          event: 'gate_admitted',
+          payload,
+        })
+      }
+    })
+
+    const directChannel = supabase.channel(`ticket_gate_${reg.id}`)
+    directChannel.subscribe((status: any) => {
+      if (status === 'SUBSCRIBED') {
+        directChannel.send({
+          type: 'broadcast',
+          event: 'gate_admitted',
+          payload,
+        })
+      }
+    })
+  } catch (err) {
+    console.warn('Realtime gate broadcast error:', err)
+  }
+}
 
 interface ScanResultState {
   status: 'admitted' | 'already_admitted' | 'queued' | 'wrong_event' | 'invalid'
@@ -69,13 +120,15 @@ export const AdminCheckinPage: React.FC = () => {
 
   const activeEventId =
     selectedEventId || events.find((e) => e.status === 'published')?.id || events[0]?.id || ''
-  const activeEvent = events.find((e) => e.id === activeEventId)
-  const { data: stats } = useCheckinStats(activeEventId)
+  const activeEvent = events.find((e) => e.id === activeEventId || e.slug === activeEventId)
+  const activeEventSlug = activeEvent?.slug || activeEventId
+
+  const { data: stats } = useCheckinStats(activeEventSlug)
 
   // Passholder Desk Roster state
   const [rosterSearch, setRosterSearch] = useState('')
   const { data: eventRegistrations = [], isLoading: isLoadingRoster } = useRegistrations({
-    eventId: activeEventId,
+    eventId: activeEventSlug,
     search: rosterSearch || undefined,
   })
 
@@ -104,7 +157,7 @@ export const AdminCheckinPage: React.FC = () => {
           const pending: Array<OfflineCheckin | string> = []
           for (const entry of queue) {
             const code = typeof entry === 'string' ? entry : entry.code
-            const eventId = typeof entry === 'string' ? activeEventId : entry.eventId
+            const eventId = typeof entry === 'string' ? activeEventSlug : (entry.eventId || activeEventSlug)
             try {
               const result = await checkinMutation.mutateAsync({ ticketCode: code, eventId })
               if (!result.success) pending.push(entry)
@@ -127,23 +180,49 @@ export const AdminCheckinPage: React.FC = () => {
 
     window.addEventListener('online', handleOnline)
     return () => window.removeEventListener('online', handleOnline)
-  }, [activeEventId, checkinMutation, toast])
+  }, [activeEventId, activeEventSlug, checkinMutation, toast])
 
   const processScanCode = async (rawCode: string) => {
     if (!rawCode.trim()) return
     const now = Date.now()
 
-    // Parse potential signed JSON token: { v, ticketId, sig, eventId }
-    let cleanCode = rawCode.trim().toUpperCase()
-    let payloadEventId: string | undefined
+    let cleanCode = rawCode.trim()
+    let payloadEvent: string | undefined
 
-    try {
-      if (rawCode.trim().startsWith('{')) {
-        const parsed = JSON.parse(rawCode.trim())
-        if (parsed.ticketId) cleanCode = String(parsed.ticketId).toUpperCase()
-        if (parsed.eventId) payloadEventId = parsed.eventId
+    // 1. Parse JSON token (e.g. { ticket, ticketId, code, event, eventId })
+    if (cleanCode.startsWith('{') && cleanCode.endsWith('}')) {
+      try {
+        const parsed = JSON.parse(cleanCode)
+        if (typeof parsed === 'object' && parsed !== null) {
+          cleanCode = String(parsed.ticket || parsed.ticketId || parsed.code || '').trim()
+          payloadEvent = parsed.event || parsed.eventId
+        }
+      } catch { /* Continue */ }
+    }
+    // 2. Parse URL with query parameters (e.g. ?code=... or ?ticket=...)
+    else if (cleanCode.startsWith('http://') || cleanCode.startsWith('https://')) {
+      try {
+        const url = new URL(cleanCode)
+        const codeParam =
+          url.searchParams.get('code') ||
+          url.searchParams.get('ticket') ||
+          url.searchParams.get('ticketCode') ||
+          url.searchParams.get('ticket_code')
+        if (codeParam) {
+          cleanCode = codeParam.trim()
+          payloadEvent = url.searchParams.get('event') || url.searchParams.get('eventId') || undefined
+        }
+      } catch { /* Continue */ }
+    }
+    // 3. Parse EVENTMESH:TKT:<ticketCode>:<regId>
+    else if (cleanCode.startsWith('EVENTMESH:TKT:')) {
+      const parts = cleanCode.split(':')
+      if (parts[2]) {
+        cleanCode = parts[2].trim()
       }
-    } catch { /* Continue when optional storage or browser API is unavailable. */ }
+    }
+
+    cleanCode = cleanCode.toUpperCase()
 
     // Debounce duplicate decodes (ignore same token within 3s)
     if (lastScannedRef.current.code === cleanCode && now - lastScannedRef.current.time < 3000) {
@@ -152,30 +231,36 @@ export const AdminCheckinPage: React.FC = () => {
     lastScannedRef.current = { code: cleanCode, time: now }
 
     // Check for wrong event mismatch
-    if (payloadEventId && activeEventId && payloadEventId !== activeEventId) {
-      if (navigator.vibrate) navigator.vibrate([200, 100, 200])
-      playSound('error')
-      setLastScanResult({
-        status: 'wrong_event',
-        title: 'Wrong Event Pass',
-        message: 'This credential was issued for a different campus event.',
-        scannedAt: new Date().toLocaleTimeString(),
-      })
-      return
+    if (payloadEvent && activeEvent) {
+      const matchesEvent =
+        payloadEvent === activeEvent.id ||
+        payloadEvent.toLowerCase() === (activeEvent.slug || '').toLowerCase()
+      if (!matchesEvent) {
+        if (navigator.vibrate) navigator.vibrate([220, 100, 220])
+        playSound('wrong_pass')
+        setLastScanResult({
+          status: 'wrong_event',
+          title: 'Wrong Event Pass',
+          message: 'This credential was issued for a different campus event.',
+          scannedAt: new Date().toLocaleTimeString(),
+        })
+        return
+      }
     }
 
     // Check offline status
     if (!navigator.onLine) {
       try {
-        if (!activeEventId) throw new Error('Select an event before queuing a scan')
+        if (!activeEventSlug) throw new Error('Select an event before queuing a scan')
         const currentQueue = (await get<Array<OfflineCheckin | string>>('eventmesh_offline_checkins')) || []
-        currentQueue.push({ code: cleanCode, eventId: activeEventId })
+        currentQueue.push({ code: cleanCode, eventId: activeEventSlug })
         await set('eventmesh_offline_checkins', currentQueue)
         setOfflineCount(currentQueue.length)
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100])
+        if (navigator.vibrate) navigator.vibrate([100, 80, 100, 80])
+        playSound('warning')
         setLastScanResult({
           status: 'queued',
-          title: 'Pending verification',
+          title: 'Pending verification (Offline)',
           message: `Pass ${cleanCode} is queued locally. Verify with the registry before admitting this attendee.`,
           scannedAt: new Date().toLocaleTimeString(),
         })
@@ -186,7 +271,7 @@ export const AdminCheckinPage: React.FC = () => {
     try {
       const res = await checkinMutation.mutateAsync({
         ticketCode: cleanCode,
-        eventId: activeEventId || undefined,
+        eventId: activeEventSlug || undefined,
       })
 
       if (res.success && res.registration) {
@@ -194,22 +279,13 @@ export const AdminCheckinPage: React.FC = () => {
         setRecentScans((prev) => [reg, ...prev.filter((r) => r.id !== reg.id)].slice(0, 5))
         setTicketInput('')
 
-        // Haptic feedback & celebratory audio
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100])
-        playSound('gate_chime')
+        // 1. 1st time scanning: Celebratory turnstile chime & haptics
+        if (navigator.vibrate) navigator.vibrate([80, 40, 100])
+        playSound('1st_time_scan')
         triggerBurstConfetti()
 
-        // Real-time broadcast for attendee ticket tear (Mandate 1)
-        try {
-          const channel = new BroadcastChannel('eventmesh_gate_admission')
-          channel.postMessage({ registrationId: reg.id, ticketCode: reg.ticketCode })
-          channel.close()
-        } catch { /* Continue when optional storage or browser API is unavailable. */ }
-        window.dispatchEvent(
-          new CustomEvent('eventmesh_gate_admitted', {
-            detail: { registrationId: reg.id, ticketCode: reg.ticketCode },
-          })
-        )
+        // Real-time broadcast for attendee ticket tear across devices & local windows
+        broadcastGateAdmission(reg)
 
         setLastScanResult({
           status: 'admitted',
@@ -227,17 +303,33 @@ export const AdminCheckinPage: React.FC = () => {
         })
         setStampOverlayOpen(true)
       } else {
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200])
-        playSound('error')
+        const isAlreadyAdmitted = Boolean(
+          res.alreadyAdmitted ||
+          (res.message && res.message.toLowerCase().includes('already'))
+        )
 
-        if (res.message && res.message.toLowerCase().includes('already')) {
+        if (isAlreadyAdmitted) {
+          // 2. Already scanned pass: Distinct cautionary double alert ping
+          if (navigator.vibrate) navigator.vibrate([60, 40, 60, 40, 120])
+          playSound('already_scanned')
+
+          const matchedReg = eventRegistrations.find(
+            (r) =>
+              r.ticketCode?.toUpperCase() === cleanCode ||
+              r.id.toLowerCase() === cleanCode.toLowerCase()
+          )
           setLastScanResult({
             status: 'already_admitted',
             title: 'Already Admitted',
             message: res.message || 'Pass has already been marked as admitted.',
+            registration: matchedReg,
             scannedAt: new Date().toLocaleTimeString(),
           })
         } else {
+          // 3. Wrong / Invalid pass: Distinct low dual-buzz rejection buzzer
+          if (navigator.vibrate) navigator.vibrate([220, 100, 220])
+          playSound('wrong_pass')
+
           setLastScanResult({
             status: 'invalid',
             title: 'Admission Denied',
@@ -247,7 +339,8 @@ export const AdminCheckinPage: React.FC = () => {
         }
       }
     } catch {
-      playSound('error')
+      if (navigator.vibrate) navigator.vibrate([250, 100, 250])
+      playSound('wrong_pass')
       setLastScanResult({
         status: 'invalid',
         title: 'Network Communication Error',
@@ -268,7 +361,15 @@ export const AdminCheckinPage: React.FC = () => {
 
   const handleUndo = async (registrationId: string, name: string) => {
     try {
-      await undoMutation.mutateAsync(registrationId)
+      const ok = await undoMutation.mutateAsync({ registrationId, eventId: activeEventSlug })
+      if (ok === false) {
+        toast({
+          title: 'Undo failed',
+          message: 'Could not revert check-in in registry.',
+          type: 'error',
+        })
+        return
+      }
       toast({
         title: 'Check-in Reverted',
         message: `Revoked gate admission for ${name}.`,
@@ -284,6 +385,43 @@ export const AdminCheckinPage: React.FC = () => {
   }
 
   const isDevMode = import.meta.env.DEV || (window as any).VITE_ENABLE_DEV_TOOLS === 'true'
+
+  const scanTheme =
+    lastScanResult?.status === 'admitted'
+      ? {
+          reticleBorder: 'border-emerald-500',
+          reticleCorner: 'border-emerald-500',
+          reticleBg: 'bg-emerald-500/15',
+          cardBorder: 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20',
+          badge: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30',
+          label: 'SUCCESS / ADMITTED',
+        }
+      : lastScanResult?.status === 'already_admitted' || lastScanResult?.status === 'queued'
+      ? {
+          reticleBorder: 'border-amber-500',
+          reticleCorner: 'border-amber-500',
+          reticleBg: 'bg-amber-500/15',
+          cardBorder: 'border-amber-500 bg-amber-50/50 dark:bg-amber-950/20',
+          badge: 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30',
+          label: lastScanResult?.status === 'queued' ? 'OFFLINE QUEUED' : 'ALREADY ADMITTED',
+        }
+      : lastScanResult?.status === 'wrong_event' || lastScanResult?.status === 'invalid'
+      ? {
+          reticleBorder: 'border-rose-500',
+          reticleCorner: 'border-rose-500',
+          reticleBg: 'bg-rose-500/15',
+          cardBorder: 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20',
+          badge: 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30',
+          label: lastScanResult?.status === 'wrong_event' ? 'WRONG EVENT' : 'INVALID PASS',
+        }
+      : {
+          reticleBorder: 'border-[var(--color-accent)]/60',
+          reticleCorner: 'border-[var(--color-accent)]',
+          reticleBg: 'bg-transparent',
+          cardBorder: 'border-line bg-card',
+          badge: '',
+          label: 'READY',
+        }
 
   return (
     <div className="max-w-xl mx-auto space-y-6 pb-12 select-none">
@@ -408,13 +546,13 @@ export const AdminCheckinPage: React.FC = () => {
                   }}
                 />
 
-                {/* Tactical Target Frame Over Scanner */}
-                <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                  <div className="w-56 h-56 border-2 border-dashed border-[var(--color-accent)]/60 rounded-panel relative">
-                    <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-[var(--color-accent)]" />
-                    <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-[var(--color-accent)]" />
-                    <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-[var(--color-accent)]" />
-                    <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-[var(--color-accent)]" />
+                {/* Tactical Target Frame Over Scanner with Dynamic Visual State */}
+                <div className={`absolute inset-0 pointer-events-none flex items-center justify-center transition-colors duration-300 ${scanTheme.reticleBg}`}>
+                  <div className={`w-56 h-56 border-2 border-dashed ${scanTheme.reticleBorder} rounded-panel relative transition-colors duration-300`}>
+                    <div className={`absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 ${scanTheme.reticleCorner}`} />
+                    <div className={`absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 ${scanTheme.reticleCorner}`} />
+                    <div className={`absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 ${scanTheme.reticleCorner}`} />
+                    <div className={`absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 ${scanTheme.reticleCorner}`} />
                   </div>
                 </div>
               </div>
@@ -428,37 +566,36 @@ export const AdminCheckinPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Last Scan Result Card */}
+      {/* Last Scan Result Card with Success/Warning/Invalid visual styling */}
       {lastScanResult && (
         <div
-          className={`rounded-panel border-2 p-5 space-y-3 shadow-sm animate-fade-in ${
-            lastScanResult.status === 'admitted'
-              ? 'border-[var(--color-success)] bg-[var(--color-surface)]'
-              : lastScanResult.status === 'already_admitted' || lastScanResult.status === 'queued'
-              ? 'border-[var(--color-warning)] bg-[var(--color-surface)]'
-              : 'border-[var(--color-danger)] bg-[var(--color-surface)]'
-          }`}
+          className={`rounded-panel border-2 p-5 space-y-3 shadow-sm animate-fade-in transition-all duration-300 ${scanTheme.cardBorder}`}
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
               {lastScanResult.status === 'admitted' && (
-                <CheckCircle className="w-7 h-7 text-[var(--color-success)] flex-shrink-0" weight="bold" />
+                <CheckCircle className="w-8 h-8 text-emerald-500 flex-shrink-0" weight="bold" />
               )}
               {(lastScanResult.status === 'already_admitted' || lastScanResult.status === 'queued') && (
-                <Warning className="w-7 h-7 text-[var(--color-warning)] flex-shrink-0" weight="bold" />
+                <Warning className="w-8 h-8 text-amber-500 flex-shrink-0" weight="bold" />
               )}
               {(lastScanResult.status === 'wrong_event' || lastScanResult.status === 'invalid') && (
-                <XCircle className="w-7 h-7 text-[var(--color-danger)] flex-shrink-0" weight="bold" />
+                <XCircle className="w-8 h-8 text-rose-500 flex-shrink-0" weight="bold" />
               )}
               <div>
-                <h3 className="font-display font-extrabold text-base text-ink">
-                  {lastScanResult.title}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-display font-extrabold text-base text-ink">
+                    {lastScanResult.title}
+                  </h3>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border uppercase tracking-wider ${scanTheme.badge}`}>
+                    {scanTheme.label}
+                  </span>
+                </div>
                 <p className="text-xs text-ink-soft">{lastScanResult.message}</p>
               </div>
             </div>
 
-            <span className="text-[10px] font-mono font-bold text-ink-muted">
+            <span className="text-[10px] font-mono font-bold text-ink-muted shrink-0">
               {lastScanResult.scannedAt}
             </span>
           </div>
@@ -606,49 +743,62 @@ export const AdminCheckinPage: React.FC = () => {
           ) : eventRegistrations.length === 0 ? (
             <p className="text-caption text-ink-muted py-4 text-center">No passholders found for this event query.</p>
           ) : (
-            eventRegistrations.map((reg) => (
-              <div key={reg.id} className="pt-2 flex items-center justify-between gap-3 text-small">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-ink">{reg.userName}</span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-surface-subtle border border-line text-[var(--color-accent)] font-bold">
-                      {reg.ticketCode}
-                    </span>
-                    {reg.status === 'checked_in' && (
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-success/15 text-success border border-success/30 font-semibold">
-                        ADMITTED
+            eventRegistrations.map((reg) => {
+              const isAdmitted = Boolean(reg.checkedInAt || reg.status === 'checked_in')
+              const isUndoing =
+                undoMutation.isPending &&
+                (undoMutation.variables as any)?.registrationId === reg.id
+              const isAdmitting =
+                checkinMutation.isPending &&
+                (checkinMutation.variables as any)?.ticketCode === reg.ticketCode
+
+              return (
+                <div key={reg.id} className="pt-2 flex items-center justify-between gap-3 text-small">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-ink">{reg.userName}</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-surface-subtle border border-line text-[var(--color-accent)] font-bold">
+                        {reg.ticketCode}
                       </span>
+                      {isAdmitted && (
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-success/15 text-success border border-success/30 font-semibold flex items-center gap-1">
+                          <CheckCircle className="w-3 h-3" weight="fill" />
+                          ADMITTED
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-caption text-ink-muted font-mono">{reg.userEmail}</span>
+                  </div>
+
+                  <div className="shrink-0 flex items-center gap-2">
+                    {isAdmitted ? (
+                      <Button
+                        surface="admin"
+                        variant="ghost"
+                        size="dense"
+                        loading={isUndoing}
+                        onClick={() => handleUndo(reg.id, reg.userName)}
+                        className="font-mono text-caption text-danger hover:text-danger hover:bg-danger/10 border border-danger/30"
+                      >
+                        <ArrowCounterClockwise className="w-3.5 h-3.5 mr-1" weight="bold" />
+                        Undo
+                      </Button>
+                    ) : (
+                      <Button
+                        surface="admin"
+                        variant="primary"
+                        size="dense"
+                        loading={isAdmitting}
+                        onClick={() => processScanCode(reg.ticketCode)}
+                        className="font-mono text-caption"
+                      >
+                        1-Click Admit
+                      </Button>
                     )}
                   </div>
-                  <span className="text-caption text-ink-muted font-mono">{reg.userEmail}</span>
                 </div>
-
-                <div className="shrink-0">
-                  {reg.status === 'checked_in' ? (
-                    <Button
-                      surface="admin"
-                      variant="ghost"
-                      size="dense"
-                      onClick={() => handleUndo(reg.id, reg.userName)}
-                      className="font-mono text-caption text-danger hover:text-danger"
-                    >
-                      Undo
-                    </Button>
-                  ) : (
-                    <Button
-                      surface="admin"
-                      variant="primary"
-                      size="dense"
-                      loading={checkinMutation.isPending}
-                      onClick={() => processScanCode(reg.ticketCode)}
-                      className="font-mono text-caption"
-                    >
-                      1-Click Admit
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))
+              )
+            })
           )}
         </div>
       </div>

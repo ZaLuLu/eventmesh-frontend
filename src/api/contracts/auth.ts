@@ -21,6 +21,13 @@ export const UserSessionSchema = z.object({
   clubColor: z.string().optional(),
   assignedEventIds: z.array(z.string()).optional(),
   avatar: z.string().optional(),
+  phone: z.string().optional(),
+  studentId: z.string().optional(),
+  registrationNumber: z.string().optional(),
+  institutionName: z.string().optional(),
+  campus: z.string().optional(),
+  branch: z.string().optional(),
+  degreeBranch: z.string().optional(),
 })
 
 export type UserSession = z.infer<typeof UserSessionSchema>
@@ -87,13 +94,29 @@ export interface ProfileUpdatePayload {
 }
 
 export function profileToSession(profile: ProfileRead): UserSession {
+  const regNumber = profile.student_id || undefined
+  const branch = profile.location || (profile as any).branch || undefined
+  const campus = profile.institution_name || (profile as any).college_name || undefined
+  const phone = profile.phone || undefined
+
   return {
     id: profile.id,
-    name: profile.display_name || profile.handle || profile.email,
+    name:
+      profile.display_name ||
+      (profile.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : '') ||
+      profile.handle ||
+      profile.email,
     email: profile.email,
     role: profile.is_organizer ? 'org_admin' : 'attendee',
     orgId: profile.institution_name || 'campus',
     avatar: profile.avatar_url || undefined,
+    phone,
+    studentId: regNumber,
+    registrationNumber: regNumber,
+    institutionName: campus,
+    campus,
+    branch,
+    degreeBranch: branch,
   }
 }
 

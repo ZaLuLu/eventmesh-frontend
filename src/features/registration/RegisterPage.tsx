@@ -2,7 +2,7 @@ import { eventPriceLabel } from '@/lib/eventPresentation'
 import { ErrorState } from '@/design-system/primitives/ErrorState'
 // Hallmark macrostructure: 3-Step Focused Stepper & Order Ledger
 import React, { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { useEvent } from '@/hooks/useEvents'
 import { useAuth } from '@/hooks/useAuth'
 import { useRegister, useMyRegistrations, useCancelMyRegistration, useJoinWaitlist } from '@/hooks/useRegistrations'
@@ -14,14 +14,15 @@ import { QRCode } from '@/design-system/primitives/QRCode'
 import { FormRenderer } from './FormRenderer'
 import { formatDate, formatTime, formatCurrency } from '@/lib/format'
 import { useQuery } from '@tanstack/react-query'
-import { api, Registration, FeeQuote } from '@/api'
+import { api, Registration, FeeQuote, RegisterPayload, normalizeBackendRegistration } from '@/api'
 import { downloadICS } from '@/lib/ics'
 import { useToast } from '@/design-system/primitives/Toast'
 import { Icon } from '@/design-system/Icon'
 import { appConfig } from '@/config/appConfig'
 import { Stamp } from '@/components/stamp'
 import { downloadStampedTicketAndInvoicePDF } from './downloadStampedInvoice'
-import { DownloadSimple, X, Sparkle } from '@phosphor-icons/react'
+import { DownloadSimple, X, Sparkle, EnvelopeSimple, Copy, Users, CheckCircle } from '@phosphor-icons/react'
+import { loadCashfreeSDK } from '@/lib/cashfree'
 
 interface TeamMemberItem {
   id: string
@@ -33,6 +34,7 @@ interface TeamMemberItem {
 
 export const RegisterPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>()
+  const [searchParams] = useSearchParams()
   const { toast } = useToast()
   const { data: event, isLoading, error, refetch } = useEvent(slug || '')
   const { session } = useAuth()
@@ -45,6 +47,8 @@ export const RegisterPage: React.FC = () => {
   const [createdRegistration, setCreatedRegistration] = useState<Registration | null>(null)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [stampOverlayOpen, setStampOverlayOpen] = useState(false)
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false)
 
   // Step 1: Attendee Profile (pre-filled from active session, email locked: F-01)
   const [name, setName] = useState('')
@@ -55,12 +59,41 @@ export const RegisterPage: React.FC = () => {
 
   useEffect(() => {
     if (session) {
-      setName(session.name || '')
-      setEmail(session.email || '')
+      if (session.name) setName(session.name)
+      if (session.email) setEmail(session.email)
       const s = session as any
-      if (s.registrationNumber) setRegNumber(s.registrationNumber)
-      if (s.degreeBranch) setBranch(s.degreeBranch)
+      if (s.registrationNumber || s.studentId) {
+        setRegNumber(s.registrationNumber || s.studentId)
+      }
+      if (s.degreeBranch || s.branch) {
+        setBranch(s.degreeBranch || s.branch)
+      }
       if (s.phone) setPhone(s.phone)
+
+      // Query fresh profile data directly from database to ensure up-to-date fields
+      api.auth.getProfile?.()
+        .then((p) => {
+          if (p) {
+            if (p.phone) setPhone((prev) => prev || p.phone || '')
+            if (p.student_id) setRegNumber((prev) => prev || p.student_id || '')
+            if (p.location) setBranch((prev) => prev || p.location || '')
+            if ((p as any).branch) setBranch((prev) => prev || (p as any).branch || '')
+            if (p.display_name) setName((prev) => prev || p.display_name || '')
+
+            try {
+              localStorage.setItem(
+                'eventmesh_student_profile',
+                JSON.stringify({
+                  phone: p.phone,
+                  regNumber: p.student_id,
+                  branch: p.location || (p as any).branch,
+                  collegeName: p.institution_name,
+                })
+              )
+            } catch {}
+          }
+        })
+        .catch(() => {})
     } else {
       setName('')
       setEmail('')
@@ -77,9 +110,40 @@ export const RegisterPage: React.FC = () => {
     } catch {}
   }, [session])
 
-  // Step 2: Team info (F-02)
+  // Step 2: Team info (Hackathon Team Formation)
   const [teamName, setTeamName] = useState('')
   const [teamMembers, setTeamMembers] = useState<TeamMemberItem[]>([])
+  const [teamMode, setTeamMode] = useState<'create' | 'join'>('create')
+  const [joinTeamCode, setJoinTeamCode] = useState('')
+  const [isVerifyingTeam, setIsVerifyingTeam] = useState(false)
+  const [verifiedTeamData, setVerifiedTeamData] = useState<any>(null)
+  const [generatedTeamCode] = useState(() => 'EM-TM-' + Math.random().toString(36).substring(2, 7).toUpperCase())
+
+  // Check URL query parameters for team code
+  useEffect(() => {
+    const codeParam = searchParams.get('teamCode') || searchParams.get('code')
+    if (codeParam) {
+      setTeamMode('join')
+      setJoinTeamCode(codeParam)
+      if (slug) {
+        setIsVerifyingTeam(true)
+        api.registrations.lookupTeam?.(slug, codeParam)
+          .then((res) => {
+            if (res) {
+              setVerifiedTeamData(res)
+              setTeamName(res.team_name)
+              toast({
+                title: 'Team Found!',
+                message: `Joined ${res.team_name} led by ${res.leader_name}.`,
+                type: 'success',
+              })
+            }
+          })
+          .catch(() => {})
+          .finally(() => setIsVerifyingTeam(false))
+      }
+    }
+  }, [searchParams, slug])
 
   // Initialize team members if team event
   useEffect(() => {
@@ -94,6 +158,44 @@ export const RegisterPage: React.FC = () => {
       setTeamMembers([leadMember])
     }
   }, [event, name, email, session, teamMembers.length])
+
+  const handleVerifyTeam = async () => {
+    if (!joinTeamCode.trim()) {
+      setFormErrors((prev) => ({ ...prev, joinTeamCode: 'Enter a valid team join code' }))
+      return
+    }
+    setIsVerifyingTeam(true)
+    setFormErrors((prev) => {
+      const copy = { ...prev }
+      delete copy.joinTeamCode
+      return copy
+    })
+    try {
+      const res = await api.registrations.lookupTeam?.(slug || event?.slug || '', joinTeamCode.trim())
+      if (res) {
+        setVerifiedTeamData(res)
+        setTeamName(res.team_name)
+        toast({
+          title: 'Team verified!',
+          message: `Ready to join ${res.team_name} (Leader: ${res.leader_name}).`,
+          type: 'success',
+        })
+      }
+    } catch (err: any) {
+      setVerifiedTeamData(null)
+      setFormErrors((prev) => ({
+        ...prev,
+        joinTeamCode: err?.message || 'Team not found with this code. Check spelling.',
+      }))
+      toast({
+        title: 'Team not found',
+        message: 'Could not locate a team with that code for this event.',
+        type: 'error',
+      })
+    } finally {
+      setIsVerifyingTeam(false)
+    }
+  }
 
   // Dynamic Questionnaire answers
   const [formAnswers, setFormAnswers] = useState<Record<string, any>>({})
@@ -119,6 +221,55 @@ export const RegisterPage: React.FC = () => {
     enabled: isPaidEvent && baseAmountCents > 0,
   })
 
+  // Listen for redirected return orders from bank 3D-Secure payment flow (?order_id=...)
+  useEffect(() => {
+    const orderIdParam = searchParams.get('order_id')
+    if (!orderIdParam || createdRegistration || isVerifyingPayment) return
+
+    let cancelled = false
+    void (async () => {
+      try {
+        setIsVerifyingPayment(true)
+        const statusRes = await api.payments.getOrderStatus(orderIdParam)
+        if (!cancelled && statusRes.is_paid) {
+          setCreatedRegistration(
+            normalizeBackendRegistration({
+              id: statusRes.order_id,
+              eventId: event?.id || '',
+              userId: session?.id || '',
+              userEmail: email || session?.email || '',
+              userName: name || session?.name || 'Attendee',
+              status: 'registered',
+              ticketCode: statusRes.ticket_code || `PASS-${statusRes.order_id.slice(-6)}`,
+              createdAt: new Date().toISOString(),
+              eventTitle: event?.title,
+              eventSlug: event?.slug,
+              organizerName: event?.organizerName,
+              venueName: event?.venue?.name,
+              orderId: statusRes.order_id,
+              isPaid: true,
+            })
+          )
+          setStampOverlayOpen(true)
+          toast({
+            title: 'Payment Verified & Ticket Emailed!',
+            message: `Your registration pass and QR code have been mailed to ${email || session?.email || 'your registered email'}.`,
+            type: 'success',
+          })
+        }
+      } catch (err) {
+        console.warn('Order verification failed:', err)
+      } finally {
+        if (!cancelled) setIsVerifyingPayment(false)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, event?.id, session?.id, createdRegistration, isVerifyingPayment])
+
   if (isLoading) {
     return (
       <PageShell className="py-12">
@@ -139,7 +290,7 @@ export const RegisterPage: React.FC = () => {
   const selectedTier = 'tier-standard'
   const isSoldOut = event.registrationState ? event.registrationState === 'full' : event.seatsLeft === 0
   const isTeamEvent = Boolean(event.features?.team)
-  const isSimpleFreeEvent = !isPaidEvent && !isTeamEvent && (!event.formSchema || event.formSchema.length === 0)
+  const isSimpleEvent = !isTeamEvent && (!event.formSchema || event.formSchema.length === 0)
   const minTeamSize = event.teamConfig?.minSize || 2
   const maxTeamSize = event.teamConfig?.maxSize || 4
 
@@ -169,16 +320,23 @@ export const RegisterPage: React.FC = () => {
   const validateStep2 = () => {
     const errs: Record<string, string> = {}
     if (isTeamEvent) {
-      if (!teamName.trim()) errs.teamName = 'Team name is required'
-      if (teamMembers.length < minTeamSize) {
-        errs.teamMembers = `Team requires at least ${minTeamSize} members`
-      }
-      // Check each member has email
-      teamMembers.forEach((m, idx) => {
-        if (!m.email.trim()) {
-          errs[`member_${idx}_email`] = 'Campus email is required'
+      if (teamMode === 'join') {
+        if (!joinTeamCode.trim()) {
+          errs.joinTeamCode = 'Team code is required'
+        } else if (!verifiedTeamData && !teamName) {
+          errs.joinTeamCode = 'Please verify team code first'
         }
-      })
+      } else {
+        if (!teamName.trim()) errs.teamName = 'Team name is required'
+        if (teamMembers.length < minTeamSize) {
+          errs.teamMembers = `Team requires at least ${minTeamSize} members`
+        }
+        teamMembers.forEach((m, idx) => {
+          if (!m.email.trim()) {
+            errs[`member_${idx}_email`] = 'Campus email is required'
+          }
+        })
+      }
     }
     if (event.formSchema) {
       for (const field of event.formSchema) {
@@ -245,12 +403,25 @@ export const RegisterPage: React.FC = () => {
       try {
         localStorage.setItem(
           'eventmesh_student_profile',
-          JSON.stringify({ phone, regNumber, branch })
+          JSON.stringify({
+            phone,
+            regNumber,
+            branch,
+            collegeName: (event as any)?.organization?.name || (event as any)?.clubName || session?.campus || '',
+          })
         )
+        if (session) {
+          api.auth.updateProfile?.({
+            phone: phone || undefined,
+            student_id: regNumber || undefined,
+            location: branch || undefined,
+          }).catch(() => {})
+        }
       } catch {}
 
-      const payload = {
+      const payload: RegisterPayload = {
         eventId: event.id,
+        eventSlug: event.slug || slug,
         answers: {
           ...formAnswers,
           phone,
@@ -260,37 +431,173 @@ export const RegisterPage: React.FC = () => {
         },
         team: isTeamEvent
           ? {
-              teamName,
-              leaderName: name,
-              leaderEmail: email,
-              members: teamMembers.map((m) => ({
-                name: m.name,
-                email: m.email,
-                role: m.role,
-              })),
+              teamName: teamName || verifiedTeamData?.team_name || 'Hackathon Team',
+              teamCode: teamMode === 'join' ? joinTeamCode.trim().toUpperCase() : generatedTeamCode,
+              leaderName: teamMode === 'join' ? (verifiedTeamData?.leader_name || 'Team Lead') : name,
+              leaderEmail: teamMode === 'join' ? (verifiedTeamData?.members?.[0]?.email || '') : email,
+              role: teamMode === 'join' ? 'Member' : 'Team Lead',
+              members:
+                teamMode === 'join' && verifiedTeamData
+                  ? verifiedTeamData.members.map((m: any) => ({
+                      name: m.name,
+                      email: m.email || '',
+                      role: m.role || 'Member',
+                    }))
+                  : teamMembers.map((m) => ({
+                      name: m.name,
+                      email: m.email,
+                      role: m.role,
+                    })),
             }
           : undefined,
       }
 
       if (isPaidEvent) {
+        setIsProcessingPayment(true)
         try {
-          await api.payments.createOrder({
-            type: 'event_registration',
+          const returnUrl = `${window.location.origin}/events/${event.slug}/register`
+          const orderRes = await api.payments.createOrder({
+            type: 'EVENT_REGISTRATION',
             event_slug: event.slug,
+            event_id: event.id,
+            return_url: returnUrl,
           })
-        } catch (orderErr) {
-          console.warn('Order session initiated:', orderErr)
+
+          if (!orderRes.payment_session_id) {
+            throw new Error('Payment session was not returned by gateway.')
+          }
+
+          toast({
+            title: 'Launching Secure Checkout',
+            message: 'Opening Cashfree gateway for instant payment.',
+            type: 'info',
+          })
+
+          const CashfreeFactory = await loadCashfreeSDK()
+          if (!CashfreeFactory) {
+            throw new Error('Cashfree Payment Gateway SDK failed to initialize.')
+          }
+
+          const cashfree = CashfreeFactory({
+            mode: orderRes.environment === 'production' ? 'production' : 'sandbox',
+          })
+
+          // Open Cashfree Seamless Checkout Modal
+          await cashfree.checkout({
+            paymentSessionId: orderRes.payment_session_id,
+            redirectTarget: '_modal',
+          })
+
+          // Modal closed or payment completed — verify status with backend
+          setIsVerifyingPayment(true)
+          let verified = false
+          for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+              const statusRes = await api.payments.getOrderStatus(orderRes.order_id)
+              if (statusRes.is_paid) {
+                verified = true
+                setCreatedRegistration(
+                  normalizeBackendRegistration({
+                    id: statusRes.order_id,
+                    eventId: event.id,
+                    userId: session?.id || '',
+                    userEmail: email || session?.email || '',
+                    userName: name || session?.name || 'Attendee',
+                    status: 'registered',
+                    ticketCode: statusRes.ticket_code || `PASS-${statusRes.order_id.slice(-6)}`,
+                    createdAt: new Date().toISOString(),
+                    eventTitle: event.title,
+                    eventSlug: event.slug,
+                    organizerName: event.organizerName,
+                    venueName: event.venue?.name,
+                    orderId: statusRes.order_id,
+                    isPaid: true,
+                  })
+                )
+                setStampOverlayOpen(true)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+                toast({
+                  title: 'Pass Issued & Ticket Emailed!',
+                  message: `Your payment was verified and your admission pass with QR code has been emailed to ${email || session?.email || 'your registered email'}.`,
+                  type: 'success',
+                })
+                break
+              }
+            } catch {}
+            await new Promise((r) => setTimeout(r, 1200))
+          }
+
+          if (!verified) {
+            toast({
+              title: 'Checkout Window Closed',
+              message: 'If you completed payment, your pass will sync shortly in My Passes.',
+              type: 'info',
+            })
+          }
+        } catch (orderErr: any) {
+          console.error('Paid checkout failed:', orderErr)
+          const detailMsg =
+            typeof orderErr?.detail === 'string'
+              ? orderErr.detail
+              : Array.isArray(orderErr?.detail)
+              ? orderErr.detail.map((d: any) => d?.msg || d?.message || JSON.stringify(d)).join(', ')
+              : orderErr?.error?.message ||
+                orderErr?.message ||
+                (typeof orderErr === 'string' ? orderErr : '')
+
+          const isAuthError =
+            orderErr?.status === 401 ||
+            orderErr?.code === 'unauthorized' ||
+            detailMsg.toLowerCase().includes('bearer token') ||
+            detailMsg.toLowerCase().includes('unauthorized') ||
+            detailMsg.toLowerCase().includes('sign in')
+
+          if (isAuthError) {
+            toast({
+              title: 'Sign In Required',
+              message: 'Please sign in or create an account to proceed with ticket checkout.',
+              type: 'info',
+            })
+          } else if (detailMsg.toLowerCase().includes('onboarding') || orderErr?.status === 403) {
+            setShowOnboardingModal(true)
+            toast({
+              title: 'Campus Profile Required',
+              message: 'Please complete your student college details before checking out.',
+              type: 'info',
+            })
+          } else {
+            toast({
+              title: 'Payment Gateway Notice',
+              message: detailMsg || 'Unable to open payment gateway. Please try again.',
+              type: 'error',
+            })
+          }
+        } finally {
+          setIsProcessingPayment(false)
+          setIsVerifyingPayment(false)
         }
+        return
       }
 
+      // Free / Unpaid Event flow:
       const res = await registerMutation.mutateAsync(payload)
       setCreatedRegistration(res)
       setStampOverlayOpen(true)
       window.scrollTo({ top: 0, behavior: 'smooth' })
+      toast({
+        title: 'Ticket Issued & Emailed!',
+        message: `Your admission pass with QR code has been emailed to ${email || session?.email || 'your registered email'}. Check your inbox or download below.`,
+        type: 'success',
+      })
     } catch (err: any) {
       console.error('Registration failed:', err)
-      const detail = err.detail || err.message || ''
-      if (detail.includes('onboarding') || err.status === 403) {
+      const detailMsg =
+        typeof err.detail === 'string'
+          ? err.detail
+          : Array.isArray(err.detail)
+          ? err.detail.map((d: any) => d?.msg || d?.message || JSON.stringify(d)).join(', ')
+          : err.message || ''
+      if (detailMsg.toLowerCase().includes('onboarding') || err.status === 403) {
         setShowOnboardingModal(true)
         toast({
           title: 'Campus Profile Required',
@@ -300,7 +607,7 @@ export const RegisterPage: React.FC = () => {
       } else {
         toast({
           title: 'Registration failed',
-          message: detail || 'Unable to reserve pass. Please try again.',
+          message: detailMsg || 'Unable to reserve pass. Please try again.',
           type: 'error',
         })
       }
@@ -327,9 +634,15 @@ export const RegisterPage: React.FC = () => {
         type: 'success',
       })
     } catch (err: any) {
+      const detailMsg =
+        typeof err.detail === 'string'
+          ? err.detail
+          : Array.isArray(err.detail)
+          ? err.detail.map((d: any) => d?.msg || d?.message || JSON.stringify(d)).join(', ')
+          : err.message || ''
       toast({
         title: 'Update failed',
-        message: err.detail || 'Unable to save profile.',
+        message: detailMsg || 'Unable to save profile.',
         type: 'error',
       })
     } finally {
@@ -453,6 +766,30 @@ export const RegisterPage: React.FC = () => {
             </p>
           </div>
 
+          {/* Ticket Emailed Notification Card */}
+          {createdRegistration.status !== 'waitlisted' && (
+            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 text-left max-w-xl mx-auto shadow-sm">
+              <div className="w-11 h-11 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <EnvelopeSimple size={24} weight="duotone" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-bold text-ink">Ticket has been mailed to you!</p>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                    SENT
+                  </span>
+                </div>
+                <p className="text-xs text-ink-soft mt-1 leading-relaxed">
+                  We've sent your entry pass with the scannable QR code and official printable PDF ticket to{' '}
+                  <strong className="text-ink font-semibold">
+                    {createdRegistration.userEmail || email || session?.email || 'your email'}
+                  </strong>
+                  . Please check your inbox (or spam folder).
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Minimal Digital Pass Ticket Object */}
           <div className="bg-surface-subtle rounded-3xl p-6 sm:p-8 text-left relative overflow-hidden">
             {/* Digital Pass Status Seal */}
@@ -513,13 +850,25 @@ export const RegisterPage: React.FC = () => {
               {/* Scannable QR code on ticket face (Mandate 1) */}
               <div className="sm:col-span-5 flex flex-col items-center justify-center p-3 rounded-[14px] bg-paper border border-ink/10">
                 <QRCode
-                  value={`EVENTMESH:TKT:${createdRegistration.ticketCode}:${createdRegistration.id}`}
-                  size={140}
+                  value={JSON.stringify({
+                    ticket: createdRegistration.ticketCode,
+                    ticketId: createdRegistration.ticketCode,
+                    code: createdRegistration.ticketCode,
+                    event: event.slug || event.id,
+                    eventId: event.id,
+                    reg: createdRegistration.id,
+                  })}
+                  size={150}
                   className="rounded"
                 />
-                <span className="font-mono text-xs text-ink-soft mt-1.5 tracking-wider font-semibold">
-                  SCAN AT GATE
-                </span>
+                <div className="mt-2 text-center">
+                  <span className="font-mono text-xs font-bold text-ink block tracking-wider">
+                    {createdRegistration.ticketCode}
+                  </span>
+                  <span className="font-mono text-[10px] text-ink-soft uppercase tracking-wider">
+                    SCAN AT GATE
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -528,6 +877,110 @@ export const RegisterPage: React.FC = () => {
               <span>EventMesh Campus Pass Protocol v2</span>
             </div>
           </div>
+
+          {/* Hackathon Team Workspace & Roster Card */}
+          {isTeamEvent && (
+            <div className="bg-card border border-line rounded-2xl p-5 sm:p-6 text-left space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-3">
+                <div>
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-accent block">
+                    Hackathon Team Workspace
+                  </span>
+                  <h4 className="font-display font-bold text-lg text-ink">
+                    {teamName || verifiedTeamData?.team_name || 'Hackathon Team'}
+                  </h4>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono px-3 py-1.5 rounded-xl bg-surface-subtle border border-line font-bold text-ink">
+                    Code: {teamMode === 'join' ? joinTeamCode.toUpperCase() : generatedTeamCode}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const code = teamMode === 'join' ? joinTeamCode.toUpperCase() : generatedTeamCode
+                      navigator.clipboard.writeText(code)
+                      toast({ title: 'Team code copied', message: code, type: 'success' })
+                    }}
+                    className="p-2 rounded-xl border border-line hover:bg-surface-subtle text-ink-soft hover:text-ink transition-colors"
+                    title="Copy team join code"
+                  >
+                    <Copy size={15} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Shareable Invite Link */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-mono uppercase tracking-wider text-ink-muted block">
+                  Teammate Direct Invite Link
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    readOnly
+                    value={`${window.location.origin}/events/${event.slug}/register?teamCode=${
+                      teamMode === 'join' ? joinTeamCode.toUpperCase() : generatedTeamCode
+                    }`}
+                    className="flex-1 bg-surface-subtle border border-line rounded-input px-3 py-2 text-xs font-mono text-ink-soft select-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const code = teamMode === 'join' ? joinTeamCode.toUpperCase() : generatedTeamCode
+                      const link = `${window.location.origin}/events/${event.slug}/register?teamCode=${code}`
+                      navigator.clipboard.writeText(link)
+                      toast({
+                        title: 'Team invite link copied!',
+                        message: 'Send to teammates to auto-join your squad.',
+                        type: 'success',
+                      })
+                    }}
+                    className="px-3.5 py-2 bg-ink text-paper rounded-input text-xs font-semibold hover:bg-ink-soft active:scale-95 transition-transform shrink-0 flex items-center gap-1.5"
+                  >
+                    <Copy size={14} />
+                    <span>Copy Invite Link</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Team Roster List */}
+              <div className="space-y-2 pt-2 border-t border-line">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-ink flex items-center gap-1.5">
+                    <Users size={14} className="text-accent" />
+                    <span>Confirmed Team Roster</span>
+                  </span>
+                  <span className="font-mono text-ink-muted text-[11px]">
+                    {teamMode === 'join' && verifiedTeamData
+                      ? `${verifiedTeamData.members.length + 1} / ${maxTeamSize} members`
+                      : `${teamMembers.length} / ${maxTeamSize} members`}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {(teamMode === 'join' && verifiedTeamData
+                    ? [
+                        ...verifiedTeamData.members,
+                        { name: name || 'You', email: email || '', role: 'Member', status: 'Joined' },
+                      ]
+                    : teamMembers
+                  ).map((m: any, idx: number) => (
+                    <div
+                      key={m.id || idx}
+                      className="p-3 rounded-xl border border-line bg-surface flex items-center justify-between text-xs"
+                    >
+                      <div className="min-w-0 pr-2">
+                        <p className="font-semibold text-ink truncate">{m.name || 'Teammate'}</p>
+                        <p className="text-[11px] font-mono text-ink-soft truncate">{m.email}</p>
+                      </div>
+                      <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-surface-subtle text-ink-muted shrink-0">
+                        {m.role || (idx === 0 ? 'Team Lead' : 'Member')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <button
@@ -572,11 +1025,11 @@ export const RegisterPage: React.FC = () => {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-ink-soft block font-mono">
-                    {isSimpleFreeEvent ? 'Fast Admission' : `Step ${currentStep} of 3`}
+                    {isSimpleEvent ? (isPaidEvent ? 'Fast Checkout' : 'Fast Admission') : `Step ${currentStep} of 3`}
                   </span>
                   <h1 className="font-display text-2xl sm:text-3xl font-semibold text-ink tracking-tight">
-                    {isSimpleFreeEvent
-                      ? 'Confirm details & claim pass'
+                    {isSimpleEvent
+                      ? (isPaidEvent ? 'Confirm details & proceed to payment' : 'Confirm details & claim pass')
                       : currentStep === 1
                       ? 'Your particulars'
                       : currentStep === 2
@@ -592,7 +1045,7 @@ export const RegisterPage: React.FC = () => {
               </div>
 
               {/* Step indicator progress bar (only when multi-step) */}
-              {!isSimpleFreeEvent && (
+              {!isSimpleEvent && (
                 <div className="grid grid-cols-3 gap-2">
                   <div className={`h-1.5 rounded-full transition-colors ${currentStep >= 1 ? 'bg-cobalt' : 'bg-paper-2'}`} />
                   <div className={`h-1.5 rounded-full transition-colors ${currentStep >= 2 ? 'bg-cobalt' : 'bg-paper-2'}`} />
@@ -739,25 +1192,36 @@ export const RegisterPage: React.FC = () => {
                 </div>
 
                 <div className="pt-4 flex items-center justify-between gap-3 flex-wrap">
-                  {isSimpleFreeEvent ? (
+                  {isSimpleEvent ? (
                     <>
-                      <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-mono">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span>Free student admission · Instant QR pass</span>
-                      </div>
+                      {isPaidEvent ? (
+                        <div className="flex items-center gap-2 text-xs text-accent font-mono">
+                          <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                          <span>
+                            {feeQuote ? formatCurrency(feeQuote.total_payable_inr) : formatCurrency(event.price || 0)} Total · Cashfree Secured
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-mono">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                          <span>Free student admission · Instant QR pass</span>
+                        </div>
+                      )}
                       <Button
                         type="button"
                         variant="primary"
                         size="default"
-                        loading={registerMutation.isPending}
+                        loading={isProcessingPayment || isVerifyingPayment || registerMutation.isPending}
                         onClick={(e) => {
                           if (validateStep1()) {
                             handleFormSubmit(e as any)
                           }
                         }}
-                        className="bg-ink hover:bg-accent text-paper font-semibold"
+                        className="bg-ink hover:bg-accent text-paper font-semibold shadow-sm"
                       >
-                        Claim Free Campus Pass →
+                        {isPaidEvent
+                          ? `Proceed to Payment (${feeQuote ? formatCurrency(feeQuote.total_payable_inr) : formatCurrency(event.price || 0)}) →`
+                          : 'Claim Free Campus Pass →'}
                       </Button>
                     </>
                   ) : (
@@ -780,80 +1244,210 @@ export const RegisterPage: React.FC = () => {
             {currentStep === 2 && (
               <div className="space-y-6">
                 {isTeamEvent && (
-                  <div className="space-y-4 p-5 rounded-[16px] bg-paper border border-ink/10">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="space-y-5 p-5 rounded-[16px] bg-paper border border-ink/10">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink/10 pb-3">
                       <div>
-                        <h3 className="font-bold text-sm text-ink">Team collective roster</h3>
+                        <h3 className="font-bold text-sm text-ink">Hackathon Team Formation</h3>
                         <p className="text-xs text-ink-soft">
-                          Requires {minTeamSize} to {maxTeamSize} members. One digital admission pass issued per confirmed member.
+                          Requires {minTeamSize} to {maxTeamSize} members. Join an existing squad or register a new team.
                         </p>
                       </div>
                       <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-card border border-ink/20 text-ink">
-                        {teamMembers.length} / {maxTeamSize} members
+                        {teamMode === 'join' && verifiedTeamData
+                          ? `${verifiedTeamData.members.length + 1} / ${maxTeamSize} members`
+                          : `${teamMembers.length} / ${maxTeamSize} members`}
                       </span>
                     </div>
 
-                    <Field
-                      id="teamName"
-                      name="teamName"
-                      label="Collective / Team Name"
-                      required
-                      value={teamName}
-                      onChange={(e) => setTeamName(e.target.value)}
-                      error={formErrors.teamName}
-                    />
+                    {/* Mode Selector Tabs */}
+                    <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-surface-subtle border border-line">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTeamMode('create')
+                          setFormErrors((prev) => {
+                            const copy = { ...prev }
+                            delete copy.joinTeamCode
+                            return copy
+                          })
+                        }}
+                        className={`py-2 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+                          teamMode === 'create'
+                            ? 'bg-card text-ink shadow-xs border border-line'
+                            : 'text-ink-soft hover:text-ink'
+                        }`}
+                      >
+                        <span>👑 Create New Team</span>
+                      </button>
 
-                    <div className="space-y-3 pt-2">
-                      <label className="text-xs font-bold uppercase tracking-wider text-ink-soft block">
-                        Team Member Invitations
-                      </label>
-                      <div className="space-y-2.5">
-                        {teamMembers.map((m, idx) => (
-                          <div
-                            key={m.id}
-                            className="p-3 rounded-[12px] bg-card border border-ink/15 flex flex-wrap items-center justify-between gap-3"
-                          >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <span className="w-6 h-6 rounded-full bg-paper-2 font-mono text-xs font-bold flex items-center justify-center flex-shrink-0">
-                                {idx + 1}
+                      <button
+                        type="button"
+                        onClick={() => setTeamMode('join')}
+                        className={`py-2 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+                          teamMode === 'join'
+                            ? 'bg-card text-ink shadow-xs border border-line'
+                            : 'text-ink-soft hover:text-ink'
+                        }`}
+                      >
+                        <span>🔗 Join Existing Team</span>
+                      </button>
+                    </div>
+
+                    {teamMode === 'join' ? (
+                      /* JOIN TEAM SUB-FLOW */
+                      <div className="space-y-4 pt-1">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold uppercase tracking-wider text-ink-soft block">
+                            Team Join Code
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={joinTeamCode}
+                              onChange={(e) => {
+                                setJoinTeamCode(e.target.value.toUpperCase())
+                                setVerifiedTeamData(null)
+                              }}
+                              placeholder="e.g. EM-TM-7K9P2"
+                              className="flex-1 bg-card border border-ink/20 rounded-input px-3.5 py-2 text-sm font-mono text-ink uppercase tracking-wider focus:outline-none focus:ring-1 focus:ring-primary"
+                            />
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="compact"
+                              loading={isVerifyingTeam}
+                              onClick={handleVerifyTeam}
+                            >
+                              Verify Code
+                            </Button>
+                          </div>
+                          {formErrors.joinTeamCode && (
+                            <p className="text-xs text-red-500 font-medium">{formErrors.joinTeamCode}</p>
+                          )}
+                        </div>
+
+                        {/* Verified Team Info Box */}
+                        {verifiedTeamData && (
+                          <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                                <CheckCircle size={15} weight="fill" />
+                                <span>Verified Team Found</span>
                               </span>
-                              <div className="min-w-0">
-                                <p className="font-semibold text-xs text-ink truncate">{m.name} ({m.role})</p>
-                                <p className="text-xs text-ink-soft font-mono truncate">{m.email}</p>
+                              <span className="text-[11px] font-mono text-ink-muted">
+                                {verifiedTeamData.members.length} / {verifiedTeamData.max_size} members
+                              </span>
+                            </div>
+
+                            <div>
+                              <p className="font-display font-bold text-base text-ink">{verifiedTeamData.team_name}</p>
+                              <p className="text-xs text-ink-soft">
+                                Team Captain: <strong className="text-ink">{verifiedTeamData.leader_name}</strong>
+                              </p>
+                            </div>
+
+                            <div className="space-y-1 pt-1 border-t border-line/40">
+                              <p className="text-[11px] font-mono uppercase text-ink-muted">Current Teammates:</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {verifiedTeamData.members.map((m: any, idx: number) => (
+                                  <span
+                                    key={idx}
+                                    className="px-2 py-0.5 rounded bg-surface border border-line text-xs font-medium text-ink"
+                                  >
+                                    {m.name} ({m.role || 'Member'})
+                                  </span>
+                                ))}
+                                <span className="px-2 py-0.5 rounded bg-primary/10 border border-primary/20 text-xs font-semibold text-primary">
+                                  + You (Joining)
+                                </span>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                m.status === 'Joined' ? 'bg-mint/30 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                              }`}>
-                                {m.status}
-                              </span>
-                              {idx > 0 && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveTeammate(m.id)}
-                                  className="text-xs text-red-600 hover:text-red-800 p-1"
-                                  title="Remove member"
-                                >
-                                  <Icon name="Trash" size={14} />
-                                </button>
-                              )}
-                            </div>
                           </div>
-                        ))}
+                        )}
                       </div>
+                    ) : (
+                      /* CREATE NEW TEAM SUB-FLOW */
+                      <div className="space-y-4 pt-1">
+                        <div className="p-3 rounded-xl bg-surface-subtle/80 border border-line text-xs space-y-1">
+                          <p className="font-semibold text-ink flex items-center gap-1.5">
+                            <span>🔑 Auto-Generated Team Code:</span>
+                            <span className="font-mono text-primary font-bold">{generatedTeamCode}</span>
+                          </p>
+                          <p className="text-ink-soft">
+                            Share this code or your invite link after registration so your teammates can join your roster.
+                          </p>
+                        </div>
 
-                      {teamMembers.length < maxTeamSize && (
-                        <button
-                          type="button"
-                          onClick={handleAddTeammate}
-                          className="inline-flex items-center gap-1.5 text-xs font-bold text-cobalt hover:underline pt-1"
-                        >
-                          <Icon name="PlusCircle" size={16} />
-                          <span>+ Invite additional teammate</span>
-                        </button>
-                      )}
-                    </div>
+                        <Field
+                          id="teamName"
+                          name="teamName"
+                          label="Collective / Team Name"
+                          required
+                          value={teamName}
+                          onChange={(e) => setTeamName(e.target.value)}
+                          error={formErrors.teamName}
+                          placeholder="e.g. Neural Ninjas"
+                        />
+
+                        <div className="space-y-3 pt-2">
+                          <label className="text-xs font-bold uppercase tracking-wider text-ink-soft block">
+                            Team Member Invitations
+                          </label>
+                          <div className="space-y-2.5">
+                            {teamMembers.map((m, idx) => (
+                              <div
+                                key={m.id}
+                                className="p-3 rounded-[12px] bg-card border border-ink/15 flex flex-wrap items-center justify-between gap-3"
+                              >
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  <span className="w-6 h-6 rounded-full bg-paper-2 font-mono text-xs font-bold flex items-center justify-center flex-shrink-0">
+                                    {idx + 1}
+                                  </span>
+                                  <div className="min-w-0">
+                                    <p className="font-semibold text-xs text-ink truncate">
+                                      {m.name} ({m.role})
+                                    </p>
+                                    <p className="text-xs text-ink-soft font-mono truncate">{m.email}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                      m.status === 'Joined'
+                                        ? 'bg-mint/30 text-emerald-800'
+                                        : 'bg-amber-100 text-amber-800'
+                                    }`}
+                                  >
+                                    {m.status}
+                                  </span>
+                                  {idx > 0 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveTeammate(m.id)}
+                                      className="text-xs text-red-600 hover:text-red-800 p-1"
+                                      title="Remove member"
+                                    >
+                                      <Icon name="Trash" size={14} />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {teamMembers.length < maxTeamSize && (
+                            <button
+                              type="button"
+                              onClick={handleAddTeammate}
+                              className="inline-flex items-center gap-1.5 text-xs font-bold text-cobalt hover:underline pt-1"
+                            >
+                              <Icon name="PlusCircle" size={16} />
+                              <span>+ Invite additional teammate</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -953,10 +1547,12 @@ export const RegisterPage: React.FC = () => {
                     type="submit"
                     variant="primary"
                     size="default"
-                    loading={registerMutation.isPending}
+                    loading={isProcessingPayment || isVerifyingPayment || registerMutation.isPending}
                     disabled={!agreedToConduct || event.registrationState === 'closed' || event.registrationState === 'not_required'}
                   >
-                    Confirm & Issue Pass
+                    {isPaidEvent
+                      ? `Proceed to Payment (${feeQuote ? formatCurrency(feeQuote.total_payable_inr) : formatCurrency(event.price || 0)}) →`
+                      : 'Confirm & Issue Pass'}
                   </Button>
                 </div>
               </form>
@@ -1021,6 +1617,13 @@ export const RegisterPage: React.FC = () => {
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
                       <span>Cashfree Split Marketplace PG Secured</span>
                     </p>
+                    <div className="pt-2 flex items-center gap-1.5 text-[10px] font-mono text-ink-soft flex-wrap">
+                      <span className="px-1.5 py-0.5 rounded bg-paper border border-ink/10 font-medium">UPI</span>
+                      <span className="px-1.5 py-0.5 rounded bg-paper border border-ink/10 font-medium">PhonePe</span>
+                      <span className="px-1.5 py-0.5 rounded bg-paper border border-ink/10 font-medium">GPay</span>
+                      <span className="px-1.5 py-0.5 rounded bg-paper border border-ink/10 font-medium">Cards</span>
+                      <span className="px-1.5 py-0.5 rounded bg-paper border border-ink/10 font-medium">NetBanking</span>
+                    </div>
                   </div>
                 ) : (
                   <div className="pt-3 border-t border-ink/10 space-y-1">

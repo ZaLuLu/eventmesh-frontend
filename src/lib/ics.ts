@@ -54,3 +54,45 @@ export function downloadICS(event: CalendarEventPayload) {
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
 }
+
+/**
+ * Generates a 1-click Google Calendar web creation URL.
+ */
+export function getGoogleCalendarUrl(event: CalendarEventPayload): string {
+  const start = formatDateToICS(event.startsAt)
+  let end = event.endsAt ? formatDateToICS(event.endsAt) : ''
+  if (!end) {
+    const endDt = new Date(new Date(event.startsAt).getTime() + 2 * 60 * 60 * 1000)
+    end = formatDateToICS(endDt.toISOString())
+  }
+  const dates = `${start}/${end}`
+  const location = [event.venueName, event.venueAddress].filter(Boolean).join(', ')
+
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: event.title,
+    dates,
+    details: `${event.description || ''}\n\nView event on EventMesh: ${event.url || window.location.href}`,
+    location,
+  })
+
+  return `https://calendar.google.com/calendar/render?${params.toString()}`
+}
+
+/**
+ * Returns backend calendar endpoints.
+ */
+export function getEventIcsUrl(slug: string): string {
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+  return `${apiBase}/events/${slug}/calendar.ics`
+}
+
+export function getUserScheduleIcsUrl(userId: string): string {
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+  return `${apiBase}/users/${userId}/calendar.ics`
+}
+
+export function getUserScheduleWebCalUrl(userId: string): string {
+  const url = getUserScheduleIcsUrl(userId)
+  return url.replace(/^https?:\/\//i, 'webcal://')
+}

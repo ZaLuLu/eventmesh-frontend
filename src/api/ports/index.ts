@@ -59,6 +59,7 @@ import {
   TriggerSyncResponse,
   TestEmailRequest,
   TestEmailResponse,
+  TeamLookupResult,
 } from '../contracts'
 
 export interface EventsFilter {
@@ -66,12 +67,14 @@ export interface EventsFilter {
   clubId?: string
   type?: string
   status?: EventStatus | 'all'
-  dateFilter?: 'today' | 'weekend' | 'upcoming' | 'all'
+  dateFilter?: 'today' | 'weekend' | 'next-week' | 'upcoming' | 'past' | 'all'
   search?: string
   cursor?: string
   limit?: number
   free?: boolean
   city?: string
+  source?: string
+  online?: boolean
 }
 
 export interface EventsApi {
@@ -120,11 +123,15 @@ export interface FormsApi {
 
 export interface RegisterPayload {
   eventId: string
+  eventSlug?: string
+  tierId?: string
   answers: Record<string, any>
   team?: {
     teamName: string
+    teamCode?: string
     leaderName: string
     leaderEmail: string
+    role?: string
     members: { name: string; email: string; role?: string }[]
   }
 }
@@ -146,6 +153,7 @@ export interface RegistrationsApi {
   }): Promise<Registration[]>
   updateStatus(id: string, status: RegistrationStatus): Promise<Registration>
   getMyRegistrations(): Promise<Registration[]>
+  lookupTeam?(eventSlug: string, teamCode: string): Promise<TeamLookupResult>
   getMyEvents?(): Promise<{
     upcoming: Event[]
     ongoing: Event[]
@@ -171,7 +179,7 @@ export interface CheckinStats {
 export interface CheckinApi {
   checkinTicket(ticketCode: string, eventId?: string): Promise<CheckinResult>
   checkinWithToken?(token: string, eventId?: string): Promise<CheckinResult>
-  undoCheckin(registrationId: string): Promise<boolean>
+  undoCheckin(registrationId: string, eventId?: string): Promise<boolean>
   getCheckinStats(eventId: string): Promise<CheckinStats>
 }
 
@@ -335,6 +343,7 @@ export interface OrganizationsApi {
   getInstitutionCandidates?(): Promise<InstitutionCandidate[]>
   verifyInstitution?(slug: string, domains: string[]): Promise<InstitutionCandidate>
   rejectInstitution?(slug: string, reason?: string): Promise<InstitutionCandidate>
+  revokeInstitution?(slug: string, reason?: string): Promise<InstitutionCandidate>
   getPlatformOrganizations?(status?: string): Promise<PlatformOrganizationItem[]>
   listPlatformProposals?(status?: string): Promise<ProposalRead[]>
   reviewPlatformProposal?(proposalId: string, review: ProposalReview): Promise<ProposalRead>

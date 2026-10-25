@@ -6,12 +6,17 @@ import {
   ShieldCheck,
   CheckCircle,
   Cube,
+  CalendarBlank,
+  MapPin,
 } from '@phosphor-icons/react'
 import { Registration } from '@/api'
 import { formatDate } from '@/lib/dates'
 import { Badge } from '@/design-system/primitives/Badge'
 import { QRCode } from '@/design-system/primitives/QRCode'
-import { Ticket3D } from '@/design-system/3d'
+
+const Ticket3D = React.lazy(() =>
+  import('@/design-system/3d/Ticket3D').then((m) => ({ default: m.Ticket3D }))
+)
 
 export interface TactileBoardingPassProps {
   registration: Registration
@@ -52,23 +57,25 @@ export const TactileBoardingPass: React.FC<TactileBoardingPassProps> = ({
             ← 2D Card
           </button>
         </div>
-        <Ticket3D
-          eventTitle={reg.eventTitle || 'Campus Flagship Event'}
-          attendeeName={reg.userName || 'Verified Attendee'}
-          ticketCode={`PASS-${passSerial}`}
-          tierName={reg.tierName || 'GENERAL ADMISSION'}
-          dateText={reg.eventStartsAt ? formatDate(reg.eventStartsAt) : 'UPCOMING'}
-          color="#8FE3C6"
-          isVip={Boolean(reg.tierName?.toLowerCase().includes('vip'))}
-          height={260}
-        />
+        <React.Suspense fallback={<div className="h-64 flex items-center justify-center text-xs text-text-3 font-mono">Loading 3D Canvas...</div>}>
+          <Ticket3D
+            eventTitle={reg.eventTitle || 'Campus Flagship Event'}
+            attendeeName={reg.userName || 'Verified Attendee'}
+            ticketCode={`PASS-${passSerial}`}
+            tierName={reg.tierName || 'GENERAL ADMISSION'}
+            dateText={reg.eventStartsAt ? formatDate(reg.eventStartsAt) : 'UPCOMING'}
+            color="#8FE3C6"
+            isVip={Boolean(reg.tierName?.toLowerCase().includes('vip'))}
+            height={260}
+          />
+        </React.Suspense>
       </div>
     )
   }
 
   return (
     <div
-      className="relative w-full h-[290px] perspective-[1200px] select-none"
+      className="relative w-full h-[310px] perspective-[1200px] select-none"
       style={{ perspective: 1200 }}
     >
       <div
@@ -89,9 +96,9 @@ export const TactileBoardingPass: React.FC<TactileBoardingPassProps> = ({
           {/* Top Paper Header Strip - Subtle Iris Accent */}
           <div className="h-1 w-full bg-primary flex-shrink-0" />
 
-          <div className="p-5 flex-1 flex flex-col justify-between">
+          <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
             {/* Pass Serial & Status Header */}
-            <div className="flex items-center justify-between border-b border-line/30 pb-3">
+            <div className="flex items-center justify-between border-b border-line/30 pb-2.5">
               <div className="flex items-center gap-2">
                 <span className="font-mono text-xs font-medium px-2 py-0.5 rounded-md bg-surface text-ink flex items-center gap-1.5">
                   <Ticket className="h-3.5 w-3.5 text-primary" weight="bold" />
@@ -140,20 +147,42 @@ export const TactileBoardingPass: React.FC<TactileBoardingPassProps> = ({
 
             {/* Event Info */}
             <div className="my-2">
-              <h3 className="font-display font-medium text-base text-ink leading-snug line-clamp-2">
-                {reg.eventTitle}
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-accent truncate max-w-[170px]">
+                  {reg.organizerName || 'Campus Host'}
+                </span>
+                {reg.tierName && (
+                  <span className="px-1.5 py-0.2 rounded bg-surface border border-line/50 text-[10px] font-mono uppercase tracking-wide text-ink-soft">
+                    {reg.tierName}
+                  </span>
+                )}
+              </div>
+              <h3
+                className="font-display font-semibold text-base sm:text-[17px] text-ink leading-snug line-clamp-2"
+                title={reg.eventTitle || 'Campus Event'}
+              >
+                {reg.eventTitle || 'Campus Event'}
               </h3>
-              <p className="text-xs text-ink-soft mt-1 font-mono">
-                {formatDate(reg.eventStartsAt || reg.createdAt, 'EEE, MMM d, yyyy')} · {reg.venueName || 'Main Campus Venue'}
-              </p>
+              <div className="mt-2 space-y-1 text-xs text-ink-soft font-mono">
+                <div className="flex items-center gap-1.5 truncate">
+                  <CalendarBlank size={13} className="text-accent shrink-0" weight="bold" />
+                  <span className="truncate">
+                    {formatDate(reg.eventStartsAt || reg.createdAt, 'EEE, dd MMM yyyy · hh:mm a')}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 truncate">
+                  <MapPin size={13} className="text-ink-muted shrink-0" weight="bold" />
+                  <span className="truncate">{reg.venueName || 'Main Campus Venue'}</span>
+                </div>
+              </div>
             </div>
 
             {/* Attendee Row */}
             <div className="pt-2 text-xs text-ink-soft flex items-center justify-between border-t border-line/20">
               <span className="truncate">
-                Attendee: <span className="text-ink font-medium">{reg.userName || 'Student Passholder'}</span>
+                Attendee: <span className="text-ink font-semibold">{reg.userName || 'Student Passholder'}</span>
               </span>
-              <span className={`font-mono text-[11px] font-medium flex-shrink-0 ${
+              <span className={`font-mono text-[11px] font-bold flex-shrink-0 ${
                 isCheckedIn ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary'
               }`}>
                 {isCheckedIn ? 'VERIFIED' : 'ACTIVE'}
@@ -228,16 +257,27 @@ export const TactileBoardingPass: React.FC<TactileBoardingPassProps> = ({
 
           {/* Center Gate Verification Content */}
           <div className="my-auto flex flex-col items-center gap-2">
+            <div className="text-center w-full px-2">
+              <p className="text-xs font-semibold text-white truncate" title={reg.eventTitle}>
+                {reg.eventTitle || 'Campus Event'}
+              </p>
+              <p className="text-[10px] text-white/60 font-mono">
+                {formatDate(reg.eventStartsAt || reg.createdAt, 'EEE, dd MMM yyyy')}
+              </p>
+            </div>
             <div className="p-2 rounded-xl bg-white shadow-xs">
               <QRCode
                 value={JSON.stringify({
                   v: 1,
+                  ticket: ticketCode,
                   ticketId: ticketCode,
                   code: ticketCode,
-                  registrationId: reg.id,
+                  event: reg.eventSlug || reg.eventId || '',
                   eventId: reg.eventId || '',
+                  reg: reg.id,
+                  registrationId: reg.id,
                 })}
-                size={96}
+                size={88}
               />
             </div>
             <span className="font-mono text-xs font-bold text-white tracking-wider">

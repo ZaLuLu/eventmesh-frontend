@@ -34,11 +34,29 @@ export const CalendarPage: React.FC = () => {
 
   const [viewMode, setViewMode] = useState<'month' | 'list'>('month')
   const [selectedClub, setSelectedClub] = useState<string>('all')
-  // Default to October 2026 to align with mock seed data
-  const [currentDate, setCurrentDate] = useState<Date>(new Date(2026, 9, 1))
-  const [selectedDay, setSelectedDay] = useState<number | null>(15)
+  // Default to today; jump to first event's month if mock data has no current-month events
+  const [currentDate, setCurrentDate] = useState<Date>(() => new Date())
+  const [selectedDay, setSelectedDay] = useState<number | null>(() => new Date().getDate())
 
   const events = eventsData?.items || []
+
+  // If using mock data with events in another month and none currently, align with first event's month
+  React.useEffect(() => {
+    if (events.length > 0) {
+      const now = new Date()
+      const hasCurrentMonthEvents = events.some((e) => {
+        const d = new Date(e.startsAt)
+        return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+      })
+      if (!hasCurrentMonthEvents) {
+        const first = new Date(events[0].startsAt)
+        if (!isNaN(first.getTime())) {
+          setCurrentDate(new Date(first.getFullYear(), first.getMonth(), 1))
+          setSelectedDay(first.getDate())
+        }
+      }
+    }
+  }, [events])
 
   const filteredEvents = events.filter((e) => {
     if (selectedClub !== 'all' && e.organizerId !== selectedClub) return false
@@ -67,7 +85,11 @@ export const CalendarPage: React.FC = () => {
 
   const handlePrevMonth = () => setCurrentDate(new Date(year, month - 1, 1))
   const handleNextMonth = () => setCurrentDate(new Date(year, month + 1, 1))
-  const handleToday = () => setCurrentDate(new Date(2026, 9, 1))
+  const handleToday = () => {
+    const today = new Date()
+    setCurrentDate(today)
+    setSelectedDay(today.getDate())
+  }
 
   // Find events on selected day
   const selectedDayEvents = selectedDay !== null
@@ -118,7 +140,7 @@ export const CalendarPage: React.FC = () => {
         />
 
         {/* View Mode Toggle */}
-        <div className="flex items-center gap-2 p-1.5 rounded-full border-2 border-ink bg-card shadow-[3px_3px_0_#151130] flex-shrink-0">
+        <div className="flex items-center gap-2 p-1.5 rounded-full border border-line bg-card shadow-xs hover:shadow-sm flex-shrink-0">
           <button
             type="button"
             onClick={() => setViewMode('month')}

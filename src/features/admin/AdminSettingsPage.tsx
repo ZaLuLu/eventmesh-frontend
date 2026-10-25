@@ -451,7 +451,7 @@ export const AdminSettingsPage: React.FC = () => {
                   onChange={(e) => setEmailTemplate(e.target.value as any)}
                   options={[
                     { value: 'event_ticket', label: '1. Event Ticket Confirmation (QR Pass)' },
-                    { value: 'organizer_invite', label: '2. Staff & Club Invitation Charter' },
+                    { value: 'organizer_invite', label: '2. Staff & Club Invitations' },
                     { value: 'withdrawal_processed', label: '3. Bank Withdrawal & UTR Notice' },
                     { value: 'certificate_issued', label: '4. Cryptographic Certificate Proof' },
                     { value: 'system_alert', label: '5. SuperAdmin Security Alert' },

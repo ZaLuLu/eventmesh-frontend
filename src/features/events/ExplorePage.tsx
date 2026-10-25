@@ -27,11 +27,35 @@ const categories = [
   { value: 'conference', label: 'Conferences & Summits' },
 ]
 
+const sources = [
+  { value: 'ALL', label: 'All Sources', dot: '#71717A' },
+  { value: 'eventmesh', label: 'EventMesh', dot: '#00D6FF' },
+  { value: 'eventbrite', label: 'Eventbrite', dot: '#FF8A65' },
+  { value: 'meetup', label: 'Meetup', dot: '#FF4D4D' },
+  { value: 'luma', label: 'Luma', dot: '#C084FC' },
+]
+
+const cities = [
+  { value: 'ALL', label: 'All Cities' },
+  { value: 'Bangalore', label: 'Bangalore' },
+  { value: 'Mumbai', label: 'Mumbai' },
+  { value: 'Delhi NCR', label: 'Delhi NCR' },
+  { value: 'Hyderabad', label: 'Hyderabad' },
+  { value: 'Pune', label: 'Pune' },
+  { value: 'Goa', label: 'Goa' },
+  { value: 'San Francisco', label: 'San Francisco' },
+  { value: 'New York', label: 'New York' },
+  { value: 'London', label: 'London' },
+  { value: 'Berlin', label: 'Berlin' },
+]
+
 const dates = [
-  { value: 'ALL', label: 'Any Date' },
+  { value: 'upcoming', label: 'Today & Upcoming' },
   { value: 'today', label: 'Today' },
   { value: 'weekend', label: 'This Weekend' },
   { value: 'next-week', label: 'Next Week' },
+  { value: 'past', label: 'Past Events' },
+  { value: 'all', label: 'All Dates (Incl. Past)' },
 ]
 
 const scopes = [
@@ -54,17 +78,24 @@ export const ExplorePage: React.FC = () => {
 
   // URL Query Parameters
   const category = params.get('category') || 'ALL'
+  const source = params.get('source') || 'ALL'
+  const city = params.get('city') || 'ALL'
   const club = params.get('club') || 'ALL'
-  const date = params.get('date') || 'ALL'
+  const date = params.get('date') || 'upcoming'
   const scope = params.get('scope') || 'ALL'
   const query = params.get('search') || ''
   const admission = params.get('admission') || (params.get('free') === 'true' ? 'free' : params.get('free') === 'false' ? 'paid' : 'all')
-  const sort = params.get('sort') || 'date'
+  const sort = params.get('sort') || 'date-desc'
 
   const { data: clubs = [] } = useClubs()
   const previewLoading = params.get('previewLoading') === 'true'
   const { data, isLoading: rawLoading, isError, refetch } = useEvents({
     search: query || undefined,
+    category: category !== 'ALL' ? category : undefined,
+    city: city !== 'ALL' ? city : undefined,
+    source: source !== 'ALL' ? source : undefined,
+    free: admission === 'free' ? true : admission === 'paid' ? false : undefined,
+    dateFilter: date !== 'all' && date !== 'ALL' ? (date as any) : undefined,
   })
   const isLoading = rawLoading || previewLoading
 
@@ -72,7 +103,13 @@ export const ExplorePage: React.FC = () => {
   const setParam = (key: string, value: string) => {
     setParams((previous) => {
       const next = new URLSearchParams(previous)
-      if (!value || value === 'ALL' || (key === 'admission' && value === 'all')) {
+      if (
+        !value ||
+        value === 'ALL' ||
+        (key === 'date' && value === 'upcoming') ||
+        (key === 'admission' && value === 'all') ||
+        (key === 'sort' && value === 'date-desc')
+      ) {
         next.delete(key)
         if (key === 'admission') next.delete('free')
       } else if (key === 'admission') {
@@ -109,25 +146,34 @@ export const ExplorePage: React.FC = () => {
   const activeFiltersCount = useMemo(() => {
     let count = 0
     if (category !== 'ALL') count++
+    if (source !== 'ALL') count++
+    if (city !== 'ALL') count++
     if (club !== 'ALL') count++
-    if (date !== 'ALL') count++
+    if (date !== 'upcoming' && date !== 'ALL' && date !== 'all') count++
     if (scope !== 'ALL') count++
     if (admission !== 'all') count++
     if (query) count++
     return count
-  }, [category, club, date, scope, admission, query])
+  }, [category, source, city, club, date, scope, admission, query])
+
 
   const events = useMemo(() => {
     const now = new Date()
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
     const startOfTomorrow = new Date(startOfToday)
     startOfTomorrow.setDate(startOfToday.getDate() + 1)
+
     const nextMonday = new Date(startOfToday)
     nextMonday.setDate(startOfToday.getDate() + ((8 - startOfToday.getDay()) % 7 || 7))
     const followingMonday = new Date(nextMonday)
     followingMonday.setDate(nextMonday.getDate() + 7)
+
     const weekendStart = new Date(startOfToday)
-    weekendStart.setDate(startOfToday.getDate() + ((6 - startOfToday.getDay() + 7) % 7))
+    if (startOfToday.getDay() === 0) {
+      weekendStart.setDate(startOfToday.getDate() - 1)
+    } else {
+      weekendStart.setDate(startOfToday.getDate() + ((6 - startOfToday.getDay() + 7) % 7))
+    }
     const weekendEnd = new Date(weekendStart)
     weekendEnd.setDate(weekendStart.getDate() + 2)
 
@@ -152,6 +198,20 @@ export const ExplorePage: React.FC = () => {
         if (eventClubId !== club) return false
       }
 
+      // Source platform filter (EventMesh, Eventbrite, Meetup, Luma)
+      if (source !== 'ALL') {
+        const p = (event.provider || 'eventmesh').toLowerCase()
+        if (p !== source.toLowerCase()) return false
+      }
+
+      // City / Region filter
+      if (city !== 'ALL') {
+        const eventCity = (event.venue?.city || event.venue?.address || '').toLowerCase()
+        const targetCity = city.toLowerCase()
+        const hasTag = (event.tags || []).some((t) => t.toLowerCase().includes(targetCity))
+        if (!eventCity.includes(targetCity) && !hasTag) return false
+      }
+
       // Admission filter (Free vs Paid)
       if (admission === 'free' && !(event.isFree || event.price === 0)) return false
       if (admission === 'paid' && (event.isFree || (event.price || 0) === 0)) return false
@@ -174,6 +234,8 @@ export const ExplorePage: React.FC = () => {
       if (date === 'today' && !(when >= startOfToday && when < startOfTomorrow)) return false
       if (date === 'weekend' && !(when >= weekendStart && when < weekendEnd)) return false
       if (date === 'next-week' && !(when >= nextMonday && when < followingMonday)) return false
+      if (date === 'upcoming' && when < startOfToday) return false
+      if (date === 'past' && when >= startOfToday) return false
 
       return true
     })
@@ -181,17 +243,18 @@ export const ExplorePage: React.FC = () => {
     // Sorting
     result.sort((a, b) => {
       if (sort === 'title') return a.title.localeCompare(b.title)
-      if (sort === 'date-desc') return new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()
+      if (sort === 'date') return new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
       if (sort === 'price-asc') {
         const priceA = a.isFree ? 0 : (a.price || 0)
         const priceB = b.isFree ? 0 : (b.price || 0)
         return priceA - priceB
       }
-      return new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
+      return new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()
     })
 
     return result
-  }, [data?.items, category, club, admission, scope, date, sort])
+  }, [data?.items, category, source, city, club, admission, scope, date, sort])
+
 
   // Count helper for category badges
   const categoryCounts = useMemo(() => {
@@ -265,6 +328,58 @@ export const ExplorePage: React.FC = () => {
         </div>
       </div>
 
+      {/* Source Platform (All, EventMesh, Eventbrite, Meetup, Luma) */}
+      <div className="space-y-2">
+        <label className="text-xs font-mono font-bold uppercase tracking-wider text-ink-muted">Source Platform</label>
+        <div className="flex flex-col gap-1">
+          {sources.map((s) => {
+            const active = source === s.value || (source === 'ALL' && s.value === 'ALL')
+            return (
+              <button
+                key={s.value}
+                type="button"
+                onClick={() => setParam('source', s.value)}
+                className={cn(
+                  'flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium transition-all text-left',
+                  active
+                    ? 'bg-accent/10 text-accent font-semibold border border-accent/20'
+                    : 'hover:bg-surface-subtle text-ink-soft hover:text-ink'
+                )}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: s.dot }} />
+                  <span>{s.label}</span>
+                </span>
+                {active && <Check size={14} weight="bold" className="text-accent" />}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* City / Hub Selector */}
+      <div className="space-y-2">
+        <label className="text-xs font-mono font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1">
+          <MapPin size={12} className="text-accent" />
+          <span>City / Region</span>
+        </label>
+        <div className="relative">
+          <select
+            value={city}
+            onChange={(e) => setParam('city', e.target.value)}
+            aria-label="Filter by city"
+            className="h-9 w-full appearance-none rounded-xl border border-line bg-card pl-3 pr-8 text-xs font-sans text-ink focus:border-accent focus:outline-none shadow-xs"
+          >
+            {cities.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+          <CaretDown size={13} className="pointer-events-none absolute right-2.5 top-3 text-ink-muted" />
+        </div>
+      </div>
+
       {/* Location / Scope: Campus vs City Hubs */}
       <div className="space-y-2">
         <label className="text-xs font-mono font-bold uppercase tracking-wider text-ink-muted">Location Scope</label>
@@ -290,6 +405,7 @@ export const ExplorePage: React.FC = () => {
           })}
         </div>
       </div>
+
 
       {/* Categories with Counts */}
       <div className="space-y-2">
@@ -332,7 +448,7 @@ export const ExplorePage: React.FC = () => {
         <label className="text-xs font-mono font-bold uppercase tracking-wider text-ink-muted">When</label>
         <div className="flex flex-col gap-1">
           {dates.map((item) => {
-            const active = date === item.value || (date === 'ALL' && item.value === 'ALL')
+            const active = date === item.value || (date === 'upcoming' && item.value === 'upcoming')
             return (
               <button
                 key={item.value}
@@ -442,12 +558,17 @@ export const ExplorePage: React.FC = () => {
         {/* Left Side Nav (Desktop Sticky) */}
         <aside
           aria-label="Event filters side navigation"
-          className="hidden lg:block sticky top-20 rounded-2xl border border-line bg-card p-5 shadow-xs"
+          className="hidden lg:flex lg:flex-col sticky top-20 h-[calc(100vh-6rem)] rounded-2xl border border-line bg-card shadow-xs overflow-hidden"
         >
-          <div className="flex items-center justify-between pb-4 border-b border-line mb-5">
+          <div className="flex items-center justify-between p-4 px-5 border-b border-line shrink-0 bg-card z-10">
             <div className="flex items-center gap-2">
               <Funnel size={15} weight="bold" className="text-accent" />
               <h2 className="text-sm font-bold tracking-tight text-ink">Filters</h2>
+              {activeFiltersCount > 0 && (
+                <span className="grid h-4 w-4 place-items-center rounded-full bg-accent text-[10px] font-mono text-white">
+                  {activeFiltersCount}
+                </span>
+              )}
             </div>
             {activeFiltersCount > 0 && (
               <button
@@ -459,40 +580,73 @@ export const ExplorePage: React.FC = () => {
               </button>
             )}
           </div>
-          {FilterContent}
+          <div className="flex-1 min-h-0 overflow-y-auto p-5 pr-3 custom-scrollbar overscroll-contain">
+            {FilterContent}
+          </div>
         </aside>
 
         {/* Right Column: Catalog Controls + 3-Column Event Grid */}
         <div className="min-w-0 space-y-4">
-          {/* Quick Schedule / Time Filter Chips */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-            <span className="text-xs font-mono font-medium text-ink-muted flex items-center gap-1.5 shrink-0 mr-1">
-              <CalendarBlank size={13} className="text-accent" />
-              <span>When:</span>
-            </span>
-            {[
-              { value: 'ALL', label: 'All Dates' },
-              { value: 'today', label: 'Today' },
-              { value: 'weekend', label: 'This Weekend' },
-              { value: 'next-week', label: 'Next Week' },
-            ].map((d) => {
-              const active = date === d.value || (date === 'ALL' && d.value === 'ALL')
-              return (
-                <button
-                  key={d.value}
-                  type="button"
-                  onClick={() => setParam('date', d.value)}
-                  className={cn(
-                    'shrink-0 px-3 py-1 rounded-full text-xs font-mono transition-all',
-                    active
-                      ? 'bg-ink text-paper font-semibold shadow-xs'
-                      : 'bg-card text-ink-soft hover:text-ink border border-line hover:border-line-strong'
-                  )}
-                >
-                  {d.label}
-                </button>
-              )
-            })}
+          {/* Quick Platform Source & Timing Chips Strip */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1 border-b border-line/40">
+            {/* Source Platform Filter Chips */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+              <span className="text-xs font-mono font-medium text-ink-muted flex items-center gap-1 shrink-0 mr-1">
+                <span>Source:</span>
+              </span>
+              {sources.map((s) => {
+                const active = source === s.value || (source === 'ALL' && s.value === 'ALL')
+                return (
+                  <button
+                    key={s.value}
+                    type="button"
+                    onClick={() => setParam('source', s.value)}
+                    className={cn(
+                      'shrink-0 px-2.5 py-1 rounded-full text-xs font-mono font-medium transition-all flex items-center gap-1.5',
+                      active
+                        ? 'bg-ink text-paper font-semibold shadow-xs'
+                        : 'bg-card text-ink-soft hover:text-ink border border-line hover:border-line-strong'
+                    )}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: s.dot }} />
+                    <span>{s.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Quick Schedule / Time Filter Chips */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+              <span className="text-xs font-mono font-medium text-ink-muted flex items-center gap-1 shrink-0 mr-1">
+                <CalendarBlank size={12} className="text-accent" />
+                <span>When:</span>
+              </span>
+              {[
+                { value: 'upcoming', label: 'Upcoming' },
+                { value: 'today', label: 'Today' },
+                { value: 'weekend', label: 'Weekend' },
+                { value: 'next-week', label: 'Next Week' },
+                { value: 'past', label: 'Past Events' },
+                { value: 'all', label: 'All Dates' },
+              ].map((d) => {
+                const active = date === d.value || (date === 'upcoming' && d.value === 'upcoming')
+                return (
+                  <button
+                    key={d.value}
+                    type="button"
+                    onClick={() => setParam('date', d.value)}
+                    className={cn(
+                      'shrink-0 px-2.5 py-1 rounded-full text-xs font-mono transition-all',
+                      active
+                        ? 'bg-ink text-paper font-semibold shadow-xs'
+                        : 'bg-card text-ink-soft hover:text-ink border border-line hover:border-line-strong'
+                    )}
+                  >
+                    {d.label}
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
           {/* Top Catalog Toolbar: Active Filters summary + Sort Selector */}
@@ -504,6 +658,22 @@ export const ExplorePage: React.FC = () => {
                 <span className="text-xs text-ink-muted italic">All events showing</span>
               ) : (
                 <>
+                  {source !== 'ALL' && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-0.5 text-[11px] font-mono text-accent border border-accent/20 font-semibold">
+                      Source: {sources.find((s) => s.value === source)?.label || source}
+                      <button type="button" onClick={() => setParam('source', 'ALL')} className="hover:text-accent-hover">
+                        <X size={11} />
+                      </button>
+                    </span>
+                  )}
+                  {city !== 'ALL' && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-[11px] font-mono text-ink border border-line">
+                      City: {city}
+                      <button type="button" onClick={() => setParam('city', 'ALL')} className="hover:text-accent">
+                        <X size={11} />
+                      </button>
+                    </span>
+                  )}
                   {category !== 'ALL' && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-[11px] font-mono text-ink border border-line">
                       {category}
@@ -548,6 +718,7 @@ export const ExplorePage: React.FC = () => {
               )}
             </div>
 
+
             {/* Sort Selector */}
             <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
               <span className="text-xs font-mono text-ink-muted">Sort:</span>
@@ -558,8 +729,8 @@ export const ExplorePage: React.FC = () => {
                   aria-label="Sort events"
                   className="h-8 appearance-none rounded-xl border border-line bg-surface-subtle pl-3 pr-7 text-xs font-mono text-ink focus:border-accent focus:outline-none shadow-xs"
                 >
-                  <option value="date">Date (Soonest)</option>
                   <option value="date-desc">Date (Latest)</option>
+                  <option value="date">Date (Soonest)</option>
                   <option value="price-asc">Price (Low to High)</option>
                   <option value="title">Title (A-Z)</option>
                 </select>

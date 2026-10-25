@@ -228,10 +228,10 @@ export const AdminPayoutsPage: React.FC = () => {
             Financial Operations & Marketplace
           </span>
           <h1 className="text-h2 font-semibold text-text">
-            Payouts & Bank KYC
+            Payouts & Bank Account Connection
           </h1>
           <p className="text-small text-text-2 mt-0.5">
-            Manage linked bank accounts, Cashfree Easy Split vendor verification, and ticket revenue payouts.
+            Manage linked bank accounts, bank account connection, and ticket revenue withdrawals.
           </p>
         </div>
 
@@ -322,7 +322,7 @@ export const AdminPayoutsPage: React.FC = () => {
 
         {/* Total Settled */}
         <div className="p-5 bg-surface border border-line rounded-panel space-y-1.5">
-          <p className="text-caption text-text-3 font-medium">Total Disbursed (Net)</p>
+          <p className="text-caption text-text-3 font-medium">Total Withdrawn (Net)</p>
           <p className="text-2xl font-semibold text-text tabular-nums">
             {formatCurrency(((balance?.paid_withdrawals_cents ?? 0) / 100) || totalSettledInr)}
           </p>
@@ -713,7 +713,7 @@ export const AdminPayoutsPage: React.FC = () => {
           setWithdrawError(null)
         }}
         title="Request Revenue Withdrawal"
-        subtitle="Disburse your verified event ticket revenue directly to your destination bank account."
+        subtitle="Withdraw your verified event ticket revenue directly to your destination bank account."
         surface="admin"
         maxWidth="max-w-lg"
       >

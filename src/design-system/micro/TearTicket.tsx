@@ -549,17 +549,76 @@ export function TearTicket({
     paint(performance.now());
   };
 
+  const isFirstMountRef = useRef<boolean>(true);
+  const prevUsedRef = useRef<boolean>(used);
+
+  const animateTear = () => {
+    const s = sim.current;
+    const c = cfg.current;
+    if (s.phase === 'drop') return;
+    cancelAnimationFrame(s.raf);
+    s.raf = 0;
+
+    // Set hinge and orientation for natural peel
+    const end = geo.ends[0] || { x: 0, y: 0, v: 0 };
+    s.sign = geo.vertical ? -1 : 1;
+    s.hinge = { x: end.x, y: end.y };
+    s.hingeV = end.v;
+
+    // Visible initial peel angle and shift
+    s.theta = 0.35;
+    s.sx = geo.vertical ? 0 : 28;
+    s.sy = geo.vertical ? 28 : 12;
+
+    // Progressive fiber snapping with realistic cascade
+    const now = performance.now();
+    s.snapped = geo.bridges.map(() => true);
+    s.snapAt = geo.bridges.map((_, i) => now + i * (geo.vertical ? 12 : 16));
+    s.span = geo.bridges.map(() => c.stretch * 1.15);
+
+    // Dynamic ejection physics (flings outward and falls with gravity)
+    s.vx = geo.vertical ? 140 : 360;
+    s.vy = geo.vertical ? 480 : 200;
+    s.spin = geo.vertical ? 2.5 : 3.6;
+    s.age = 0;
+    s.fade = 1;
+    s.phase = 'drop';
+
+    // Body recoil kickback on keepsake pass
+    s.bv = geo.vertical ? -450 : -350;
+    s.bx = geo.vertical ? -10 : -14;
+
+    if (stubRef.current) {
+      stubRef.current.style.visibility = '';
+      stubRef.current.style.opacity = '1';
+    }
+    run();
+  };
+
   useEffect(() => {
-    if (used) {
-      const s = sim.current;
-      cancelAnimationFrame(s.raf);
-      s.raf = 0;
-      s.phase = 'idle';
-      if (stubRef.current) stubRef.current.style.visibility = 'hidden';
+    if (isFirstMountRef.current) {
+      isFirstMountRef.current = false;
+      if (used) {
+        // Pre-torn on mount (e.g. historical admission)
+        const s = sim.current;
+        cancelAnimationFrame(s.raf);
+        s.raf = 0;
+        s.phase = 'idle';
+        if (stubRef.current) stubRef.current.style.visibility = 'hidden';
+      }
+      prevUsedRef.current = used;
       return;
     }
-    setInstant(false);
-    reset();
+
+    if (!prevUsedRef.current && used) {
+      // Dynamic real-time tear trigger when scanned by organizer!
+      animateTear();
+    } else if (prevUsedRef.current && !used) {
+      // Re-attach stub
+      setInstant(false);
+      reset();
+    }
+    prevUsedRef.current = used;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [used]);
   useEffect(() => {
