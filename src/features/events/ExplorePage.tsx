@@ -2,9 +2,23 @@ import React, { useMemo, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { useEvents } from '@/hooks/useEvents'
 import { useClubs } from '@/hooks/useClubs'
-import { EventTicketCard } from '@/design-system/EventTicketCard'
+import { VerticalPosterCard } from '@/design-system/VerticalPosterCard'
 import { PageShell } from '@/design-system/layout/PageShell'
 import { GhostEventGrid } from '@/design-system/primitives/GhostLoader'
+import { QuickRSVPModal } from './components/QuickRSVPModal'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/design-system/ui/dropdown-menu'
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from '@/design-system/ui/accordion'
 import {
   MagnifyingGlass,
   X,
@@ -14,6 +28,8 @@ import {
   CalendarBlank,
   MapPin,
   Check,
+  Ticket,
+  ArrowRight,
 } from '@/design-system/Icon'
 import { cn } from '@/lib/utils'
 
@@ -29,7 +45,7 @@ const categories = [
 
 const sources = [
   { value: 'ALL', label: 'All Sources', dot: '#71717A' },
-  { value: 'eventmesh', label: 'EventMesh', dot: '#00D6FF' },
+  { value: 'eventmesh', label: 'EventMesh', dot: '#7C3AED' },
   { value: 'eventbrite', label: 'Eventbrite', dot: '#FF8A65' },
   { value: 'meetup', label: 'Meetup', dot: '#FF4D4D' },
   { value: 'luma', label: 'Luma', dot: '#C084FC' },
@@ -50,12 +66,12 @@ const cities = [
 ]
 
 const dates = [
-  { value: 'upcoming', label: 'Today & Upcoming' },
+  { value: 'upcoming', label: 'Upcoming' },
   { value: 'today', label: 'Today' },
   { value: 'weekend', label: 'This Weekend' },
   { value: 'next-week', label: 'Next Week' },
   { value: 'past', label: 'Past Events' },
-  { value: 'all', label: 'All Dates (Incl. Past)' },
+  { value: 'all', label: 'All Dates' },
 ]
 
 const scopes = [
@@ -67,14 +83,7 @@ const scopes = [
 export const ExplorePage: React.FC = () => {
   const [params, setParams] = useSearchParams()
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
-  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(() => {
-    try {
-      const stored = localStorage.getItem('eventmesh_bookmarked_events')
-      return stored ? new Set(JSON.parse(stored)) : new Set()
-    } catch {
-      return new Set()
-    }
-  })
+  const [quickRsvpEvent, setQuickRsvpEvent] = useState<any>(null)
 
   // URL Query Parameters
   const category = params.get('category') || 'ALL'
@@ -88,8 +97,7 @@ export const ExplorePage: React.FC = () => {
   const sort = params.get('sort') || 'date-desc'
 
   const { data: clubs = [] } = useClubs()
-  const previewLoading = params.get('previewLoading') === 'true'
-  const { data, isLoading: rawLoading, isError, refetch } = useEvents({
+  const { data, isLoading, isError, refetch } = useEvents({
     search: query || undefined,
     category: category !== 'ALL' ? category : undefined,
     city: city !== 'ALL' ? city : undefined,
@@ -97,8 +105,6 @@ export const ExplorePage: React.FC = () => {
     free: admission === 'free' ? true : admission === 'paid' ? false : undefined,
     dateFilter: date !== 'all' && date !== 'ALL' ? (date as any) : undefined,
   })
-  const isLoading = rawLoading || previewLoading
-
 
   const setParam = (key: string, value: string) => {
     setParams((previous) => {
@@ -124,723 +130,605 @@ export const ExplorePage: React.FC = () => {
     })
   }
 
-  const handleBookmarkToggle = (eventId: string) => {
-    setBookmarkedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(eventId)) next.delete(eventId)
-      else next.add(eventId)
-      try {
-        localStorage.setItem('eventmesh_bookmarked_events', JSON.stringify(Array.from(next)))
-      } catch {
-        // Suppress storage failure
-      }
-      return next
-    })
-  }
-
   const handleResetFilters = () => {
     setParams(new URLSearchParams())
-    setIsMobileFilterOpen(false)
   }
 
+  // Active filters count
   const activeFiltersCount = useMemo(() => {
     let count = 0
     if (category !== 'ALL') count++
     if (source !== 'ALL') count++
     if (city !== 'ALL') count++
     if (club !== 'ALL') count++
-    if (date !== 'upcoming' && date !== 'ALL' && date !== 'all') count++
+    if (date !== 'upcoming' && date !== 'all') count++
     if (scope !== 'ALL') count++
     if (admission !== 'all') count++
     if (query) count++
     return count
   }, [category, source, city, club, date, scope, admission, query])
 
-
+  // Process & Sort events
   const events = useMemo(() => {
-    const now = new Date()
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
-    const startOfTomorrow = new Date(startOfToday)
-    startOfTomorrow.setDate(startOfToday.getDate() + 1)
-
-    const nextMonday = new Date(startOfToday)
-    nextMonday.setDate(startOfToday.getDate() + ((8 - startOfToday.getDay()) % 7 || 7))
-    const followingMonday = new Date(nextMonday)
-    followingMonday.setDate(nextMonday.getDate() + 7)
-
-    const weekendStart = new Date(startOfToday)
-    if (startOfToday.getDay() === 0) {
-      weekendStart.setDate(startOfToday.getDate() - 1)
-    } else {
-      weekendStart.setDate(startOfToday.getDate() + ((6 - startOfToday.getDay() + 7) % 7))
-    }
-    const weekendEnd = new Date(weekendStart)
-    weekendEnd.setDate(weekendStart.getDate() + 2)
-
-    const rawList = data?.items || []
-
-    const result = rawList.filter((event) => {
-      // Category filter (case-insensitive)
-      if (category !== 'ALL') {
-        const cat = (event.category || '').toLowerCase()
-        const target = category.toLowerCase()
-        if (target === 'hackathon' && !cat.includes('hack')) return false
-        if (target === 'workshop' && !cat.includes('work')) return false
-        if (target === 'competition' && !cat.includes('comp') && !cat.includes('contest')) return false
-        if (target === 'talk' && !cat.includes('talk') && !cat.includes('symposium') && !cat.includes('panel')) return false
-        if (target === 'cultural' && !cat.includes('cult') && !cat.includes('fest') && !cat.includes('music') && !cat.includes('concert')) return false
-        if (target === 'conference' && !cat.includes('conf') && !cat.includes('summit')) return false
-      }
-
-      // Organizer filter
-      if (club !== 'ALL') {
-        const eventClubId = event.organizerId || event.club?.id
-        if (eventClubId !== club) return false
-      }
-
-      // Source platform filter (EventMesh, Eventbrite, Meetup, Luma)
-      if (source !== 'ALL') {
-        const p = (event.provider || 'eventmesh').toLowerCase()
-        if (p !== source.toLowerCase()) return false
-      }
-
-      // City / Region filter
-      if (city !== 'ALL') {
-        const eventCity = (event.venue?.city || event.venue?.address || '').toLowerCase()
-        const targetCity = city.toLowerCase()
-        const hasTag = (event.tags || []).some((t) => t.toLowerCase().includes(targetCity))
-        if (!eventCity.includes(targetCity) && !hasTag) return false
-      }
-
-      // Admission filter (Free vs Paid)
-      if (admission === 'free' && !(event.isFree || event.price === 0)) return false
-      if (admission === 'paid' && (event.isFree || (event.price || 0) === 0)) return false
-
-      // Location / Scope filter (Campus vs City/Outside)
-      if (scope !== 'ALL') {
-        const isCity =
-          event.orgId === 'org-city' ||
-          (event.venue?.address || '').toLowerCase().includes('bengaluru') ||
-          (event.venue?.address || '').toLowerCase().includes('koramangala') ||
-          (event.venue?.address || '').toLowerCase().includes('indiranagar') ||
-          (event.venue?.name || '').toLowerCase().includes('convention') ||
-          (event.venue?.name || '').toLowerCase().includes('amphitheatre')
-        if (scope === 'campus' && isCity) return false
-        if (scope === 'city' && !isCity) return false
-      }
-
-      // Date preset filter
-      const when = new Date(event.startsAt)
-      if (date === 'today' && !(when >= startOfToday && when < startOfTomorrow)) return false
-      if (date === 'weekend' && !(when >= weekendStart && when < weekendEnd)) return false
-      if (date === 'next-week' && !(when >= nextMonday && when < followingMonday)) return false
-      if (date === 'upcoming' && when < startOfToday) return false
-      if (date === 'past' && when >= startOfToday) return false
-
+    let items = (data?.items || []).filter((e) => {
+      const venueLower = (e.venue?.name || '').toLowerCase()
+      const isCampus = venueLower.includes('campus') || venueLower.includes('auditorium') || venueLower.includes('hall') || venueLower.includes('ctu')
+      if (scope === 'campus' && !isCampus) return false
+      if (scope === 'city' && isCampus) return false
+      if (club !== 'ALL' && e.organizerId !== club && e.club?.id !== club) return false
       return true
     })
 
-    // Sorting
-    result.sort((a, b) => {
-      if (sort === 'title') return a.title.localeCompare(b.title)
+    return items.sort((a, b) => {
       if (sort === 'date') return new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
-      if (sort === 'price-asc') {
-        const priceA = a.isFree ? 0 : (a.price || 0)
-        const priceB = b.isFree ? 0 : (b.price || 0)
-        return priceA - priceB
-      }
-      return new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()
+      if (sort === 'date-desc') return new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime()
+      if (sort === 'price-asc') return (a.price || 0) - (b.price || 0)
+      if (sort === 'title') return a.title.localeCompare(b.title)
+      return 0
     })
+  }, [data?.items, scope, club, sort])
 
-    return result
-  }, [data?.items, category, source, city, club, admission, scope, date, sort])
-
-
-  // Count helper for category badges
+  // Dynamic category counts
   const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { ALL: data?.items?.length || 0 }
-    const items = data?.items || []
-    for (const item of items) {
-      const cat = (item.category || '').toLowerCase()
-      if (cat.includes('hack')) counts['hackathon'] = (counts['hackathon'] || 0) + 1
-      if (cat.includes('work')) counts['workshop'] = (counts['workshop'] || 0) + 1
-      if (cat.includes('comp') || cat.includes('contest')) counts['competition'] = (counts['competition'] || 0) + 1
-      if (cat.includes('talk') || cat.includes('symposium') || cat.includes('panel')) counts['talk'] = (counts['talk'] || 0) + 1
-      if (cat.includes('cult') || cat.includes('fest') || cat.includes('music') || cat.includes('concert')) counts['cultural'] = (counts['cultural'] || 0) + 1
-      if (cat.includes('conf') || cat.includes('summit')) counts['conference'] = (counts['conference'] || 0) + 1
-    }
+    const counts: Record<string, number> = { ALL: (data?.items || []).length }
+    categories.forEach((cat) => {
+      if (cat.value !== 'ALL') counts[cat.value] = 0
+    })
+    ;(data?.items || []).forEach((e) => {
+      const cat = (e.category || '').toLowerCase()
+      if (counts[cat] !== undefined) counts[cat]++
+    })
     return counts
   }, [data?.items])
 
-  // Filter Side Nav Content (Shared between desktop rail and mobile drawer)
-  const FilterContent = (
-    <div className="space-y-6 text-ink">
-      {/* Search Input */}
-      <div className="space-y-2">
-        <label className="text-xs font-mono font-bold uppercase tracking-wider text-ink-muted">Search</label>
-        <div className="relative">
-          <MagnifyingGlass size={14} className="absolute left-3 top-2.5 text-ink-muted" aria-hidden="true" />
-          <input
-            value={query}
-            onChange={(e) => setParam('search', e.target.value)}
-            placeholder="Search all events..."
-            aria-label="Search events"
-            className="h-9 w-full rounded-xl border border-line bg-card pl-8 pr-8 text-xs font-sans text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none shadow-xs"
-          />
-          {query && (
-            <button
-              type="button"
-              onClick={() => setParam('search', '')}
-              className="absolute right-2.5 top-2.5 text-ink-muted hover:text-ink"
-            >
-              <X size={13} />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Admission: All / Free / Paid */}
-      <div className="space-y-2">
-        <label className="text-xs font-mono font-bold uppercase tracking-wider text-ink-muted">Admission</label>
-        <div className="grid grid-cols-3 gap-1 rounded-xl border border-line bg-surface-subtle p-1">
-          {[
-            { value: 'all', label: 'All' },
-            { value: 'free', label: 'Free' },
-            { value: 'paid', label: 'Paid' },
-          ].map((item) => {
-            const active = admission === item.value
-            return (
-              <button
-                key={item.value}
-                type="button"
-                onClick={() => setParam('admission', item.value)}
-                className={cn(
-                  'rounded-lg py-1.5 text-xs font-medium transition-all text-center',
-                  active
-                    ? 'bg-card text-ink font-semibold shadow-xs border border-line'
-                    : 'text-ink-soft hover:text-ink'
-                )}
-              >
-                {item.label}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Source Platform (All, EventMesh, Eventbrite, Meetup, Luma) */}
-      <div className="space-y-2">
-        <label className="text-xs font-mono font-bold uppercase tracking-wider text-ink-muted">Source Platform</label>
-        <div className="flex flex-col gap-1">
-          {sources.map((s) => {
-            const active = source === s.value || (source === 'ALL' && s.value === 'ALL')
-            return (
-              <button
-                key={s.value}
-                type="button"
-                onClick={() => setParam('source', s.value)}
-                className={cn(
-                  'flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium transition-all text-left',
-                  active
-                    ? 'bg-accent/10 text-accent font-semibold border border-accent/20'
-                    : 'hover:bg-surface-subtle text-ink-soft hover:text-ink'
-                )}
-              >
-                <span className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: s.dot }} />
-                  <span>{s.label}</span>
-                </span>
-                {active && <Check size={14} weight="bold" className="text-accent" />}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* City / Hub Selector */}
-      <div className="space-y-2">
-        <label className="text-xs font-mono font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1">
-          <MapPin size={12} className="text-accent" />
-          <span>City / Region</span>
-        </label>
-        <div className="relative">
-          <select
-            value={city}
-            onChange={(e) => setParam('city', e.target.value)}
-            aria-label="Filter by city"
-            className="h-9 w-full appearance-none rounded-xl border border-line bg-card pl-3 pr-8 text-xs font-sans text-ink focus:border-accent focus:outline-none shadow-xs"
-          >
-            {cities.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-          <CaretDown size={13} className="pointer-events-none absolute right-2.5 top-3 text-ink-muted" />
-        </div>
-      </div>
-
-      {/* Location / Scope: Campus vs City Hubs */}
-      <div className="space-y-2">
-        <label className="text-xs font-mono font-bold uppercase tracking-wider text-ink-muted">Location Scope</label>
-        <div className="flex flex-col gap-1">
-          {scopes.map((item) => {
-            const active = scope === item.value || (scope === 'ALL' && item.value === 'ALL')
-            return (
-              <button
-                key={item.value}
-                type="button"
-                onClick={() => setParam('scope', item.value)}
-                className={cn(
-                  'flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium transition-all text-left',
-                  active
-                    ? 'bg-accent/10 text-accent font-semibold border border-accent/20'
-                    : 'hover:bg-surface-subtle text-ink-soft hover:text-ink'
-                )}
-              >
-                <span>{item.label}</span>
-                {active && <Check size={14} weight="bold" className="text-accent" />}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-
-      {/* Categories with Counts */}
-      <div className="space-y-2">
-        <label className="text-xs font-mono font-bold uppercase tracking-wider text-ink-muted">Categories</label>
-        <div className="flex flex-col gap-1">
-          {categories.map((item) => {
-            const active = category === item.value || (category === 'ALL' && item.value === 'ALL')
-            const count = categoryCounts[item.value]
-            return (
-              <button
-                key={item.value}
-                type="button"
-                onClick={() => setParam('category', item.value)}
-                className={cn(
-                  'flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium transition-all text-left',
-                  active
-                    ? 'bg-accent text-white font-semibold shadow-xs'
-                    : 'hover:bg-surface-subtle text-ink-soft hover:text-ink'
-                )}
-              >
-                <span className="truncate">{item.label}</span>
-                {count !== undefined && (
-                  <span
-                    className={cn(
-                      'ml-2 rounded-full px-1.5 py-0.5 font-mono text-xs',
-                      active ? 'bg-white/20 text-white' : 'bg-surface-subtle text-ink-muted border border-line/60'
-                    )}
-                  >
-                    {count}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Timing / Dates */}
-      <div className="space-y-2">
-        <label className="text-xs font-mono font-bold uppercase tracking-wider text-ink-muted">When</label>
-        <div className="flex flex-col gap-1">
-          {dates.map((item) => {
-            const active = date === item.value || (date === 'upcoming' && item.value === 'upcoming')
-            return (
-              <button
-                key={item.value}
-                type="button"
-                onClick={() => setParam('date', item.value)}
-                className={cn(
-                  'flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium transition-all text-left',
-                  active
-                    ? 'bg-ink text-paper font-semibold shadow-xs'
-                    : 'hover:bg-surface-subtle text-ink-soft hover:text-ink'
-                )}
-              >
-                <span>{item.label}</span>
-                {active && <Check size={14} weight="bold" className="text-paper" />}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Organizers / Hosts Filter */}
-      {clubs.length > 0 && (
-        <div className="space-y-2">
-          <label className="text-xs font-mono font-bold uppercase tracking-wider text-ink-muted">Organized By</label>
-          <div className="relative">
-            <select
-              value={club}
-              onChange={(e) => setParam('club', e.target.value)}
-              aria-label="Filter by organizer"
-              className="h-9 w-full appearance-none rounded-xl border border-line bg-card pl-3 pr-8 text-xs font-sans text-ink focus:border-accent focus:outline-none shadow-xs"
-            >
-              <option value="ALL">All Organizers & Hosts</option>
-              {clubs.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-            <CaretDown size={13} className="pointer-events-none absolute right-2.5 top-3 text-ink-muted" />
-          </div>
-        </div>
-      )}
-
-      {/* Reset Filter Button */}
-      {activeFiltersCount > 0 && (
-        <div className="pt-2">
-          <button
-            type="button"
-            onClick={handleResetFilters}
-            className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl border border-line bg-surface-subtle py-2 text-xs font-mono text-ink-soft hover:text-ink hover:border-line-strong transition-colors"
-          >
-            <ArrowCounterClockwise size={13} />
-            <span>Reset All Filters ({activeFiltersCount})</span>
-          </button>
-        </div>
-      )}
-    </div>
-  )
-
   return (
-    <PageShell className="py-6 sm:py-10">
-      {/* 1. Sleek Editorial Header */}
-      <div className="mb-6 space-y-2">
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-ink-muted font-mono">
-          <Link to="/" className="hover:text-accent transition-colors">Home</Link>
-          <span>/</span>
-          <span className="text-ink font-medium">Explore</span>
-        </nav>
+    <PageShell className="py-8 sm:py-12 space-y-8 max-w-7xl mx-auto">
+      {/* 1. Header Section */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-2 border-b border-line">
+        <div>
+          <nav aria-label="Breadcrumb" className="mb-2">
+            <ol className="flex items-center gap-1.5 text-xs font-mono text-ink-muted">
+              <li>
+                <Link to="/" className="hover:text-ink transition-colors">Home</Link>
+              </li>
+              <li>/</li>
+              <li className="text-ink font-semibold" aria-current="page">Explore</li>
+            </ol>
+          </nav>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-ink font-display">
+            Explore All Campus Events
+          </h1>
+          <p className="mt-1 text-sm text-ink-soft max-w-2xl leading-relaxed">
+            Discover student hackathons, city tech summits, and open campus masterclasses across CTU and beyond.
+          </p>
+        </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-ink font-display">
-              Explore All Events & Productions
-            </h1>
-            <p className="mt-1 text-xs sm:text-sm text-ink-soft max-w-2xl">
-              Browse university hackathons, city tech summits, creative design jams, and open masterclasses.
-            </p>
-          </div>
+        <div className="flex items-center gap-3 shrink-0">
+          <Link
+            to="/calendar"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-card hover:bg-surface-subtle px-3.5 py-2 text-xs font-semibold text-ink shadow-xs hover:border-accent hover:text-accent transition-all active:scale-95"
+            title="Open interactive calendar schedule"
+          >
+            <CalendarBlank size={14} weight="bold" className="text-accent" />
+            <span>Calendar View</span>
+          </Link>
 
-          <div className="flex items-center gap-3 shrink-0">
-            {/* Mobile Filter Sheet Trigger Button (< 1024px) */}
-            <button
-              type="button"
-              onClick={() => setIsMobileFilterOpen(true)}
-              className="lg:hidden inline-flex items-center gap-2 rounded-xl border border-line bg-card px-3.5 py-2 text-xs font-semibold text-ink shadow-xs hover:border-accent hover:text-accent"
-            >
-              <Funnel size={14} weight={activeFiltersCount > 0 ? 'fill' : 'regular'} className="text-accent" />
-              <span>Filters</span>
-              {activeFiltersCount > 0 && (
-                <span className="grid h-4 w-4 place-items-center rounded-full bg-accent text-xs font-mono text-white">
-                  {activeFiltersCount}
-                </span>
-              )}
-            </button>
-
-            {/* View on Calendar Link */}
-            <Link
-              to="/calendar"
-              className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card hover:bg-surface-subtle px-3 py-1.5 text-xs font-semibold text-ink shadow-xs hover:border-accent hover:text-accent transition-colors"
-              title="Open full interactive date calendar"
-            >
-              <CalendarBlank size={14} weight="bold" className="text-accent" />
-              <span>Calendar View</span>
-            </Link>
-
-            {/* Total Results Count Badge */}
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-3 py-1.5 text-xs font-mono font-medium text-ink shadow-xs">
-              <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-              <span>{isLoading ? 'Scanning...' : `${events.length} events found`}</span>
-            </span>
-          </div>
+          {/* Clean Non-Button Metric Counter */}
+          <span className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-mono font-semibold text-ink-muted bg-surface-subtle rounded-xl border border-line">
+            <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
+            <span>{isLoading ? 'Scanning...' : `${events.length} events`}</span>
+          </span>
         </div>
       </div>
 
-      {/* 2. Main 2-Column Responsive Layout: Sticky Side Nav (Desktop) + Events Catalog (Right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-8 items-start">
-        {/* Left Side Nav (Desktop Sticky) */}
-        <aside
-          aria-label="Event filters side navigation"
-          className="hidden lg:flex lg:flex-col sticky top-20 h-[calc(100vh-6rem)] rounded-2xl border border-line bg-card shadow-xs overflow-hidden"
-        >
-          <div className="flex items-center justify-between p-4 px-5 border-b border-line shrink-0 bg-card z-10">
-            <div className="flex items-center gap-2">
-              <Funnel size={15} weight="bold" className="text-accent" />
-              <h2 className="text-sm font-bold tracking-tight text-ink">Filters</h2>
-              {activeFiltersCount > 0 && (
-                <span className="grid h-4 w-4 place-items-center rounded-full bg-accent text-xs font-mono text-white">
-                  {activeFiltersCount}
-                </span>
-              )}
-            </div>
-            {activeFiltersCount > 0 && (
+      {/* 2. Unified Top Filter Toolbar (Luma / Dice Style, 100% Solid) */}
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Search Input Dock */}
+          <div className="relative flex-1 min-w-[220px] max-w-md">
+            <MagnifyingGlass
+              size={15}
+              weight="bold"
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-muted"
+            />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setParam('search', e.target.value)}
+              placeholder="Search by title, club, keyword..."
+              className="h-10 w-full rounded-xl border border-line bg-card pl-9 pr-8 text-xs text-ink placeholder:text-ink-muted focus:border-accent focus:outline-none shadow-xs"
+            />
+            {query && (
               <button
                 type="button"
-                onClick={handleResetFilters}
-                className="text-xs font-mono text-accent hover:underline"
+                onClick={() => setParam('search', '')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-ink-muted hover:text-ink"
               >
-                Clear all
+                <X size={13} weight="bold" />
               </button>
             )}
           </div>
-          <div className="flex-1 min-h-0 overflow-y-auto p-5 pr-3 custom-scrollbar overscroll-contain">
-            {FilterContent}
-          </div>
-        </aside>
 
-        {/* Right Column: Catalog Controls + 3-Column Event Grid */}
-        <div className="min-w-0 space-y-4">
-          {/* Quick Platform Source & Timing Chips Strip */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1 border-b border-line/40">
-            {/* Source Platform Filter Chips */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-              <span className="text-xs font-mono font-medium text-ink-muted flex items-center gap-1 shrink-0 mr-1">
-                <span>Source:</span>
-              </span>
-              {sources.map((s) => {
-                const active = source === s.value || (source === 'ALL' && s.value === 'ALL')
-                return (
-                  <button
-                    key={s.value}
-                    type="button"
-                    onClick={() => setParam('source', s.value)}
-                    className={cn(
-                      'shrink-0 px-2.5 py-1 rounded-full text-xs font-mono font-medium transition-all flex items-center gap-1.5',
-                      active
-                        ? 'bg-ink text-paper font-semibold shadow-xs'
-                        : 'bg-card text-ink-soft hover:text-ink border border-line hover:border-line-strong'
-                    )}
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: s.dot }} />
-                    <span>{s.label}</span>
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* Quick Schedule / Time Filter Chips */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-              <span className="text-xs font-mono font-medium text-ink-muted flex items-center gap-1 shrink-0 mr-1">
-                <CalendarBlank size={12} className="text-accent" />
-                <span>When:</span>
-              </span>
-              {[
-                { value: 'upcoming', label: 'Upcoming' },
-                { value: 'today', label: 'Today' },
-                { value: 'weekend', label: 'Weekend' },
-                { value: 'next-week', label: 'Next Week' },
-                { value: 'past', label: 'Past Events' },
-                { value: 'all', label: 'All Dates' },
-              ].map((d) => {
-                const active = date === d.value || (date === 'upcoming' && d.value === 'upcoming')
-                return (
-                  <button
-                    key={d.value}
-                    type="button"
-                    onClick={() => setParam('date', d.value)}
-                    className={cn(
-                      'shrink-0 px-2.5 py-1 rounded-full text-xs font-mono transition-all',
-                      active
-                        ? 'bg-ink text-paper font-semibold shadow-xs'
-                        : 'bg-card text-ink-soft hover:text-ink border border-line hover:border-line-strong'
-                    )}
-                  >
-                    {d.label}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Top Catalog Toolbar: Active Filters summary + Sort Selector */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-line bg-card p-3 shadow-xs">
-            {/* Active Filters Badges */}
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-xs font-mono text-ink-muted mr-1">Active:</span>
-              {activeFiltersCount === 0 ? (
-                <span className="text-xs text-ink-muted italic">All events showing</span>
-              ) : (
-                <>
-                  {source !== 'ALL' && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-mono text-accent border border-accent/20 font-semibold">
-                      Source: {sources.find((s) => s.value === source)?.label || source}
-                      <button type="button" onClick={() => setParam('source', 'ALL')} className="hover:text-accent-hover">
-                        <X size={11} />
-                      </button>
-                    </span>
-                  )}
-                  {city !== 'ALL' && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-xs font-mono text-ink border border-line">
-                      City: {city}
-                      <button type="button" onClick={() => setParam('city', 'ALL')} className="hover:text-accent">
-                        <X size={11} />
-                      </button>
-                    </span>
-                  )}
-                  {category !== 'ALL' && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-xs font-mono text-ink border border-line">
-                      {category}
-                      <button type="button" onClick={() => setParam('category', 'ALL')} className="hover:text-accent">
-                        <X size={11} />
-                      </button>
-                    </span>
-                  )}
-                  {admission !== 'all' && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-xs font-mono text-ink border border-line">
-                      {admission === 'free' ? 'Free Admission' : 'Paid Passes'}
-                      <button type="button" onClick={() => setParam('admission', 'all')} className="hover:text-accent">
-                        <X size={11} />
-                      </button>
-                    </span>
-                  )}
-                  {scope !== 'ALL' && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-xs font-mono text-ink border border-line">
-                      {scope === 'campus' ? 'Campus Only' : 'City / Outside'}
-                      <button type="button" onClick={() => setParam('scope', 'ALL')} className="hover:text-accent">
-                        <X size={11} />
-                      </button>
-                    </span>
-                  )}
-                  {date !== 'ALL' && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-xs font-mono text-ink border border-line">
-                      {date}
-                      <button type="button" onClick={() => setParam('date', 'ALL')} className="hover:text-accent">
-                        <X size={11} />
-                      </button>
-                    </span>
-                  )}
-                  {query && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-xs font-mono text-ink border border-line">
-                      "{query}"
-                      <button type="button" onClick={() => setParam('search', '')} className="hover:text-accent">
-                        <X size={11} />
-                      </button>
-                    </span>
-                  )}
-                </>
-              )}
-            </div>
-
-
-            {/* Sort Selector */}
-            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-              <span className="text-xs font-mono text-ink-muted">Sort:</span>
-              <div className="relative">
-                <select
-                  value={sort}
-                  onChange={(e) => setParam('sort', e.target.value)}
-                  aria-label="Sort events"
-                  className="h-8 appearance-none rounded-xl border border-line bg-surface-subtle pl-3 pr-7 text-xs font-mono text-ink focus:border-accent focus:outline-none shadow-xs"
-                >
-                  <option value="date-desc">Date (Latest)</option>
-                  <option value="date">Date (Soonest)</option>
-                  <option value="price-asc">Price (Low to High)</option>
-                  <option value="title">Title (A-Z)</option>
-                </select>
-                <CaretDown size={12} className="pointer-events-none absolute right-2 top-2.5 text-ink-muted" />
-              </div>
-            </div>
-          </div>
-
-          {/* Ghost Loader Grid (Zero-CLS directional shimmer wireframes matching EventTicketCard) */}
-          {isLoading && <GhostEventGrid count={6} />}
-
-
-          {/* Error State */}
-          {isError && !isLoading && (
-            <div className="rounded-2xl border border-line bg-card p-10 text-center space-y-3">
-              <p className="text-sm text-ink-soft">Could not load events. Please check connection.</p>
-              <button
-                type="button"
-                onClick={() => refetch()}
-                className="inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-xs font-mono font-semibold text-white shadow-xs hover:bg-accent-hover"
+          {/* Desktop Filter Pills */}
+          <div className="hidden lg:flex flex-wrap items-center gap-2">
+            {/* Category Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className={cn(
+                  'h-10 px-3.5 rounded-xl border text-xs font-mono font-semibold inline-flex items-center gap-1.5 transition-all shadow-xs active:scale-95 cursor-pointer',
+                  category !== 'ALL'
+                    ? 'border-accent bg-accent-soft text-accent'
+                    : 'border-line bg-card text-ink hover:border-line-strong'
+                )}
               >
-                <span>Retry</span>
-              </button>
-            </div>
-          )}
+                <span>{category === 'ALL' ? 'Category' : categories.find((c) => c.value === category)?.label}</span>
+                <CaretDown size={12} weight="bold" className="text-ink-muted" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56 p-1.5 bg-card border border-line rounded-xl shadow-xl">
+                {categories.map((c) => (
+                  <DropdownMenuItem
+                    key={c.value}
+                    onClick={() => setParam('category', c.value)}
+                    className="flex items-center justify-between px-3 py-2 text-xs font-mono rounded-lg cursor-pointer hover:bg-surface-subtle"
+                  >
+                    <span>{c.label}</span>
+                    <span className="text-[10px] text-ink-muted">({categoryCounts[c.value] || 0})</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-          {/* Empty State */}
-          {!isLoading && !isError && events.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-line bg-card p-12 text-center space-y-3">
-              <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-surface-subtle border border-line text-ink-muted">
-                <Funnel size={20} />
-              </div>
-              <h3 className="text-base font-bold text-ink">No events match your criteria</h3>
-              <p className="text-xs text-ink-soft max-w-sm mx-auto">
-                Try widening your search keywords, switching between Free and Paid, or clearing category filters.
-              </p>
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={handleResetFilters}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-4 py-2 text-xs font-mono font-semibold text-ink shadow-xs hover:border-accent hover:text-accent transition-colors"
-                >
-                  <ArrowCounterClockwise size={13} />
-                  <span>Reset All Filters</span>
-                </button>
-              </div>
-            </div>
-          )}
+            {/* When / Date Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className={cn(
+                  'h-10 px-3.5 rounded-xl border text-xs font-mono font-semibold inline-flex items-center gap-1.5 transition-all shadow-xs active:scale-95 cursor-pointer',
+                  date !== 'upcoming' && date !== 'all'
+                    ? 'border-accent bg-accent-soft text-accent'
+                    : 'border-line bg-card text-ink hover:border-line-strong'
+                )}
+              >
+                <span>{date === 'upcoming' ? 'When: Upcoming' : dates.find((d) => d.value === date)?.label}</span>
+                <CaretDown size={12} weight="bold" className="text-ink-muted" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48 p-1.5 bg-card border border-line rounded-xl shadow-xl">
+                {dates.map((d) => (
+                  <DropdownMenuItem
+                    key={d.value}
+                    onClick={() => setParam('date', d.value)}
+                    className="flex items-center justify-between px-3 py-2 text-xs font-mono rounded-lg cursor-pointer hover:bg-surface-subtle"
+                  >
+                    <span>{d.label}</span>
+                    {date === d.value && <Check size={13} weight="bold" className="text-accent" />}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-          {/* Events Catalog Grid (2-Columns on Mobile, 3-Columns on Desktop) */}
-          {!isLoading && !isError && events.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 lg:gap-5">
-              {events.map((event) => (
-                <EventTicketCard
-                  key={event.id}
-                  event={event}
-                  isBookmarked={bookmarkedIds.has(event.id)}
-                  onBookmark={handleBookmarkToggle}
-                />
-              ))}
-            </div>
-          )}
+            {/* Platform / Source Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className={cn(
+                  'h-10 px-3.5 rounded-xl border text-xs font-mono font-semibold inline-flex items-center gap-1.5 transition-all shadow-xs active:scale-95 cursor-pointer',
+                  source !== 'ALL'
+                    ? 'border-accent bg-accent-soft text-accent'
+                    : 'border-line bg-card text-ink hover:border-line-strong'
+                )}
+              >
+                <span>{source === 'ALL' ? 'Platform' : sources.find((s) => s.value === source)?.label}</span>
+                <CaretDown size={12} weight="bold" className="text-ink-muted" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48 p-1.5 bg-card border border-line rounded-xl shadow-xl">
+                {sources.map((s) => (
+                  <DropdownMenuItem
+                    key={s.value}
+                    onClick={() => setParam('source', s.value)}
+                    className="flex items-center justify-between px-3 py-2 text-xs font-mono rounded-lg cursor-pointer hover:bg-surface-subtle"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: s.dot }} />
+                      <span>{s.label}</span>
+                    </span>
+                    {source === s.value && <Check size={13} weight="bold" className="text-accent" />}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Price / Admission Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className={cn(
+                  'h-10 px-3.5 rounded-xl border text-xs font-mono font-semibold inline-flex items-center gap-1.5 transition-all shadow-xs active:scale-95 cursor-pointer',
+                  admission !== 'all'
+                    ? 'border-accent bg-accent-soft text-accent'
+                    : 'border-line bg-card text-ink hover:border-line-strong'
+                )}
+              >
+                <span>{admission === 'all' ? 'Admission' : admission === 'free' ? 'Free Passes' : 'Paid Passes'}</span>
+                <CaretDown size={12} weight="bold" className="text-ink-muted" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-44 p-1.5 bg-card border border-line rounded-xl shadow-xl">
+                <DropdownMenuItem onClick={() => setParam('admission', 'all')} className="px-3 py-2 text-xs font-mono rounded-lg cursor-pointer hover:bg-surface-subtle">
+                  All Passes
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setParam('admission', 'free')} className="px-3 py-2 text-xs font-mono rounded-lg cursor-pointer hover:bg-surface-subtle">
+                  Free Student Passes
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setParam('admission', 'paid')} className="px-3 py-2 text-xs font-mono rounded-lg cursor-pointer hover:bg-surface-subtle">
+                  Paid Ticketed Passes
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* City / Location Scope Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className={cn(
+                  'h-10 px-3.5 rounded-xl border text-xs font-mono font-semibold inline-flex items-center gap-1.5 transition-all shadow-xs active:scale-95 cursor-pointer',
+                  city !== 'ALL' || scope !== 'ALL'
+                    ? 'border-accent bg-accent-soft text-accent'
+                    : 'border-line bg-card text-ink hover:border-line-strong'
+                )}
+              >
+                <span>{scope !== 'ALL' ? (scope === 'campus' ? 'Campus Only' : 'Outside City') : city !== 'ALL' ? city : 'Location'}</span>
+                <CaretDown size={12} weight="bold" className="text-ink-muted" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-52 p-1.5 bg-card border border-line rounded-xl shadow-xl">
+                <DropdownMenuItem onClick={() => { setParam('scope', 'ALL'); setParam('city', 'ALL'); }} className="px-3 py-2 text-xs font-mono rounded-lg cursor-pointer hover:bg-surface-subtle">
+                  All Locations
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setParam('scope', 'campus')} className="px-3 py-2 text-xs font-mono rounded-lg cursor-pointer hover:bg-surface-subtle">
+                  Campus Venues Only
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setParam('scope', 'city')} className="px-3 py-2 text-xs font-mono rounded-lg cursor-pointer hover:bg-surface-subtle">
+                  Outside / City Hubs
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="my-1 border-t border-line" />
+                {cities.filter(c => c.value !== 'ALL').map((c) => (
+                  <DropdownMenuItem
+                    key={c.value}
+                    onClick={() => { setParam('scope', 'ALL'); setParam('city', c.value); }}
+                    className="px-3 py-1.5 text-xs font-mono rounded-lg cursor-pointer hover:bg-surface-subtle"
+                  >
+                    <span>{c.label}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Mobile Filter Drawer Button (< lg) */}
+          <button
+            type="button"
+            onClick={() => setIsMobileFilterOpen(true)}
+            className="lg:hidden h-10 px-3.5 rounded-xl border border-line bg-card font-mono text-xs font-semibold text-ink inline-flex items-center gap-2 shadow-xs active:scale-95"
+          >
+            <Funnel size={14} weight="bold" className="text-accent" />
+            <span>Filters</span>
+            {activeFiltersCount > 0 && (
+              <span className="grid h-4 w-4 place-items-center rounded-full bg-accent text-[10px] text-white font-bold">
+                {activeFiltersCount}
+              </span>
+            )}
+          </button>
+
+          {/* Sort Selector Dropdown */}
+          <div className="ml-auto flex items-center gap-1.5">
+            <span className="hidden sm:inline text-xs font-mono text-ink-muted">Sort:</span>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="h-10 px-3.5 rounded-xl border border-line bg-card text-xs font-mono font-semibold text-ink inline-flex items-center gap-1.5 shadow-xs hover:border-line-strong active:scale-95 cursor-pointer">
+                <span>
+                  {sort === 'date-desc'
+                    ? 'Latest Date'
+                    : sort === 'date'
+                    ? 'Soonest Date'
+                    : sort === 'price-asc'
+                    ? 'Price: Low-High'
+                    : 'Title (A-Z)'}
+                </span>
+                <CaretDown size={12} weight="bold" className="text-ink-muted" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 p-1.5 bg-card border border-line rounded-xl shadow-xl">
+                <DropdownMenuItem onClick={() => setParam('sort', 'date-desc')} className="px-3 py-2 text-xs font-mono rounded-lg cursor-pointer hover:bg-surface-subtle">
+                  Date: Latest
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setParam('sort', 'date')} className="px-3 py-2 text-xs font-mono rounded-lg cursor-pointer hover:bg-surface-subtle">
+                  Date: Soonest
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setParam('sort', 'price-asc')} className="px-3 py-2 text-xs font-mono rounded-lg cursor-pointer hover:bg-surface-subtle">
+                  Price: Low to High
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setParam('sort', 'title')} className="px-3 py-2 text-xs font-mono rounded-lg cursor-pointer hover:bg-surface-subtle">
+                  Title: A-Z
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
+
+        {/* 3. Active Filters Pill Bar (Dismissible Tags) */}
+        {activeFiltersCount > 0 && (
+          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-line">
+            <span className="text-xs font-mono text-ink-muted mr-1">Active:</span>
+
+            {category !== 'ALL' && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-3 py-1 text-xs font-mono font-semibold text-accent border border-accent/20">
+                <span>Category: {categories.find((c) => c.value === category)?.label || category}</span>
+                <button type="button" onClick={() => setParam('category', 'ALL')} className="hover:text-ink">
+                  <X size={11} weight="bold" />
+                </button>
+              </span>
+            )}
+
+            {date !== 'upcoming' && date !== 'all' && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-3 py-1 text-xs font-mono font-semibold text-ink border border-line">
+                <span>When: {dates.find((d) => d.value === date)?.label || date}</span>
+                <button type="button" onClick={() => setParam('date', 'upcoming')} className="hover:text-accent">
+                  <X size={11} weight="bold" />
+                </button>
+              </span>
+            )}
+
+            {source !== 'ALL' && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-3 py-1 text-xs font-mono font-semibold text-accent border border-accent/20">
+                <span>Source: {sources.find((s) => s.value === source)?.label || source}</span>
+                <button type="button" onClick={() => setParam('source', 'ALL')} className="hover:text-ink">
+                  <X size={11} weight="bold" />
+                </button>
+              </span>
+            )}
+
+            {admission !== 'all' && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-3 py-1 text-xs font-mono font-semibold text-ink border border-line">
+                <span>Pass: {admission === 'free' ? 'Free Admission' : 'Paid Ticketed'}</span>
+                <button type="button" onClick={() => setParam('admission', 'all')} className="hover:text-accent">
+                  <X size={11} weight="bold" />
+                </button>
+              </span>
+            )}
+
+            {scope !== 'ALL' && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-3 py-1 text-xs font-mono font-semibold text-ink border border-line">
+                <span>Scope: {scope === 'campus' ? 'Campus Only' : 'Outside City'}</span>
+                <button type="button" onClick={() => setParam('scope', 'ALL')} className="hover:text-accent">
+                  <X size={11} weight="bold" />
+                </button>
+              </span>
+            )}
+
+            {city !== 'ALL' && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-3 py-1 text-xs font-mono font-semibold text-ink border border-line">
+                <span>City: {city}</span>
+                <button type="button" onClick={() => setParam('city', 'ALL')} className="hover:text-accent">
+                  <X size={11} weight="bold" />
+                </button>
+              </span>
+            )}
+
+            {query && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-3 py-1 text-xs font-mono font-semibold text-ink border border-line">
+                <span>"{query}"</span>
+                <button type="button" onClick={() => setParam('search', '')} className="hover:text-accent">
+                  <X size={11} weight="bold" />
+                </button>
+              </span>
+            )}
+
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="text-xs font-mono font-semibold text-accent hover:underline ml-1 cursor-pointer"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* 3. Mobile Off-Canvas Filter Drawer (Hallmark & Denim Dept: 30rem cap, zero blur) */}
+      {/* 4. Full-Width 4-Column Responsive Grid (Option A1 + A2) */}
+      <div className="w-full">
+        {isLoading && <GhostEventGrid count={8} />}
+
+        {isError && !isLoading && (
+          <div className="rounded-2xl border border-line bg-card p-12 text-center space-y-3">
+            <p className="text-sm text-ink-soft">Could not load campus events. Please check connection.</p>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="inline-flex items-center gap-1.5 rounded-full bg-accent px-5 py-2 text-xs font-mono font-semibold text-white shadow-xs hover:bg-accent-hover"
+            >
+              <span>Retry Search</span>
+            </button>
+          </div>
+        )}
+
+        {!isLoading && !isError && events.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-line bg-card p-14 text-center space-y-4">
+            <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-surface-subtle border border-line text-ink-muted">
+              <Funnel size={22} weight="bold" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-base font-bold text-ink">No events match your selected filters</h3>
+              <p className="text-xs text-ink-soft max-w-sm mx-auto">
+                Try widening your search terms, selecting "All Categories", or clearing specific date filters.
+              </p>
+            </div>
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-5 py-2.5 text-xs font-mono font-semibold text-ink shadow-xs hover:border-accent hover:text-accent transition-colors"
+              >
+                <ArrowCounterClockwise size={13} weight="bold" />
+                <span>Reset All Filters</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!isLoading && !isError && events.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {events.map((event, idx) => (
+              <VerticalPosterCard
+                key={event.id}
+                event={event}
+                priority={idx < 4}
+                onQuickRSVP={(evt) => setQuickRsvpEvent(evt)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 5. 1-Click Pass Desk Modal */}
+      <QuickRSVPModal
+        event={quickRsvpEvent}
+        isOpen={Boolean(quickRsvpEvent)}
+        onClose={() => setQuickRsvpEvent(null)}
+      />
+
+      {/* 6. Mobile Off-Canvas Filter Drawer with Accordion Sections (Option A3) */}
       {isMobileFilterOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
-          {/* Solid Opaque Backdrop (Gate 4: Zero blur) */}
+          {/* Solid Opaque Scrim (Zero Glassmorphism) */}
           <div
-            className="fixed inset-0 bg-black/60 transition-opacity"
+            className="fixed inset-0 bg-black/70 transition-opacity"
             onClick={() => setIsMobileFilterOpen(false)}
           />
 
-          {/* Slide-out Drawer Panel (30rem cap, 1px border) */}
-          <div className="relative ml-auto flex h-full w-full max-w-md flex-col bg-card border-l border-line p-5 shadow-2xl overflow-y-auto transition-transform duration-300 ease-[var(--spring-snappy)]">
-            <div className="flex items-center justify-between pb-4 border-b border-line mb-5">
+          <div className="relative ml-auto flex h-full w-full max-w-sm flex-col bg-card border-l border-line p-5 shadow-2xl overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-line mb-4">
               <div className="flex items-center gap-2">
                 <Funnel size={16} weight="bold" className="text-accent" />
-                <h3 className="text-base font-bold text-ink font-display">Filter Events</h3>
+                <h3 className="text-base font-bold text-ink font-display">Filters</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsMobileFilterOpen(false)}
                 aria-label="Close filters"
-                className="grid h-9 w-9 place-items-center rounded-[8px] bg-surface-subtle border border-line text-ink-muted hover:text-ink active:scale-95 transition-all"
+                className="grid h-9 w-9 place-items-center rounded-lg bg-surface-subtle border border-line text-ink-muted hover:text-ink active:scale-95"
               >
-                <X size={16} />
+                <X size={16} weight="bold" />
               </button>
             </div>
 
-            {FilterContent}
+            <Accordion type="multiple" defaultValue={['cat', 'date', 'source']} className="w-full space-y-1">
+              {/* Category Accordion */}
+              <AccordionItem value="cat" className="border-b border-line">
+                <AccordionTrigger className="text-xs font-mono font-bold uppercase text-ink">
+                  Category ({categories.find(c => c.value === category)?.label || 'All'})
+                </AccordionTrigger>
+                <AccordionContent className="pt-1 pb-3 space-y-1">
+                  {categories.map((c) => (
+                    <button
+                      key={c.value}
+                      type="button"
+                      onClick={() => setParam('category', c.value)}
+                      className={cn(
+                        'w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-mono transition-colors text-left',
+                        category === c.value
+                          ? 'bg-accent text-white font-bold'
+                          : 'hover:bg-surface-subtle text-ink-soft'
+                      )}
+                    >
+                      <span>{c.label}</span>
+                      <span className="text-[10px] opacity-80">({categoryCounts[c.value] || 0})</span>
+                    </button>
+                  ))}
+                </AccordionContent>
+              </AccordionItem>
 
-            <div className="mt-8 pt-4 border-t border-line">
+              {/* Date Accordion */}
+              <AccordionItem value="date" className="border-b border-line">
+                <AccordionTrigger className="text-xs font-mono font-bold uppercase text-ink">
+                  Timing ({dates.find(d => d.value === date)?.label || 'Upcoming'})
+                </AccordionTrigger>
+                <AccordionContent className="pt-1 pb-3 space-y-1">
+                  {dates.map((d) => (
+                    <button
+                      key={d.value}
+                      type="button"
+                      onClick={() => setParam('date', d.value)}
+                      className={cn(
+                        'w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-mono transition-colors text-left',
+                        date === d.value
+                          ? 'bg-accent text-white font-bold'
+                          : 'hover:bg-surface-subtle text-ink-soft'
+                      )}
+                    >
+                      <span>{d.label}</span>
+                      {date === d.value && <Check size={13} weight="bold" />}
+                    </button>
+                  ))}
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Source Platform Accordion */}
+              <AccordionItem value="source" className="border-b border-line">
+                <AccordionTrigger className="text-xs font-mono font-bold uppercase text-ink">
+                  Platform ({sources.find(s => s.value === source)?.label || 'All'})
+                </AccordionTrigger>
+                <AccordionContent className="pt-1 pb-3 space-y-1">
+                  {sources.map((s) => (
+                    <button
+                      key={s.value}
+                      type="button"
+                      onClick={() => setParam('source', s.value)}
+                      className={cn(
+                        'w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-mono transition-colors text-left',
+                        source === s.value
+                          ? 'bg-accent text-white font-bold'
+                          : 'hover:bg-surface-subtle text-ink-soft'
+                      )}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: s.dot }} />
+                        <span>{s.label}</span>
+                      </span>
+                      {source === s.value && <Check size={13} weight="bold" />}
+                    </button>
+                  ))}
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Admission Accordion */}
+              <AccordionItem value="admission" className="border-b border-line">
+                <AccordionTrigger className="text-xs font-mono font-bold uppercase text-ink">
+                  Admission ({admission === 'free' ? 'Free' : admission === 'paid' ? 'Paid' : 'All'})
+                </AccordionTrigger>
+                <AccordionContent className="pt-1 pb-3 space-y-1">
+                  {[
+                    { value: 'all', label: 'All Passes' },
+                    { value: 'free', label: 'Free Passes Only' },
+                    { value: 'paid', label: 'Paid Passes Only' },
+                  ].map((a) => (
+                    <button
+                      key={a.value}
+                      type="button"
+                      onClick={() => setParam('admission', a.value)}
+                      className={cn(
+                        'w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-mono transition-colors text-left',
+                        admission === a.value
+                          ? 'bg-accent text-white font-bold'
+                          : 'hover:bg-surface-subtle text-ink-soft'
+                      )}
+                    >
+                      <span>{a.label}</span>
+                      {admission === a.value && <Check size={13} weight="bold" />}
+                    </button>
+                  ))}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
+            <div className="mt-auto pt-4 border-t border-line">
               <button
                 type="button"
                 onClick={() => setIsMobileFilterOpen(false)}
-                className="w-full rounded-[14px] bg-accent py-3 text-xs font-mono font-semibold text-white shadow-sm hover:bg-accent-hover active:scale-[0.98] transition-all"
+                className="w-full rounded-xl bg-accent py-3 text-xs font-mono font-bold text-white shadow-xs hover:bg-accent-hover active:scale-[0.98] transition-all"
               >
-                Apply & View ({events.length} Events)
+                Show {events.length} Events
               </button>
             </div>
           </div>

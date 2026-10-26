@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 
 export const PublicFooter: React.FC = () => {
   return (
-    <footer className="w-full bg-paper border-t border-line py-12 select-none text-ink">
+    <footer className="w-full bg-paper border-t border-line py-12 text-ink">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6">
         {/* Left: Brand & Tagline */}
         <div className="flex flex-wrap items-center justify-center gap-3">

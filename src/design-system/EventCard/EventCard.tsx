@@ -112,16 +112,16 @@ export const EventCard: React.FC<EventCardProps> = ({
           {/* Badges on thumbnail */}
           <div className="absolute top-2 left-2 flex items-center gap-1.5 z-10 pointer-events-none font-mono text-xs">
             {isFillingFast && (
-              <span className="px-2 py-0.5 bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 rounded-full text-[10px] font-medium backdrop-blur-xs">
+              <span className="px-2 py-0.5 bg-warning-soft text-warning border border-warning/30 rounded-full text-[10px] font-medium">
                 {seatsLeftLabel}
               </span>
             )}
             {isFree ? (
-              <span className="px-2 py-0.5 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 rounded-full text-[10px] font-medium backdrop-blur-xs">
+              <span className="px-2 py-0.5 bg-success-soft text-success border border-success/30 rounded-full text-[10px] font-medium">
                 Free
               </span>
             ) : (
-              <span className="px-2 py-0.5 bg-card/90 text-ink border border-line rounded-full text-[10px] font-medium shadow-xs backdrop-blur-xs">
+              <span className="px-2 py-0.5 bg-card text-ink border border-line rounded-full text-[10px] font-medium shadow-xs">
                 {formatPrice(event)}
               </span>
             )}
@@ -236,16 +236,16 @@ export const EventCard: React.FC<EventCardProps> = ({
           <div className="absolute top-2.5 inset-x-2.5 flex items-center justify-between z-10 pointer-events-none font-mono text-xs">
             <div className="flex items-center gap-1.5 flex-wrap pointer-events-auto">
               {isFillingFast && (
-                <span className="px-2 py-0.5 rounded-full bg-amber-500/25 text-amber-300 border border-amber-500/40 text-[10px] font-medium backdrop-blur-xs">
+                <span className="px-2 py-0.5 rounded-full bg-warning-soft text-warning border border-warning/40 text-[10px] font-medium">
                   {seatsLeftLabel}
                 </span>
               )}
               {isFree ? (
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/25 text-emerald-300 border border-emerald-500/40 text-[10px] font-medium backdrop-blur-xs">
+                <span className="px-2 py-0.5 rounded-full bg-success-soft text-success border border-success/40 text-[10px] font-medium">
                   FREE
                 </span>
               ) : (
-                <span className="px-2 py-0.5 rounded-full bg-card/90 text-ink border border-line text-[10px] font-medium shadow-xs backdrop-blur-xs">
+                <span className="px-2 py-0.5 rounded-full bg-card text-ink border border-line text-[10px] font-medium shadow-xs">
                   {formatPrice(event)}
                 </span>
               )}
@@ -356,20 +356,20 @@ export const EventCard: React.FC<EventCardProps> = ({
             <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none z-10 font-mono text-xs">
               <div className="flex items-center gap-1.5 flex-wrap pointer-events-auto">
                 {isFillingFast ? (
-                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40 text-[10px] font-mono font-medium shadow-xs backdrop-blur-xs">
+                  <span className="px-2.5 py-0.5 rounded-full bg-warning-soft text-warning border border-warning/40 text-[10px] font-mono font-medium shadow-xs">
                     {seatsLeftLabel}
                   </span>
                 ) : (
-                  <span className="px-2.5 py-0.5 rounded-full bg-card/90 text-accent border border-line text-[10px] font-mono font-medium shadow-xs backdrop-blur-xs">
+                  <span className="px-2.5 py-0.5 rounded-full bg-card text-accent border border-line text-[10px] font-mono font-medium shadow-xs">
                     {dateFormatted}
                   </span>
                 )}
                 {isFree ? (
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40 text-[10px] font-mono font-medium shadow-xs backdrop-blur-xs">
+                  <span className="px-2.5 py-0.5 rounded-full bg-success-soft text-success border border-success/40 text-[10px] font-mono font-medium shadow-xs">
                     Free
                   </span>
                 ) : (
-                  <span className="px-2.5 py-0.5 rounded-full bg-card/90 text-ink border border-line text-[10px] font-mono font-medium shadow-xs backdrop-blur-xs">
+                  <span className="px-2.5 py-0.5 rounded-full bg-card text-ink border border-line text-[10px] font-mono font-medium shadow-xs">
                     {formatPrice(event)}
                   </span>
                 )}

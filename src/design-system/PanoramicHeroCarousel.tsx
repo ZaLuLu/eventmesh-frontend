@@ -125,9 +125,9 @@ export const PanoramicHeroCarousel: React.FC<PanoramicHeroCarouselProps> = ({
                 aria-hidden={!isActive}
               >
                 {/* Solitary 14px Card Container (Zero nested radii, zero blur) */}
-                <div className="relative h-[340px] sm:h-[400px] md:h-[450px] w-full overflow-hidden rounded-[14px] border border-line bg-black shadow-md">
+                <div className="relative h-[340px] sm:h-[400px] md:h-[450px] w-full overflow-hidden rounded-[14px] border border-line bg-card shadow-md">
                   {/* Background Artwork */}
-                  <div className="absolute inset-0 overflow-hidden bg-black">
+                  <div className="absolute inset-0 overflow-hidden bg-card">
                     {event.banner || event.poster ? (
                       <img
                         src={event.banner || event.poster}

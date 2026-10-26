@@ -1748,7 +1748,7 @@ export const RegisterPage: React.FC = () => {
       {/* 3D DESK STAMP PAYMENT CLEARANCE MODAL */}
       {stampOverlayOpen && createdRegistration && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto select-none animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 overflow-y-auto animate-in fade-in duration-200"
           role="dialog"
           aria-modal="true"
           aria-label="3D Payment Clearance Stamp"
