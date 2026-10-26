@@ -430,7 +430,7 @@ export const ExplorePage: React.FC = () => {
                 {count !== undefined && (
                   <span
                     className={cn(
-                      'ml-2 rounded-full px-1.5 py-0.5 font-mono text-[10px]',
+                      'ml-2 rounded-full px-1.5 py-0.5 font-mono text-xs',
                       active ? 'bg-white/20 text-white' : 'bg-surface-subtle text-ink-muted border border-line/60'
                     )}
                   >
@@ -538,11 +538,21 @@ export const ExplorePage: React.FC = () => {
               <Funnel size={14} weight={activeFiltersCount > 0 ? 'fill' : 'regular'} className="text-accent" />
               <span>Filters</span>
               {activeFiltersCount > 0 && (
-                <span className="grid h-4 w-4 place-items-center rounded-full bg-accent text-[10px] font-mono text-white">
+                <span className="grid h-4 w-4 place-items-center rounded-full bg-accent text-xs font-mono text-white">
                   {activeFiltersCount}
                 </span>
               )}
             </button>
+
+            {/* View on Calendar Link */}
+            <Link
+              to="/calendar"
+              className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card hover:bg-surface-subtle px-3 py-1.5 text-xs font-semibold text-ink shadow-xs hover:border-accent hover:text-accent transition-colors"
+              title="Open full interactive date calendar"
+            >
+              <CalendarBlank size={14} weight="bold" className="text-accent" />
+              <span>Calendar View</span>
+            </Link>
 
             {/* Total Results Count Badge */}
             <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-3 py-1.5 text-xs font-mono font-medium text-ink shadow-xs">
@@ -565,7 +575,7 @@ export const ExplorePage: React.FC = () => {
               <Funnel size={15} weight="bold" className="text-accent" />
               <h2 className="text-sm font-bold tracking-tight text-ink">Filters</h2>
               {activeFiltersCount > 0 && (
-                <span className="grid h-4 w-4 place-items-center rounded-full bg-accent text-[10px] font-mono text-white">
+                <span className="grid h-4 w-4 place-items-center rounded-full bg-accent text-xs font-mono text-white">
                   {activeFiltersCount}
                 </span>
               )}
@@ -659,7 +669,7 @@ export const ExplorePage: React.FC = () => {
               ) : (
                 <>
                   {source !== 'ALL' && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-0.5 text-[11px] font-mono text-accent border border-accent/20 font-semibold">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-mono text-accent border border-accent/20 font-semibold">
                       Source: {sources.find((s) => s.value === source)?.label || source}
                       <button type="button" onClick={() => setParam('source', 'ALL')} className="hover:text-accent-hover">
                         <X size={11} />
@@ -667,7 +677,7 @@ export const ExplorePage: React.FC = () => {
                     </span>
                   )}
                   {city !== 'ALL' && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-[11px] font-mono text-ink border border-line">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-xs font-mono text-ink border border-line">
                       City: {city}
                       <button type="button" onClick={() => setParam('city', 'ALL')} className="hover:text-accent">
                         <X size={11} />
@@ -675,7 +685,7 @@ export const ExplorePage: React.FC = () => {
                     </span>
                   )}
                   {category !== 'ALL' && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-[11px] font-mono text-ink border border-line">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-xs font-mono text-ink border border-line">
                       {category}
                       <button type="button" onClick={() => setParam('category', 'ALL')} className="hover:text-accent">
                         <X size={11} />
@@ -683,7 +693,7 @@ export const ExplorePage: React.FC = () => {
                     </span>
                   )}
                   {admission !== 'all' && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-[11px] font-mono text-ink border border-line">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-xs font-mono text-ink border border-line">
                       {admission === 'free' ? 'Free Admission' : 'Paid Passes'}
                       <button type="button" onClick={() => setParam('admission', 'all')} className="hover:text-accent">
                         <X size={11} />
@@ -691,7 +701,7 @@ export const ExplorePage: React.FC = () => {
                     </span>
                   )}
                   {scope !== 'ALL' && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-[11px] font-mono text-ink border border-line">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-xs font-mono text-ink border border-line">
                       {scope === 'campus' ? 'Campus Only' : 'City / Outside'}
                       <button type="button" onClick={() => setParam('scope', 'ALL')} className="hover:text-accent">
                         <X size={11} />
@@ -699,7 +709,7 @@ export const ExplorePage: React.FC = () => {
                     </span>
                   )}
                   {date !== 'ALL' && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-[11px] font-mono text-ink border border-line">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-xs font-mono text-ink border border-line">
                       {date}
                       <button type="button" onClick={() => setParam('date', 'ALL')} className="hover:text-accent">
                         <X size={11} />
@@ -707,7 +717,7 @@ export const ExplorePage: React.FC = () => {
                     </span>
                   )}
                   {query && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-[11px] font-mono text-ink border border-line">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-2.5 py-0.5 text-xs font-mono text-ink border border-line">
                       "{query}"
                       <button type="button" onClick={() => setParam('search', '')} className="hover:text-accent">
                         <X size={11} />

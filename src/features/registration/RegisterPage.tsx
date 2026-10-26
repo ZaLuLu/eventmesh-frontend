@@ -775,7 +775,7 @@ export const RegisterPage: React.FC = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-bold text-ink">Ticket has been mailed to you!</p>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
                     SENT
                   </span>
                 </div>
@@ -795,10 +795,10 @@ export const RegisterPage: React.FC = () => {
             {/* Digital Pass Status Seal */}
             <div className="absolute top-4 right-4 sm:top-5 sm:right-6 z-20">
               <div className="px-3.5 py-1.5 rounded-xl border-2 border-dashed border-mint/40 bg-mint/5 flex flex-col items-center rotate-[-6deg]">
-                <span className="text-[10px] font-mono font-bold text-mint tracking-wider">
+                <span className="text-xs font-mono font-bold text-mint tracking-wider">
                   {isPaidEvent ? 'PAYMENT VERIFIED' : 'CAMPUS PASS ISSUED'}
                 </span>
-                <span className="text-[9px] font-mono text-text-3">
+                <span className="text-xs font-mono text-text-3">
                   {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
                 </span>
               </div>
@@ -865,7 +865,7 @@ export const RegisterPage: React.FC = () => {
                   <span className="font-mono text-xs font-bold text-ink block tracking-wider">
                     {createdRegistration.ticketCode}
                   </span>
-                  <span className="font-mono text-[10px] text-ink-soft uppercase tracking-wider">
+                  <span className="font-mono text-xs text-ink-soft uppercase tracking-wider">
                     SCAN AT GATE
                   </span>
                 </div>
@@ -883,7 +883,7 @@ export const RegisterPage: React.FC = () => {
             <div className="bg-card border border-line rounded-2xl p-5 sm:p-6 text-left space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-3">
                 <div>
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-accent block">
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-accent block">
                     Hackathon Team Workspace
                   </span>
                   <h4 className="font-display font-bold text-lg text-ink">
@@ -911,7 +911,7 @@ export const RegisterPage: React.FC = () => {
 
               {/* Shareable Invite Link */}
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono uppercase tracking-wider text-ink-muted block">
+                <label className="text-xs font-mono uppercase tracking-wider text-ink-muted block">
                   Teammate Direct Invite Link
                 </label>
                 <div className="flex items-center gap-2">
@@ -949,7 +949,7 @@ export const RegisterPage: React.FC = () => {
                     <Users size={14} className="text-accent" />
                     <span>Confirmed Team Roster</span>
                   </span>
-                  <span className="font-mono text-ink-muted text-[11px]">
+                  <span className="font-mono text-ink-muted text-xs">
                     {teamMode === 'join' && verifiedTeamData
                       ? `${verifiedTeamData.members.length + 1} / ${maxTeamSize} members`
                       : `${teamMembers.length} / ${maxTeamSize} members`}
@@ -970,9 +970,9 @@ export const RegisterPage: React.FC = () => {
                     >
                       <div className="min-w-0 pr-2">
                         <p className="font-semibold text-ink truncate">{m.name || 'Teammate'}</p>
-                        <p className="text-[11px] font-mono text-ink-soft truncate">{m.email}</p>
+                        <p className="text-xs font-mono text-ink-soft truncate">{m.email}</p>
                       </div>
-                      <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-surface-subtle text-ink-muted shrink-0">
+                      <span className="text-xs font-mono font-medium px-2 py-0.5 rounded-full bg-surface-subtle text-ink-muted shrink-0">
                         {m.role || (idx === 0 ? 'Team Lead' : 'Member')}
                       </span>
                     </div>
@@ -1146,7 +1146,7 @@ export const RegisterPage: React.FC = () => {
                   <div className="space-y-1.5">
                     <label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-ink-soft flex items-center justify-between">
                       <span>Email address</span>
-                      <span className="text-[10px] font-mono font-semibold text-cobalt flex items-center gap-1">
+                      <span className="text-xs font-mono font-semibold text-cobalt flex items-center gap-1">
                         <Icon name="LockSimple" size={12} />
                         Locked to Session
                       </span>
@@ -1159,7 +1159,7 @@ export const RegisterPage: React.FC = () => {
                       value={email}
                       className="w-full px-3.5 py-2.5 rounded-[14px] bg-paper-2 border border-ink/15 text-ink text-sm font-medium cursor-not-allowed select-none"
                     />
-                    <p className="text-[11px] text-ink-soft">Your ticket will use the email address on your account.</p>
+                    <p className="text-xs text-ink-soft">Your ticket will use the email address on your account.</p>
                   </div>
                 </div>
 
@@ -1334,7 +1334,7 @@ export const RegisterPage: React.FC = () => {
                                 <CheckCircle size={15} weight="fill" />
                                 <span>Verified Team Found</span>
                               </span>
-                              <span className="text-[11px] font-mono text-ink-muted">
+                              <span className="text-xs font-mono text-ink-muted">
                                 {verifiedTeamData.members.length} / {verifiedTeamData.max_size} members
                               </span>
                             </div>
@@ -1347,7 +1347,7 @@ export const RegisterPage: React.FC = () => {
                             </div>
 
                             <div className="space-y-1 pt-1 border-t border-line/40">
-                              <p className="text-[11px] font-mono uppercase text-ink-muted">Current Teammates:</p>
+                              <p className="text-xs font-mono uppercase text-ink-muted">Current Teammates:</p>
                               <div className="flex flex-wrap gap-1.5">
                                 {verifiedTeamData.members.map((m: any, idx: number) => (
                                   <span
@@ -1412,7 +1412,7 @@ export const RegisterPage: React.FC = () => {
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <span
-                                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                    className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                                       m.status === 'Joined'
                                         ? 'bg-mint/30 text-emerald-800'
                                         : 'bg-amber-100 text-amber-800'
@@ -1493,12 +1493,12 @@ export const RegisterPage: React.FC = () => {
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                     <div>
-                      <span className="text-ink-soft block uppercase font-bold text-[10px]">Lead Attendee</span>
+                      <span className="text-ink-soft block uppercase font-bold text-xs">Lead Attendee</span>
                       <p className="font-semibold text-ink mt-0.5">{name}</p>
                       <p className="text-ink-soft font-mono">{email}</p>
                     </div>
                     <div>
-                      <span className="text-ink-soft block uppercase font-bold text-[10px]">Pass Allocation</span>
+                      <span className="text-ink-soft block uppercase font-bold text-xs">Pass Allocation</span>
                       <p className="font-semibold text-ink mt-0.5">
                         {isTeamEvent ? `${teamName} (${teamMembers.length} passes)` : 'Individual Pass (1 pass)'}
                       </p>
@@ -1508,7 +1508,7 @@ export const RegisterPage: React.FC = () => {
 
                   {isTeamEvent && (
                     <div className="pt-2 border-t border-ink/10">
-                      <span className="text-ink-soft block uppercase font-bold text-[10px] mb-1.5">Team Roster</span>
+                      <span className="text-ink-soft block uppercase font-bold text-xs mb-1.5">Team Roster</span>
                       <div className="space-y-1">
                         {teamMembers.map((m, idx) => (
                           <div key={m.id} className="flex items-center justify-between text-xs">
@@ -1571,7 +1571,7 @@ export const RegisterPage: React.FC = () => {
                   <Icon name="Ticket" size={24} className="text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <Badge variant="neutral" size="sm" className="text-[10px] mb-1">
+                  <Badge variant="neutral" size="sm" className="text-xs mb-1">
                     {event.organizerName || 'Campus Club'}
                   </Badge>
                   <h4 className="font-medium text-sm text-ink line-clamp-2 leading-tight">{event.title}</h4>
@@ -1613,11 +1613,11 @@ export const RegisterPage: React.FC = () => {
                         {formatCurrency(feeQuote.total_payable_inr)}
                       </span>
                     </div>
-                    <p className="text-[10px] text-ink-soft font-mono flex items-center gap-1.5 pt-1">
+                    <p className="text-xs text-ink-soft font-mono flex items-center gap-1.5 pt-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
                       <span>Cashfree Split Marketplace PG Secured</span>
                     </p>
-                    <div className="pt-2 flex items-center gap-1.5 text-[10px] font-mono text-ink-soft flex-wrap">
+                    <div className="pt-2 flex items-center gap-1.5 text-xs font-mono text-ink-soft flex-wrap">
                       <span className="px-1.5 py-0.5 rounded bg-paper border border-ink/10 font-medium">UPI</span>
                       <span className="px-1.5 py-0.5 rounded bg-paper border border-ink/10 font-medium">PhonePe</span>
                       <span className="px-1.5 py-0.5 rounded bg-paper border border-ink/10 font-medium">GPay</span>
@@ -1638,7 +1638,7 @@ export const RegisterPage: React.FC = () => {
                 )}
               </div>
 
-              <div className="p-3 rounded-[12px] bg-paper border border-ink/10 space-y-1 text-[11px] text-ink-soft">
+              <div className="p-3 rounded-[12px] bg-paper border border-ink/10 space-y-1 text-xs text-ink-soft">
                 <p className="font-semibold text-ink flex items-center gap-1">
                   <Icon name="ShieldCheck" size={13} className="text-cobalt" />
                   Digital pass
@@ -1655,7 +1655,7 @@ export const RegisterPage: React.FC = () => {
         <div className="fixed inset-0 bg-ink/75 z-50 flex items-center justify-center p-4">
           <div className="bg-card border border-line rounded-panel p-6 sm:p-8 max-w-md w-full shadow-sm space-y-5 select-none relative animate-in fade-in zoom-in-95 duration-150">
             <div className="space-y-1.5">
-              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-accent bg-accent/10 px-2 py-0.5 rounded border border-accent/20">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-accent bg-accent/10 px-2 py-0.5 rounded border border-accent/20">
                 Collegiate Requirement
               </span>
               <h2 className="font-display text-2xl font-bold text-ink">
@@ -1763,7 +1763,7 @@ export const RegisterPage: React.FC = () => {
                 <div>
                   <h3 className="font-display font-bold text-base text-ink flex items-center gap-2">
                     <span>EventMesh 3D Desk Stamp</span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-mint/20 text-emerald-600 dark:text-emerald-400 font-semibold border border-mint/40">
+                    <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-mint/20 text-emerald-600 dark:text-emerald-400 font-semibold border border-mint/40">
                       Payment Clearance
                     </span>
                   </h3>

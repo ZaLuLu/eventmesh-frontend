@@ -1,7 +1,7 @@
 // Hallmark macrostructure: PublicShell / Option B Seamless Architecture
 import React, { useState } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
-import { House, Compass, Users, Ticket, User } from '@/design-system/Icon'
+import { House, Compass, Users, Ticket, User, CalendarBlank, Buildings } from '@/design-system/Icon'
 import { useAuth } from '@/hooks/useAuth'
 import { PublicHeader } from './PublicHeader'
 import { PublicFooter } from './PublicFooter'
@@ -19,12 +19,12 @@ export const PublicShell: React.FC = () => {
   const mobileTabs = [
     { label: 'Home', path: '/', icon: <House size={18} weight="bold" /> },
     { label: 'Explore', path: '/explore', icon: <Compass size={18} weight="bold" /> },
-    { label: 'Clubs', path: '/clubs', icon: <Users size={18} weight="bold" /> },
-    { label: 'Tickets', path: '/attendee/dashboard', icon: <Ticket size={18} weight="bold" /> },
+    { label: 'Calendar', path: '/calendar', icon: <CalendarBlank size={18} weight="bold" /> },
+    { label: 'My College', path: '/my-college', icon: <Buildings size={18} weight="bold" /> },
     {
-      label: isAuthenticated ? 'Profile' : 'Sign in',
+      label: isAuthenticated ? 'Passes' : 'Sign in',
       path: isAuthenticated ? '/attendee/dashboard' : '/login',
-      icon: <User size={18} weight="bold" />,
+      icon: <Ticket size={18} weight="bold" />,
     },
   ]
 

@@ -425,7 +425,7 @@ export const EventCard: React.FC<EventCardProps> = ({
           </div>
 
           {/* Event Title */}
-          <h3 className="font-display text-base sm:text-lg text-ink font-semibold leading-snug line-clamp-2 group-hover:text-accent transition-colors">
+          <h3 className="font-display text-base sm:text-lg text-ink font-semibold leading-tight tracking-tight line-clamp-2 group-hover:text-accent transition-colors">
             <EventLink
               event={event}
               className="focus:outline-none focus-visible:underline"

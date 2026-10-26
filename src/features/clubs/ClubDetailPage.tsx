@@ -300,7 +300,7 @@ export const ClubDetailPage: React.FC = () => {
                         <Badge variant="neutral" size="sm" className="mb-0.5">
                           {lead.badge}
                         </Badge>
-                        <h3 className="font-display font-semibold text-base text-ink leading-snug truncate">
+                        <h3 className="font-display font-semibold text-base text-ink leading-normal truncate">
                           {lead.name}
                         </h3>
                         <p className="text-ink-soft text-xs leading-normal font-mono">

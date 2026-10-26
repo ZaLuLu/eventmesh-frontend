@@ -95,7 +95,7 @@ export const EventDetailPage: React.FC = () => {
             🏛️
           </div>
           <div className="space-y-2">
-            <span className="text-[10px] font-mono font-bold text-accent uppercase tracking-wider block">
+            <span className="text-xs font-mono font-bold text-accent uppercase tracking-wider block">
               Campus Institution Access
             </span>
             <h2 className="font-display font-bold text-2xl text-ink">
@@ -479,7 +479,7 @@ export const EventDetailPage: React.FC = () => {
                 >
                   {tab.label}
                   {tab.count !== undefined && (
-                    <span className={`ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] ${
+                    <span className={`ml-1.5 px-1.5 py-0.2 rounded-full text-xs font-mono ${
                       activeTab === tab.id ? 'bg-accent text-white' : 'bg-surface-subtle text-ink-soft'
                     }`}>
                       {tab.count}
@@ -502,11 +502,11 @@ export const EventDetailPage: React.FC = () => {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-line/30">
                     <div className="p-4 rounded-xl bg-card space-y-1">
-                      <span className="text-[11px] font-medium text-ink-soft/70 block uppercase tracking-wider">Eligibility</span>
+                      <span className="text-xs font-medium text-ink-soft block uppercase tracking-wider">Eligibility</span>
                       <p className="text-sm font-medium text-ink">{event.eligibility || 'Open to all enrolled students'}</p>
                     </div>
                     <div className="p-4 rounded-xl bg-card space-y-1">
-                      <span className="text-[11px] font-medium text-ink-soft/70 block uppercase tracking-wider">Format</span>
+                      <span className="text-xs font-medium text-ink-soft block uppercase tracking-wider">Format</span>
                       <p className="text-sm font-medium text-ink">
                         {event.features?.team ? 'Team participation (2–4 members)' : 'Individual attendee pass'}
                       </p>
@@ -679,7 +679,7 @@ export const EventDetailPage: React.FC = () => {
             <div className="sticky top-28 bg-card border border-line rounded-panel p-6 space-y-6">
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[11px] font-medium uppercase tracking-wider text-ink-soft/70">Admission Pass</span>
+                  <span className="text-xs font-medium uppercase tracking-wider text-ink-soft">Admission Pass</span>
                   <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400 font-mono">
                     {eventPriceLabel(event)}
                   </span>
@@ -695,7 +695,7 @@ export const EventDetailPage: React.FC = () => {
                   <Fire size={20} className="shrink-0 text-amber-600 dark:text-amber-400 animate-pulse" weight="fill" />
                   <div>
                     <p className="font-bold">Only {event.seatsLeft} passes left!</p>
-                    <p className="text-[11px] opacity-80">High demand. Reserve before spots are claimed.</p>
+                    <p className="text-xs opacity-80">High demand. Reserve before spots are claimed.</p>
                   </div>
                 </div>
               )}
@@ -706,7 +706,7 @@ export const EventDetailPage: React.FC = () => {
                   <span className="flex items-center gap-1.5">
                     <span>Available capacity</span>
                     {percentClaimed != null && percentClaimed >= 75 && !isSoldOut && (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold font-mono bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                      <span className="px-1.5 py-0.5 rounded text-xs font-bold font-mono bg-amber-500/15 text-amber-600 dark:text-amber-400">
                         {percentClaimed}% claimed
                       </span>
                     )}
@@ -742,10 +742,10 @@ export const EventDetailPage: React.FC = () => {
               {/* Ticket Tier Selector */}
               <div className="space-y-2.5 pt-1">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-medium uppercase tracking-wider text-ink-soft/70 block">
+                  <label className="text-xs font-medium uppercase tracking-wider text-ink-soft block">
                     Select Pass Tier
                   </label>
-                  <span className="text-[10px] font-mono text-ink-muted">3 options available</span>
+                  <span className="text-xs font-mono text-ink-muted">3 options available</span>
                 </div>
                 <div className="space-y-2.5">
                   {tiers.map((tier) => {
@@ -765,12 +765,12 @@ export const EventDetailPage: React.FC = () => {
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-sm text-ink">{tier.name}</span>
                             {tier.id === 'tier-early' && (
-                              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                              <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400">
                                 🔥 85% CLAIMED
                               </span>
                             )}
                             {tier.id === 'tier-vip' && (
-                              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-600 dark:text-purple-400">
+                              <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-600 dark:text-purple-400">
                                 ⭐ POPULAR
                               </span>
                             )}
@@ -782,7 +782,7 @@ export const EventDetailPage: React.FC = () => {
                         <p className="text-xs text-ink-soft line-clamp-1">{tier.description}</p>
                         <div className="flex flex-wrap gap-1.5 mt-2">
                           {tier.perks.map((p) => (
-                            <span key={p} className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-surface-subtle text-ink-muted">
+                            <span key={p} className="text-xs font-mono px-1.5 py-0.5 rounded bg-surface-subtle text-ink-muted">
                               ✓ {p}
                             </span>
                           ))}
@@ -1001,7 +1001,7 @@ export const EventDetailPage: React.FC = () => {
         <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto flex flex-col justify-between">
           <div>
             <SheetHeader className="text-left pb-4 border-b border-line">
-              <span className="text-[10px] font-mono font-bold text-accent uppercase tracking-wider">
+              <span className="text-xs font-mono font-bold text-accent uppercase tracking-wider">
                 1-Step Fast Pass
               </span>
               <SheetTitle className="text-lg font-bold text-ink">
@@ -1030,7 +1030,7 @@ export const EventDetailPage: React.FC = () => {
                   </div>
 
                   <div className="p-3 rounded-xl bg-card border border-line font-mono text-center space-y-1">
-                    <span className="text-[10px] text-ink-muted uppercase tracking-wider block">Pass Token</span>
+                    <span className="text-xs text-ink-muted uppercase tracking-wider block">Pass Token</span>
                     <span className="font-bold text-accent text-sm tracking-wider">
                       {justConfirmedReg.ticketCode || 'EM-TK-CONFIRMED'}
                     </span>
@@ -1088,7 +1088,7 @@ export const EventDetailPage: React.FC = () => {
                   {!session ? (
                     <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 space-y-3">
                       <p className="font-semibold">Sign in required to link this boarding pass</p>
-                      <p className="text-[11px] leading-relaxed">
+                      <p className="text-xs leading-relaxed">
                         To issue and store your verifiable QR pass, please sign in with your student email.
                       </p>
                       <Button
@@ -1103,7 +1103,7 @@ export const EventDetailPage: React.FC = () => {
                     </div>
                   ) : (
                     <div className="p-3.5 rounded-xl bg-surface border border-line space-y-1">
-                      <span className="text-[10px] font-mono text-ink-muted uppercase tracking-wider block">
+                      <span className="text-xs font-mono text-ink-muted uppercase tracking-wider block">
                         Verified Student Profile
                       </span>
                       <p className="text-sm font-semibold text-ink">{session.name || 'Campus Student'}</p>
@@ -1128,7 +1128,7 @@ export const EventDetailPage: React.FC = () => {
               >
                 Confirm 1-Tap Free RSVP
               </Button>
-              <p className="text-[11px] text-ink-muted text-center mt-2">
+              <p className="text-xs text-ink-muted text-center mt-2">
                 Instant digital pass generation · Zero transaction fees
               </p>
             </div>
@@ -1215,7 +1215,7 @@ export const EventDetailPage: React.FC = () => {
 
           {/* WebCal URL copy */}
           <div className="pt-2 border-t border-line">
-            <label className="text-[11px] font-mono uppercase tracking-wider text-ink-muted block mb-1.5">
+            <label className="text-xs font-mono uppercase tracking-wider text-ink-muted block mb-1.5">
               Live WebCal Feed URL
             </label>
             <div className="flex items-center gap-2">
@@ -1233,7 +1233,7 @@ export const EventDetailPage: React.FC = () => {
                 <span>Copy</span>
               </button>
             </div>
-            <p className="text-[11px] text-ink-muted mt-1.5">
+            <p className="text-xs text-ink-muted mt-1.5">
               Paste this URL into any calendar app to receive real-time schedule adjustments.
             </p>
           </div>

@@ -205,13 +205,13 @@ export const AdminRegistrationsPage: React.FC = () => {
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="font-mono font-bold text-accent text-xs">{reg.ticketCode}</span>
                       {reg.isPaid && (
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-iris/15 text-iris border border-iris/30 font-semibold inline-flex items-center gap-0.5">
+                        <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-iris/15 text-iris border border-iris/30 font-semibold inline-flex items-center gap-0.5">
                           <CurrencyInr size={10} weight="bold" />
                           {((reg.paidAmountCents || 49900) / 100).toFixed(0)}
                         </span>
                       )}
                       {reg.refundStatus === 'refunded' && (
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-danger/15 text-danger border border-danger/30 font-semibold">
+                        <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-danger/15 text-danger border border-danger/30 font-semibold">
                           REFUNDED
                         </span>
                       )}
@@ -219,7 +219,7 @@ export const AdminRegistrationsPage: React.FC = () => {
                     <p className="font-semibold text-text text-small">{reg.userName}</p>
                     <p className="text-caption text-text-3 font-mono">{reg.userEmail}</p>
                     {reg.team && (
-                      <span className="text-[10px] bg-subtle text-text-2 border border-line px-1.5 py-0.5 rounded-sm mt-0.5 inline-block font-mono">
+                      <span className="text-xs bg-subtle text-text-2 border border-line px-1.5 py-0.5 rounded-sm mt-0.5 inline-block font-mono">
                         Team: {reg.team.teamName}
                       </span>
                     )}
@@ -344,7 +344,7 @@ export const AdminRegistrationsPage: React.FC = () => {
                   ₹{((selectedRefundReg.paidAmountCents || 49900) / 100).toFixed(2)}
                 </span>
               </div>
-              <span className="text-[11px] font-mono px-2 py-1 bg-iris/20 text-iris rounded-full font-medium">
+              <span className="text-xs font-mono px-2 py-1 bg-iris/20 text-iris rounded-full font-medium">
                 Cashfree Gateway
               </span>
             </div>

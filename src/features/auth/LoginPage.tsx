@@ -1,33 +1,33 @@
-// Hallmark macrostructure: Auth-Login with Supabase & Google Identity Services
 import React, { useState, useEffect, useRef } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
+import { ArrowLeft, CheckCircle } from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
-import { Button } from '@/design-system/primitives/Button'
-import { Field } from '@/design-system/primitives/Field'
 import { useToast } from '@/design-system/primitives/Toast'
 import {
   supabase,
   signInWithGoogleIdToken,
   signInWithGoogleOAuth,
 } from '@/lib/supabaseClient'
+import { SEED_DEMO_USERS } from '@/api/adapters/mock/seedData'
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { toast } = useToast()
-  const { sendOtp, verifyOtp, isSendingOtp, isVerifyingOtp } = useAuth()
+  const { sendOtp, verifyOtp, isSendingOtp, isVerifyingOtp, switchDemoAccount } = useAuth()
 
   const [step, setStep] = useState<'email' | 'otp'>('email')
   const [email, setEmail] = useState('')
-  const [otp, setOtp] = useState('')
+  const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', ''])
   const [error, setError] = useState('')
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [gsiLoaded, setGsiLoaded] = useState(false)
 
   const googleBtnContainerRef = useRef<HTMLDivElement>(null)
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([])
 
-  // 1. Process incoming OAuth redirect callback (if user returned from Google OAuth redirect)
+  // 1. Process incoming OAuth redirect callback
   useEffect(() => {
     const hash = window.location.hash
     const search = window.location.search
@@ -74,7 +74,7 @@ export const LoginPage: React.FC = () => {
     }
   }, [navigate, toast, queryClient])
 
-  // 2. Initialize Google Identity Services (GIS) for in-app ID token sign-in & One Tap
+  // 2. Initialize Google Identity Services
   useEffect(() => {
     const clientId =
       import.meta.env.VITE_GOOGLE_CLIENT_ID ||
@@ -104,7 +104,6 @@ export const LoginPage: React.FC = () => {
                 user?.email?.split('@')[0] ||
                 'User'
 
-              // Seed session into queryClient cache immediately so navigation is instant
               queryClient.setQueryData(['auth', 'session'], {
                 id: user?.id || 'usr_auth',
                 name: userName,
@@ -114,7 +113,6 @@ export const LoginPage: React.FC = () => {
                 avatar: user?.user_metadata?.avatar_url || user?.user_metadata?.picture,
               })
 
-              // Invalidate in background without blocking navigation
               queryClient.invalidateQueries({ queryKey: ['auth'] }).catch(() => {})
 
               toast({
@@ -125,7 +123,7 @@ export const LoginPage: React.FC = () => {
               navigate('/attendee/dashboard')
             } catch (err: any) {
               console.error('Google ID token authentication error:', err)
-              setError(err?.message || 'Google sign-in was interrupted. Please try again.')
+              setError(err?.message || 'Google sign-in was interrupted.')
             } finally {
               if (mounted) setIsGoogleLoading(false)
             }
@@ -143,12 +141,9 @@ export const LoginPage: React.FC = () => {
           text: 'continue_with',
           shape: 'pill',
           logo_alignment: 'left',
-          width: 330,
+          width: 320,
         })
         setGsiLoaded(true)
-
-        // Attempt non-intrusive One Tap prompt
-        google.accounts.id.prompt()
         return true
       } catch (err) {
         console.warn('Google Identity Services init failed:', err)
@@ -179,29 +174,90 @@ export const LoginPage: React.FC = () => {
     }
   }, [step, navigate, toast, queryClient])
 
-  // 3. Email OTP Handlers
+  // 3. Fast 1-Tap Login for Suraj Naik (Test Profile)
+  const handleQuickLoginSuraj = async () => {
+    setError('')
+    try {
+      const surajProfile = SEED_DEMO_USERS[0]
+      queryClient.setQueryData(['auth', 'session'], surajProfile)
+      if (switchDemoAccount) {
+        await switchDemoAccount({ role: 'org_admin' })
+      }
+      toast({
+        title: 'Signed in as Suraj Naik',
+        message: 'Loaded active student credentials.',
+        type: 'success',
+      })
+      navigate('/attendee/dashboard')
+    } catch (err: any) {
+      setError(err?.message || 'Could not authenticate test persona.')
+    }
+  }
+
+  // 4. Email OTP Handlers
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     if (!email.trim() || !email.includes('@')) {
-      setError('Please provide a valid email address.')
+      setError('Please enter a valid email address.')
       return
     }
 
     try {
       const res = await sendOtp(email)
-      toast({ title: 'Access Code Sent', message: res.message, type: 'info' })
+      toast({ title: 'Code sent', message: res.message, type: 'info' })
       setStep('otp')
+      setOtpDigits(['', '', '', '', '', ''])
+      setTimeout(() => otpInputRefs.current[0]?.focus(), 50)
     } catch {
       setError('Failed to send verification code. Please try again.')
+    }
+  }
+
+  const handleDigitChange = (index: number, val: string) => {
+    const cleaned = val.replace(/\D/g, '')
+    if (!cleaned) {
+      const newDigits = [...otpDigits]
+      newDigits[index] = ''
+      setOtpDigits(newDigits)
+      return
+    }
+
+    if (cleaned.length > 1) {
+      const digitsArr = cleaned.slice(0, 6).split('')
+      const newDigits = [...otpDigits]
+      for (let i = 0; i < 6; i++) {
+        if (digitsArr[i]) {
+          newDigits[i] = digitsArr[i]
+        }
+      }
+      setOtpDigits(newDigits)
+      const nextIndex = Math.min(digitsArr.length, 5)
+      otpInputRefs.current[nextIndex]?.focus()
+      return
+    }
+
+    const newDigits = [...otpDigits]
+    newDigits[index] = cleaned[0]
+    setOtpDigits(newDigits)
+
+    if (index < 5) {
+      otpInputRefs.current[index + 1]?.focus()
+    }
+  }
+
+  const handleDigitKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus()
     }
   }
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    if (otp.trim().length !== 6) {
-      setError('Please enter the 6-digit numeric access code.')
+    const otp = otpDigits.join('')
+    if (otp.length !== 6) {
+      setError('Please enter all 6 digits of the verification code.')
       return
     }
 
@@ -223,7 +279,6 @@ export const LoginPage: React.FC = () => {
     }
   }
 
-  // 4. Primary Google Sign-In Handler: directly initiates Google OAuth flow
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true)
     setError('')
@@ -231,37 +286,35 @@ export const LoginPage: React.FC = () => {
       await signInWithGoogleOAuth()
     } catch (err: any) {
       console.error('Google Sign-In error:', err)
-      setError(err?.message || 'Google sign-in was interrupted. Please try again.')
+      setError(err?.message || 'Google sign-in was interrupted.')
       setIsGoogleLoading(false)
     }
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <span className="text-caption font-semibold text-accent block mb-1">
-          {step === 'email' ? 'Welcome back' : 'Verification'}
-        </span>
-        <h2 className="text-h2 font-semibold text-text">
-          {step === 'email' ? 'Sign in to EventMesh' : 'Enter 6-digit code'}
+      {/* Editorial Card Header */}
+      <div className="text-center space-y-1.5">
+        <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white tracking-tight">
+          {step === 'email' ? 'Sign in to EventMesh' : 'Check your email'}
         </h2>
-        <p className="text-small text-text-2 mt-1 leading-relaxed">
+        <p className="text-xs text-slate-600 dark:text-zinc-400">
           {step === 'email'
-            ? 'Access your digital tickets, attendance credentials, and campus collectives.'
-            : `We sent a 6-digit security code to ${email}.`}
+            ? 'Enter your email to receive a secure access code.'
+            : `We sent a 6-digit code to ${email}`}
         </p>
       </div>
 
       {error && (
-        <div className="p-3 bg-danger/10 border border-danger/30 rounded-btn text-small text-danger">
+        <div className="p-3 bg-red-500/10 border border-red-500/25 rounded-xl text-xs font-medium text-red-600 dark:text-red-400 text-center">
           {error}
         </div>
       )}
 
       {step === 'email' ? (
         <div className="space-y-4">
-          {/* Google Sign In Area: Official Google Identity Services Button */}
-          <div className="w-full flex flex-col items-center justify-center min-h-[44px]">
+          {/* Official Google Sign In */}
+          <div className="w-full flex justify-center min-h-[44px]">
             <div
               ref={googleBtnContainerRef}
               id="google-signin-btn"
@@ -272,7 +325,7 @@ export const LoginPage: React.FC = () => {
                 type="button"
                 onClick={handleGoogleSignIn}
                 disabled={isGoogleLoading}
-                className="w-full h-11 px-4 rounded-xl border border-line bg-card hover:bg-surface-subtle text-ink font-medium text-xs flex items-center justify-center gap-3 transition-all shadow-xs cursor-pointer active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full h-11 px-4 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-750 text-slate-800 dark:text-zinc-100 font-semibold text-xs flex items-center justify-center gap-2.5 transition-all shadow-xs cursor-pointer active:scale-[0.99] disabled:opacity-60"
               >
                 <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
                   <path
@@ -292,83 +345,127 @@ export const LoginPage: React.FC = () => {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                   />
                 </svg>
-                <span>{isGoogleLoading ? 'Connecting to Google…' : 'Continue with Google'}</span>
+                <span>{isGoogleLoading ? 'Connecting…' : 'Continue with Google'}</span>
               </button>
             )}
-            {isGoogleLoading && gsiLoaded && (
-              <p className="text-caption text-text-2 mt-2 animate-pulse text-center">
-                Signing you in to EventMesh…
-              </p>
-            )}
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-ink-muted py-1">
-            <div className="flex-1 h-[1px] bg-line" />
-            <span className="font-mono text-[10px] uppercase text-ink-soft">OR CAMPUS EMAIL</span>
-            <div className="flex-1 h-[1px] bg-line" />
-          </div>
-
-          <form onSubmit={handleSendOtp} className="space-y-4">
-            <Field
-              type="email"
-              label="Email address"
-              required
-              autoFocus
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. attendee@example.com or lead@devcraft.org"
-            />
-
-            <Button type="submit" size="md" variant="primary" fullWidth loading={isSendingOtp}>
-              Continue with Email
-            </Button>
-
-            <div className="pt-4 border-t border-line text-center">
-              <Link
-                to="/dev/accounts"
-                className="text-small text-accent hover:underline font-medium"
-              >
-                ⚡ Use Demo Accounts (1-Click Login)
-              </Link>
+          {/* Clean Editorial Divider */}
+          <div className="relative my-2">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200 dark:border-zinc-800" />
             </div>
+            <div className="relative flex justify-center text-[11px] uppercase tracking-wider font-semibold text-slate-400 dark:text-zinc-500">
+              <span className="bg-white dark:bg-[#121218] px-3">or continue with email</span>
+            </div>
+          </div>
+
+          {/* Email Input Form */}
+          <form onSubmit={handleSendOtp} className="space-y-3.5">
+            <div className="space-y-1.5">
+              <label htmlFor="login-email" className="text-xs font-semibold text-slate-800 dark:text-zinc-200 block">
+                Email address
+              </label>
+              <input
+                id="login-email"
+                type="email"
+                required
+                autoFocus
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@ctu.edu.in"
+                className="w-full h-11 px-3.5 rounded-xl border border-slate-300 dark:border-zinc-700 bg-slate-50/70 dark:bg-zinc-900 text-slate-900 dark:text-white text-sm font-medium placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:border-indigo-600 focus:bg-white dark:focus:bg-zinc-900 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all shadow-xs"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSendingOtp}
+              className="w-full h-11 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 hover:bg-black dark:hover:bg-slate-100 font-semibold text-sm transition-all shadow-sm active:scale-[0.99] disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>{isSendingOtp ? 'Sending code…' : 'Continue with Email'}</span>
+            </button>
           </form>
+
+          {/* High-Visibility Clean Test Profile Callout */}
+          <div className="pt-3 border-t border-slate-100 dark:border-zinc-800/80">
+            <button
+              type="button"
+              onClick={handleQuickLoginSuraj}
+              aria-label="Test profile: Suraj Naik (CTU Lead)"
+              className="w-full group flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100/90 dark:bg-zinc-900/60 dark:hover:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700/80 hover:border-slate-300 dark:hover:border-zinc-600 transition-all text-left cursor-pointer shadow-xs"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs tracking-wider shadow-xs">
+                  SN
+                </div>
+                <div>
+                  <div className="text-xs font-semibold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    Suraj Naik <span className="font-normal text-slate-500 dark:text-zinc-400 text-[11px]">(CTU Lead)</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-zinc-400 font-mono">
+                    ceosuraj@email.com
+                  </div>
+                </div>
+              </div>
+              <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                1-Tap Demo &rarr;
+              </span>
+            </button>
+          </div>
         </div>
       ) : (
+        /* Step 2: Segmented 6-Box OTP Verification Form */
         <form onSubmit={handleVerifyOtp} className="space-y-4">
-          <Field
-            type="text"
-            label="6-Digit verification code"
-            required
-            autoFocus
-            maxLength={6}
-            value={otp}
-            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-            placeholder="e.g. 123456"
-            helpText="Dev Note: Any 6 digits will work in development mode."
-          />
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-center gap-2 sm:gap-2.5">
+              {otpDigits.map((digit, idx) => (
+                <input
+                  key={idx}
+                  ref={(el) => (otpInputRefs.current[idx] = el)}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleDigitChange(idx, e.target.value)}
+                  onKeyDown={(e) => handleDigitKeyDown(idx, e)}
+                  className="w-10 h-12 sm:w-11 sm:h-13 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-slate-950 dark:text-white text-center text-lg font-mono font-bold focus:border-indigo-600 focus:ring-2 focus:ring-indigo-500/25 outline-none transition-all shadow-xs"
+                />
+              ))}
+            </div>
+            <p className="text-[11px] font-mono text-slate-500 dark:text-zinc-400 text-center">
+              Dev Mode: Any 6 digits will verify.
+            </p>
+          </div>
 
-          <Button type="submit" size="md" variant="primary" fullWidth loading={isVerifyingOtp}>
-            Verify & Sign In
-          </Button>
+          <button
+            type="submit"
+            disabled={isVerifyingOtp || otpDigits.join('').length !== 6}
+            className="w-full h-11 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 hover:bg-black dark:hover:bg-slate-100 font-semibold text-sm transition-all shadow-sm active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <CheckCircle size={16} weight="bold" />
+            <span>{isVerifyingOtp ? 'Verifying…' : 'Continue'}</span>
+          </button>
 
-          <div className="flex items-center justify-between text-caption text-text-2 pt-2">
+          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-zinc-400 pt-2 border-t border-slate-200 dark:border-zinc-800">
             <button
               type="button"
               onClick={() => {
                 setStep('email')
-                setOtp('')
+                setOtpDigits(['', '', '', '', '', ''])
                 setError('')
               }}
-              className="hover:text-text transition-colors font-medium"
+              className="inline-flex items-center gap-1 hover:text-black dark:hover:text-white transition-colors font-medium cursor-pointer"
             >
-              ← Use a different email
+              <ArrowLeft size={12} weight="bold" />
+              <span>Use different email</span>
             </button>
             <button
               type="button"
               onClick={handleSendOtp}
-              className="text-accent hover:underline font-medium"
+              className="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold cursor-pointer"
             >
-              Resend Code
+              Resend code
             </button>
           </div>
         </form>

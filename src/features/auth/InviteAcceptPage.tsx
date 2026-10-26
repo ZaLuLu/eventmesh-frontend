@@ -267,7 +267,7 @@ export const InviteAcceptPage: React.FC = () => {
               {error && (
                 <div className="p-3.5 rounded-[8px] bg-coral/10 border border-coral/30 text-coral text-xs font-medium flex items-start gap-2.5">
                   <WarningCircle size={16} weight="bold" className="flex-shrink-0 mt-0.5" />
-                  <div className="leading-snug">{error}</div>
+                  <div className="leading-relaxed">{error}</div>
                 </div>
               )}
 

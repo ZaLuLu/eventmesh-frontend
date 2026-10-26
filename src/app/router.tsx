@@ -25,6 +25,9 @@ const RegisterPage = lazy(() =>
 const ClubsPage = lazy(() =>
   import('@/features/clubs/ClubsPage').then((m) => ({ default: m.ClubsPage }))
 )
+const MyCollegePage = lazy(() =>
+  import('@/features/college/MyCollegePage').then((m) => ({ default: m.MyCollegePage }))
+)
 const ClubDetailPage = lazy(() =>
   import('@/features/clubs/ClubDetailPage').then((m) => ({ default: m.ClubDetailPage }))
 )
@@ -42,12 +45,6 @@ const VerifyCertificatePage = lazy(() =>
 )
 const StyleguidePage = lazy(() =>
   import('@/features/styleguide/StyleguidePage').then((m) => ({ default: m.StyleguidePage }))
-)
-const DevAccountsPage = lazy(() =>
-  import('@/features/auth/DevAccountsPage').then((m) => ({ default: m.DevAccountsPage }))
-)
-const StampPage = lazy(() =>
-  import('@/features/stamp/StampPage').then((m) => ({ default: m.StampPage }))
 )
 
 // Auth Pages (Lazy)
@@ -150,13 +147,16 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'clubs',
+        path: 'my-college',
         element: (
           <Suspense fallback={<LoadingFallback />}>
-            <ClubsPage />
+            <MyCollegePage />
           </Suspense>
         ),
       },
+      { path: 'clubs', element: <Navigate to="/my-college" replace /> },
+      { path: 'college', element: <Navigate to="/my-college" replace /> },
+      { path: 'about', element: <Navigate to="/my-college" replace /> },
       {
         path: 'clubs/:slug',
         element: (
@@ -166,24 +166,16 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'schedule',
+        path: 'calendar',
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <CalendarPage />
           </Suspense>
         ),
       },
-      { path: 'calendar', element: <Navigate to="/schedule" replace /> },
+      { path: 'schedule', element: <Navigate to="/calendar" replace /> },
       { path: 'announcements', element: <Navigate to="/explore" replace /> },
-      { path: 'about', element: <Navigate to="/clubs" replace /> },
-      {
-        path: 'gallery',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <GalleryPage />
-          </Suspense>
-        ),
-      },
+      { path: 'gallery', element: <Navigate to="/explore" replace /> },
       {
         path: 'attendee/dashboard',
         element: (
@@ -193,22 +185,8 @@ export const router = createBrowserRouter([
         ),
       },
       { path: 'dashboard', element: <Navigate to="/attendee/dashboard" replace /> },
-      {
-        path: 'me',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <AttendeeDashboardPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: 'account',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <AttendeeDashboardPage />
-          </Suspense>
-        ),
-      },
+      { path: 'me', element: <Navigate to="/attendee/dashboard" replace /> },
+      { path: 'account', element: <Navigate to="/attendee/dashboard" replace /> },
       {
         path: 'verify/:certificateId',
         element: (
@@ -217,7 +195,6 @@ export const router = createBrowserRouter([
           </Suspense>
         ),
       },
-      { path: 'stamp', element: <Navigate to="/explore" replace /> },
       ...(import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEV_TOOLS === 'true'
         ? [
             {
@@ -225,14 +202,6 @@ export const router = createBrowserRouter([
               element: (
                 <Suspense fallback={<LoadingFallback />}>
                   <StyleguidePage />
-                </Suspense>
-              ),
-            },
-            {
-              path: 'dev/accounts',
-              element: (
-                <Suspense fallback={<LoadingFallback />}>
-                  <DevAccountsPage />
                 </Suspense>
               ),
             },
@@ -259,11 +228,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'admin/login',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <LoginPage />
-          </Suspense>
-        ),
+        element: <Navigate to="/login" replace />,
       },
     ],
   },
@@ -428,7 +393,6 @@ export const router = createBrowserRouter([
           </Suspense>
         ),
       },
-
     ],
   },
 ])

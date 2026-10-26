@@ -71,10 +71,7 @@ export const HomePage: React.FC = () => {
       {/* 1. Flagship Featured Cinematic Hero Stage */}
       <CinematicHeroStage events={heroSlideEvents} />
 
-      {/* 2. Active Theme Trio (3 Featured Category Cards - Denim Dept Spotlight DNA) */}
-      <ActiveThemeTrio />
-
-      {/* 3. Curated Premieres Showcase (Strictly 4 Paid Ticketed Events in Vertical Poster Ratio) */}
+      {/* 2. Curated Premieres Showcase (Strictly 4 Paid Ticketed Events in Vertical Poster Ratio) */}
       <section className="relative w-full py-12 sm:py-16 border-b border-line bg-paper">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <SectionHeader
@@ -117,19 +114,22 @@ export const HomePage: React.FC = () => {
               ))}
             </div>
           )}
-
-          {/* 3. Short & Minimal "Explore more" CTA Button */}
-          <div className="mt-12 flex flex-col items-center justify-center">
-            <Link
-              to="/explore"
-              className="inline-flex items-center gap-2 px-7 py-3 rounded-full border border-line bg-card text-ink font-medium text-sm hover:border-accent hover:text-accent transition-all shadow-xs hover:shadow-md group"
-            >
-              <span>Explore more</span>
-              <ArrowRight size={14} weight="bold" className="transition-transform group-hover:translate-x-1 text-accent" />
-            </Link>
-          </div>
         </div>
       </section>
+
+      {/* 3. Active Theme Trio (Positioned smoothly below Premieres) */}
+      <ActiveThemeTrio />
+
+      {/* 4. Short & Minimal "Explore more" CTA Button */}
+      <div className="py-12 flex flex-col items-center justify-center border-b border-line bg-paper">
+        <Link
+          to="/explore"
+          className="inline-flex items-center gap-2 px-7 py-3 rounded-full border border-line bg-card text-ink font-medium text-sm hover:border-accent hover:text-accent transition-all shadow-xs hover:shadow-md group"
+        >
+          <span>Explore more</span>
+          <ArrowRight size={14} weight="bold" className="transition-transform group-hover:translate-x-1 text-accent" />
+        </Link>
+      </div>
     </div>
   )
 }

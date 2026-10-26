@@ -28,6 +28,8 @@ export const UserSessionSchema = z.object({
   campus: z.string().optional(),
   branch: z.string().optional(),
   degreeBranch: z.string().optional(),
+  semester: z.number().optional(),
+  bloodGroup: z.string().optional(),
 })
 
 export type UserSession = z.infer<typeof UserSessionSchema>

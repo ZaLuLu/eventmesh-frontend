@@ -174,7 +174,7 @@ export const AdminRolesPage: React.FC = () => {
         >
           <span>Staff Invitations</span>
           {invitations.length > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-subtle text-text-2 font-mono">
+            <span className="px-1.5 py-0.2 rounded-full text-xs bg-subtle text-text-2 font-mono">
               {invitations.length}
             </span>
           )}
@@ -306,7 +306,7 @@ export const AdminRolesPage: React.FC = () => {
                         </td>
 
                         <td className="py-2.5 px-4">
-                          <span className="px-2 py-0.5 rounded-full text-[11px] font-mono font-bold bg-accent/15 text-accent uppercase">
+                          <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-accent/15 text-accent uppercase">
                             {inv.role}
                           </span>
                         </td>
@@ -317,19 +317,19 @@ export const AdminRolesPage: React.FC = () => {
 
                         <td className="py-2.5 px-4">
                           {isAccepted ? (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-mint/15 text-mint uppercase">
+                            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-mint/15 text-mint uppercase">
                               Accepted
                             </span>
                           ) : isRevoked ? (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-subtle text-text-3 uppercase">
+                            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-subtle text-text-3 uppercase">
                               Revoked
                             </span>
                           ) : isExpired ? (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-coral/15 text-coral uppercase">
+                            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-coral/15 text-coral uppercase">
                               Expired
                             </span>
                           ) : (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-warning/15 text-warning uppercase">
+                            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-warning/15 text-warning uppercase">
                               Pending
                             </span>
                           )}

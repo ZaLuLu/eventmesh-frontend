@@ -45,7 +45,7 @@ export const TactileBoardingPass: React.FC<TactileBoardingPassProps> = ({
     return (
       <div className="relative w-full rounded-2xl bg-surface-subtle p-2 border border-border-default shadow-lg">
         <div className="flex items-center justify-between px-3 pt-2">
-          <span className="text-[11px] font-mono text-accent font-semibold uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-mono text-accent font-semibold uppercase tracking-wider flex items-center gap-1.5">
             <Cube size={14} weight="bold" />
             3D Holographic Pass
           </span>
@@ -107,7 +107,7 @@ export const TactileBoardingPass: React.FC<TactileBoardingPassProps> = ({
                 <button
                   type="button"
                   onClick={() => setShow3D(true)}
-                  className="font-mono text-[11px] font-semibold px-2 py-0.5 rounded-md bg-accent/10 text-accent hover:bg-accent/20 transition-colors flex items-center gap-1"
+                  className="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-accent/10 text-accent hover:bg-accent/20 transition-colors flex items-center gap-1"
                   title="Inspect in 3D WebGL"
                 >
                   <Cube size={12} weight="bold" />
@@ -148,17 +148,17 @@ export const TactileBoardingPass: React.FC<TactileBoardingPassProps> = ({
             {/* Event Info */}
             <div className="my-2">
               <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-accent truncate max-w-[170px]">
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-accent truncate max-w-[170px]">
                   {reg.organizerName || 'Campus Host'}
                 </span>
                 {reg.tierName && (
-                  <span className="px-1.5 py-0.2 rounded bg-surface border border-line/50 text-[10px] font-mono uppercase tracking-wide text-ink-soft">
+                  <span className="px-1.5 py-0.2 rounded bg-surface border border-line/50 text-xs font-mono uppercase tracking-wide text-ink-soft">
                     {reg.tierName}
                   </span>
                 )}
               </div>
               <h3
-                className="font-display font-semibold text-base sm:text-[17px] text-ink leading-snug line-clamp-2"
+                className="font-display font-semibold text-base sm:text-lg text-ink leading-tight tracking-tight line-clamp-2"
                 title={reg.eventTitle || 'Campus Event'}
               >
                 {reg.eventTitle || 'Campus Event'}
@@ -182,7 +182,7 @@ export const TactileBoardingPass: React.FC<TactileBoardingPassProps> = ({
               <span className="truncate">
                 Attendee: <span className="text-ink font-semibold">{reg.userName || 'Student Passholder'}</span>
               </span>
-              <span className={`font-mono text-[11px] font-bold flex-shrink-0 ${
+              <span className={`font-mono text-xs font-bold flex-shrink-0 ${
                 isCheckedIn ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary'
               }`}>
                 {isCheckedIn ? 'VERIFIED' : 'ACTIVE'}
@@ -261,7 +261,7 @@ export const TactileBoardingPass: React.FC<TactileBoardingPassProps> = ({
               <p className="text-xs font-semibold text-white truncate" title={reg.eventTitle}>
                 {reg.eventTitle || 'Campus Event'}
               </p>
-              <p className="text-[10px] text-white/60 font-mono">
+              <p className="text-xs text-white/60 font-mono">
                 {formatDate(reg.eventStartsAt || reg.createdAt, 'EEE, dd MMM yyyy')}
               </p>
             </div>
@@ -283,13 +283,13 @@ export const TactileBoardingPass: React.FC<TactileBoardingPassProps> = ({
             <span className="font-mono text-xs font-bold text-white tracking-wider">
               {ticketCode}
             </span>
-            <p className="text-[10px] text-white/60 font-sans text-center">
+            <p className="text-xs text-white/60 font-sans text-center">
               Signed by EventMesh admission service for venue gate verification.
             </p>
           </div>
 
           {/* Back Footer */}
-          <div className="pt-2.5 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-white/50">
+          <div className="pt-2.5 border-t border-white/10 flex items-center justify-between text-xs font-mono text-white/50">
             <span>GATE READY</span>
             <button
               type="button"

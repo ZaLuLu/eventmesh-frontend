@@ -92,7 +92,7 @@ export const OrganizerOnboardingView: React.FC = () => {
           <div className="w-12 h-12 rounded-2xl bg-accent/10 text-accent flex items-center justify-center mx-auto mb-3">
             <Buildings size={24} weight="bold" />
           </div>
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-accent px-2.5 py-0.5 rounded-full bg-accent/10 inline-block">
+          <span className="text-xs font-mono font-bold uppercase tracking-wider text-accent px-2.5 py-0.5 rounded-full bg-accent/10 inline-block">
             Organizer Studio Setup
           </span>
           <h2 className="font-display font-bold text-2xl sm:text-3xl text-ink tracking-tight">
@@ -110,7 +110,7 @@ export const OrganizerOnboardingView: React.FC = () => {
               <span>🎓</span>
               <span>Attendee Mode</span>
             </div>
-            <p className="text-ink-soft text-[11px] leading-relaxed">
+            <p className="text-ink-soft text-xs leading-relaxed">
               Discover campus sessions, reserve passes, view verifiable QR gate passes, and download certificates.
             </p>
           </div>
@@ -120,7 +120,7 @@ export const OrganizerOnboardingView: React.FC = () => {
               <span>⚡</span>
               <span>Organizer Studio</span>
             </div>
-            <p className="text-ink-soft text-[11px] leading-relaxed">
+            <p className="text-ink-soft text-xs leading-relaxed">
               Publish events, design custom questionnaires, scan tickets with live camera, and export rosters.
             </p>
           </div>

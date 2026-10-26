@@ -29,13 +29,13 @@ export interface StudentIDCard2DProps {
  * - Seamless 3D flip to back face with bold 'eventmesh' and student signature
  */
 export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
-  name = 'Aditya Narayan',
-  registrationNumber = 'EM-2026-0814',
+  name = 'Suraj Naik',
+  registrationNumber = 'CTU-2026-0814',
   degreeBranch = 'Computer Science & Engineering',
   semester = 6,
-  email = 'attendee@example.com',
+  email = 'ceosuraj@email.com',
   role = 'STUDENT PASSHOLDER',
-  campus = 'Central University Campus',
+  campus = 'Central Technological University (CTU)',
   dateOfBirth = '03/01/2004',
   dateOfIssue = '01/01/2026',
   avatarUrl,

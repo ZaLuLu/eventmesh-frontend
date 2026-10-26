@@ -32,7 +32,7 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
     <article
       data-testid="event-ticket-card"
       className={cn(
-        'group flex min-w-0 flex-col rounded-[10px] sm:rounded-[14px] border border-line bg-card overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-1',
+        'group flex min-w-0 flex-col rounded-xl border border-line bg-card overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-1',
         className
       )}
     >
@@ -105,14 +105,14 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
               <CheckCircle size={13} weight="fill" className="shrink-0 text-emerald-500 hidden sm:block" aria-label="Verified organizer" />
             )}
           </div>
-          <span className="shrink-0 text-[8.5px] sm:text-[10px] font-mono font-medium text-ink-muted flex items-center gap-1">
+          <span className="shrink-0 text-xs font-mono font-medium text-ink-muted flex items-center gap-1">
             <span className="w-1 h-1 rounded-full" style={{ backgroundColor: pInfo.dotColor }} />
             {pInfo.name}
           </span>
         </div>
 
         {/* Event Title */}
-        <h3 className="line-clamp-2 text-xs sm:text-base font-bold leading-tight sm:leading-snug text-ink font-display group-hover:text-accent transition-colors">
+        <h3 className="line-clamp-2 text-xs sm:text-base font-bold leading-tight tracking-tight text-ink font-display group-hover:text-accent transition-colors">
           <EventLink event={event} className="hover:text-accent focus:outline-none">
             {event.title}
           </EventLink>
@@ -129,7 +129,7 @@ export const EventTicketCard: React.FC<EventTicketCardProps> = ({
         <div className="mt-auto border-t border-line/60 pt-2 sm:pt-3 space-y-1.5 sm:space-y-2.5">
           <div className="flex items-center justify-between gap-1 font-mono text-xs">
             {/* Date & Location */}
-            <div className="min-w-0 space-y-0.5 sm:space-y-1 text-[10px] sm:text-[11px] text-ink-soft">
+            <div className="min-w-0 space-y-0.5 sm:space-y-1 text-xs text-ink-soft">
               <div className="flex items-center gap-1 sm:gap-1.5 text-ink font-medium">
                 <CalendarBlank size={11} className="shrink-0 text-accent sm:hidden" aria-hidden="true" />
                 <CalendarBlank size={13} className="shrink-0 text-accent hidden sm:block" aria-hidden="true" />

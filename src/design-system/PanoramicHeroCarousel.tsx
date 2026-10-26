@@ -103,6 +103,9 @@ export const PanoramicHeroCarousel: React.FC<PanoramicHeroCarouselProps> = ({
       tabIndex={0}
       onKeyDown={handleKeyDown}
       className={`relative w-full overflow-hidden bg-card border-b border-line select-none py-4 sm:py-6 ${className}`}
+      style={{
+        backgroundImage: 'radial-gradient(ellipse 70% 50% at 50% -10%, rgba(124, 58, 237, 0.08), transparent 70%)',
+      }}
     >
       {/* Full-Width Embla Viewport Frame */}
       <div ref={emblaRef} className="w-full overflow-hidden">
@@ -148,14 +151,14 @@ export const PanoramicHeroCarousel: React.FC<PanoramicHeroCarouselProps> = ({
 
                   {/* Content Overlay */}
                   <div className="relative z-10 flex h-full flex-col justify-end p-5 sm:p-8 md:p-10 text-white max-w-2xl">
-                    {/* Category & Club Tags (100% Solid Opaque, 4px radius) */}
-                    <div className="flex flex-wrap items-center gap-2 mb-2 sm:mb-3">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] text-[10px] sm:text-[11px] font-bold font-mono tracking-wider uppercase bg-accent text-white shadow-xs">
-                        <Sparkle size={12} weight="fill" />
-                        {event.promotion?.label || event.category || 'Featured Show'}
+                    {/* Minimal & Elegant Category Kicker (Single Clean Line, Zero Clutter) */}
+                    <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-[4px] text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider bg-accent text-white">
+                        {event.category || 'Featured'}
                       </span>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-[4px] text-[10px] sm:text-xs font-mono uppercase tracking-wider bg-white/10 text-white border border-white/20">
-                        {event.club?.name || event.organizerName || 'Campus Premiere'}
+                      <span className="text-white/40 text-xs">/</span>
+                      <span className="text-white/80 text-xs font-mono tracking-wide truncate">
+                        {event.club?.name || 'Central Technological University'}
                       </span>
                     </div>
 

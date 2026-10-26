@@ -28,7 +28,7 @@ export const PublicFooter: React.FC = () => {
           <Link to="/clubs" className="hover:text-ink transition-colors">
             Clubs
           </Link>
-          <Link to="/schedule" className="hover:text-ink transition-colors">
+          <Link to="/calendar" className="hover:text-ink transition-colors">
             Calendar
           </Link>
           <span className="text-ink-muted">© {new Date().getFullYear()}</span>

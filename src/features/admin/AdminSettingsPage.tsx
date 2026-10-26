@@ -319,7 +319,7 @@ export const AdminSettingsPage: React.FC = () => {
                 {SUPPORTED_CITIES.map((city) => (
                   <span
                     key={city}
-                    className="text-[11px] font-mono px-2 py-0.5 bg-subtle border border-line rounded text-text-2"
+                    className="text-xs font-mono px-2 py-0.5 bg-subtle border border-line rounded text-text-2"
                   >
                     {city}
                   </span>
@@ -370,7 +370,7 @@ export const AdminSettingsPage: React.FC = () => {
                         <td className="py-3 px-4 font-mono text-accent text-caption font-bold">
                           {run.id}
                         </td>
-                        <td className="py-3 px-4 uppercase text-[11px] font-mono text-text-2">
+                        <td className="py-3 px-4 uppercase text-xs font-mono text-text-2">
                           {run.mode}
                         </td>
                         <td className="py-3 px-4">
@@ -510,7 +510,7 @@ export const AdminSettingsPage: React.FC = () => {
               <span className="text-caption text-text-3 font-semibold block mb-1">
                 EXECUTION TELEMETRY
               </span>
-              <pre className="p-3 bg-surface text-text font-mono text-[11px] rounded-btn border border-line overflow-x-auto whitespace-pre-wrap leading-relaxed max-h-60">
+              <pre className="p-3 bg-surface text-text font-mono text-xs rounded-btn border border-line overflow-x-auto whitespace-pre-wrap leading-relaxed max-h-60">
                 {selectedLogRun.logExcerpt || 'Worker telemetry stream closed successfully. 0 critical errors.'}
               </pre>
             </div>

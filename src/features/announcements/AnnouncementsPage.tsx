@@ -121,7 +121,7 @@ export const AnnouncementsPage: React.FC = () => {
                     </span>
                   </div>
 
-                  <h3 className="font-display font-extrabold text-xl sm:text-2xl text-ink leading-snug">
+                  <h3 className="font-display font-extrabold text-xl sm:text-2xl text-ink leading-tight tracking-tight">
                     {item.title}
                   </h3>
 
@@ -182,7 +182,7 @@ export const AnnouncementsPage: React.FC = () => {
                     </span>
                   </div>
 
-                  <h3 className="font-display font-extrabold text-xl text-ink leading-snug">
+                  <h3 className="font-display font-extrabold text-xl text-ink leading-tight tracking-tight">
                     {item.title}
                   </h3>
 

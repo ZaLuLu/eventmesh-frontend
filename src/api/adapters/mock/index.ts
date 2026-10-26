@@ -115,7 +115,7 @@ async function simulateLatency(): Promise<void> {
 // -------------------------------------------------------------
 // IN-MEMORY / LOCALSTORAGE STORE
 // -------------------------------------------------------------
-const SCHEMA_VERSION = 'v10_upcoming_default_and_date_presets'
+const SCHEMA_VERSION = 'v11_ctu_suraj_naik_architecture'
 
 const SEED_PAYOUT_ACCOUNTS: Record<string, PayoutAccount> = {
   'apex-design-lab': {
@@ -1073,8 +1073,9 @@ export const mockRegistrationsApi: RegistrationsApi = {
 
   async getMyRegistrations(): Promise<Registration[]> {
     await simulateLatency()
-    const userId = mockStore.currentSession?.id || 'usr-att'
-    return mockStore.registrations.filter((r) => r.userId === userId)
+    const userId = mockStore.currentSession?.id || 'usr-suraj'
+    const userEmail = mockStore.currentSession?.email || 'ceosuraj@email.com'
+    return mockStore.registrations.filter((r) => r.userId === userId || r.userEmail === userEmail)
   },
 
   async cancelMyRegistration(registrationId: string): Promise<boolean> {

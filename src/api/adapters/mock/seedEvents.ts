@@ -57179,28 +57179,28 @@ export const SEED_REGISTRATIONS: Registration[] = [
   {
     "id": "reg-1",
     "eventId": "evt-1",
-    "userId": "usr-att",
-    "userEmail": "attendee@example.com",
-    "userName": "Aditya Narayan",
+    "userId": "usr-suraj",
+    "userEmail": "ceosuraj@email.com",
+    "userName": "Suraj Naik",
     "answers": {
-      "f-github": "https://github.com/aditya-narayan",
-      "f-track": "Distributed Protocols",
-      "f-exp": "3 years building in Go and Rust; active open source contributor."
+      "f-github": "https://github.com/surajnaik-ctu",
+      "f-track": "Distributed Systems & Machine Intelligence",
+      "f-exp": "Senior CS builder at CTU; Lead Architect of campus distributed clusters."
     },
     "team": {
-      "teamName": "ConsensusCore",
-      "leaderName": "Aditya Narayan",
-      "leaderEmail": "attendee@example.com",
+      "teamName": "CTU Vanguard",
+      "leaderName": "Suraj Naik",
+      "leaderEmail": "ceosuraj@email.com",
       "members": [
         {
-          "name": "Aditya Narayan",
-          "email": "attendee@example.com",
-          "role": "Protocol Lead"
+          "name": "Suraj Naik",
+          "email": "ceosuraj@email.com",
+          "role": "Systems Lead"
         },
         {
           "name": "Kavya Raman",
-          "email": "kavya@example.com",
-          "role": "Systems Engineer"
+          "email": "kavya@ctu.edu.in",
+          "role": "Robotics Engineer"
         }
       ]
     },
@@ -57209,8 +57209,8 @@ export const SEED_REGISTRATIONS: Registration[] = [
     "createdAt": "2026-10-02T14:30:00Z",
     "eventTitle": "THE GRAND TURING HACKATHON 2026",
     "eventSlug": "grand-turing-hackathon-2026",
-    "organizerName": "CP Club",
-    "organizerColor": "#0047FF",
+    "organizerName": "CTU ACM Chapter",
+    "organizerColor": "#6366F1",
     "eventStartsAt": "2026-10-24T09:00:00Z",
     "tierName": "General Hacker Pass",
     "orderId": "order_cf_884192",
@@ -57221,20 +57221,20 @@ export const SEED_REGISTRATIONS: Registration[] = [
   {
     "id": "reg-2",
     "eventId": "evt-2",
-    "userId": "usr-att",
-    "userEmail": "attendee@example.com",
-    "userName": "Aditya Narayan",
+    "userId": "usr-suraj",
+    "userEmail": "ceosuraj@email.com",
+    "userName": "Suraj Naik",
     "answers": {
-      "f-inst": "Department of Computing",
-      "f-interest": "Mechanistic Interpretability"
+      "f-inst": "Central Technological University (CTU)",
+      "f-interest": "Autonomous Robotics & Neural Systems"
     },
     "status": "registered",
     "ticketCode": "TKT-771204",
     "createdAt": "2026-10-03T11:00:00Z",
     "eventTitle": "NEURAL FRONTIERS RESEARCH SYMPOSIUM",
     "eventSlug": "neural-frontiers-symposium-2026",
-    "organizerName": "AIONAI",
-    "organizerColor": "#C8BEFA",
+    "organizerName": "Apex Robotics Guild",
+    "organizerColor": "#2563EB",
     "eventStartsAt": "2026-10-18T09:30:00Z",
     "tierName": "Researcher Pass"
   },
@@ -57667,10 +57667,10 @@ export const SEED_CERTIFICATES: Certificate[] = [
     certificateId: 'TA-2026-001245',
     eventId: 'evt-4',
     registrationId: 'reg-3',
-    recipientName: 'Aditya Narayan',
-    recipientEmail: 'attendee@example.com',
+    recipientName: 'Suraj Naik',
+    recipientEmail: 'ceosuraj@email.com',
     eventTitle: 'ZERO-DAY PROTOCOL CTF 2026',
-    organizerName: 'CyberGuard',
+    organizerName: 'CTU ACM Chapter',
     templateId: 'standard_editorial',
     issuedAt: '2026-09-14T12:00:00Z',
     verifyUrl: 'https://eventmesh.xyz/verify/TA-2026-001245',

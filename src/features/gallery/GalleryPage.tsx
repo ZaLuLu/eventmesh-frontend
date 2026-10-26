@@ -151,7 +151,7 @@ export const GalleryPage: React.FC = () => {
                   </div>
 
                   {photo.caption && (
-                    <p className="font-serif italic text-ink text-sm sm:text-base leading-snug line-clamp-2 pt-1">
+                    <p className="font-serif italic text-ink text-sm sm:text-base leading-relaxed line-clamp-2 pt-1">
                       "{photo.caption}"
                     </p>
                   )}

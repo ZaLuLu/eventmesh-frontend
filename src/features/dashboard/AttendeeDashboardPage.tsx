@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import {
   Ticket,
@@ -69,6 +69,7 @@ export const AttendeeDashboardPage: React.FC = () => {
     return []
   }, [rawRegistrations])
 
+  const [searchParams] = useSearchParams()
   const [selectedTicket, setSelectedTicket] = useState<Registration | null>(null)
   const [activeTab, setActiveTab] = useState<'passes' | 'certificates' | 'clubs'>('passes')
   const [copiedRegNo, setCopiedRegNo] = useState(false)
@@ -77,6 +78,17 @@ export const AttendeeDashboardPage: React.FC = () => {
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false)
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState<string>(() => resolveUserAvatar(session))
+
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab === 'certificates' || tab === 'clubs' || tab === 'passes') {
+      setActiveTab(tab)
+    } else if (tab === 'tickets') {
+      setActiveTab('passes')
+    } else if (tab === 'profile') {
+      setIsProfileModalOpen(true)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     if (session) {
@@ -328,7 +340,7 @@ export const AttendeeDashboardPage: React.FC = () => {
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-mono font-bold tracking-wider uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   NEXT UP
                 </span>
@@ -369,7 +381,7 @@ export const AttendeeDashboardPage: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-accent text-on-accent">
+                <span className="text-xs font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-accent text-on-accent">
                   LEADERSHIP UPGRADE
                 </span>
                 <span className="text-xs font-mono text-text-3">Start a Club</span>
@@ -470,7 +482,7 @@ export const AttendeeDashboardPage: React.FC = () => {
             onAvatarClick={() => setIsAvatarModalOpen(true)}
             interactive={true}
           />
-          <p className="mt-3 text-[11px] font-mono text-ink-muted text-center flex items-center justify-center gap-1.5">
+          <p className="mt-3 text-xs font-mono text-ink-muted text-center flex items-center justify-center gap-1.5">
             <ArrowsClockwise size={12} className="text-accent" />
             <span>Click or tap card to flip 3D (Front / Back)</span>
           </p>
@@ -478,65 +490,18 @@ export const AttendeeDashboardPage: React.FC = () => {
       </section>
 
       {/* ========================================================================= */}
-      {/* TICKET & CREDENTIAL TABS                                                  */}
+      {/* MY TICKETS & DIGITAL PASSES                                              */}
       {/* ========================================================================= */}
       <section className="space-y-6">
-        {/* Tab Header Controls & Calendar Sync */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line/30 pb-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setActiveTab('passes')}
-              className={`px-4 py-1.5 rounded-full font-medium text-xs transition-all flex items-center gap-2 ${
-                activeTab === 'passes'
-                  ? 'bg-ink text-surface shadow-xs'
-                  : 'text-ink-soft hover:text-ink hover:bg-surface-subtle'
-              }`}
-            >
-              <Ticket className="w-3.5 h-3.5" weight="bold" />
-              <span>My Tickets</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                activeTab === 'passes' ? 'bg-accent text-white' : 'bg-surface-subtle text-ink-soft'
-              }`}>
-                {enrichedRegistrations.length}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('certificates')}
-              className={`px-4 py-1.5 rounded-full font-medium text-xs transition-all flex items-center gap-2 ${
-                activeTab === 'certificates'
-                  ? 'bg-ink text-surface shadow-xs'
-                  : 'text-ink-soft hover:text-ink hover:bg-surface-subtle'
-              }`}
-            >
-              <CertificateIcon className="w-3.5 h-3.5" weight="bold" />
-              <span>Certificates</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                activeTab === 'certificates' ? 'bg-accent text-white' : 'bg-surface-subtle text-ink-soft'
-              }`}>
-                {certificates.length}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('clubs')}
-              className={`px-4 py-1.5 rounded-full font-medium text-xs transition-all flex items-center gap-2 ${
-                activeTab === 'clubs'
-                  ? 'bg-ink text-surface shadow-xs'
-                  : 'text-ink-soft hover:text-ink hover:bg-surface-subtle'
-              }`}
-            >
-              <GraduationCap className="w-3.5 h-3.5" weight="bold" />
-              <span>Followed Clubs</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                activeTab === 'clubs' ? 'bg-accent text-white' : 'bg-surface-subtle text-ink-soft'
-              }`}>
-                {followedClubs.length}
-              </span>
-            </button>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line/40 pb-3">
+          <div className="flex items-center gap-2">
+            <Ticket className="w-4 h-4 text-accent" weight="bold" />
+            <h2 className="font-display font-bold text-lg text-ink">
+              My Tickets & Admission Passes
+            </h2>
+            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-accent text-white">
+              {enrichedRegistrations.length}
+            </span>
           </div>
 
           {/* Live Calendar Subscription Action */}
@@ -550,146 +515,40 @@ export const AttendeeDashboardPage: React.FC = () => {
           </button>
         </div>
 
-        {/* TAB 1: PASSES & BOARDING PASSES */}
-        {activeTab === 'passes' && (
-          <div>
-            {regsLoading ? (
-              <p className="text-xs font-mono text-ink-soft">Loading tickets...</p>
-            ) : enrichedRegistrations.length === 0 ? (
-              <div className="bg-surface-subtle rounded-3xl p-10 text-center space-y-3">
-                <h3 className="font-display font-medium text-lg text-ink">No active passes yet</h3>
-                <p className="text-sm text-ink-soft max-w-sm mx-auto">
-                  You haven't reserved seats for upcoming events. Browse campus collectives to grab a pass.
-                </p>
-                <div className="pt-2">
-                  <Link to="/explore">
-                    <button type="button" className="btn-minimal-primary px-5 py-2 text-xs">
-                      Explore events
-                    </button>
-                  </Link>
-                </div>
+        {/* PASSES & BOARDING PASSES */}
+        <div>
+          {regsLoading ? (
+            <p className="text-xs font-mono text-ink-soft">Loading tickets...</p>
+          ) : enrichedRegistrations.length === 0 ? (
+            <div className="bg-surface-subtle rounded-3xl p-10 text-center space-y-3">
+              <h3 className="font-display font-medium text-lg text-ink">No active passes yet</h3>
+              <p className="text-sm text-ink-soft max-w-sm mx-auto">
+                You haven't reserved seats for upcoming events. Browse campus premieres to grab a pass.
+              </p>
+              <div className="pt-2">
+                <Link to="/explore">
+                  <button type="button" className="btn-minimal-primary px-5 py-2 text-xs">
+                    Explore events
+                  </button>
+                </Link>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {enrichedRegistrations.map((reg) => (
-                  <TactileBoardingPass
-                    key={reg.id}
-                    registration={reg}
-                    onPresent={() => {
-                      setSelectedTicket(reg)
-                      fireCelebrationConfetti()
-                    }}
-                    onCancel={() => handleCancelPass(reg)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* TAB 2: CERTIFICATES */}
-        {activeTab === 'certificates' && (
-          <div>
-            {certsLoading ? (
-              <p className="text-xs font-mono text-ink-soft">Loading certificates...</p>
-            ) : certificates.length === 0 ? (
-              <div className="bg-surface-subtle rounded-3xl p-10 text-center space-y-3">
-                <h3 className="font-display font-medium text-lg text-ink">No credentials issued yet</h3>
-                <p className="text-sm text-ink-soft max-w-sm mx-auto">
-                  Certificates are automatically minted upon verified attendance at hackathons and workshops.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {certificates.map((cert) => (
-                  <div
-                    key={cert.id}
-                    className="bg-surface-subtle hover:bg-surface-subtle rounded-2xl p-5 space-y-4 transition-colors"
-                  >
-                    <div className="flex items-center justify-between border-b border-line/20 pb-3">
-                      <div className="flex items-center gap-2">
-                        <CertificateIcon className="h-4 w-4 text-primary" weight="bold" />
-                        <span className="font-medium text-xs text-ink uppercase tracking-wider">Credential</span>
-                      </div>
-                      <span className="font-mono text-xs text-ink-soft">
-                        {cert.certificateId}
-                      </span>
-                    </div>
-
-                    <div>
-                      <h4 className="font-display font-medium text-base text-ink leading-snug">
-                        {cert.eventTitle}
-                      </h4>
-                      <p className="text-xs text-ink-soft mt-1">
-                        Issued {formatDate(cert.issuedAt)} · {cert.organizerName}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-2 pt-2 border-t border-line/20">
-                      <button
-                        type="button"
-                        className="btn-minimal-primary flex-1 py-1.5 text-xs flex items-center justify-center gap-1.5"
-                        onClick={() => downloadCertificatePDF(cert)}
-                      >
-                        <DownloadSimple className="h-3.5 w-3.5" weight="bold" />
-                        <span>Download PDF</span>
-                      </button>
-                      <Link to={`/verify/${cert.certificateId}`}>
-                        <button type="button" className="btn-minimal-secondary text-xs px-3 py-1.5">
-                          Verify
-                        </button>
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* TAB 3: FOLLOWED CLUBS */}
-        {activeTab === 'clubs' && (
-          <div>
-            {followedClubs.length === 0 ? (
-              <div className="bg-surface-subtle rounded-3xl p-10 text-center space-y-3">
-                <h3 className="font-display font-medium text-lg text-ink">No followed clubs</h3>
-                <p className="text-sm text-ink-soft max-w-sm mx-auto">
-                  Follow campus collectives to receive immediate updates about their new workshops and flagship gatherings.
-                </p>
-                <div className="pt-2">
-                  <Link to="/clubs">
-                    <button type="button" className="btn-minimal-primary px-5 py-2 text-xs">
-                      Explore clubs
-                    </button>
-                  </Link>
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {followedClubs.map((club) => (
-                  <Link
-                    key={club.id}
-                    to={`/clubs/${club.slug}`}
-                    className="flex items-center gap-3 p-4 rounded-2xl bg-surface-subtle hover:bg-surface-subtle transition-colors"
-                  >
-                    <span
-                      className="h-3.5 w-3.5 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: club.color || 'var(--color-accent)' }}
-                      aria-hidden="true"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <h4 className="font-medium text-sm text-ink truncate">{club.name}</h4>
-                      <p className="text-xs text-ink-soft truncate">
-                        {club.joinMode ? club.joinMode.replace('_', ' ') : 'Campus Collective'}
-                      </p>
-                    </div>
-                    <ArrowRight className="w-3.5 h-3.5 text-ink-soft" />
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {enrichedRegistrations.map((reg) => (
+                <TactileBoardingPass
+                  key={reg.id}
+                  registration={reg}
+                  onPresent={() => {
+                    setSelectedTicket(reg)
+                    fireCelebrationConfetti()
+                  }}
+                  onCancel={() => handleCancelPass(reg)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </section>
 
       {/* ========================================================================= */}
@@ -725,7 +584,7 @@ export const AttendeeDashboardPage: React.FC = () => {
       <section className="rounded-2xl border border-line bg-surface p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-8">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-accent/15 text-accent">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-accent/15 text-accent">
               Club Leadership & Management
             </span>
           </div>
@@ -768,7 +627,7 @@ export const AttendeeDashboardPage: React.FC = () => {
           <div className="p-3.5 rounded-xl bg-surface-subtle/80 border border-line text-xs space-y-1.5">
             <p className="font-semibold text-ink flex items-center gap-1.5">
               <span>⚡ Live WebCal Feed</span>
-              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">
+              <span className="text-xs font-mono px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">
                 Auto-Refreshing
               </span>
             </p>
@@ -812,7 +671,7 @@ export const AttendeeDashboardPage: React.FC = () => {
 
           {/* Copy WebCal Feed URL */}
           <div className="pt-2 border-t border-line">
-            <label className="text-[11px] font-mono uppercase tracking-wider text-ink-muted block mb-1.5">
+            <label className="text-xs font-mono uppercase tracking-wider text-ink-muted block mb-1.5">
               Personal WebCal URL
             </label>
             <div className="flex items-center gap-2">
@@ -839,7 +698,7 @@ export const AttendeeDashboardPage: React.FC = () => {
                 <span>{copiedFeed ? 'Copied' : 'Copy'}</span>
               </button>
             </div>
-            <p className="text-[11px] text-ink-muted mt-1.5">
+            <p className="text-xs text-ink-muted mt-1.5">
               In Google Calendar, go to <i>Other calendars + &gt; From URL</i> and paste this link.
             </p>
           </div>

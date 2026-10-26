@@ -139,32 +139,42 @@ export const CalendarPage: React.FC = () => {
           subtitle="Interactive timetable of technical hackathons, workshops, and meetups happening across campus clubs."
         />
 
-        {/* View Mode Toggle */}
-        <div className="flex items-center gap-2 p-1.5 rounded-full border border-line bg-card shadow-xs hover:shadow-sm flex-shrink-0">
-          <button
-            type="button"
-            onClick={() => setViewMode('month')}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
-              viewMode === 'month'
-                ? 'bg-ink text-paper'
-                : 'text-ink-soft hover:text-ink'
-            }`}
+        {/* View Mode & Explore Toggle */}
+        <div className="flex items-center gap-3 flex-shrink-0 flex-wrap">
+          <Link
+            to="/explore"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-line bg-card hover:bg-surface-subtle text-ink shadow-xs hover:border-accent hover:text-accent transition-colors"
+            title="Switch to catalog card view"
           >
-            <CalendarBlank className="w-4 h-4" weight="bold" />
-            <span>Month Grid</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode('list')}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
-              viewMode === 'list'
-                ? 'bg-ink text-paper'
-                : 'text-ink-soft hover:text-ink'
-            }`}
-          >
-            <ListBullets className="w-4 h-4" weight="bold" />
-            <span>Agenda List</span>
-          </button>
+            <span>Explore Catalog →</span>
+          </Link>
+
+          <div className="flex items-center gap-1.5 p-1 rounded-full border border-line bg-card shadow-xs hover:shadow-sm">
+            <button
+              type="button"
+              onClick={() => setViewMode('month')}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                viewMode === 'month'
+                  ? 'bg-ink text-paper'
+                  : 'text-ink-soft hover:text-ink'
+              }`}
+            >
+              <CalendarBlank className="w-4 h-4" weight="bold" />
+              <span>Month Grid</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-ink text-paper'
+                  : 'text-ink-soft hover:text-ink'
+              }`}
+            >
+              <ListBullets className="w-4 h-4" weight="bold" />
+              <span>Agenda List</span>
+            </button>
+          </div>
         </div>
       </div>
 
