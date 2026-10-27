@@ -60,35 +60,45 @@ export const ToastContainer: React.FC = () => {
   return (
     <div
       aria-live="polite"
-      className="fixed bottom-6 right-6 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none"
+      className="fixed bottom-6 right-6 z-[60] flex flex-col gap-2.5 max-w-sm sm:max-w-md w-full px-4 sm:px-0 pointer-events-none"
     >
       <AnimatePresence>
         {toasts.map((t) => {
           const typeIcons = {
-            success: <Check className="h-4 w-4 text-[#8FE3C6] flex-shrink-0" />,
-            error: <WarningCircle className="h-4 w-4 text-[#FFA69E] flex-shrink-0" />,
-            info: <Info className="h-4 w-4 text-[#E7E4DE] flex-shrink-0" />,
+            success: (
+              <div className="h-6 w-6 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <Check className="h-3.5 w-3.5 text-emerald-400" weight="bold" />
+              </div>
+            ),
+            error: (
+              <div className="h-6 w-6 rounded-full bg-rose-500/15 border border-rose-500/30 flex items-center justify-center shrink-0">
+                <WarningCircle className="h-3.5 w-3.5 text-rose-400" weight="bold" />
+              </div>
+            ),
+            info: (
+              <div className="h-6 w-6 rounded-full bg-violet-500/15 border border-violet-500/30 flex items-center justify-center shrink-0">
+                <Info className="h-3.5 w-3.5 text-violet-400" weight="bold" />
+              </div>
+            ),
           }
 
           return (
             <motion.div
               key={t.id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 12 }}
-              transition={{ duration: 0.2 }}
-              className="pointer-events-auto bg-ink text-white rounded-[10px] shadow-[4px_4px_0_#000] p-4 flex items-start gap-3 border-2 border-white/20"
+              initial={{ opacity: 0, y: 16, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+              className="pointer-events-auto bg-[#0D0E12] text-white rounded-[12px] sm:rounded-full border border-white/15 shadow-2xl py-2.5 px-4 flex items-center gap-3"
             >
-              <div className="mt-0.5">
-                {typeIcons[t.type || 'info']}
-              </div>
+              <div className="shrink-0">{typeIcons[t.type || 'info']}</div>
 
-              <div className="flex-1 text-small">
-                <p className="font-semibold text-white leading-tight">
+              <div className="flex-1 min-w-0 pr-1 text-left">
+                <p className="font-semibold text-xs sm:text-sm text-white leading-tight truncate">
                   {t.title}
                 </p>
                 {t.message && (
-                  <p className="text-caption text-[#D0CCC6] mt-1">
+                  <p className="text-[11px] text-slate-300 mt-0.5 line-clamp-2 leading-snug">
                     {typeof t.message === 'string'
                       ? t.message
                       : Array.isArray(t.message)
@@ -107,27 +117,28 @@ export const ToastContainer: React.FC = () => {
                       : String(t.message)}
                   </p>
                 )}
-                {t.onUndo && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      t.onUndo?.()
-                      removeToast(t.id)
-                    }}
-                    className="mt-2 text-caption font-semibold text-accent-soft hover:underline block"
-                  >
-                    Undo action
-                  </button>
-                )}
               </div>
+
+              {t.onUndo && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    t.onUndo?.()
+                    removeToast(t.id)
+                  }}
+                  className="text-xs font-semibold text-violet-400 hover:text-violet-300 underline underline-offset-2 shrink-0 cursor-pointer transition-colors"
+                >
+                  Undo
+                </button>
+              )}
 
               <button
                 type="button"
                 onClick={() => removeToast(t.id)}
-                className="text-[#AFAFB0] hover:text-white p-1 rounded transition-colors"
+                className="text-slate-400 hover:text-white p-1 rounded-md transition-colors shrink-0 cursor-pointer"
                 aria-label="Dismiss toast"
               >
-                <X className="h-4 w-4" />
+                <X className="h-3.5 w-3.5" />
               </button>
             </motion.div>
           )
