@@ -272,7 +272,7 @@ export const ExplorePage: React.FC = () => {
                     className="flex items-center justify-between px-3 py-2 text-xs font-mono rounded-lg cursor-pointer hover:bg-surface-subtle"
                   >
                     <span>{c.label}</span>
-                    <span className="text-[10px] text-ink-muted">({categoryCounts[c.value] || 0})</span>
+                    <span className="text-xs font-mono text-ink-muted">({categoryCounts[c.value] || 0})</span>
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -407,7 +407,7 @@ export const ExplorePage: React.FC = () => {
             <Funnel size={14} weight="bold" className="text-accent" />
             <span>Filters</span>
             {activeFiltersCount > 0 && (
-              <span className="grid h-4 w-4 place-items-center rounded-full bg-accent text-[10px] text-white font-bold">
+              <span className="grid h-5 w-5 place-items-center rounded-full bg-accent text-xs text-white font-bold">
                 {activeFiltersCount}
               </span>
             )}
@@ -568,7 +568,7 @@ export const ExplorePage: React.FC = () => {
         )}
 
         {!isLoading && !isError && events.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
             {events.map((event, idx) => (
               <VerticalPosterCard
                 key={event.id}
@@ -633,7 +633,7 @@ export const ExplorePage: React.FC = () => {
                       )}
                     >
                       <span>{c.label}</span>
-                      <span className="text-[10px] opacity-80">({categoryCounts[c.value] || 0})</span>
+                      <span className="text-xs font-mono opacity-80">({categoryCounts[c.value] || 0})</span>
                     </button>
                   ))}
                 </AccordionContent>

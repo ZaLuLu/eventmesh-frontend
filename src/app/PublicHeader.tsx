@@ -87,7 +87,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
   }, [session?.name])
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 h-14 border-b border-line bg-card text-ink transition-colors">
+    <header className="fixed inset-x-0 top-0 z-50 h-14 border-b border-white/10 bg-[#0D0E12] text-white shadow-md transition-colors">
       <div className="mx-auto flex h-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
         {/* Left: Brand Wordmark & Primary 4-Tab Destinations */}
         <div className="flex min-w-0 items-center gap-7">
@@ -97,14 +97,14 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             aria-label="EventMesh home"
             className="flex items-center gap-2.5 group shrink-0"
           >
-            <span className="h-8 w-8 rounded-lg bg-ink text-paper flex items-center justify-center font-bold text-xs tracking-wider shadow-xs group-hover:scale-105 transition-transform font-mono">
+            <span className="h-8 w-8 rounded-lg bg-white text-black flex items-center justify-center font-bold text-xs tracking-wider shadow-xs group-hover:scale-105 transition-transform font-mono">
               EM
             </span>
             <div className="flex flex-col">
-              <span className="font-bold text-sm sm:text-base text-ink tracking-tight leading-none">
+              <span className="font-bold text-sm sm:text-base text-white tracking-tight leading-none">
                 EventMesh
               </span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-ink-muted leading-tight">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-white/50 leading-tight">
                 CTU Campus
               </span>
             </div>
@@ -119,8 +119,8 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                   cn(
                     'whitespace-nowrap text-xs font-semibold tracking-wide transition-all px-3 py-1.5 rounded-lg',
                     isActive
-                      ? 'text-ink bg-surface-subtle font-bold shadow-xs'
-                      : 'text-ink-soft hover:text-ink hover:bg-surface-subtle/50'
+                      ? 'text-white bg-white/15 font-bold shadow-xs'
+                      : 'text-white/70 hover:text-white hover:bg-white/10'
                   )
                 }
               >
@@ -136,11 +136,11 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             type="button"
             onClick={onSearchOpen}
             aria-label="Search events and clubs"
-            className="flex w-full items-center gap-2.5 rounded-xl border border-line bg-surface-subtle/80 hover:bg-card px-3.5 h-9 text-xs text-ink-muted hover:text-ink transition-all shadow-xs group"
+            className="flex w-full items-center gap-2.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 hover:border-white/25 px-3.5 h-9 text-xs text-white/60 hover:text-white transition-all shadow-xs group cursor-pointer"
           >
-            <MagnifyingGlass size={15} className="text-ink-muted group-hover:text-accent transition-colors shrink-0" />
+            <MagnifyingGlass size={15} className="text-white/50 group-hover:text-accent-hover transition-colors shrink-0" />
             <span className="truncate font-sans text-xs">Search events, clubs, venues...</span>
-            <kbd className="ml-auto hidden rounded border border-line bg-card px-1.5 py-0.5 font-mono text-[10px] text-ink-muted lg:inline-block shadow-2xs">
+            <kbd className="ml-auto hidden rounded border border-white/15 bg-white/10 px-1.5 py-0.5 font-mono text-[10px] text-white/60 lg:inline-block shadow-2xs">
               ⌘K
             </kbd>
           </button>
@@ -153,22 +153,22 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             type="button"
             onClick={onSearchOpen}
             aria-label="Search events"
-            className="sm:hidden grid h-9 w-9 place-items-center rounded-xl border border-line text-ink hover:bg-surface-subtle transition-colors"
+            className="sm:hidden grid h-9 w-9 place-items-center rounded-xl border border-white/15 text-white/80 hover:bg-white/10 transition-colors"
           >
             <MagnifyingGlass size={16} />
           </button>
 
           {/* Notifications Inbox */}
-          <NotificationInbox />
+          <NotificationInbox className="border-white/15 text-white/80 hover:text-white hover:border-white/30 hover:bg-white/10" />
 
           {/* Unauthenticated Mode: Direct Theme Switcher + Sign In */}
           {!isAuthenticated && (
             <div className="hidden sm:flex items-center gap-2">
-              <ThemeToggle />
+              <ThemeToggle className="border-white/15 bg-white/10 text-white hover:border-white/30 hover:bg-white/15" />
               <Link
                 to="/login"
                 onClick={closeMenus}
-                className="inline-flex h-9 items-center rounded-xl bg-ink text-paper hover:bg-accent hover:text-white px-4 text-xs font-semibold tracking-wide shadow-xs active:scale-[0.98] transition-all cursor-pointer"
+                className="inline-flex h-9 items-center rounded-xl bg-white text-black hover:bg-accent hover:text-white px-4 text-xs font-semibold tracking-wide shadow-xs active:scale-[0.98] transition-all cursor-pointer"
               >
                 Sign In
               </Link>
@@ -184,12 +184,12 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                 onClick={closeMenus}
                 aria-label="My Passes"
                 title="View My Passes & Tickets"
-                className="relative inline-flex items-center gap-2 h-9 px-3.5 rounded-xl border border-accent/30 bg-accent-soft hover:bg-accent-soft/80 text-accent font-semibold text-xs tracking-tight transition-all shadow-xs active:scale-95"
+                className="relative inline-flex items-center gap-2 h-9 px-3.5 rounded-xl border border-violet-400/40 bg-violet-600 hover:bg-violet-500 text-white font-semibold text-xs tracking-tight transition-all shadow-xs active:scale-95"
               >
                 <Ticket size={15} weight="bold" />
                 <span>My Passes</span>
                 {myRegistrations.length > 0 && (
-                  <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-mono font-bold rounded-full bg-accent text-white">
+                  <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-mono font-bold rounded-full bg-white text-violet-700">
                     {myRegistrations.length}
                   </span>
                 )}
@@ -204,8 +204,8 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                 className={cn(
                   'relative inline-flex items-center justify-center h-9 w-9 rounded-xl border font-mono text-xs font-bold transition-all shadow-xs active:scale-95 overflow-hidden cursor-pointer',
                   accountOpen
-                    ? 'border-accent ring-2 ring-accent/20 bg-accent-soft text-accent'
-                    : 'border-line hover:border-line-strong bg-card text-ink'
+                    ? 'border-accent ring-2 ring-accent/30 bg-white/20 text-white'
+                    : 'border-white/15 hover:border-white/30 bg-white/5 text-white'
                 )}
               >
                 {userAvatar ? (
@@ -336,18 +336,18 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
             aria-expanded={mobileOpen}
-            className="grid h-9 w-9 place-items-center rounded-xl border border-line text-ink hover:bg-surface-subtle transition-colors md:hidden"
+            className="grid h-9 w-9 place-items-center rounded-xl border border-white/15 text-white/90 hover:bg-white/10 transition-colors md:hidden cursor-pointer"
           >
             {mobileOpen ? <X size={18} /> : <List size={18} />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer (100% Solid Opaque) */}
+      {/* Mobile Drawer (100% Solid Opaque High-Contrast) */}
       {mobileOpen && (
         <nav
           aria-label="Mobile navigation"
-          className="border-t border-line bg-card px-4 py-4 md:hidden space-y-2 shadow-lg"
+          className="border-t border-white/10 bg-[#0D0E12] text-white px-4 py-4 md:hidden space-y-2 shadow-2xl"
         >
           {destinations.map(({ label, path }) => (
             <Link
@@ -355,14 +355,14 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
               to={path}
               onClick={closeMenus}
               aria-current={location.pathname === path ? 'page' : undefined}
-              className="flex min-h-[44px] items-center border-b border-line px-2 text-xs font-semibold tracking-wide text-ink last:border-b-0 hover:text-accent transition-colors"
+              className="flex min-h-[44px] items-center border-b border-white/10 px-2 text-xs font-semibold tracking-wide text-white/90 last:border-b-0 hover:text-white transition-colors"
             >
               {label}
             </Link>
           ))}
 
-          <div className="pt-2 flex items-center justify-between border-t border-line">
-            <span className="text-xs font-medium text-ink-muted">
+          <div className="pt-2 flex items-center justify-between border-t border-white/10">
+            <span className="text-xs font-medium text-white/60">
               Appearance
             </span>
             <ThemeToggle />
@@ -373,7 +373,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
               <Link
                 to="/attendee/dashboard?tab=passes"
                 onClick={closeMenus}
-                className="flex items-center justify-center gap-2 w-full text-center py-2.5 rounded-xl bg-ink text-paper text-xs font-semibold shadow-xs active:scale-[0.98] transition-transform"
+                className="flex items-center justify-center gap-2 w-full text-center py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold shadow-xs active:scale-[0.98] transition-transform"
               >
                 <Ticket size={16} weight="bold" />
                 <span>My Passes ({myRegistrations.length})</span>
@@ -381,7 +381,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
               <Link
                 to="/admin"
                 onClick={closeMenus}
-                className="block w-full text-center py-2.5 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-white text-xs font-semibold hover:bg-slate-100 transition-colors"
+                className="block w-full text-center py-2.5 rounded-xl border border-white/15 bg-white/5 text-white text-xs font-semibold hover:bg-white/10 transition-colors"
               >
                 ⚡ Organizer Studio
               </Link>
@@ -391,7 +391,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                   closeMenus()
                   logout()
                 }}
-                className="block w-full text-center py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:underline cursor-pointer"
+                className="block w-full text-center py-2 text-xs font-semibold text-red-400 hover:underline cursor-pointer"
               >
                 Sign out
               </button>
@@ -400,7 +400,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
             <Link
               to="/login"
               onClick={closeMenus}
-              className="block w-full text-center py-2.5 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 text-xs font-semibold shadow-xs active:scale-[0.98] transition-transform"
+              className="block w-full text-center py-2.5 rounded-xl bg-white text-black hover:bg-accent hover:text-white text-xs font-semibold shadow-xs active:scale-[0.98] transition-transform"
             >
               Sign In
             </Link>

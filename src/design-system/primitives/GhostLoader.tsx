@@ -146,7 +146,7 @@ export const GhostPosterCard: React.FC<{ className?: string }> = ({ className = 
       aria-busy="true"
       aria-label="Loading premiere details..."
       className={cn(
-        'group relative flex flex-col w-full rounded-[14px] border border-line bg-card overflow-hidden shadow-xs select-none',
+        'group relative flex flex-col w-full rounded-[14px] border border-[#E2E8F0] dark:border-line bg-white dark:bg-card overflow-hidden shadow-xs select-none',
         className
       )}
     >

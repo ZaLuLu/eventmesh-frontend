@@ -58,18 +58,18 @@ export const ActiveThemeTrio: React.FC = () => {
   return (
     <section
       aria-labelledby="active-themes-heading"
-      className="relative w-full py-10 sm:py-14 border-b border-line bg-paper"
+      className="relative w-full py-10 sm:py-14 border-b border-[#E2E8F0]"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Section Header with Denim Dept 0.25em Uppercase Tracking */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <span className="block text-[11px] font-bold uppercase tracking-[0.25em] text-ink-muted mb-1">
+            <span className="block text-xs font-mono font-bold uppercase tracking-[0.2em] text-[#64748B] dark:text-ink-muted mb-1">
               Curated Spotlight
             </span>
             <h2
               id="active-themes-heading"
-              className="text-2xl sm:text-3xl font-bold tracking-tight text-ink"
+              className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A] dark:text-ink"
             >
               Trending Themes
             </h2>
@@ -92,7 +92,7 @@ export const ActiveThemeTrio: React.FC = () => {
             <Link
               key={theme.id}
               to={theme.href}
-              className="group relative aspect-[4/5] w-full overflow-hidden rounded-[14px] border border-line bg-card shadow-xs hover:shadow-md transition-all duration-300 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
+              className="group relative aspect-[4/5] w-full overflow-hidden rounded-[14px] border border-[#E2E8F0] dark:border-line bg-card shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
             >
               {/* Fallback Gradient Background */}
               <div
@@ -116,15 +116,15 @@ export const ActiveThemeTrio: React.FC = () => {
 
               {/* Top-Left: Denim Dept Stone Tag (#EEF1EA) */}
               <div className="absolute left-3.5 top-3.5 z-10">
-                <span className="inline-flex items-center gap-1 rounded-[4px] border border-black/20 bg-[#EEF1EA] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-900 shadow-xs">
-                  <Sparkle size={10} className="text-neutral-700" />
+                <span className="inline-flex items-center gap-1.5 rounded-[4px] border border-black/20 bg-[#EEF1EA] px-2.5 py-1 text-xs font-mono font-bold uppercase tracking-[0.14em] text-neutral-900 shadow-xs">
+                  <Sparkle size={12} className="text-neutral-700" />
                   <span>{theme.tag}</span>
                 </span>
               </div>
 
               {/* Bottom Content Dock */}
               <div className="absolute inset-x-0 bottom-0 z-10 p-5 sm:p-6 flex flex-col justify-end text-white">
-                <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/70 mb-1">
+                <span className="text-xs font-mono font-bold uppercase tracking-[0.18em] text-white/80 mb-1">
                   {theme.kicker}
                 </span>
 
@@ -133,7 +133,7 @@ export const ActiveThemeTrio: React.FC = () => {
                     <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white group-hover:text-white transition-colors">
                       {theme.title}
                     </h3>
-                    <p className="text-xs text-white/80 font-medium mt-1 truncate">
+                    <p className="text-sm text-white/90 font-medium mt-1 truncate">
                       {theme.countLabel}
                     </p>
                   </div>

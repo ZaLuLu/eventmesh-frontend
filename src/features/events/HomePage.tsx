@@ -96,163 +96,186 @@ export const HomePage: React.FC = () => {
   }, [allEvents, promoted])
 
   return (
-    <div className="w-full bg-paper text-ink min-h-screen flex flex-col">
-      {/* 1. Flagship Featured Cinematic Hero Stage (Option A1: Immediate Poster Stage) */}
-      <CinematicHeroStage events={heroSlideEvents} />
+    <div className="relative w-full bg-[#F8F9FA] text-[#0F172A] min-h-screen flex flex-col overflow-x-hidden">
+      {/* Architectural Micro-Dot Grid Pattern (Non-intrusive, subtle tactile texture, zero monochromatic color noise) */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0"
+        style={{
+          backgroundImage: 'radial-gradient(rgba(15, 23, 42, 0.07) 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+        }}
+        aria-hidden="true"
+      />
 
-      {/* 2. Shelf 1: Curated Premieres Showcase (Clean Architectural Cards, Option A2) */}
-      <section className="relative w-full py-10 sm:py-14 border-b border-line bg-paper">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <SectionHeader
-            badge="Flagship Passes"
-            title="Curated Premieres"
-            subtitle="Top ticketed hackathons, summits, and creative masterclasses happening across campus."
-            action={
-              <Link
-                to="/explore?free=false"
-                className="text-xs sm:text-sm font-semibold text-accent hover:underline inline-flex items-center gap-1"
-              >
-                <span>View all paid passes</span>
-                <ArrowRight size={14} weight="bold" />
-              </Link>
-            }
+      {/* Foreground Content Layer */}
+      <div className="relative z-10 flex flex-col flex-1 w-full">
+        {/* 1. Flagship Featured Cinematic Hero Stage with Confined Soft Ambient Vignette */}
+        <div className="relative w-full">
+          {/* Soft localized ambient vignette - strictly 2-3% opacity behind the hero */}
+          <div
+            className="absolute inset-0 pointer-events-none z-0 overflow-hidden"
+            style={{
+              background: 'radial-gradient(ellipse 70% 55% at 50% 0%, rgba(124, 58, 237, 0.05), transparent 75%)',
+            }}
+            aria-hidden="true"
           />
+          <CinematicHeroStage events={heroSlideEvents} />
+        </div>
 
-          {isLoading ? (
-            <div
-              role="status"
-              aria-live="polite"
-              aria-label="Loading premiere events"
-              className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-            >
-              {[...Array(4)].map((_, i) => (
-                <GhostPosterCard key={`ghost-poster-${i}`} />
-              ))}
-            </div>
-          ) : loadError ? (
-            <div className="mt-8 rounded-2xl border border-line bg-card p-8 text-center text-ink-soft">
-              <p>Unable to load premieres right now. Please refresh.</p>
-            </div>
-          ) : (
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {paidPremiereEvents.map((event, idx) => (
+        {/* 2. Shelf 1: Curated Premieres Showcase (Clean Architectural Cards, Option A2) */}
+        <section className="relative w-full py-10 sm:py-14 border-b border-[#E2E8F0]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <SectionHeader
+              badge="Flagship Passes"
+              title="Curated Premieres"
+              subtitle="Top ticketed hackathons, summits, and creative masterclasses happening across campus."
+              action={
+                <Link
+                  to="/explore?free=false"
+                  className="text-xs sm:text-sm font-semibold text-accent hover:underline inline-flex items-center gap-1"
+                >
+                  <span>View all paid passes</span>
+                  <ArrowRight size={14} weight="bold" />
+                </Link>
+              }
+            />
+
+            {isLoading ? (
+              <div
+                role="status"
+                aria-live="polite"
+                aria-label="Loading premiere events"
+                className="mt-6 sm:mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6"
+              >
+                {[...Array(4)].map((_, i) => (
+                  <GhostPosterCard key={`ghost-poster-${i}`} />
+                ))}
+              </div>
+            ) : loadError ? (
+              <div className="mt-8 rounded-2xl border border-[#E2E8F0] bg-white p-8 text-center text-[#64748B]">
+                <p>Unable to load premieres right now. Please refresh.</p>
+              </div>
+            ) : (
+              <div className="mt-6 sm:mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+                {paidPremiereEvents.map((event, idx) => (
+                  <VerticalPosterCard
+                    key={`premiere-${event.id}`}
+                    event={event}
+                    priority={idx < 2}
+                    onQuickRSVP={(evt) => setQuickRsvpEvent(evt)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* 3. Shelf 2: Happening This Weekend */}
+        <section className="relative w-full py-10 sm:py-14 border-b border-[#E2E8F0]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <SectionHeader
+              badge="This Weekend"
+              title="Happening Soon"
+              subtitle="Stage productions, open mic sessions, and meetups lined up for the coming days."
+              action={
+                <Link
+                  to="/explore?date=weekend"
+                  className="text-xs sm:text-sm font-semibold text-accent hover:underline inline-flex items-center gap-1"
+                >
+                  <span>Weekend calendar</span>
+                  <ArrowRight size={14} weight="bold" />
+                </Link>
+              }
+            />
+
+            <div className="mt-6 sm:mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+              {weekendEvents.map((event) => (
                 <VerticalPosterCard
-                  key={`premiere-${event.id}`}
+                  key={`weekend-${event.id}`}
                   event={event}
-                  priority={idx < 2}
                   onQuickRSVP={(evt) => setQuickRsvpEvent(evt)}
                 />
               ))}
             </div>
-          )}
-        </div>
-      </section>
-
-      {/* 3. Shelf 2: Happening This Weekend */}
-      <section className="relative w-full py-10 sm:py-14 border-b border-line bg-paper">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <SectionHeader
-            badge="This Weekend"
-            title="Happening Soon"
-            subtitle="Stage productions, open mic sessions, and meetups lined up for the coming days."
-            action={
-              <Link
-                to="/explore?date=weekend"
-                className="text-xs sm:text-sm font-semibold text-accent hover:underline inline-flex items-center gap-1"
-              >
-                <span>Weekend calendar</span>
-                <ArrowRight size={14} weight="bold" />
-              </Link>
-            }
-          />
-
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {weekendEvents.map((event) => (
-              <VerticalPosterCard
-                key={`weekend-${event.id}`}
-                event={event}
-                onQuickRSVP={(evt) => setQuickRsvpEvent(evt)}
-              />
-            ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* 4. Shelf 3: Campus Hackathons & Tech Sprints */}
-      <section className="relative w-full py-10 sm:py-14 border-b border-line bg-paper">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <SectionHeader
-            badge="Code & Build"
-            title="Hackathons & Tech Sprints"
-            subtitle="Build with fellow students, ship real prototypes, and compete for prize pools."
-            action={
-              <Link
-                to="/explore?category=hackathon"
-                className="text-xs sm:text-sm font-semibold text-accent hover:underline inline-flex items-center gap-1"
-              >
-                <span>All hackathons</span>
-                <ArrowRight size={14} weight="bold" />
-              </Link>
-            }
-          />
+        {/* 4. Shelf 3: Campus Hackathons & Tech Sprints */}
+        <section className="relative w-full py-10 sm:py-14 border-b border-[#E2E8F0]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <SectionHeader
+              badge="Code & Build"
+              title="Hackathons & Tech Sprints"
+              subtitle="Build with fellow students, ship real prototypes, and compete for prize pools."
+              action={
+                <Link
+                  to="/explore?category=hackathon"
+                  className="text-xs sm:text-sm font-semibold text-accent hover:underline inline-flex items-center gap-1"
+                >
+                  <span>All hackathons</span>
+                  <ArrowRight size={14} weight="bold" />
+                </Link>
+              }
+            />
 
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {hackathonEvents.map((event) => (
-              <VerticalPosterCard
-                key={`hack-${event.id}`}
-                event={event}
-                onQuickRSVP={(evt) => setQuickRsvpEvent(evt)}
-              />
-            ))}
+            <div className="mt-6 sm:mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+              {hackathonEvents.map((event) => (
+                <VerticalPosterCard
+                  key={`hack-${event.id}`}
+                  event={event}
+                  onQuickRSVP={(evt) => setQuickRsvpEvent(evt)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* 5. Shelf 4: Free Admission / Student Access */}
-      <section className="relative w-full py-10 sm:py-14 border-b border-line bg-paper">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <SectionHeader
-            badge="Zero Cost"
-            title="Free Student Passes"
-            subtitle="Guest lectures, club orientations, and campus community meetups with zero fee."
-            action={
-              <Link
-                to="/explore?free=true"
-                className="text-xs sm:text-sm font-semibold text-accent hover:underline inline-flex items-center gap-1"
-              >
-                <span>Browse all free events</span>
-                <ArrowRight size={14} weight="bold" />
-              </Link>
-            }
-          />
+        {/* 5. Shelf 4: Free Admission / Student Access */}
+        <section className="relative w-full py-10 sm:py-14 border-b border-[#E2E8F0]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <SectionHeader
+              badge="Zero Cost"
+              title="Free Student Passes"
+              subtitle="Guest lectures, club orientations, and campus community meetups with zero fee."
+              action={
+                <Link
+                  to="/explore?free=true"
+                  className="text-xs sm:text-sm font-semibold text-accent hover:underline inline-flex items-center gap-1"
+                >
+                  <span>Browse all free events</span>
+                  <ArrowRight size={14} weight="bold" />
+                </Link>
+              }
+            />
 
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {freeEvents.map((event) => (
-              <VerticalPosterCard
-                key={`free-${event.id}`}
-                event={event}
-                onQuickRSVP={(evt) => setQuickRsvpEvent(evt)}
-              />
-            ))}
+            <div className="mt-6 sm:mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+              {freeEvents.map((event) => (
+                <VerticalPosterCard
+                  key={`free-${event.id}`}
+                  event={event}
+                  onQuickRSVP={(evt) => setQuickRsvpEvent(evt)}
+                />
+              ))}
+            </div>
           </div>
+        </section>
+
+        {/* 6. Shelf 5: Active Theme Spotlight Trio */}
+        <ActiveThemeTrio />
+
+        {/* 7. Bottom Explore Action Bar */}
+        <div className="py-12 flex flex-col items-center justify-center border-b border-[#E2E8F0]">
+          <Link
+            to="/explore"
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full border border-[#E2E8F0] bg-white text-[#0F172A] font-semibold text-sm hover:border-accent hover:text-accent transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 group active:scale-95 cursor-pointer"
+          >
+            <span>Explore all campus events</span>
+            <ArrowRight size={14} weight="bold" className="transition-transform group-hover:translate-x-1 text-accent" />
+          </Link>
         </div>
-      </section>
-
-      {/* 6. Shelf 5: Active Theme Spotlight Trio */}
-      <ActiveThemeTrio />
-
-      {/* 7. Bottom Explore Action Bar */}
-      <div className="py-12 flex flex-col items-center justify-center border-b border-line bg-paper">
-        <Link
-          to="/explore"
-          className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full border border-line bg-card text-ink font-semibold text-sm hover:border-accent hover:text-accent transition-all shadow-xs hover:shadow-md group active:scale-95"
-        >
-          <span>Explore all campus events</span>
-          <ArrowRight size={14} weight="bold" className="transition-transform group-hover:translate-x-1 text-accent" />
-        </Link>
       </div>
 
-      {/* 5. 1-Click Pass Desk Modal */}
+      {/* 8. 1-Click Pass Desk Modal */}
       <QuickRSVPModal
         event={quickRsvpEvent}
         isOpen={Boolean(quickRsvpEvent)}

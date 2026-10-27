@@ -180,7 +180,7 @@ export const QuickRSVPModal: React.FC<QuickRSVPModalProps> = ({
             )}
 
             <div className="min-w-0 flex-1 space-y-1">
-              <span className="inline-block px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider rounded bg-accent-soft text-accent border border-accent/20">
+              <span className="inline-block px-2.5 py-0.5 text-xs font-mono font-bold uppercase tracking-wider rounded bg-accent-soft text-accent border border-accent/20">
                 {event.category || 'Event'}
               </span>
               <h3 id="quick-rsvp-title" className="text-sm sm:text-base font-bold text-ink leading-snug line-clamp-2">
@@ -277,15 +277,15 @@ export const QuickRSVPModal: React.FC<QuickRSVPModalProps> = ({
                     </div>
                     <div>
                       <div className="text-xs font-semibold text-ink">
-                        {name} <span className="font-normal text-ink-muted text-[11px]">(CTU Lead)</span>
+                        {name} <span className="font-normal text-ink-muted text-xs">(CTU Lead)</span>
                       </div>
-                      <div className="text-[11px] font-mono text-ink-muted">
+                      <div className="text-xs font-mono text-ink-muted">
                         {email}
                       </div>
                     </div>
                   </div>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-accent bg-card px-2 py-0.5 rounded border border-accent/20">
-                    <Sparkle size={11} weight="fill" />
+                  <span className="inline-flex items-center gap-1 text-xs font-mono font-bold text-accent bg-card px-2.5 py-0.5 rounded border border-accent/20">
+                    <Sparkle size={12} weight="fill" />
                     Verified
                   </span>
                 </div>
@@ -346,7 +346,7 @@ export const QuickRSVPModal: React.FC<QuickRSVPModalProps> = ({
                 </span>
               </button>
 
-              <p className="text-[11px] text-center text-ink-muted font-mono">
+              <p className="text-xs text-center text-ink-muted font-mono">
                 Instant delivery to your account & calendar · No fees
               </p>
             </form>

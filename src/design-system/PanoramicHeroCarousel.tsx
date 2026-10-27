@@ -102,13 +102,10 @@ export const PanoramicHeroCarousel: React.FC<PanoramicHeroCarouselProps> = ({
       aria-label="Flagship featured campus productions"
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      className={`relative w-full overflow-hidden bg-card border-b border-line select-none py-4 sm:py-6 ${className}`}
-      style={{
-        backgroundImage: 'radial-gradient(ellipse 70% 50% at 50% -10%, rgba(124, 58, 237, 0.08), transparent 70%)',
-      }}
+      className={`relative w-full overflow-hidden bg-transparent border-b border-[#E2E8F0] select-none py-4 sm:py-6 ${className}`}
     >
       {/* Full-Width Embla Viewport Frame */}
-      <div ref={emblaRef} className="w-full overflow-hidden">
+      <div ref={emblaRef} className="relative z-10 w-full overflow-hidden">
         {/* Slide Track */}
         <div className="flex">
           {slides.map((event, idx) => {
@@ -124,8 +121,8 @@ export const PanoramicHeroCarousel: React.FC<PanoramicHeroCarouselProps> = ({
                 }`}
                 aria-hidden={!isActive}
               >
-                {/* Solitary 14px Card Container (Zero nested radii, zero blur) */}
-                <div className="relative h-[340px] sm:h-[400px] md:h-[450px] w-full overflow-hidden rounded-[14px] border border-line bg-card shadow-md">
+                {/* Solitary 14px Card Container (Zero nested radii, zero blur, deep black shadow for floating depth) */}
+                <div className="relative h-[340px] sm:h-[400px] md:h-[450px] w-full overflow-hidden rounded-[14px] border border-black/10 bg-black shadow-xl shadow-black/40">
                   {/* Background Artwork */}
                   <div className="absolute inset-0 overflow-hidden bg-card">
                     {event.banner || event.poster ? (
@@ -217,7 +214,7 @@ export const PanoramicHeroCarousel: React.FC<PanoramicHeroCarouselProps> = ({
 
       {/* Carousel Bottom Control Bar: Segmented Tracks & Chevrons */}
       {count > 1 && (
-        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 mt-3 sm:mt-4">
+        <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 mt-3 sm:mt-4">
           <div className="flex items-center justify-between gap-3">
             {/* Segmented Indicators */}
             <div className="flex items-center gap-1.5 sm:gap-2">
@@ -245,7 +242,7 @@ export const PanoramicHeroCarousel: React.FC<PanoramicHeroCarouselProps> = ({
                 type="button"
                 onClick={scrollPrev}
                 aria-label="Previous featured event"
-                className="grid h-8 w-8 place-items-center rounded-[8px] border border-line bg-card hover:bg-surface-subtle text-ink shadow-xs transition-transform active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                className="grid h-8 w-8 place-items-center rounded-[8px] border border-[#E2E8F0] bg-white hover:bg-slate-100 text-[#0F172A] shadow-xs transition-transform active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent cursor-pointer"
               >
                 <CaretLeft size={16} weight="bold" />
               </button>
@@ -253,7 +250,7 @@ export const PanoramicHeroCarousel: React.FC<PanoramicHeroCarouselProps> = ({
                 type="button"
                 onClick={scrollNext}
                 aria-label="Next featured event"
-                className="grid h-8 w-8 place-items-center rounded-[8px] border border-line bg-card hover:bg-surface-subtle text-ink shadow-xs transition-transform active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                className="grid h-8 w-8 place-items-center rounded-[8px] border border-[#E2E8F0] bg-white hover:bg-slate-100 text-[#0F172A] shadow-xs transition-transform active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent cursor-pointer"
               >
                 <CaretRight size={16} weight="bold" />
               </button>
