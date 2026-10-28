@@ -10,6 +10,7 @@ import React, {
   type PointerEvent
 } from 'react';
 import Matter from 'matter-js';
+import { playLaserScanChirp, playTearImpulse } from '@/lib/sound';
 const { Bodies, Body, Composite, Engine } = Matter;
 
 export type FolderFloatItem = string | { label: string; value: string };
@@ -17,6 +18,7 @@ export type FolderFloatTrigger = 'hover' | 'click';
 
 export interface FolderFloatProps {
   items?: FolderFloatItem[];
+  activeValue?: string;
   label?: string;
   sublabel?: string;
   trigger?: FolderFloatTrigger;
@@ -121,6 +123,7 @@ const STYLE = `
 
 const FolderFloat: React.FC<FolderFloatProps> = ({
   items = DEFAULT_ITEMS,
+  activeValue,
   label = 'Design feedback',
   sublabel = '',
   trigger = 'hover',
@@ -331,6 +334,9 @@ const FolderFloat: React.FC<FolderFloatProps> = ({
   );
 
   const pick = (item: Entry, i: number) => {
+    try {
+      playLaserScanChirp();
+    } catch {}
     latest.current.onSelect?.(item.value, i);
     clearTimeout(popTimer.current);
     setPopped(i);
@@ -446,6 +452,7 @@ const FolderFloat: React.FC<FolderFloatProps> = ({
       >
         {list.map((item, i) => {
           const p = pos[i];
+          const isActive = activeValue && item.value === activeValue;
           return (
             <button
               key={`${item.value}-${i}`}
@@ -453,7 +460,11 @@ const FolderFloat: React.FC<FolderFloatProps> = ({
                 pillRefs.current[i] = el;
               }}
               type="button"
-              className="pointer-events-none absolute top-0 left-1/2 m-0 h-[34px] cursor-pointer rounded-[17px] border-0 px-3.5 whitespace-nowrap opacity-0 shadow-[0_4px_12px_rgba(0,0,0,0.14)] outline-none [background:var(--ff-item)] [color:var(--ff-item-ink)] [font:inherit] [transform:translate(-50%,44px)_scale(0.6)] [transform-origin:50%_50%] [-webkit-tap-highlight-color:transparent] [transition:transform_var(--ff-close)_var(--ff-ease-out)_calc((var(--ff-n)-1-var(--i))*var(--ff-stagger)*0.5),opacity_160ms_ease_calc((var(--ff-n)-1-var(--i))*var(--ff-stagger)*0.5+var(--ff-close)*0.45),scale_160ms_var(--ff-ease-out)] group-data-[open]:pointer-events-auto group-data-[open]:opacity-100 group-data-[open]:[transform:translate(calc(-50%+var(--x)),var(--y))_rotate(var(--r))_scale(1)] group-data-[open]:[transition:transform_var(--ff-open)_var(--ff-spring)_calc(var(--i)*var(--ff-stagger)),opacity_160ms_ease_calc(var(--i)*var(--ff-stagger)),scale_160ms_var(--ff-ease-out)] group-data-[live]:cursor-grab group-data-[live]:[transition:scale_160ms_var(--ff-ease-out)] data-[drag]:!cursor-grabbing group-data-[open]:hover:[scale:1.05] group-data-[open]:active:[scale:0.97] data-[pop]:[animation:folder-float-pop_320ms_var(--ff-ease-out)] motion-reduce:[transition:opacity_200ms_ease] motion-reduce:group-data-[open]:[transition:opacity_200ms_ease_calc(var(--i)*var(--ff-stagger))]"
+              className={`pointer-events-none absolute top-0 left-1/2 m-0 h-[34px] cursor-pointer rounded-[17px] border px-3.5 whitespace-nowrap opacity-0 shadow-[0_4px_12px_rgba(0,0,0,0.14)] outline-none [background:var(--ff-item)] [color:var(--ff-item-ink)] [font:inherit] [transform:translate(-50%,44px)_scale(0.6)] [transform-origin:50%_50%] [-webkit-tap-highlight-color:transparent] [transition:transform_var(--ff-close)_var(--ff-ease-out)_calc((var(--ff-n)-1-var(--i))*var(--ff-stagger)*0.5),opacity_160ms_ease_calc((var(--ff-n)-1-var(--i))*var(--ff-stagger)*0.5+var(--ff-close)*0.45),scale_160ms_var(--ff-ease-out)] group-data-[open]:pointer-events-auto group-data-[open]:opacity-100 group-data-[open]:[transform:translate(calc(-50%+var(--x)),var(--y))_rotate(var(--r))_scale(1)] group-data-[open]:[transition:transform_var(--ff-open)_var(--ff-spring)_calc(var(--i)*var(--ff-stagger)),opacity_160ms_ease_calc(var(--i)*var(--ff-stagger)),scale_160ms_var(--ff-ease-out)] group-data-[live]:cursor-grab group-data-[live]:[transition:scale_160ms_var(--ff-ease-out)] data-[drag]:!cursor-grabbing group-data-[open]:hover:[scale:1.05] group-data-[open]:active:[scale:0.97] data-[pop]:[animation:folder-float-pop_320ms_var(--ff-ease-out)] motion-reduce:[transition:opacity_200ms_ease] motion-reduce:group-data-[open]:[transition:opacity_200ms_ease_calc(var(--i)*var(--ff-stagger))] ${
+                isActive
+                  ? 'border-accent bg-surface ring-2 ring-accent/30 font-bold z-10'
+                  : 'border-line/60'
+              }`}
               tabIndex={open ? 0 : -1}
               aria-hidden={!open}
               data-pop={popped === i ? '' : undefined}
@@ -473,8 +484,9 @@ const FolderFloat: React.FC<FolderFloatProps> = ({
                 if (!world.current.live || e.detail === 0) pick(item, i);
               }}
             >
-              <span className="block [animation:folder-float-drift_3.2s_ease-in-out_infinite] [animation-delay:calc(var(--i)*-0.7s)] [animation-play-state:paused] group-data-[open]:[animation-play-state:running] group-data-[physics]:[animation:none] group-data-[live]:[animation:none] motion-reduce:[animation:none]">
-                {item.label}
+              <span className="flex items-center gap-1.5 [animation:folder-float-drift_3.2s_ease-in-out_infinite] [animation-delay:calc(var(--i)*-0.7s)] [animation-play-state:paused] group-data-[open]:[animation-play-state:running] group-data-[physics]:[animation:none] group-data-[live]:[animation:none] motion-reduce:[animation:none]">
+                {isActive && <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0" />}
+                <span>{item.label}</span>
               </span>
             </button>
           );
@@ -501,7 +513,12 @@ const FolderFloat: React.FC<FolderFloatProps> = ({
           className="absolute right-0 bottom-0 left-0 z-[3] m-0 h-[76%] cursor-pointer border-0 bg-transparent p-0 outline-none [border-radius:var(--ff-r)] [-webkit-tap-highlight-color:transparent]"
           aria-expanded={open}
           aria-label={`${label}, ${sub}`}
-          onClick={() => set(!open)}
+          onClick={() => {
+            try {
+              playTearImpulse();
+            } catch {}
+            set(!open);
+          }}
         />
       </div>
     </div>
