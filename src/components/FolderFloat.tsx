@@ -181,6 +181,10 @@ const FolderFloat: React.FC<FolderFloatProps> = ({
   const labelsKey = list.map(item => item.label).join('|');
   useLayoutEffect(() => {
     const measure = () => {
+      if (n === 0) {
+        setSizes([]);
+        return;
+      }
       const next = pillRefs.current.slice(0, n).map(el => (el ? { w: el.offsetWidth, h: el.offsetHeight } : null));
       if (next.some(s => !s)) return;
       const sized = next as Size[];
@@ -217,7 +221,7 @@ const FolderFloat: React.FC<FolderFloatProps> = ({
 
   const startPhysics = useCallback(() => {
     const w = world.current;
-    if (w.engine) return;
+    if (w.engine || n === 0) return;
     const els = pillRefs.current.slice(0, n);
     if (els.some(el => !el)) return;
     const engine = Engine.create({ gravity: { x: 0, y: 0 } });
