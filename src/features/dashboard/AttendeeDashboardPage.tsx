@@ -34,6 +34,7 @@ import { ProfileDetailsModal } from './components/ProfileDetailsModal'
 import { resolveUserAvatar } from '@/lib/avatars'
 import { Modal } from '@/design-system/primitives/Modal'
 import { getUserScheduleWebCalUrl, getUserScheduleIcsUrl } from '@/lib/ics'
+import FolderFloat from '@/components/FolderFloat'
 
 export const AttendeeDashboardPage: React.FC = () => {
   const { session } = useAuth()
@@ -278,6 +279,33 @@ export const AttendeeDashboardPage: React.FC = () => {
     return activePasses[0] || historyPasses[0] || null
   }, [mountedTicketId, activePasses, historyPasses, enrichedRegistrations])
 
+  // Floating ticket pills for FolderFloat physics cloud
+  const folderFloatItems = useMemo(() => {
+    if (activePasses.length === 0) {
+      return [{ label: 'Empty Jacket', value: 'empty' }]
+    }
+    const items = activePasses.map((p) => {
+      const title = p.eventTitle || 'Event Pass'
+      const label = title.length > 22 ? `${title.slice(0, 20)}…` : title
+      return {
+        label: `🎟️ ${label}`,
+        value: p.id,
+      }
+    })
+    // If student has certificates, also let them float out of the physical folder
+    if (certificates && certificates.length > 0) {
+      certificates.slice(0, 2).forEach((c) => {
+        const title = c.eventTitle || 'Certificate'
+        const label = title.length > 20 ? `${title.slice(0, 18)}…` : title
+        items.push({
+          label: `📜 ${label}`,
+          value: `cert-${c.id || c.certificateId}`,
+        })
+      })
+    }
+    return items
+  }, [activePasses, certificates])
+
   // Check if an event starts within 24 hours
   const isImminent = (startsAt?: string) => {
     if (!startsAt) return false
@@ -411,6 +439,41 @@ export const AttendeeDashboardPage: React.FC = () => {
                 </span>
               </div>
               <span className="text-[11px] font-mono text-text-3">Select to inspect</span>
+            </div>
+
+            {/* 3D Physical Ticket Jacket with Matter.js Floating Cloud */}
+            <div className="flex flex-col items-center justify-center pt-16 pb-4 bg-surface/70 rounded-xl border border-line/70 shadow-2xs relative overflow-visible">
+              <FolderFloat
+                items={folderFloatItems}
+                label="PASS JACKET"
+                sublabel={`${activePasses.length} Active Pass${activePasses.length === 1 ? '' : 'es'}`}
+                folderColor="#4C1D95"
+                frontColor="#7C3AED"
+                paperColor="#FAF5FF"
+                itemColor="#FFFFFF"
+                itemTextColor="#1E1B4B"
+                labelColor="#FFFFFF"
+                width={220}
+                height={120}
+                spread={90}
+                lift={40}
+                trigger="click"
+                defaultOpen={true}
+                closeOnSelect={false}
+                physics={true}
+                onSelect={(val) => {
+                  if (val && !val.startsWith('cert-') && val !== 'empty') {
+                    setMountedTicketId(val)
+                    toast({
+                      title: 'Pass Selected',
+                      message: 'Mounted onto the boarding pass stage.',
+                    })
+                  }
+                }}
+              />
+              <span className="text-[10px] font-mono text-text-3 mt-3 flex items-center gap-1">
+                <span>✦ Click jacket or drag floating passes</span>
+              </span>
             </div>
 
             {/* Section A: Active Passes in Sleeve */}
