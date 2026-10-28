@@ -32,15 +32,13 @@ export interface EventAdmissionTicketProps {
 }
 
 /**
- * EventAdmissionTicket
- *
- * Authentic physical event ticket with:
- * - Scalloped notch cutouts & serrated physical ridges
+ * EventAdmissionTicket:
+ * High-contrast tactile physical event ticket with:
+ * - Scalloped notch cutouts & perforated physical ridges
  * - Mobile-responsive layout (Vertical on mobile, Horizontal on desktop)
- * - Tear-off Gate Stub hosting the scannable QR Code
+ * - Tear-off Gate Stub hosting the scannable viewfinder QR Code
  * - Intact Keepsake Pass containing all event & attendee details
- * - Interactive manual tear (can re-attach) vs Irreversible Gate Scan (auto-tears & cannot be put back)
- * - "EVENT PASS APPROVED" official clearance seal upon gate admission
+ * - Hybrid Tactile Tear + Official Gate Stamping (plays peel sound, spring detachment, and green admission stamp)
  */
 export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
   registration,
@@ -53,13 +51,15 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
   onClose,
 }) => {
   const backendAdmitted = state ? state === 'checked_in' : registration.status === 'checked_in'
-  
+
   // Gate check-in status (once scanned, permanent and irreversible)
   const [isGateScanned, setIsGateScanned] = useState(backendAdmitted)
   const [isVisualTorn, setIsVisualTorn] = useState(backendAdmitted)
 
   // Mobile viewport detection
-  const [isMobile, setIsMobile] = useState(() => (typeof window !== 'undefined' ? window.innerWidth < 768 : false))
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  )
 
   useEffect(() => {
     const handleResize = () => {
@@ -147,7 +147,7 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
       }
     }
 
-    // 1. Supabase Realtime cross-device channels (Organizer scanner phone -> Attendee phone)
+    // 1. Supabase Realtime cross-device channels
     let targetedChannel: any = null
     let globalChannel: any = null
     try {
@@ -183,7 +183,7 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
     }
     window.addEventListener('eventmesh_gate_admitted', handleCustomAdmitted)
 
-    // 4. Smart active polling fallback (guarantees tear even with spotty Wi-Fi or behind campus firewalls)
+    // 4. Smart active polling fallback
     const pollInterval = setInterval(async () => {
       try {
         const myRegs = await api.registrations.getMyRegistrations()
@@ -243,110 +243,100 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
     doc.roundedRect(50, 8, 28, 7, 1.5, 1.5, 'F')
     doc.setFontSize(7)
     doc.setTextColor(255, 255, 255)
-    doc.text(registration.tierName ? registration.tierName.toUpperCase() : 'VIP PASS', 52, 13)
+    doc.text(
+      registration.tierName ? registration.tierName.toUpperCase() : 'VIP PASS',
+      52,
+      13
+    )
 
     // Event title
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(13)
     doc.setTextColor(9, 9, 11)
-    const splitTitle = doc.splitTextToSize((registration.eventTitle || 'Campus Event').toUpperCase(), 100)
-    doc.text(splitTitle, 8, 23)
+    doc.text(
+      registration.eventTitle
+        ? registration.eventTitle.slice(0, 32).toUpperCase()
+        : 'CAMPUS PREMIERE EVENT',
+      8,
+      26
+    )
 
-    // Event details
+    // Date & Time
     doc.setFont('helvetica', 'normal')
-    doc.setFontSize(8)
-    doc.setTextColor(70, 70, 80)
-    doc.text(`DATE:   ${formatDate(registration.eventStartsAt || registration.createdAt, 'medium').toUpperCase()}`, 8, 35)
-    doc.text(`VENUE:  ${(registration.venueName || 'Main Campus Venue').toUpperCase()}`, 8, 41)
-    doc.text(`ATTENDEE: ${(registration.userName || 'Verified Member').toUpperCase()}`, 8, 47)
-    doc.text(`SERIAL:   #${passSerial}`, 8, 53)
+    doc.setFontSize(9)
+    doc.setTextColor(80, 80, 80)
+    const dateStr = formatDate(registration.eventStartsAt || registration.createdAt, 'full')
+    doc.text(dateStr, 8, 33)
 
-    // Perforation divider line
-    doc.setDrawColor(180, 180, 190)
-    doc.setLineDashPattern([1.5, 1.5], 0)
-    doc.line(116, 0, 116, 75)
+    // Venue
+    doc.text(`Venue: ${registration.venueName || 'Main Campus Auditorium'}`, 8, 39)
 
-    // Right stub section
-    doc.setFillColor(18, 21, 30)
-    doc.rect(116, 0, 54, 75, 'F')
+    // Attendee
     doc.setFont('helvetica', 'bold')
-    doc.setFontSize(8.5)
-    doc.setTextColor(255, 255, 255)
-    doc.text('GATE STUB', 143, 11, { align: 'center' })
-    doc.setFontSize(6.5)
-    doc.setTextColor(180, 180, 200)
-    doc.text('SCAN AT ENTRY', 143, 16, { align: 'center' })
+    doc.setFontSize(9)
+    doc.setTextColor(9, 9, 11)
+    doc.text(`Attendee: ${registration.userName || 'Verified Attendee'}`, 8, 47)
 
-    // Embed real scannable QR code on gate stub
+    // Serial
+    doc.setFont('courier', 'bold')
+    doc.setFontSize(8)
+    doc.setTextColor(100, 100, 100)
+    doc.text(`ID: ${passSerial} · ${ticketCode}`, 8, 54)
+
+    // Perforation line
+    doc.setDrawColor(200, 200, 200)
+    doc.setLineDashPattern([1.5, 1.5], 0)
+    doc.line(116, 5, 116, 70)
+
+    // Stub section
+    doc.setLineDashPattern([], 0)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(7)
+    doc.setTextColor(100, 100, 100)
+    doc.text('GATE STUB', 122, 12)
+
     try {
       const qrDataUrl = await QRCodeLib.toDataURL(qrValue, {
         margin: 1,
-        width: 256,
+        width: 120,
         errorCorrectionLevel: 'M',
-        color: {
-          dark: '#0F172A',
-          light: '#FFFFFF',
-        },
       })
-      if (qrDataUrl) {
-        doc.setFillColor(255, 255, 255)
-        doc.roundedRect(125, 19, 36, 36, 1.5, 1.5, 'F')
-        doc.addImage(qrDataUrl, 'PNG', 126, 20, 34, 34)
-      }
-    } catch (err) {
-      console.warn('QR code generation warning for ticket PDF:', err)
-    }
+      doc.addImage(qrDataUrl, 'PNG', 122, 16, 40, 40)
+    } catch {}
 
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(7.5)
-    doc.setTextColor(255, 255, 255)
-    doc.text(ticketCode, 143, 61, { align: 'center' })
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(6.5)
-    doc.setTextColor(180, 180, 200)
-    doc.text((registration.userName || 'ATTENDEE').toUpperCase(), 143, 67, { align: 'center' })
+    doc.setFont('courier', 'bold')
+    doc.setFontSize(8)
+    doc.setTextColor(9, 9, 11)
+    doc.text(ticketCode, 142, 60, { align: 'center' })
 
-    // Status stamp
-    if (isGateScanned) {
-      doc.setDrawColor(16, 185, 129)
-      doc.setFillColor(236, 253, 245)
-      doc.roundedRect(8, 57, 85, 12, 2, 2, 'FD')
-      doc.setTextColor(5, 150, 105)
-      doc.setFont('helvetica', 'bold')
-      doc.setFontSize(9)
-      doc.text('APPROVED · ADMITTED AT GATE', 12, 64)
-    }
-
-    doc.save(`EventMesh-${passSerial}.pdf`)
+    doc.save(`${ticketCode}.pdf`)
+    fireCelebrationConfetti()
   }
 
+  // Calendar .ics download
   const handleDownloadCalendar = () => {
     downloadICS({
-      title: registration.eventTitle || 'EventMesh Campus Event',
-      description: `Admission ticket #${passSerial} for ${registration.userName || 'Attendee'}.\nTicket Tier: ${registration.tierName || 'Standard'}\nTicket Code: ${ticketCode}`,
-      startsAt: registration.eventStartsAt || registration.createdAt,
-      endsAt: registration.eventStartsAt || registration.createdAt,
-      venueName: registration.venueName,
+      title: registration.eventTitle || 'Campus Event',
+      description: `Entry pass for ${registration.eventTitle || 'Campus Event'}. Pass code: ${ticketCode}. Attendee: ${registration.userName || 'Student'}.`,
+      startsAt: registration.eventStartsAt || new Date().toISOString(),
+      endsAt: new Date(
+        new Date(registration.eventStartsAt || new Date()).getTime() + 3 * 3600000
+      ).toISOString(),
+      venueName: registration.venueName || 'Main Campus Venue',
       url: window.location.href,
     })
   }
 
-  // Dimensions matching responsive orientation
-  const ticketWidth = isMobile ? 340 : 800
-  const ticketHeight = isMobile ? 640 : 380
-  const stubSize = isMobile ? 280 : 280
-  const orientation = isMobile ? 'vertical' : 'horizontal'
-
-  const isPhysicallyTorn = isGateScanned ? true : isVisualTorn
+  const isPhysicallyTorn = isGateScanned || isVisualTorn
 
   const ticketContent = (
     <TearTicket
-      width={ticketWidth}
-      height={ticketHeight}
-      stubSize={stubSize}
-      orientation={orientation}
-      radius={16}
-      holes={isMobile ? 11 : 14}
+      orientation={isMobile ? 'vertical' : 'horizontal'}
+      width={isMobile ? 320 : 680}
+      height={isMobile ? 540 : 260}
+      stubSize={isMobile ? 220 : 220}
+      radius={14}
+      holes={isMobile ? 14 : 14}
       holeSize={isMobile ? 8 : 7.5}
       notch={isMobile ? 13 : 13}
       roughness={0.6}
@@ -359,9 +349,9 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
       disabled={isGateScanned || disabled}
       background="#FFFFFF"
       stubBackground="#FFFFFF"
-      color="#09090B"
-      borderColor="rgba(0, 0, 0, 0.15)"
-      borderWidth={1.2}
+      color="#0D0E12"
+      borderColor="rgba(0, 0, 0, 0.12)"
+      borderWidth={1}
       className="mx-auto"
       onTear={triggerManualTear}
       stub={
@@ -369,53 +359,59 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
         <div
           onClick={!isGateScanned && !isVisualTorn ? triggerManualTear : undefined}
           className={cn(
-            'h-full w-full flex flex-col justify-between items-center text-center p-3 sm:p-4 font-sans bg-white text-neutral-900 select-none relative',
-            !isGateScanned && !isVisualTorn ? 'cursor-pointer hover:bg-neutral-50/80 transition-colors' : ''
+            'h-full w-full flex flex-col justify-between items-center text-center p-3 sm:p-4 font-sans bg-white text-slate-900 select-none relative',
+            !isGateScanned && !isVisualTorn
+              ? 'cursor-pointer hover:bg-slate-50 transition-colors'
+              : ''
           )}
-          title={isGateScanned ? 'Official admission validated at gate' : 'Scan QR at gate or click/drag to tear stub'}
+          title={
+            isGateScanned
+              ? 'Official admission validated at gate'
+              : 'Scan QR at gate or click/drag to tear stub'
+          }
         >
           {/* Top Gate Header */}
           <div className="w-full flex items-center justify-center pt-0.5">
-            <span className="text-[10px] sm:text-[11px] font-mono tracking-widest text-neutral-700 uppercase font-bold">
+            <span className="text-[10px] sm:text-[11px] font-mono tracking-widest text-slate-600 uppercase font-bold">
               GATE STUB · SCAN AT ENTRY
             </span>
           </div>
 
           {/* Center Scannable QR Code in Viewfinder Frame */}
           <div className="my-auto flex flex-col items-center justify-center space-y-1.5 py-0.5">
-            <div className="relative p-2.5 bg-white">
+            <div className="relative p-2.5 bg-white border border-slate-200 rounded-[8px]">
               {/* Four Viewfinder Brackets */}
-              <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-neutral-900 pointer-events-none" />
-              <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-neutral-900 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-neutral-900 pointer-events-none" />
-              <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-neutral-900 pointer-events-none" />
+              <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-slate-900 pointer-events-none rounded-tl-[4px]" />
+              <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-slate-900 pointer-events-none rounded-tr-[4px]" />
+              <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-slate-900 pointer-events-none rounded-bl-[4px]" />
+              <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-slate-900 pointer-events-none rounded-br-[4px]" />
 
-              <QRCode
-                value={qrValue}
-                size={isMobile ? 114 : 118}
-                className="block"
-              />
+              <QRCode value={qrValue} size={isMobile ? 114 : 118} className="block" />
             </div>
 
             {/* Perforation Hint & Event Identifier */}
-            <div className="flex items-center gap-1 text-neutral-400 font-mono text-[8.5px] tracking-wider uppercase font-medium">
+            <div className="flex items-center gap-1 text-slate-400 font-mono text-[9px] tracking-wider uppercase font-medium">
               <Scissors size={10} weight="bold" />
               <span>··· TEAR TO SCAN ···</span>
             </div>
-            <div className="text-[9px] font-mono font-extrabold text-neutral-900 tracking-wider uppercase leading-none">
-              {registration.eventTitle ? registration.eventTitle.slice(0, 24).toUpperCase() : 'CAMPUS ADMISSION PASS'}
+            <div className="text-[9px] font-mono font-bold text-slate-900 tracking-wider uppercase leading-none truncate max-w-[190px]">
+              {registration.eventTitle
+                ? registration.eventTitle.slice(0, 24).toUpperCase()
+                : 'CAMPUS ADMISSION PASS'}
             </div>
           </div>
 
           {/* Bottom Attendee Info & Pass Tier */}
-          <div className="w-full pt-1 border-t border-neutral-200 flex flex-col items-center justify-center space-y-0.5">
-            <p className="text-xs sm:text-sm font-black uppercase text-neutral-950 tracking-tight leading-tight truncate max-w-[210px]">
+          <div className="w-full pt-1.5 border-t border-slate-200 flex flex-col items-center justify-center space-y-0.5">
+            <p className="text-xs sm:text-sm font-bold uppercase text-slate-900 tracking-tight leading-tight truncate max-w-[210px]">
               {registration.userName || 'Attendee'}
             </p>
-            <p className="text-[10px] font-extrabold uppercase text-violet-700 tracking-wider">
-              {registration.tierName ? registration.tierName.toUpperCase() : 'GENERAL ADMISSION'}
+            <p className="text-[10px] font-extrabold uppercase text-violet-600 tracking-wider">
+              {registration.tierName
+                ? registration.tierName.toUpperCase()
+                : 'GENERAL ADMISSION'}
             </p>
-            <p className="text-[8.5px] font-mono text-neutral-500 uppercase tracking-widest">
+            <p className="text-[9px] font-mono text-slate-400 uppercase tracking-widest tabular-nums">
               TICKET ID: {passSerial}
             </p>
           </div>
@@ -423,91 +419,96 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
       }
     >
       {/* ================= INTACT KEEPSAKE PASS (EVENT DETAILS) ================= */}
-      <div className="h-full w-full p-6 sm:p-7 flex flex-col justify-between bg-white text-neutral-900 select-none relative overflow-hidden">
-        {/* Subtle Tech Blueprint Watermark Background */}
+      <div className="h-full w-full p-6 sm:p-7 flex flex-col justify-between bg-white text-slate-900 select-none relative overflow-hidden">
+        {/* Subtle Micro-Dot Grid Pattern */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-[0.04]"
+          className="absolute inset-0 pointer-events-none opacity-[0.05]"
           style={{
-            backgroundImage: `radial-gradient(#000000 1.2px, transparent 1.2px), linear-gradient(to right, rgba(0,0,0,0.06) 1px, transparent 1px)`,
-            backgroundSize: '20px 20px, 40px 40px'
+            backgroundImage: `radial-gradient(#000000 1.2px, transparent 1.2px)`,
+            backgroundSize: '20px 20px',
           }}
         />
 
-        {/* Top Header Strip: Black EVENTMESH Badge (Left) & Purple VIP Pill (Right) */}
+        {/* Top Header Strip: Black EVENTMESH Badge (Left) & Violet Pill (Right) */}
         <div className="flex items-center justify-between relative z-10">
           <div className="flex items-center gap-2">
-            <div className="px-3 py-1.5 rounded-lg bg-black text-white flex items-center gap-2 shadow-sm">
-              <div className="w-4 h-4 rounded-sm bg-gradient-to-tr from-accent to-cobalt flex items-center justify-center font-bold text-[9px] text-white">
+            <div className="px-3 py-1 rounded-[6px] bg-[#0D0E12] text-white flex items-center gap-2 shadow-xs border border-white/10">
+              <div className="w-3.5 h-3.5 rounded-[3px] bg-violet-600 flex items-center justify-center font-bold text-[8px] text-white">
                 EM
               </div>
-              <span className="font-display font-black text-xs tracking-wider uppercase">
+              <span className="font-mono font-bold text-[11px] tracking-wider uppercase">
                 EVENTMESH
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-violet-700 to-purple-800 text-white font-sans font-extrabold text-xs uppercase tracking-widest shadow-sm">
+            <span className="px-3 py-1 rounded-full bg-violet-600 text-white font-mono font-bold text-[10px] uppercase tracking-wider shadow-xs">
               {registration.tierName ? registration.tierName.toUpperCase() : 'VIP PASS'}
             </span>
           </div>
         </div>
 
         {/* Middle Section: Event Info (Title) */}
-        <div className="my-auto py-2 relative z-10 space-y-3">
-          <h2 className="font-display font-black text-2xl sm:text-3xl text-neutral-950 leading-[1.08] tracking-tight uppercase line-clamp-2">
+        <div className="my-auto py-2 relative z-10 space-y-2.5">
+          <h2 className="font-bold text-xl sm:text-2xl text-slate-900 leading-[1.1] tracking-tight uppercase line-clamp-2">
             {registration.eventTitle || 'THE GRAND TURING HACKATHON 2026'}
           </h2>
 
-          {/* Tabular Metadata Grid with Hairline Dividers (Matching Reference Mockup) */}
-          <div className="border border-neutral-300 rounded-lg overflow-hidden bg-neutral-50/50">
+          {/* Tabular Metadata Grid */}
+          <div className="border border-slate-200 rounded-[8px] overflow-hidden bg-slate-50/70">
             {/* Top Row: DATE | TIME | ACCESS */}
-            <div className="grid grid-cols-3 divide-x divide-neutral-300 border-b border-neutral-300">
+            <div className="grid grid-cols-3 divide-x divide-slate-200 border-b border-slate-200">
               <div className="p-2 sm:p-2.5">
-                <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 font-bold block">
+                <span className="text-[9px] font-mono uppercase tracking-widest text-slate-400 font-bold block">
                   DATE
                 </span>
-                <span className="text-xs sm:text-sm font-extrabold text-neutral-900 tracking-tight block truncate">
-                  {formatDate(registration.eventStartsAt || registration.createdAt, 'medium').toUpperCase()}
+                <span className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight block truncate tabular-nums">
+                  {formatDate(
+                    registration.eventStartsAt || registration.createdAt,
+                    'short'
+                  ).toUpperCase()}
                 </span>
               </div>
 
               <div className="p-2 sm:p-2.5">
-                <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 font-bold block">
+                <span className="text-[9px] font-mono uppercase tracking-widest text-slate-400 font-bold block">
                   TIME
                 </span>
-                <span className="text-xs sm:text-sm font-extrabold text-neutral-900 tracking-tight block truncate">
-                  {registration.eventStartsAt ? formatTime(registration.eventStartsAt).toUpperCase() : '09:00 AM'}
+                <span className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight block truncate tabular-nums">
+                  {registration.eventStartsAt
+                    ? formatTime(registration.eventStartsAt).toUpperCase()
+                    : '09:00 AM'}
                 </span>
               </div>
 
               <div className="p-2 sm:p-2.5">
-                <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 font-bold block">
+                <span className="text-[9px] font-mono uppercase tracking-widest text-slate-400 font-bold block">
                   ACCESS
                 </span>
-                <span className="text-xs sm:text-sm font-extrabold text-neutral-900 tracking-tight block truncate">
+                <span className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight block truncate">
                   HALL B, LEVEL 3
                 </span>
               </div>
             </div>
 
             {/* Bottom Row: VENUE | ATTENDEE */}
-            <div className="grid grid-cols-2 divide-x divide-neutral-300">
+            <div className="grid grid-cols-2 divide-x divide-slate-200">
               <div className="p-2 sm:p-2.5">
-                <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 font-bold block">
+                <span className="text-[9px] font-mono uppercase tracking-widest text-slate-400 font-bold block">
                   VENUE
                 </span>
-                <span className="text-xs sm:text-sm font-extrabold text-neutral-900 tracking-tight block truncate">
+                <span className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight block truncate">
                   {(registration.venueName || 'TECH ARENA, LEVEL 3').toUpperCase()}
                 </span>
               </div>
 
               <div className="p-2 sm:p-2.5">
-                <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500 font-bold block">
+                <span className="text-[9px] font-mono uppercase tracking-widest text-slate-400 font-bold block">
                   ATTENDEE
                 </span>
-                <span className="text-xs sm:text-sm font-extrabold text-neutral-900 tracking-tight block truncate">
-                  {(registration.userName || 'ALEX RIVERA').toUpperCase()}
+                <span className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight block truncate">
+                  {(registration.userName || 'CAMPUS ATTENDEE').toUpperCase()}
                 </span>
               </div>
             </div>
@@ -515,39 +516,34 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
         </div>
 
         {/* Bottom Section: Keepsake Tag */}
-        <div className="pt-2 border-t border-neutral-200 flex items-center justify-between relative z-10">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
-              DEV-CLEARANCE: #{passSerial}
-            </span>
-          </div>
-
-          <div className="text-right">
-            <span className="text-[9px] font-mono font-bold text-neutral-400 uppercase tracking-widest block">
-              KEEPSAKE PASS
-            </span>
-          </div>
+        <div className="pt-2 border-t border-slate-200 flex items-center justify-between relative z-10 text-[10px] font-mono">
+          <span className="text-slate-400 uppercase tracking-widest tabular-nums">
+            CLEARANCE: #{passSerial}
+          </span>
+          <span className="font-bold text-slate-400 uppercase tracking-widest">
+            KEEPSAKE PASS
+          </span>
         </div>
 
         {/* Official Verified Admission Stamp (when scanned by gatekeeper) */}
         <AnimatePresence>
           {isGateScanned && (
             <motion.div
-              initial={{ scale: 1.5, opacity: 0, rotate: -10 }}
+              initial={{ scale: 1.4, opacity: 0, rotate: -8 }}
               animate={{ scale: 1, opacity: 1, rotate: -2 }}
-              transition={{ type: 'spring', stiffness: 320, damping: 22, delay: 0.18 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 22, delay: 0.15 }}
               className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 p-4"
             >
-              <div className="px-5 py-3 rounded-2xl border-3 border-emerald-500 bg-white/95 text-emerald-600 font-display font-extrabold shadow-2xl flex items-center gap-3 backdrop-blur-md">
-                <div className="w-9 h-9 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm">
-                  <CheckCircle size={22} weight="bold" />
+              <div className="px-5 py-3 rounded-[12px] border-2 border-emerald-500 bg-[#0D0E12] text-white font-mono font-bold shadow-2xl flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-emerald-500 text-slate-900 flex items-center justify-center shrink-0">
+                  <CheckCircle size={20} weight="bold" />
                 </div>
                 <div>
-                  <div className="text-sm font-black tracking-wider leading-none uppercase text-emerald-700">
-                    EVENT PASS APPROVED
+                  <div className="text-xs sm:text-sm font-black tracking-wider leading-none uppercase text-emerald-400">
+                    ✓ VERIFIED ADMISSION
                   </div>
-                  <div className="text-[10px] font-mono text-emerald-600/90 mt-1">
-                    ADMITTED AT {admissionTimestamp}
+                  <div className="text-[10px] font-mono text-slate-300 mt-1 tabular-nums">
+                    GATE 01 · {admissionTimestamp}
                   </div>
                 </div>
               </div>
@@ -558,21 +554,11 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
     </TearTicket>
   )
 
-  // Underlay depth container sized strictly to the intact section so zero white backing bleeds through after tearing
-  const underlayWidthClass = isMobile
-    ? 'w-full h-[calc(100%-280px)] top-0 left-0'
-    : 'h-full w-[calc(100%-280px)] top-0 left-0'
-
-  // Floating Overlay Presentation (Grounded Studio Backdrop + Docked Action Bar)
+  // Floating Overlay Presentation (Grounded Solid Studio Backdrop + Docked Action Bar)
   if (floatingCanvas) {
     return (
       <div
-        className="fixed inset-0 z-50 flex flex-col items-center justify-center p-3 sm:p-6 select-none overflow-y-auto"
-        style={{
-          background: 'radial-gradient(ellipse at 50% 45%, rgba(45, 52, 75, 0.45) 0%, rgba(13, 15, 22, 0.96) 55%, rgba(6, 7, 10, 0.99) 100%)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-        }}
+        className="fixed inset-0 z-50 flex flex-col items-center justify-center p-3 sm:p-6 select-none overflow-y-auto bg-black/85"
         onClick={(e) => {
           if (e.target === e.currentTarget && onClose) onClose()
         }}
@@ -581,20 +567,15 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
         aria-label="Official Admission Ticket"
       >
         <div className="relative my-auto flex flex-col items-center w-full max-w-[800px] px-2">
-          {/* Ticket Container with Physical Drop Shadows */}
-          <div className="relative max-w-full">
-            {/* Scoped Underlay Cardstock Depth (Strictly under keepsake section - zero white backing leakage) */}
-            <div className={cn('absolute rounded-2xl bg-white/20 border border-white/10 blur-[1px] pointer-events-none -z-10 translate-y-2', underlayWidthClass)} />
-            
-            {ticketContent}
-          </div>
+          {/* Ticket Container */}
+          <div className="relative max-w-full">{ticketContent}</div>
 
           {/* Sleek Docked Action Bar Directly Below Ticket */}
-          <div className="mt-5 sm:mt-7 flex flex-wrap items-center justify-center gap-2 p-1.5 rounded-full bg-white/10 backdrop-blur-2xl border border-white/20 shadow-2xl animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-full">
+          <div className="mt-5 sm:mt-6 flex flex-wrap items-center justify-center gap-2 p-1.5 rounded-full bg-[#0D0E12] border border-white/15 shadow-2xl animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-full text-white">
             <button
               type="button"
               onClick={handleDownloadPDF}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold tracking-wide transition-all active:scale-95 shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold tracking-wide transition-all active:scale-[0.98] cursor-pointer"
             >
               <DownloadSimple size={14} weight="bold" />
               <span>Download PDF</span>
@@ -603,10 +584,10 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
             <button
               type="button"
               onClick={handleDownloadCalendar}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold tracking-wide transition-all active:scale-95 shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold tracking-wide transition-all active:scale-[0.98] cursor-pointer"
             >
               <CalendarBlank size={14} weight="bold" />
-              <span>Add to Calendar</span>
+              <span>Add to Cal</span>
             </button>
 
             {/* Re-attach button: Only rendered if manually torn and NOT yet gate scanned */}
@@ -614,7 +595,7 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
               <button
                 type="button"
                 onClick={resetManualTear}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-violet-600/60 hover:bg-violet-600 text-white text-xs font-semibold tracking-wide transition-all active:scale-95 shadow-xs"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold tracking-wide transition-all active:scale-[0.98] cursor-pointer"
                 title="Put stub back"
               >
                 <ArrowsClockwise size={14} weight="bold" />
@@ -622,12 +603,12 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
               </button>
             )}
 
-            {/* Simulation button for rapid gatekeeper scan testing */}
+            {/* Simulation button for testing gate check-in */}
             {!isGateScanned && (
               <button
                 type="button"
                 onClick={() => handleGateAdmission()}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 text-xs font-semibold tracking-wide transition-all active:scale-95 border border-emerald-500/30 shadow-xs"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 text-xs font-semibold tracking-wide transition-all active:scale-[0.98] border border-emerald-500/30 cursor-pointer"
                 title="Simulate gatekeeper QR scan"
               >
                 <Lightning size={14} weight="fill" />
@@ -639,7 +620,7 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-semibold tracking-wide transition-all active:scale-95 shadow-xs"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold tracking-wide transition-all active:scale-[0.98] cursor-pointer"
               >
                 <X size={14} weight="bold" />
                 <span>Close</span>
@@ -648,9 +629,9 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
           </div>
 
           {/* Emailed ticket status indicator */}
-          <div className="mt-3.5 inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-white/80 text-[11px] font-medium tracking-wide">
+          <div className="mt-3 inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#0D0E12] border border-white/15 text-slate-300 text-[11px] font-medium tracking-wide">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Ticket & scannable QR have been mailed to your email address</span>
+            <span>Pass token #{passSerial} active on cryptographic ledger</span>
           </div>
         </div>
       </div>
@@ -660,10 +641,7 @@ export const EventAdmissionTicket: React.FC<EventAdmissionTicketProps> = ({
   return (
     <div className={cn('relative select-none flex flex-col items-center w-full max-w-full', className)}>
       <div className="w-full max-w-[800px] overflow-visible flex justify-center items-center py-4 my-auto">
-        <div className="relative max-w-full">
-          <div className={cn('absolute rounded-2xl bg-white/20 border border-white/10 blur-[1px] pointer-events-none -z-10 translate-y-2', underlayWidthClass)} />
-          {ticketContent}
-        </div>
+        <div className="relative max-w-full">{ticketContent}</div>
       </div>
     </div>
   )

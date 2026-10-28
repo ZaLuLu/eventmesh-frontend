@@ -10,12 +10,14 @@ import {
   Check,
   GraduationCap,
   Sparkle,
-  Cube,
   IdentificationCard,
   ArrowRight,
   CalendarBlank,
   PencilSimple,
   ArrowsClockwise,
+  ClockCounterClockwise,
+  User,
+  ShareNetwork,
 } from '@phosphor-icons/react'
 import { useMyRegistrations, useCancelRegistration, useUpdateRegistrationStatus } from '@/hooks/useRegistrations'
 import { useMyCertificates } from '@/hooks/useCertificates'
@@ -23,12 +25,10 @@ import { useClubs } from '@/hooks/useClubs'
 import { useEvents } from '@/hooks/useEvents'
 import { useAuth } from '@/hooks/useAuth'
 import { PageShell } from '@/design-system/layout/PageShell'
-import { Badge } from '@/design-system/primitives/Badge'
 import { Button } from '@/design-system/primitives/Button'
 import { formatDate } from '@/lib/dates'
 import { api, Registration, Certificate } from '@/api'
 import { useToast } from '@/design-system/primitives/Toast'
-import { EmptyState } from '@/design-system/primitives/EmptyState'
 import { fireCelebrationConfetti } from '@/lib/confetti'
 import { TactileBoardingPass } from './components/TactileBoardingPass'
 import { EventAdmissionTicket } from '@/design-system/micro/EventAdmissionTicket'
@@ -38,6 +38,8 @@ import { ProfileDetailsModal } from './components/ProfileDetailsModal'
 import { resolveUserAvatar } from '@/lib/avatars'
 import { Modal } from '@/design-system/primitives/Modal'
 import { getUserScheduleWebCalUrl, getUserScheduleIcsUrl } from '@/lib/ics'
+
+type TabKey = 'passes' | 'history' | 'certificates' | 'student-id'
 
 export const AttendeeDashboardPage: React.FC = () => {
   const { session, isAuthenticated } = useAuth()
@@ -69,9 +71,9 @@ export const AttendeeDashboardPage: React.FC = () => {
     return []
   }, [rawRegistrations])
 
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [selectedTicket, setSelectedTicket] = useState<Registration | null>(null)
-  const [activeTab, setActiveTab] = useState<'passes' | 'certificates' | 'clubs'>('passes')
+  const [activeTab, setActiveTab] = useState<TabKey>('passes')
   const [copiedRegNo, setCopiedRegNo] = useState(false)
   const [calendarSyncOpen, setCalendarSyncOpen] = useState(false)
   const [copiedFeed, setCopiedFeed] = useState(false)
@@ -81,12 +83,12 @@ export const AttendeeDashboardPage: React.FC = () => {
 
   useEffect(() => {
     const tab = searchParams.get('tab')
-    if (tab === 'certificates' || tab === 'clubs' || tab === 'passes') {
+    if (tab === 'certificates' || tab === 'history' || tab === 'student-id' || tab === 'passes') {
       setActiveTab(tab)
     } else if (tab === 'tickets') {
       setActiveTab('passes')
-    } else if (tab === 'profile') {
-      setIsProfileModalOpen(true)
+    } else if (tab === 'profile' || tab === 'id') {
+      setActiveTab('student-id')
     }
   }, [searchParams])
 
@@ -99,25 +101,24 @@ export const AttendeeDashboardPage: React.FC = () => {
   // Student Identity Data
   const studentData = useMemo(() => {
     const s = session as any
-    const rawName = s?.name || 'EventMesh member'
+    const rawName = s?.name || 'EventMesh Member'
     const cleanName = rawName
       .replace(/\s*\([^)]*\)/g, '')
-      .trim() || 'EventMesh member'
+      .trim() || 'EventMesh Member'
 
     return {
       name: cleanName,
-      registrationNumber: s?.registrationNumber || s?.studentId || '',
-      degreeBranch: s?.degreeBranch || s?.branch || '',
+      registrationNumber: s?.registrationNumber || s?.studentId || 'EM-2026-0814',
+      degreeBranch: s?.degreeBranch || s?.branch || 'Campus Student',
       semester: s?.semester,
       email: s?.email || '',
       role: 'EVENTMESH MEMBER',
-      campus: s?.campus || s?.institutionName || '',
+      campus: s?.campus || s?.institutionName || 'Apex Institute',
       bloodGroup: s?.bloodGroup,
       emergencyPhone: s?.emergencyPhone || s?.phone,
       phone: s?.phone || '',
     }
   }, [session])
-
 
   const handleCopyRegNo = () => {
     navigator.clipboard.writeText(studentData.registrationNumber)
@@ -149,8 +150,6 @@ export const AttendeeDashboardPage: React.FC = () => {
       }
     }
   }
-
-  const followedClubs = clubs.filter((c) => c.isFollowed)
 
   const queryClient = useQueryClient()
   const [isPromoting, setIsPromoting] = useState(false)
@@ -201,12 +200,12 @@ export const AttendeeDashboardPage: React.FC = () => {
         format: 'a4',
       })
 
-      // Warm paper background (#F6F1E7)
-      doc.setFillColor(246, 241, 231)
+      // Warm paper background (#F8FAFC)
+      doc.setFillColor(248, 250, 252)
       doc.rect(0, 0, 297, 210, 'F')
 
       // Double collegiate ink border
-      doc.setDrawColor(21, 17, 48)
+      doc.setDrawColor(13, 14, 18)
       doc.setLineWidth(1.5)
       doc.rect(12, 12, 273, 186)
 
@@ -221,7 +220,7 @@ export const AttendeeDashboardPage: React.FC = () => {
 
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(28)
-      doc.setTextColor(21, 17, 48)
+      doc.setTextColor(13, 14, 18)
       doc.text('CERTIFICATE OF PARTICIPATION', 148.5, 52, { align: 'center' })
 
       doc.setFont('helvetica', 'normal')
@@ -241,7 +240,7 @@ export const AttendeeDashboardPage: React.FC = () => {
 
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(18)
-      doc.setTextColor(21, 17, 48)
+      doc.setTextColor(13, 14, 18)
       doc.text(cert.eventTitle.toUpperCase(), 148.5, 122, { align: 'center' })
 
       doc.setFont('helvetica', 'normal')
@@ -317,248 +316,453 @@ export const AttendeeDashboardPage: React.FC = () => {
     })
   }, [registrations, upcomingData, session, studentData])
 
-  const activePasses = enrichedRegistrations.filter((r) => r.status !== 'cancelled')
-  const attendedPasses = enrichedRegistrations.filter((r) => r.status === 'checked_in')
+  // Active / Imminent vs History
+  const activePasses = useMemo(() => {
+    return enrichedRegistrations.filter((r) => {
+      if (r.status === 'cancelled') return false
+      if (r.status === 'checked_in') return false
+      if (r.eventStartsAt && new Date(r.eventStartsAt).getTime() < Date.now() - 24 * 3600 * 1000) {
+        return false
+      }
+      return true
+    })
+  }, [enrichedRegistrations])
+
+  const historyPasses = useMemo(() => {
+    return enrichedRegistrations.filter((r) => {
+      if (r.status === 'cancelled') return true
+      if (r.status === 'checked_in') return true
+      if (r.eventStartsAt && new Date(r.eventStartsAt).getTime() < Date.now() - 24 * 3600 * 1000) {
+        return true
+      }
+      return false
+    })
+  }, [enrichedRegistrations])
+
+  // Next up imminent event
   const nextEvent = (upcomingData?.items || [])
     .filter((event) => activePasses.some((pass) => pass.eventId === event.id) && new Date(event.startsAt).getTime() >= Date.now())
     .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())[0]
   const nextPass = nextEvent && activePasses.find((pass) => pass.eventId === nextEvent.id)
 
+  const handleTabSwitch = (key: TabKey) => {
+    setActiveTab(key)
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.set('tab', key)
+      return next
+    })
+  }
+
   return (
-    <PageShell className="py-6 sm:py-8 space-y-8">
+    <PageShell className="py-6 sm:py-8 space-y-6">
       {/* ========================================================================= */}
-      {/* 1. NEXT UP IMMINENT PASS (QUICK GATE ACCESS)                              */}
+      {/* 1. WALLET HEADER & QUICK ACTIONS                                          */}
+      {/* ========================================================================= */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-line pb-5">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-accent" />
+            <span className="text-xs font-mono font-bold tracking-wider uppercase text-text-3">
+              CAMPUS WALLET &amp; IDENTITY
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-text mt-1">
+            Attendee Passes
+          </h1>
+          <p className="text-xs sm:text-sm text-text-2 mt-0.5">
+            Offline-cached digital boarding passes, gate admission stubs, and credentials.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2.5 shrink-0">
+          {/* Live Calendar Subscription Action */}
+          <button
+            type="button"
+            onClick={() => setCalendarSyncOpen(true)}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-line bg-surface hover:bg-subtle text-text text-xs font-semibold shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            <CalendarBlank size={15} className="text-accent" weight="bold" />
+            <span>Sync Calendar</span>
+          </button>
+
+          {/* Quick ID Tab Trigger */}
+          <button
+            type="button"
+            onClick={() => handleTabSwitch('student-id')}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-line bg-surface hover:bg-subtle text-text text-xs font-semibold shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            <IdentificationCard size={15} className="text-accent" weight="bold" />
+            <span>Student ID</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 2. NEXT UP IMMINENT PASS (FAST GATE ACCESSIBILITY)                        */}
       {/* ========================================================================= */}
       {nextEvent && nextPass && (
         <section
-          className="rounded-2xl border-2 border-primary/20 bg-gradient-to-r from-primary/5 via-surface to-surface p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm"
-          aria-label="Next event quick access"
+          className="rounded-2xl border-2 border-accent/30 bg-surface p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm"
+          aria-label="Next event quick gate access"
         >
           <div className="flex items-start sm:items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-              <Ticket size={22} weight="bold" />
+            <div className="w-11 h-11 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0 border border-accent/20">
+              <Ticket size={24} weight="bold" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-mono font-bold tracking-wider uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-mono font-bold tracking-wider uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  NEXT UP
+                  GATE READY · NEXT UP
                 </span>
-                <span className="text-xs text-ink-soft font-mono">
+                <span className="text-xs text-text-3 font-mono">
                   {formatDate(nextEvent.startsAt)}
                 </span>
               </div>
-              <h2 className="text-base sm:text-lg font-bold text-ink truncate mt-0.5">
+              <h2 className="text-base sm:text-lg font-bold text-text truncate mt-1">
                 {nextEvent.title}
               </h2>
-              <p className="text-xs text-ink-muted truncate font-mono">
+              <p className="text-xs text-text-2 truncate font-mono mt-0.5">
                 {nextEvent.venue?.name || 'Main Campus Venue'}
               </p>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedTicket(nextPass)
-              fireCelebrationConfetti()
-            }}
-            className="shrink-0 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-ink text-surface hover:opacity-90 font-semibold text-xs tracking-wide uppercase transition-all shadow-sm active:scale-98"
-          >
-            <Ticket size={16} weight="bold" />
-            <span>Present Pass</span>
-            <ArrowRight size={14} weight="bold" />
-          </button>
-        </section>
-      )}
-
-      {/* Become an Organizer Banner */}
-      {!isOrganizer && (
-        <section className="rounded-2xl border border-accent/25 bg-gradient-to-r from-accent/10 via-surface to-surface p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
-          <div className="flex items-start sm:items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-accent/15 text-accent flex items-center justify-center shrink-0">
-              <Sparkle size={22} weight="fill" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-accent text-on-accent">
-                  LEADERSHIP UPGRADE
-                </span>
-                <span className="text-xs font-mono text-text-3">Start a Club</span>
-              </div>
-              <h3 className="text-body font-bold text-text mt-0.5">
-                Want to host your own tech meetups or hackathons?
-              </h3>
-              <p className="text-caption text-text-2">
-                Promote your account to Club Organizer. Lead a club, design event registrations, and withdraw earnings.
-              </p>
-            </div>
-          </div>
-
           <div className="shrink-0 flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="primary"
-              icon={<Sparkle size={14} weight="fill" />}
-              onClick={handleBecomeOrganizer}
-              loading={isPromoting}
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedTicket(nextPass)
+                fireCelebrationConfetti()
+              }}
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-accent text-on-accent hover:opacity-90 font-bold text-xs tracking-wider uppercase transition-all shadow-xs active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
-              Become an Organizer
-            </Button>
+              <Ticket size={16} weight="bold" />
+              <span>Present at Gate</span>
+              <ArrowRight size={14} weight="bold" />
+            </button>
           </div>
         </section>
       )}
 
-      {/* Organizer Privileges Active Banner */}
-      {isOrganizer && (
-        <section className="rounded-2xl border border-line bg-subtle p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-small">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-surface border border-line flex items-center justify-center text-accent">
-              <GraduationCap size={20} weight="bold" />
-            </div>
-            <div>
-              <span className="font-semibold text-text">Organizer Privileges Active</span>
-              <p className="text-caption text-text-3">You manage events and ticket queues for your club.</p>
-            </div>
-          </div>
-          <Link to="/admin">
-            <Button surface="admin" size="dense" arrow>
-              Open Admin Console
-            </Button>
-          </Link>
-        </section>
-      )}
-
       {/* ========================================================================= */}
-      {/* 2. STREAMLINED STUDENT WALLET IDENTITY SECTION                            */}
+      {/* 3. APPLE WALLET SEGMENTED DECK TABS                                       */}
       {/* ========================================================================= */}
-      <section className="rounded-3xl bg-surface-subtle border border-line/40 p-6 sm:p-8 flex flex-col items-center">
-        {/* Minimal Identity Bar */}
-        <div className="w-full max-w-[460px] flex items-center justify-between mb-4 flex-wrap gap-2">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-surface border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 shadow-xs">
-              <ShieldCheck size={14} weight="fill" className="text-emerald-500" />
-              <span>Campus Verified: {studentData.email.split('@')[1] || 'apex.edu.in'}</span>
-            </span>
-            <span className="text-xs font-mono text-ink-muted hidden sm:inline">
-              {studentData.degreeBranch || 'Verified Passholder'}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setIsProfileModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-ink-soft hover:text-ink bg-surface border border-line/60 transition-colors shadow-xs"
-              title="Edit attendee profile details"
-            >
-              <PencilSimple size={12} />
-              <span>Edit Profile</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setIsAvatarModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono text-ink-soft hover:text-ink bg-surface border border-line/60 transition-colors shadow-xs"
-              title="Edit student avatar photo"
-            >
-              <PencilSimple size={12} />
-              <span>Change Photo</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Central Identity Card Artifact */}
-        <div className="w-full flex flex-col items-center">
-          <StudentIDCard2D
-            name={studentData.name}
-            registrationNumber={studentData.registrationNumber || 'EM-2026-0814'}
-            degreeBranch={studentData.degreeBranch}
-            semester={studentData.semester}
-            email={studentData.email}
-            role={studentData.role}
-            campus={studentData.campus}
-            avatarUrl={avatarUrl}
-            onAvatarClick={() => setIsAvatarModalOpen(true)}
-            interactive={true}
-          />
-          <p className="mt-3 text-xs font-mono text-ink-muted text-center flex items-center justify-center gap-1.5">
-            <ArrowsClockwise size={12} className="text-accent" />
-            <span>Click or tap card to flip 3D (Front / Back)</span>
-          </p>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* MY TICKETS & DIGITAL PASSES                                              */}
-      {/* ========================================================================= */}
-      <section className="space-y-6">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line/40 pb-3">
-          <div className="flex items-center gap-2">
-            <Ticket className="w-4 h-4 text-accent" weight="bold" />
-            <h2 className="font-display font-bold text-lg text-ink">
-              My Tickets & Admission Passes
-            </h2>
-            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-accent text-white">
-              {enrichedRegistrations.length}
-            </span>
-          </div>
-
-          {/* Live Calendar Subscription Action */}
+      <div className="space-y-6">
+        <div
+          role="tablist"
+          aria-label="Wallet sections"
+          className="flex items-center gap-1.5 p-1 rounded-xl bg-subtle border border-line overflow-x-auto scrollbar-none"
+        >
+          {/* Tab 1: Active Passes */}
           <button
             type="button"
-            onClick={() => setCalendarSyncOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-line bg-surface hover:bg-card text-ink text-xs font-medium transition-colors"
+            role="tab"
+            aria-selected={activeTab === 'passes'}
+            onClick={() => handleTabSwitch('passes')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+              activeTab === 'passes'
+                ? 'bg-surface text-text shadow-xs border border-line'
+                : 'text-text-2 hover:text-text hover:bg-surface/50'
+            }`}
           >
-            <CalendarBlank size={14} className="text-accent" />
-            <span>Sync to Phone / Calendar</span>
+            <Ticket size={16} weight={activeTab === 'passes' ? 'fill' : 'regular'} className="text-accent" />
+            <span>Active Passes</span>
+            <span
+              className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold tabular-nums ${
+                activeTab === 'passes' ? 'bg-accent text-white' : 'bg-surface border border-line text-text-3'
+              }`}
+            >
+              {activePasses.length}
+            </span>
+          </button>
+
+          {/* Tab 2: Past History */}
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'history'}
+            onClick={() => handleTabSwitch('history')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+              activeTab === 'history'
+                ? 'bg-surface text-text shadow-xs border border-line'
+                : 'text-text-2 hover:text-text hover:bg-surface/50'
+            }`}
+          >
+            <ClockCounterClockwise size={16} weight={activeTab === 'history' ? 'bold' : 'regular'} className="text-accent" />
+            <span>Past History</span>
+            <span
+              className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold tabular-nums ${
+                activeTab === 'history' ? 'bg-accent text-white' : 'bg-surface border border-line text-text-3'
+              }`}
+            >
+              {historyPasses.length}
+            </span>
+          </button>
+
+          {/* Tab 3: Certificates Ledger */}
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'certificates'}
+            onClick={() => handleTabSwitch('certificates')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+              activeTab === 'certificates'
+                ? 'bg-surface text-text shadow-xs border border-line'
+                : 'text-text-2 hover:text-text hover:bg-surface/50'
+            }`}
+          >
+            <CertificateIcon size={16} weight={activeTab === 'certificates' ? 'fill' : 'regular'} className="text-accent" />
+            <span>Certificates</span>
+            <span
+              className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold tabular-nums ${
+                activeTab === 'certificates' ? 'bg-accent text-white' : 'bg-surface border border-line text-text-3'
+              }`}
+            >
+              {certificates.length}
+            </span>
+          </button>
+
+          {/* Tab 4: Student ID */}
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'student-id'}
+            onClick={() => handleTabSwitch('student-id')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+              activeTab === 'student-id'
+                ? 'bg-surface text-text shadow-xs border border-line'
+                : 'text-text-2 hover:text-text hover:bg-surface/50'
+            }`}
+          >
+            <IdentificationCard size={16} weight={activeTab === 'student-id' ? 'fill' : 'regular'} className="text-accent" />
+            <span>Student ID</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
           </button>
         </div>
 
-        {/* PASSES & BOARDING PASSES */}
-        <div>
-          {regsLoading ? (
-            <p className="text-xs font-mono text-ink-soft">Loading tickets...</p>
-          ) : enrichedRegistrations.length === 0 ? (
-            <div className="bg-surface-subtle rounded-3xl p-10 text-center space-y-3">
-              <h3 className="font-display font-medium text-lg text-ink">No active passes yet</h3>
-              <p className="text-sm text-ink-soft max-w-sm mx-auto">
-                You haven't reserved seats for upcoming events. Browse campus premieres to grab a pass.
-              </p>
-              <div className="pt-2">
-                <Link to="/explore">
-                  <button type="button" className="btn-minimal-primary px-5 py-2 text-xs">
-                    Explore events
-                  </button>
-                </Link>
+        {/* ======================================================================= */}
+        {/* TAB CONTENT 1: ACTIVE PASSES                                            */}
+        {/* ======================================================================= */}
+        {activeTab === 'passes' && (
+          <div className="space-y-4">
+            {regsLoading ? (
+              <div className="py-12 text-center">
+                <p className="text-xs font-mono text-text-3">Loading active passes from secure storage...</p>
+              </div>
+            ) : activePasses.length === 0 ? (
+              <div className="rounded-2xl border border-line bg-surface p-12 text-center space-y-3">
+                <div className="w-12 h-12 rounded-xl bg-subtle border border-line mx-auto flex items-center justify-center text-accent">
+                  <Ticket size={24} />
+                </div>
+                <h3 className="font-display font-bold text-lg text-text">No active passes in your wallet</h3>
+                <p className="text-xs sm:text-sm text-text-2 max-w-sm mx-auto">
+                  You don't have any confirmed registrations for upcoming events. Browse campus premieres to grab admission passes.
+                </p>
+                <div className="pt-2">
+                  <Link to="/explore">
+                    <Button variant="primary" size="sm">
+                      Explore Campus Events
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {activePasses.map((reg) => (
+                  <TactileBoardingPass
+                    key={reg.id}
+                    registration={reg}
+                    onPresent={() => {
+                      setSelectedTicket(reg)
+                      fireCelebrationConfetti()
+                    }}
+                    onCancel={() => handleCancelPass(reg)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ======================================================================= */}
+        {/* TAB CONTENT 2: PAST HISTORY                                             */}
+        {/* ======================================================================= */}
+        {activeTab === 'history' && (
+          <div className="space-y-4">
+            {regsLoading ? (
+              <div className="py-12 text-center">
+                <p className="text-xs font-mono text-text-3">Loading past attendance history...</p>
+              </div>
+            ) : historyPasses.length === 0 ? (
+              <div className="rounded-2xl border border-line bg-surface p-12 text-center space-y-3">
+                <div className="w-12 h-12 rounded-xl bg-subtle border border-line mx-auto flex items-center justify-center text-text-3">
+                  <ClockCounterClockwise size={24} />
+                </div>
+                <h3 className="font-display font-bold text-lg text-text">No past event history</h3>
+                <p className="text-xs sm:text-sm text-text-2 max-w-sm mx-auto">
+                  Once you attend events and scan your ticket at campus gates, your keepsake passes will appear here.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {historyPasses.map((reg) => (
+                  <div key={reg.id} className="relative group">
+                    <TactileBoardingPass
+                      registration={reg}
+                      onPresent={() => {
+                        setSelectedTicket(reg)
+                        fireCelebrationConfetti()
+                      }}
+                      onCancel={() => handleCancelPass(reg)}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ======================================================================= */}
+        {/* TAB CONTENT 3: CERTIFICATES LEDGER                                      */}
+        {/* ======================================================================= */}
+        {activeTab === 'certificates' && (
+          <div className="space-y-4">
+            {certsLoading ? (
+              <div className="py-12 text-center">
+                <p className="text-xs font-mono text-text-3">Verifying credential ledger...</p>
+              </div>
+            ) : certificates.length === 0 ? (
+              <div className="rounded-2xl border border-line bg-surface p-12 text-center space-y-3">
+                <div className="w-12 h-12 rounded-xl bg-subtle border border-line mx-auto flex items-center justify-center text-accent">
+                  <CertificateIcon size={24} />
+                </div>
+                <h3 className="font-display font-bold text-lg text-text">No certificates issued yet</h3>
+                <p className="text-xs sm:text-sm text-text-2 max-w-sm mx-auto">
+                  Complete workshops, hackathons, and certified campus sessions to earn verifiable PDF credentials.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {certificates.map((cert) => (
+                  <div
+                    key={cert.id || cert.certificateId}
+                    className="rounded-2xl border border-line bg-surface p-5 sm:p-6 flex flex-col justify-between gap-4 shadow-xs hover:border-accent/40 transition-colors"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 border-b border-line pb-3 mb-3">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                          <ShieldCheck size={14} weight="fill" />
+                          <span>Verified Credential</span>
+                        </span>
+                        <span className="text-xs font-mono text-text-3 tabular-nums">
+                          {formatDate(cert.issuedAt)}
+                        </span>
+                      </div>
+
+                      <h3 className="font-display font-bold text-base sm:text-lg text-text">
+                        {cert.eventTitle}
+                      </h3>
+                      <p className="text-xs text-text-2 mt-1">
+                        Awarded to <span className="font-semibold text-text">{cert.recipientName}</span> by{' '}
+                        <span className="font-semibold text-text">{cert.organizerName}</span>
+                      </p>
+                    </div>
+
+                    <div className="pt-3 border-t border-line flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-mono uppercase tracking-wider text-text-3">Credential ID</p>
+                        <p className="text-xs font-mono font-bold text-text truncate">{cert.certificateId}</p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => downloadCertificatePDF(cert)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface hover:bg-subtle border border-line text-xs font-bold text-text transition-colors shadow-xs active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent shrink-0"
+                      >
+                        <DownloadSimple size={14} weight="bold" />
+                        <span>Download PDF</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ======================================================================= */}
+        {/* TAB CONTENT 4: STUDENT IDENTITY CARD                                    */}
+        {/* ======================================================================= */}
+        {activeTab === 'student-id' && (
+          <div className="rounded-2xl bg-surface border border-line p-6 sm:p-8 flex flex-col items-center">
+            {/* Identity Bar Controls */}
+            <div className="w-full max-w-[460px] flex items-center justify-between mb-5 flex-wrap gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  <ShieldCheck size={14} weight="fill" className="text-emerald-500" />
+                  <span>Campus Verified: {studentData.email.split('@')[1] || 'apex.edu.in'}</span>
+                </span>
+                <span className="text-xs font-mono text-text-3 hidden sm:inline">
+                  {studentData.degreeBranch || 'Verified Passholder'}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsProfileModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono text-text-2 hover:text-text bg-subtle border border-line transition-colors shadow-xs"
+                  title="Edit attendee profile details"
+                >
+                  <PencilSimple size={12} />
+                  <span>Edit Profile</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsAvatarModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono text-text-2 hover:text-text bg-subtle border border-line transition-colors shadow-xs"
+                  title="Edit student avatar photo"
+                >
+                  <User size={12} />
+                  <span>Change Photo</span>
+                </button>
               </div>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {enrichedRegistrations.map((reg) => (
-                <TactileBoardingPass
-                  key={reg.id}
-                  registration={reg}
-                  onPresent={() => {
-                    setSelectedTicket(reg)
-                    fireCelebrationConfetti()
-                  }}
-                  onCancel={() => handleCancelPass(reg)}
-                />
-              ))}
+
+            {/* Central Identity Card Artifact */}
+            <div className="w-full flex flex-col items-center">
+              <StudentIDCard2D
+                name={studentData.name}
+                registrationNumber={studentData.registrationNumber}
+                degreeBranch={studentData.degreeBranch}
+                semester={studentData.semester}
+                email={studentData.email}
+                role={studentData.role}
+                campus={studentData.campus}
+                avatarUrl={avatarUrl}
+                onAvatarClick={() => setIsAvatarModalOpen(true)}
+                interactive={true}
+              />
+              <p className="mt-3.5 text-xs font-mono text-text-3 text-center flex items-center justify-center gap-1.5">
+                <ArrowsClockwise size={12} className="text-accent" />
+                <span>Click or tap card to flip 3D (Front / Back)</span>
+              </p>
             </div>
-          )}
-        </div>
-      </section>
+          </div>
+        )}
+      </div>
 
       {/* ========================================================================= */}
-      {/* FLOATING TICKET PASS INSPECTION (Mandate 1: Intact QR Face / Gate Tear)   */}
+      {/* 4. TACTILE GATE TEAR-OFF MODAL INSPECTION                                 */}
       {/* ========================================================================= */}
       {selectedTicket && (
         <EventAdmissionTicket
           registration={selectedTicket}
           floatingCanvas={true}
-          demoMode={false} // Normal student flow: pass is presented to volunteer
+          demoMode={false}
           onClose={() => setSelectedTicket(null)}
           onAdmit={() => {
             updateStatusMutation.mutate({
@@ -578,29 +782,55 @@ export const AttendeeDashboardPage: React.FC = () => {
         />
       )}
 
-
-
-      {/* Organizer Studio CTA Banner */}
-      <section className="rounded-2xl border border-line bg-surface p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-8">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-accent/15 text-accent">
-              Club Leadership & Management
-            </span>
+      {/* ========================================================================= */}
+      {/* 5. ORGANIZER CTA STRIP (TASTEFUL BOTTOM PLACEMENT)                       */}
+      {/* ========================================================================= */}
+      {!isOrganizer ? (
+        <section className="rounded-2xl border border-line bg-surface p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-8">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-accent/15 text-accent">
+                LEADERSHIP UPGRADE
+              </span>
+              <span className="text-xs text-text-3 font-mono">Start a Club</span>
+            </div>
+            <h4 className="font-display font-bold text-base text-text">
+              Want to host events for your student club?
+            </h4>
+            <p className="text-xs text-text-2 max-w-xl">
+              Promote your account to Club Organizer. Get access to QR gate scanning, attendee rosters, and verifiable certificates.
+            </p>
           </div>
-          <h4 className="font-display font-bold text-base text-ink">Host Events for Your Student Club</h4>
-          <p className="text-xs text-ink-soft max-w-xl">
-            Organizers get access to real-time QR gate scanning, customizable registration forms, automated attendance rosters, and verified PDF certificates.
-          </p>
-        </div>
-        <Link
-          to="/admin"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-ink text-paper text-xs font-semibold hover:bg-ink-soft active:scale-95 transition-all shrink-0"
-        >
-          <span>Switch to Organizer Studio</span>
-          <ArrowRight size={14} />
-        </Link>
-      </section>
+          <div className="shrink-0 flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="primary"
+              icon={<Sparkle size={14} weight="fill" />}
+              onClick={handleBecomeOrganizer}
+              loading={isPromoting}
+            >
+              Become an Organizer
+            </Button>
+          </div>
+        </section>
+      ) : (
+        <section className="rounded-2xl border border-line bg-subtle p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-8">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-surface border border-line flex items-center justify-center text-accent shrink-0">
+              <GraduationCap size={22} weight="bold" />
+            </div>
+            <div>
+              <span className="font-bold text-sm text-text">Organizer Studio Active</span>
+              <p className="text-xs text-text-3">You manage events, registrations, and ticket queues for your club.</p>
+            </div>
+          </div>
+          <Link to="/admin" className="shrink-0">
+            <Button surface="admin" size="sm" arrow>
+              Open Admin Console
+            </Button>
+          </Link>
+        </section>
+      )}
 
       {/* Profile Details Modal */}
       <ProfileDetailsModal
@@ -619,20 +849,20 @@ export const AttendeeDashboardPage: React.FC = () => {
       <Modal
         isOpen={calendarSyncOpen}
         onClose={() => setCalendarSyncOpen(false)}
-        title="Sync All Passes to Your Calendar"
-        subtitle="Subscribe once with Apple Calendar, Google Calendar, or Outlook to keep your confirmed events automatically synced."
+        title="Sync Passes to Your Calendar"
+        subtitle="Subscribe with Apple Calendar, Google Calendar, or Outlook to keep your confirmed events automatically updated."
         maxWidth="max-w-md"
       >
         <div className="space-y-4 pt-1">
-          <div className="p-3.5 rounded-xl bg-surface-subtle/80 border border-line text-xs space-y-1.5">
-            <p className="font-semibold text-ink flex items-center gap-1.5">
+          <div className="p-3.5 rounded-xl bg-subtle border border-line text-xs space-y-1.5">
+            <p className="font-semibold text-text flex items-center gap-1.5">
               <span>⚡ Live WebCal Feed</span>
-              <span className="text-xs font-mono px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">
+              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">
                 Auto-Refreshing
               </span>
             </p>
-            <p className="text-ink-soft">
-              Anytime you RSVP to an event or an organizer modifies session timings, your phone calendar updates automatically without re-downloading.
+            <p className="text-text-2">
+              Anytime you RSVP to an event or session timings update, your calendar syncs automatically without downloading a new file.
             </p>
           </div>
 
@@ -640,45 +870,45 @@ export const AttendeeDashboardPage: React.FC = () => {
             {/* 1-Tap Apple Calendar / Outlook */}
             <a
               href={getUserScheduleWebCalUrl(session?.id || 'me')}
-              className="flex items-center justify-between p-3.5 rounded-xl border border-line bg-surface hover:bg-card text-ink transition-colors group"
+              className="flex items-center justify-between p-3.5 rounded-xl border border-line bg-surface hover:bg-subtle text-text transition-colors group"
             >
               <div className="flex items-center gap-3">
                 <span className="text-xl">🍏</span>
                 <div>
                   <p className="text-sm font-semibold">Apple Calendar / Outlook</p>
-                  <p className="text-xs text-ink-soft">1-tap subscribe via native WebCal</p>
+                  <p className="text-xs text-text-2">1-tap subscribe via native WebCal</p>
                 </div>
               </div>
-              <ArrowRight size={15} className="text-ink-muted group-hover:text-ink transition-colors" />
+              <ArrowRight size={15} className="text-text-3 group-hover:text-text transition-colors" />
             </a>
 
             {/* Direct .ics Download */}
             <a
               href={getUserScheduleIcsUrl(session?.id || 'me')}
               download="eventmesh-my-schedule.ics"
-              className="flex items-center justify-between p-3.5 rounded-xl border border-line bg-surface hover:bg-card text-ink transition-colors group"
+              className="flex items-center justify-between p-3.5 rounded-xl border border-line bg-surface hover:bg-subtle text-text transition-colors group"
             >
               <div className="flex items-center gap-3">
                 <span className="text-xl">📥</span>
                 <div>
                   <p className="text-sm font-semibold">Download .ICS Snapshot</p>
-                  <p className="text-xs text-ink-soft">Save all current tickets as a calendar file</p>
+                  <p className="text-xs text-text-2">Save current passes as a static calendar file</p>
                 </div>
               </div>
-              <span className="text-xs font-mono text-ink-muted group-hover:text-ink">.ics</span>
+              <span className="text-xs font-mono text-text-3 group-hover:text-text">.ics</span>
             </a>
           </div>
 
           {/* Copy WebCal Feed URL */}
           <div className="pt-2 border-t border-line">
-            <label className="text-xs font-mono uppercase tracking-wider text-ink-muted block mb-1.5">
+            <label className="text-xs font-mono uppercase tracking-wider text-text-3 block mb-1.5">
               Personal WebCal URL
             </label>
             <div className="flex items-center gap-2">
               <input
                 readOnly
                 value={getUserScheduleWebCalUrl(session?.id || 'me')}
-                className="flex-1 bg-surface-subtle border border-line rounded-input px-3 py-1.5 text-xs font-mono text-ink-soft select-all"
+                className="flex-1 bg-subtle border border-line rounded-lg px-3 py-1.5 text-xs font-mono text-text select-all"
               />
               <button
                 type="button"
@@ -692,13 +922,13 @@ export const AttendeeDashboardPage: React.FC = () => {
                     type: 'success',
                   })
                 }}
-                className="px-3 py-1.5 bg-ink text-paper rounded-input text-xs font-medium hover:bg-ink-soft active:scale-95 transition-transform shrink-0 flex items-center gap-1"
+                className="px-3 py-1.5 bg-accent text-on-accent rounded-lg text-xs font-semibold hover:opacity-90 active:scale-95 transition-transform shrink-0 flex items-center gap-1 shadow-xs"
               >
                 {copiedFeed ? <Check size={13} /> : <Copy size={13} />}
                 <span>{copiedFeed ? 'Copied' : 'Copy'}</span>
               </button>
             </div>
-            <p className="text-xs text-ink-muted mt-1.5">
+            <p className="text-[11px] text-text-3 mt-1.5">
               In Google Calendar, go to <i>Other calendars + &gt; From URL</i> and paste this link.
             </p>
           </div>
