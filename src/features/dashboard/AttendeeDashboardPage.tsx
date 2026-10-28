@@ -1,15 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { useQueryClient } from '@tanstack/react-query'
 import {
   Ticket,
   Certificate as CertificateIcon,
   DownloadSimple,
-  ShieldCheck,
   Copy,
-  Check,
   IdentificationCard,
-  ArrowRight,
   CalendarBlank,
   PencilSimple,
   ClockCounterClockwise,
@@ -17,13 +13,16 @@ import {
   QrCode,
   MapPin,
   Chair,
+  FolderSimple,
+  Sparkle,
+  Check,
 } from '@phosphor-icons/react'
-import { Button } from '@/design-system/primitives/Button'
 import { useMyRegistrations, useCancelRegistration, useUpdateRegistrationStatus } from '@/hooks/useRegistrations'
 import { useMyCertificates } from '@/hooks/useCertificates'
 import { useEvents } from '@/hooks/useEvents'
 import { useAuth } from '@/hooks/useAuth'
 import { PageShell } from '@/design-system/layout/PageShell'
+import { Button } from '@/design-system/primitives/Button'
 import { formatDate } from '@/lib/dates'
 import { Registration, Certificate } from '@/api'
 import { useToast } from '@/design-system/primitives/Toast'
@@ -35,8 +34,6 @@ import { ProfileDetailsModal } from './components/ProfileDetailsModal'
 import { resolveUserAvatar } from '@/lib/avatars'
 import { Modal } from '@/design-system/primitives/Modal'
 import { getUserScheduleWebCalUrl, getUserScheduleIcsUrl } from '@/lib/ics'
-
-type MobileSegment = 'passes' | 'identity'
 
 export const AttendeeDashboardPage: React.FC = () => {
   const { session } = useAuth()
@@ -69,8 +66,8 @@ export const AttendeeDashboardPage: React.FC = () => {
 
   const [searchParams] = useSearchParams()
   const [selectedTicket, setSelectedTicket] = useState<Registration | null>(null)
-  const [mobileSegment, setMobileSegment] = useState<MobileSegment>('passes')
-  const [walletTab, setWalletTab] = useState<'active' | 'past'>('active')
+  const [mountedTicketId, setMountedTicketId] = useState<string | null>(null)
+  const [viewHistoryArchive, setViewHistoryArchive] = useState(false)
   const [calendarSyncOpen, setCalendarSyncOpen] = useState(false)
   const [copiedFeed, setCopiedFeed] = useState(false)
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false)
@@ -80,13 +77,9 @@ export const AttendeeDashboardPage: React.FC = () => {
   useEffect(() => {
     const tab = searchParams.get('tab')
     if (tab === 'history') {
-      setWalletTab('past')
-      setMobileSegment('passes')
-    } else if (tab === 'profile' || tab === 'id' || tab === 'certificates') {
-      setMobileSegment('identity')
-    } else {
-      setWalletTab('active')
-      setMobileSegment('passes')
+      setViewHistoryArchive(true)
+    } else if (tab === 'profile') {
+      setIsProfileModalOpen(true)
     }
   }, [searchParams])
 
@@ -106,12 +99,12 @@ export const AttendeeDashboardPage: React.FC = () => {
 
     return {
       name: cleanName,
-      registrationNumber: s?.registrationNumber || s?.studentId || 'EM-2026-0814',
-      degreeBranch: s?.degreeBranch || s?.branch || 'Campus Student',
+      registrationNumber: s?.registrationNumber || s?.studentId || 'CTU-2026-0814',
+      degreeBranch: s?.degreeBranch || s?.branch || 'B.Tech Computer Science & Eng.',
       semester: s?.semester || 6,
       email: s?.email || '',
       role: 'EVENTMESH MEMBER',
-      campus: s?.campus || s?.institutionName || 'Apex Institute',
+      campus: s?.campus || s?.institutionName || 'Central Technological University (CTU Main Campus)',
       bloodGroup: s?.bloodGroup || 'O+',
       emergencyPhone: s?.emergencyPhone || s?.phone,
       phone: s?.phone || '',
@@ -125,26 +118,6 @@ export const AttendeeDashboardPage: React.FC = () => {
       message: `${studentData.registrationNumber} copied to clipboard`,
       type: 'info',
     })
-  }
-
-  const handleCancelPass = async (reg: Registration) => {
-    if (window.confirm('Are you sure you want to cancel this ticket pass?')) {
-      try {
-        await cancelMutation.mutateAsync(reg.eventSlug || reg.eventId)
-        setSelectedTicket(null)
-        toast({
-          title: 'Pass cancelled',
-          message: 'Your registration was cancelled and the seat returned to the pool.',
-          type: 'info',
-        })
-      } catch (err: any) {
-        toast({
-          title: 'Cancellation failed',
-          message: err?.message || 'Could not cancel pass.',
-          type: 'error',
-        })
-      }
-    }
   }
 
   const downloadCertificatePDF = async (cert: Certificate) => {
@@ -295,7 +268,17 @@ export const AttendeeDashboardPage: React.FC = () => {
     })
   }, [enrichedRegistrations])
 
-  // Check if an event is imminent (today or within 24 hours)
+  // Select the currently mounted ticket for the right side of the folder docket
+  const mountedTicket = useMemo<Registration | null>(() => {
+    if (mountedTicketId) {
+      const match = enrichedRegistrations.find((r) => r.id === mountedTicketId)
+      if (match) return match
+    }
+    // Default to the first active pass, or first past pass if no active passes
+    return activePasses[0] || historyPasses[0] || null
+  }, [mountedTicketId, activePasses, historyPasses, enrichedRegistrations])
+
+  // Check if an event starts within 24 hours
   const isImminent = (startsAt?: string) => {
     if (!startsAt) return false
     const time = new Date(startsAt).getTime()
@@ -304,409 +287,380 @@ export const AttendeeDashboardPage: React.FC = () => {
   }
 
   return (
-    <PageShell className="py-6 sm:py-8 space-y-8">
+    <PageShell className="py-6 sm:py-8 space-y-8 max-w-5xl mx-auto">
       {/* ========================================================================= */}
-      {/* 1. QUIET, CLEAN TOP BAR (Zero Profile Duplication)                         */}
+      {/* 1. TOP SECTION: THE MAIN ID CARD & PROFILE ANCHOR                         */}
       {/* ========================================================================= */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-line/60 pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-mono font-bold tracking-wider uppercase text-text-3">
-              CAMPUS WALLET · {studentData.campus.toUpperCase()}
-            </span>
+      <section className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs font-mono font-bold tracking-wider uppercase text-text-3">
+                CAMPUS WALLET · {studentData.campus.toUpperCase()}
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-display font-bold text-text tracking-tight mt-0.5">
+              {studentData.name}
+            </h1>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-display font-bold text-text tracking-tight mt-1">
-            Attendee Passes &amp; Identity
-          </h1>
+
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setCalendarSyncOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-line bg-surface hover:bg-subtle text-xs font-semibold text-text transition-colors shadow-2xs"
+            >
+              <CalendarBlank size={15} className="text-accent" weight="bold" />
+              <span>Calendar Sync</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsProfileModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-line bg-surface hover:bg-subtle text-xs font-semibold text-text transition-colors shadow-2xs"
+            >
+              <PencilSimple size={15} className="text-accent" />
+              <span>Edit Profile</span>
+            </button>
+          </div>
         </div>
 
-        {/* Quiet Utility Actions */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          <button
-            type="button"
-            onClick={() => setCalendarSyncOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-line bg-surface hover:bg-subtle text-xs font-semibold text-text shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          >
-            <CalendarBlank size={15} className="text-accent" weight="bold" />
-            <span>Sync Calendar</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsProfileModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-line bg-surface hover:bg-subtle text-xs font-semibold text-text shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          >
-            <PencilSimple size={15} className="text-accent" />
-            <span>Edit Profile</span>
-          </button>
+        {/* The Main ID Card Header (Compact Landscape Smartcard + Institutional Summary) */}
+        <div className="bg-surface border border-line rounded-2xl p-5 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
+          {/* Physical 3D Smartcard Container */}
+          <div className="w-full md:w-[360px] shrink-0 flex flex-col items-center">
+            <StudentIDCard2D
+              name={studentData.name}
+              registrationNumber={studentData.registrationNumber}
+              degreeBranch={studentData.degreeBranch}
+              semester={studentData.semester}
+              email={studentData.email}
+              role={studentData.role}
+              campus={studentData.campus}
+              avatarUrl={avatarUrl}
+              onAvatarClick={() => setIsAvatarModalOpen(true)}
+              interactive={true}
+            />
+          </div>
+
+          {/* Student Verification & Telemetry Summary */}
+          <div className="flex-1 w-full space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <span>✓</span>
+                <span>CAMPUS VERIFIED: {studentData.email.split('@')[1] || 'ctu.edu.in'}</span>
+              </span>
+              <button
+                type="button"
+                onClick={handleCopyRegNo}
+                className="text-xs font-mono text-accent hover:underline flex items-center gap-1"
+              >
+                <Copy size={13} />
+                <span>{studentData.registrationNumber}</span>
+              </button>
+            </div>
+
+            <p className="text-xs text-text-2 leading-relaxed">
+              Your official institutional pass allows seamless contactless access to campus hackathons, student clubs, workshops, and verified PDF credentials.
+            </p>
+
+            <div className="grid grid-cols-3 gap-3 pt-1 border-t border-line/60 text-center font-mono text-xs">
+              <div className="p-2.5 rounded-xl bg-subtle border border-line">
+                <span className="text-[10px] text-text-3 uppercase block">Active</span>
+                <span className="text-sm font-bold text-accent">{activePasses.length} Passes</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-subtle border border-line">
+                <span className="text-[10px] text-text-3 uppercase block">Attended</span>
+                <span className="text-sm font-bold text-text">{historyPasses.length} Events</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-subtle border border-line">
+                <span className="text-[10px] text-text-3 uppercase block">Credentials</span>
+                <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                  {certificates.length} Certs
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
-      </header>
+      </section>
 
       {/* ========================================================================= */}
-      {/* MOBILE SEGMENTED SWITCHER (<1024px)                                       */}
+      {/* 2. THE TACTILE DIVIDER LINE                                               */}
       {/* ========================================================================= */}
-      <div className="lg:hidden">
-        <div
-          role="tablist"
-          aria-label="Mobile sections"
-          className="flex items-center p-1 rounded-xl bg-subtle border border-line"
-        >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mobileSegment === 'passes'}
-            onClick={() => setMobileSegment('passes')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all ${
-              mobileSegment === 'passes'
-                ? 'bg-surface text-text shadow-xs border border-line'
-                : 'text-text-2 hover:text-text'
-            }`}
-          >
-            <Ticket size={16} weight={mobileSegment === 'passes' ? 'fill' : 'regular'} className="text-accent" />
-            <span>Passes</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-accent text-white font-bold">
-              {activePasses.length}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mobileSegment === 'identity'}
-            onClick={() => setMobileSegment('identity')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all ${
-              mobileSegment === 'identity'
-                ? 'bg-surface text-text shadow-xs border border-line'
-                : 'text-text-2 hover:text-text'
-            }`}
-          >
-            <IdentificationCard size={16} weight={mobileSegment === 'identity' ? 'fill' : 'regular'} className="text-accent" />
-            <span>ID &amp; Credentials</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-          </button>
+      <div className="relative flex items-center justify-center my-6">
+        <div className="w-full border-t border-line"></div>
+        <div className="absolute px-4 bg-canvas text-xs font-mono uppercase tracking-widest text-text-3 flex items-center gap-2">
+          <FolderSimple size={15} weight="bold" className="text-accent" />
+          <span>EVENT PASSES &amp; TICKET JACKET</span>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. MAIN 2-COLUMN PROFESSIONAL STAGE                                       */}
+      {/* 3. THE PHYSICAL FOLDER DOCKET (Left: Pocket Sleeve / Right: Main Ticket)   */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <section className="bg-surface border border-line rounded-2xl shadow-sm overflow-hidden flex flex-col lg:flex-row items-stretch">
 
-        {/* ======================================================================= */}
-        {/* LEFT COLUMN (4 COLS): STUDENT ID CARD & CREDENTIALS SHELF               */}
-        {/* ======================================================================= */}
-        <aside
-          className={`lg:col-span-4 space-y-6 ${
-            mobileSegment === 'identity' ? 'block' : 'hidden lg:block'
-          }`}
-        >
-          {/* 1. STANDALONE 3D STUDENT ID CARD */}
-          <section className="space-y-3">
-            <div className="flex items-center justify-between px-1">
-              <span className="text-xs font-mono font-bold tracking-wider uppercase text-text-3">
-                CAMPUS SMARTCARD
-              </span>
-              <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                VERIFIED ID
-              </span>
-            </div>
-
-            {/* Central Identity Card Artifact */}
-            <div className="w-full flex flex-col items-center">
-              <StudentIDCard2D
-                name={studentData.name}
-                registrationNumber={studentData.registrationNumber}
-                degreeBranch={studentData.degreeBranch}
-                semester={studentData.semester}
-                email={studentData.email}
-                role={studentData.role}
-                campus={studentData.campus}
-                avatarUrl={avatarUrl}
-                onAvatarClick={() => setIsAvatarModalOpen(true)}
-                interactive={true}
-              />
-            </div>
-
-            {/* Identity Sub-Actions */}
-            <div className="flex items-center justify-between px-1 text-xs font-mono">
-              <button
-                type="button"
-                onClick={() => setIsAvatarModalOpen(true)}
-                className="text-text-2 hover:text-text font-medium transition-colors flex items-center gap-1"
-              >
-                <User size={13} />
-                <span>Change Photo</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleCopyRegNo}
-                className="text-accent hover:text-accent-hover font-semibold transition-colors flex items-center gap-1"
-              >
-                <Copy size={13} />
-                <span>Copy Student ID</span>
-              </button>
-            </div>
-          </section>
-
-          {/* 2. VERIFIABLE CREDENTIALS SHELF (Directly Beneath ID) */}
-          <section className="bg-surface border border-line rounded-2xl p-5 shadow-xs space-y-3.5">
-            <div className="flex items-center justify-between border-b border-line/60 pb-3">
+        {/* LEFT SIDE: THE DOCKET POCKET SLEEVE (Holding Other Passes & Credentials) */}
+        <div className="w-full lg:w-[340px] bg-subtle/50 lg:border-r border-b lg:border-b-0 border-line p-6 flex flex-col justify-between space-y-6 shrink-0">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b border-line pb-3">
               <div className="flex items-center gap-2">
-                <CertificateIcon size={16} weight="fill" className="text-accent" />
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-text">
-                  VERIFIED CREDENTIALS
+                <Ticket size={16} weight="fill" className="text-accent" />
+                <span className="text-xs font-mono font-bold tracking-wider uppercase text-text">
+                  TICKET DOCKET
                 </span>
               </div>
-              <span className="text-xs font-mono font-bold text-text-3">
-                {certificates.length} Issued
-              </span>
+              <span className="text-[11px] font-mono text-text-3">Select to inspect</span>
             </div>
 
-            <p className="text-xs text-text-2 leading-relaxed">
-              Official campus completion credentials attested by EventMesh.
-            </p>
+            {/* Section A: Active Passes in Sleeve */}
+            <div className="space-y-2">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-text-3 font-semibold block">
+                Active Events In Sleeve ({activePasses.length})
+              </span>
 
-            {certsLoading ? (
-              <p className="text-xs font-mono text-text-3 py-2">Loading certificates...</p>
-            ) : certificates.length === 0 ? (
-              <div className="py-4 text-center">
-                <p className="text-xs text-text-3">No certificates issued yet.</p>
-              </div>
-            ) : (
-              <div className="space-y-2.5">
-                {certificates.map((cert) => (
+              {regsLoading ? (
+                <p className="text-xs font-mono text-text-3 py-2">Loading docket...</p>
+              ) : activePasses.length === 0 ? (
+                <div className="p-3.5 rounded-xl border border-dashed border-line text-center text-xs text-text-3">
+                  No active passes in sleeve
+                </div>
+              ) : (
+                activePasses.map((reg) => {
+                  const isMounted = mountedTicket?.id === reg.id
+                  const eventImminent = isImminent(reg.eventStartsAt)
+
+                  return (
+                    <div
+                      key={reg.id}
+                      onClick={() => setMountedTicketId(reg.id)}
+                      className={`p-3.5 rounded-xl cursor-pointer shadow-2xs transition-all flex items-center justify-between group ${
+                        isMounted
+                          ? 'border-2 border-accent bg-surface shadow-xs'
+                          : 'border border-line bg-surface/70 hover:bg-surface hover:border-line-strong'
+                      }`}
+                    >
+                      <div className="min-w-0 pr-2">
+                        <div className="flex items-center gap-1.5">
+                          {eventImminent && <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />}
+                          <span
+                            className={`text-[10px] font-mono font-bold uppercase truncate ${
+                              eventImminent ? 'text-emerald-600 dark:text-emerald-400' : 'text-text-3'
+                            }`}
+                          >
+                            {reg.eventStartsAt ? formatDate(reg.eventStartsAt).split(',')[0] : 'Upcoming'}
+                          </span>
+                        </div>
+                        <h4 className="text-xs font-bold text-text truncate mt-0.5">
+                          {reg.eventTitle}
+                        </h4>
+                        <p className="text-[11px] text-text-3 font-mono truncate">
+                          {reg.venueName || 'Main Campus Venue'}
+                        </p>
+                      </div>
+
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold shrink-0 ${
+                          isMounted
+                            ? 'bg-accent/15 text-accent border border-accent/25'
+                            : 'text-text-3 group-hover:text-accent'
+                        }`}
+                      >
+                        {isMounted ? 'In Hand ✓' : 'Inspect ➔'}
+                      </span>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+
+            {/* Section B: Verified Credentials Slot */}
+            <div className="space-y-2 pt-2 border-t border-line">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-text-3 font-semibold block">
+                Honors &amp; Certificates ({certificates.length})
+              </span>
+
+              {certsLoading ? (
+                <p className="text-xs font-mono text-text-3 py-1">Loading credentials...</p>
+              ) : certificates.length === 0 ? (
+                <p className="text-[11px] text-text-3 font-mono py-1">No certificates issued yet.</p>
+              ) : (
+                certificates.map((cert) => (
                   <div
                     key={cert.id || cert.certificateId}
-                    className="p-3 rounded-xl border border-line bg-surface-subtle/50 hover:border-line-strong transition-colors flex items-center justify-between gap-3"
+                    className="p-3 rounded-xl border border-line bg-surface flex items-center justify-between gap-2 shadow-2xs"
                   >
                     <div className="min-w-0">
-                      <h4 className="text-xs font-bold text-text truncate">
+                      <h5 className="text-xs font-bold text-text truncate">
                         {cert.eventTitle}
-                      </h4>
-                      <p className="text-[11px] text-text-3 font-mono">
-                        {formatDate(cert.issuedAt)} · {cert.organizerName}
+                      </h5>
+                      <p className="text-[10px] text-text-3 font-mono">
+                        {formatDate(cert.issuedAt)} · {cert.certificateId}
                       </p>
                     </div>
-
                     <button
                       type="button"
                       onClick={() => downloadCertificatePDF(cert)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface border border-line hover:bg-subtle text-xs font-bold text-text transition-colors shrink-0 shadow-2xs active:scale-98"
-                      title="Download Certificate PDF"
+                      className="px-2 py-1 rounded bg-subtle border border-line hover:bg-surface text-xs font-semibold text-text shrink-0 shadow-2xs active:scale-95"
+                      title="Download PDF Certificate"
                     >
-                      <DownloadSimple size={13} weight="bold" />
+                      <DownloadSimple size={12} className="inline mr-1" />
                       <span>PDF</span>
                     </button>
                   </div>
-                ))}
-              </div>
-            )}
-          </section>
-        </aside>
-
-        {/* ======================================================================= */}
-        {/* RIGHT COLUMN (8 COLS): PURE TICKET WALLET (Zero Clutter)                */}
-        {/* ======================================================================= */}
-        <section
-          className={`lg:col-span-8 space-y-6 ${
-            mobileSegment === 'passes' ? 'block' : 'hidden lg:block'
-          }`}
-        >
-          {/* Top Section Header with In-Place Switcher */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface border border-line rounded-2xl p-4 shadow-xs">
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-text">Admission Passes</h2>
-                <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-accent text-white">
-                  {walletTab === 'active' ? activePasses.length : historyPasses.length}
-                </span>
-              </div>
-              <p className="text-xs text-text-3 mt-0.5">
-                {walletTab === 'active'
-                  ? 'Tap any pass to view scannable barcode and tear stub'
-                  : 'Historical record of events attended on campus'}
-              </p>
-            </div>
-
-            {/* In-Place Filter Switcher */}
-            <div className="flex items-center p-1 bg-subtle rounded-xl border border-line">
-              <button
-                type="button"
-                onClick={() => setWalletTab('active')}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  walletTab === 'active'
-                    ? 'bg-surface text-text shadow-2xs border border-line'
-                    : 'text-text-2 hover:text-text'
-                }`}
-              >
-                Active Passes ({activePasses.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setWalletTab('past')}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  walletTab === 'past'
-                    ? 'bg-surface text-text shadow-2xs border border-line'
-                    : 'text-text-2 hover:text-text'
-                }`}
-              >
-                Past History ({historyPasses.length})
-              </button>
+                ))
+              )}
             </div>
           </div>
 
-          {/* ===================================================================== */}
-          {/* VIEW A: ACTIVE PASSES (SIDE-BY-SIDE TICKET STACK)                     */}
-          {/* ===================================================================== */}
-          {walletTab === 'active' && (
-            <div>
-              {regsLoading ? (
-                <div className="py-12 text-center">
-                  <p className="text-xs font-mono text-text-3">Loading active passes...</p>
-                </div>
-              ) : activePasses.length === 0 ? (
-                <div className="rounded-2xl border border-line bg-surface p-12 text-center space-y-3">
-                  <div className="w-12 h-12 rounded-xl bg-subtle border border-line mx-auto flex items-center justify-center text-accent">
-                    <Ticket size={24} />
-                  </div>
-                  <h3 className="font-display font-bold text-lg text-text">No active passes in your wallet</h3>
-                  <p className="text-xs sm:text-sm text-text-2 max-w-sm mx-auto">
-                    You haven't reserved admission for upcoming campus events. Browse premieres to grab a pass.
-                  </p>
-                  <div className="pt-2">
-                    <Link to="/explore">
-                      <Button variant="primary" size="sm">
-                        Explore Campus Events
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {activePasses.map((reg) => {
-                    const eventImminent = isImminent(reg.eventStartsAt)
-                    const ticketCode = (reg as any).code || (reg as any).ticketCode || `EM-${String(reg.id).slice(-4).toUpperCase()}`
+          {/* Docket Footer Note (Historical Archives Switcher) */}
+          <div className="pt-3 border-t border-line text-[11px] font-mono text-text-3 flex items-center justify-between">
+            <span>{historyPasses.length} Past Keepsakes</span>
+            <button
+              type="button"
+              onClick={() => setViewHistoryArchive(!viewHistoryArchive)}
+              className="text-accent hover:underline font-semibold"
+            >
+              {viewHistoryArchive ? 'Hide Archive' : 'History Archive ➔'}
+            </button>
+          </div>
+        </div>
 
-                    return (
-                      <div
-                        key={reg.id}
-                        onClick={() => {
-                          setSelectedTicket(reg)
-                          fireCelebrationConfetti()
-                        }}
-                        className="relative bg-surface border border-line hover:border-line-strong rounded-[14px] shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden flex flex-col justify-between group"
-                      >
-                        {/* Semi-Circular Punch Notches */}
-                        <div
-                          className="absolute -top-[10px] right-[125px] w-[20px] h-[20px] rounded-full border-b border-line bg-canvas z-10"
-                          style={{ backgroundColor: 'var(--canvas, #FAF8FF)' }}
-                        />
-                        <div
-                          className="absolute -bottom-[10px] right-[125px] w-[20px] h-[20px] rounded-full border-t border-line bg-canvas z-10"
-                          style={{ backgroundColor: 'var(--canvas, #FAF8FF)' }}
-                        />
+        {/* RIGHT SIDE: THE MAIN TICKET STAGE (The Pass in Hand for Recent/Upcoming Event) */}
+        <div className="flex-1 p-6 lg:p-8 flex flex-col justify-between space-y-6">
+          <div>
+            <div className="flex items-center justify-between pb-4 mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono font-bold tracking-wider uppercase text-text">
+                  MAIN PASS IN HAND · GATE READY
+                </span>
+              </div>
+              <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                ● FAST GATE LOCK &lt;200MS
+              </span>
+            </div>
 
-                        {/* Top Status Strip */}
-                        {eventImminent ? (
-                          <div className="bg-emerald-600 px-5 py-2 flex items-center justify-between text-white text-xs font-mono font-bold">
-                            <span className="flex items-center gap-1.5 tracking-wider uppercase">
-                              <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                              GATE READY · TODAY
-                            </span>
-                            <span>{reg.eventStartsAt ? formatDate(reg.eventStartsAt).split(',')[0] : 'IMMINENT'}</span>
-                          </div>
-                        ) : (
-                          <div className="bg-ink px-5 py-2 flex items-center justify-between text-white text-xs font-mono font-bold">
-                            <span className="tracking-wider uppercase text-white/90">
-                              CONFIRMED PASS
-                            </span>
-                            <span className="text-white/80">
-                              {reg.eventStartsAt ? formatDate(reg.eventStartsAt).split(',')[0] : 'UPCOMING'}
-                            </span>
-                          </div>
-                        )}
+            {/* THE FULL LANDSCAPE BOARDING PASS */}
+            {mountedTicket ? (
+              (() => {
+                const eventImminent = isImminent(mountedTicket.eventStartsAt)
+                const ticketCode =
+                  (mountedTicket as any).code ||
+                  (mountedTicket as any).ticketCode ||
+                  `EM-${String(mountedTicket.id).slice(-4).toUpperCase()}`
 
-                        {/* Ticket Interior */}
-                        <div className="p-5 flex items-stretch justify-between gap-4">
-                          {/* Left Event Details */}
-                          <div className="flex-1 space-y-3 min-w-0">
-                            <div>
-                              <span className="text-[10px] font-mono uppercase tracking-widest text-text-3 font-semibold block truncate">
-                                {reg.organizerName || 'CAMPUS PREMIERE'}
-                              </span>
-                              <h3 className="text-base font-bold text-text leading-snug group-hover:text-accent transition-colors mt-0.5 line-clamp-2">
-                                {reg.eventTitle || 'Campus Admission Pass'}
-                              </h3>
-                            </div>
+                return (
+                  <div
+                    onClick={() => {
+                      setSelectedTicket(mountedTicket)
+                      fireCelebrationConfetti()
+                    }}
+                    className="relative bg-surface border border-line hover:border-line-strong rounded-[14px] shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden flex flex-col justify-between group"
+                  >
+                    {/* Semi-Circular Punch Notches */}
+                    <div
+                      className="absolute -top-[11px] right-[145px] w-[22px] h-[22px] rounded-full border-b border-line bg-surface z-10"
+                    />
+                    <div
+                      className="absolute -bottom-[11px] right-[145px] w-[22px] h-[22px] rounded-full border-t border-line bg-surface z-10"
+                    />
 
-                            <div className="space-y-1 text-xs">
-                              <p className="text-text-2 font-mono flex items-center gap-1.5 truncate">
-                                <MapPin size={13} className="shrink-0 text-text-3" />
-                                <span className="truncate">{reg.venueName || 'Main Campus Venue'}</span>
-                              </p>
-                              <p className="text-text-2 font-mono flex items-center gap-1.5">
-                                <Chair size={13} className="shrink-0 text-text-3" />
-                                <span className="font-bold text-text">Gate Admission · Verified</span>
-                              </p>
-                            </div>
+                    {/* Top Status Strip */}
+                    <div
+                      className={`px-6 py-2.5 flex items-center justify-between text-white text-xs font-mono font-bold ${
+                        eventImminent ? 'bg-emerald-600' : 'bg-ink'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5 uppercase tracking-wider">
+                        {eventImminent && <span className="w-2 h-2 rounded-full bg-white animate-pulse" />}
+                        {eventImminent
+                          ? 'GATE READY · TODAY'
+                          : mountedTicket.eventStartsAt
+                          ? `CONFIRMED PASS · ${formatDate(mountedTicket.eventStartsAt).split(',')[0].toUpperCase()}`
+                          : 'CONFIRMED PASS'}
+                      </span>
+                      <span>{mountedTicket.tierName || 'GENERAL ADMISSION'}</span>
+                    </div>
 
-                            <div className="pt-2 border-t border-line/60">
-                              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-subtle text-text-2 border border-line">
-                                {reg.tierName || 'GENERAL ADMISSION'}
-                              </span>
-                            </div>
-                          </div>
+                    {/* Ticket Interior & Perforated Stub */}
+                    <div className="p-6 flex items-stretch justify-between gap-5">
+                      {/* Left Info Area */}
+                      <div className="flex-1 space-y-3.5 min-w-0">
+                        <div>
+                          <span className="text-[10px] font-mono uppercase tracking-widest text-text-3 font-semibold block truncate">
+                            {mountedTicket.organizerName || 'CAMPUS PREMIERE'}
+                          </span>
+                          <h3 className="text-xl font-bold text-text leading-snug group-hover:text-accent transition-colors mt-0.5 line-clamp-2">
+                            {mountedTicket.eventTitle}
+                          </h3>
+                        </div>
 
-                          {/* Vertical Dashed Perforation Divider */}
-                          <div className="w-px border-r-2 border-dashed border-line my-1 shrink-0" />
+                        <div className="space-y-1.5 text-xs font-mono">
+                          <p className="text-text-2 flex items-center gap-2 truncate">
+                            <MapPin size={14} className="shrink-0 text-text-3" />
+                            <span className="truncate">{mountedTicket.venueName || 'Main Campus Venue'}</span>
+                          </p>
+                          <p className="text-text-2 flex items-center gap-2">
+                            <Chair size={14} className="shrink-0 text-text-3" />
+                            <span className="font-bold text-text">Gate Admission · Official Pass</span>
+                          </p>
+                        </div>
 
-                          {/* Right Gate Stub */}
-                          <div className="w-[110px] bg-subtle/60 rounded-xl p-2.5 flex flex-col items-center justify-between text-center shrink-0 border border-line">
-                            <div>
-                              <p className="text-[10px] font-mono uppercase text-text-3">Pass Code</p>
-                              <p className="text-xs font-mono font-bold text-text mt-0.5 truncate">{ticketCode}</p>
-                            </div>
-
-                            {/* Optical QR Scanner Hint */}
-                            <div className="my-1.5 bg-surface p-1 rounded-lg border border-line shadow-2xs">
-                              <div className="w-14 h-14 bg-ink rounded p-1 flex items-center justify-center text-white text-[10px] font-mono font-bold text-center">
-                                <QrCode size={34} weight="bold" />
-                              </div>
-                            </div>
-
-                            <span className="text-[11px] font-bold text-accent group-hover:underline">
-                              Tap to Tear ➔
-                            </span>
-                          </div>
+                        <div className="pt-3 border-t border-line/60 flex items-center gap-2">
+                          <span className="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold bg-subtle text-text-2 border border-line">
+                            PASSHOLDER: {mountedTicket.userName || studentData.name} · {studentData.registrationNumber}
+                          </span>
                         </div>
                       </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          )}
 
-          {/* ===================================================================== */}
-          {/* VIEW B: PAST HISTORY (COMPACT ARCHIVAL LEDGER LIST)                   */}
-          {/* ===================================================================== */}
-          {walletTab === 'past' && (
-            <div className="space-y-3">
-              {regsLoading ? (
-                <div className="py-12 text-center">
-                  <p className="text-xs font-mono text-text-3">Loading historical passes...</p>
-                </div>
-              ) : historyPasses.length === 0 ? (
-                <div className="rounded-2xl border border-line bg-surface p-12 text-center space-y-3">
-                  <div className="w-12 h-12 rounded-xl bg-subtle border border-line mx-auto flex items-center justify-center text-text-3">
-                    <ClockCounterClockwise size={24} />
+                      {/* Vertical Dashed Perforation Divider */}
+                      <div className="w-px border-r-2 border-dashed border-line my-1 shrink-0" />
+
+                      {/* Right Gate Stub */}
+                      <div className="w-[125px] bg-subtle/60 rounded-xl p-3 flex flex-col items-center justify-between text-center shrink-0 border border-line">
+                        <div>
+                          <p className="text-[10px] font-mono uppercase text-text-3">Pass Code</p>
+                          <p className="text-xs font-mono font-bold text-text mt-0.5 truncate">{ticketCode}</p>
+                        </div>
+
+                        <div className="my-2 bg-surface p-2 rounded-lg border border-line shadow-2xs">
+                          <div className="w-16 h-16 bg-ink rounded flex items-center justify-center text-white text-[10px] font-mono font-bold">
+                            <QrCode size={38} weight="bold" />
+                          </div>
+                        </div>
+
+                        <span className="text-xs font-bold text-accent group-hover:underline">
+                          Tap to Tear ➔
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="font-display font-bold text-lg text-text">No past event history</h3>
-                  <p className="text-xs sm:text-sm text-text-2 max-w-sm mx-auto">
-                    Once you attend events and check in at campus gates, your keepsake records will appear here.
-                  </p>
-                </div>
+                )
+              })()
+            ) : (
+              <div className="p-10 border border-dashed border-line rounded-2xl text-center space-y-3">
+                <p className="text-sm text-text-2">No active ticket mounted in hand.</p>
+                <Link to="/explore">
+                  <Button variant="primary" size="sm">
+                    Explore Campus Events
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Historical Keepsakes Archive (Shown when toggled) */}
+          {viewHistoryArchive && (
+            <div className="pt-4 border-t border-line space-y-3 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-text-3">
+                  ATTENDED KEEPSAKES ARCHIVE
+                </span>
+                <span className="text-xs font-mono text-text-3">{historyPasses.length} Total</span>
+              </div>
+
+              {historyPasses.length === 0 ? (
+                <p className="text-xs text-text-3 py-2">No attended keepsakes in archive.</p>
               ) : (
                 historyPasses.map((reg) => (
                   <div
@@ -715,38 +669,53 @@ export const AttendeeDashboardPage: React.FC = () => {
                       setSelectedTicket(reg)
                       fireCelebrationConfetti()
                     }}
-                    className="p-4 rounded-xl border border-line bg-surface hover:border-line-strong transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs group"
+                    className="p-3.5 rounded-xl border border-line bg-surface hover:border-line-strong transition-all cursor-pointer flex items-center justify-between gap-3 shadow-2xs group"
                   >
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                       <div className="min-w-0">
-                        <h4 className="text-sm font-bold text-text truncate group-hover:text-accent transition-colors">
+                        <h5 className="text-xs font-bold text-text truncate group-hover:text-accent transition-colors">
                           {reg.eventTitle}
-                        </h4>
-                        <p className="text-xs text-text-3 font-mono truncate">
+                        </h5>
+                        <p className="text-[11px] text-text-3 font-mono truncate">
                           {reg.eventStartsAt ? formatDate(reg.eventStartsAt) : 'Past Event'} · {reg.venueName || 'Main Campus Venue'}
                         </p>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-3 shrink-0 self-end sm:self-auto">
-                      <span className="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                        ✓ ADMISSION VERIFIED
-                      </span>
-                      <span className="text-xs font-mono text-text-3 group-hover:text-text transition-colors">
-                        Inspect Pass ➔
-                      </span>
-                    </div>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                      ✓ ADMITTED
+                    </span>
                   </div>
                 ))
               )}
             </div>
           )}
-        </section>
-      </div>
+
+          {/* Dock Bottom Quick Actions Strip */}
+          <div className="p-4 bg-subtle border border-line rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2 text-text-2">
+              <span className="text-base">⚡</span>
+              <span>Tap ticket above to open full tactile tear-off stub, physics, and gate validation</span>
+            </div>
+            {mountedTicket && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedTicket(mountedTicket)
+                  fireCelebrationConfetti()
+                }}
+                className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors shadow-2xs shrink-0"
+              >
+                ✓ Present at Gate
+              </button>
+            )}
+          </div>
+        </div>
+
+      </section>
 
       {/* ========================================================================= */}
-      {/* 3. TACTILE GATE TEAR-OFF MODAL INSPECTION                                 */}
+      {/* 4. TACTILE GATE TEAR-OFF MODAL INSPECTION                                 */}
       {/* ========================================================================= */}
       {selectedTicket && (
         <EventAdmissionTicket
@@ -819,7 +788,7 @@ export const AttendeeDashboardPage: React.FC = () => {
                   <p className="text-xs text-text-2">1-tap subscribe via native WebCal</p>
                 </div>
               </div>
-              <ArrowRight size={15} className="text-text-3 group-hover:text-text transition-colors" />
+              <span className="text-xs font-mono text-text-3 group-hover:text-text transition-colors">Subscribe ➔</span>
             </a>
 
             {/* Direct .ics Download */}
