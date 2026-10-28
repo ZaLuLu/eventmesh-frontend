@@ -460,10 +460,10 @@ const FolderFloat: React.FC<FolderFloatProps> = ({
                 pillRefs.current[i] = el;
               }}
               type="button"
-              className={`pointer-events-none absolute top-0 left-1/2 m-0 h-[34px] cursor-pointer rounded-[17px] border px-3.5 whitespace-nowrap opacity-0 shadow-[0_4px_12px_rgba(0,0,0,0.14)] outline-none [background:var(--ff-item)] [color:var(--ff-item-ink)] [font:inherit] [transform:translate(-50%,44px)_scale(0.6)] [transform-origin:50%_50%] [-webkit-tap-highlight-color:transparent] [transition:transform_var(--ff-close)_var(--ff-ease-out)_calc((var(--ff-n)-1-var(--i))*var(--ff-stagger)*0.5),opacity_160ms_ease_calc((var(--ff-n)-1-var(--i))*var(--ff-stagger)*0.5+var(--ff-close)*0.45),scale_160ms_var(--ff-ease-out)] group-data-[open]:pointer-events-auto group-data-[open]:opacity-100 group-data-[open]:[transform:translate(calc(-50%+var(--x)),var(--y))_rotate(var(--r))_scale(1)] group-data-[open]:[transition:transform_var(--ff-open)_var(--ff-spring)_calc(var(--i)*var(--ff-stagger)),opacity_160ms_ease_calc(var(--i)*var(--ff-stagger)),scale_160ms_var(--ff-ease-out)] group-data-[live]:cursor-grab group-data-[live]:[transition:scale_160ms_var(--ff-ease-out)] data-[drag]:!cursor-grabbing group-data-[open]:hover:[scale:1.05] group-data-[open]:active:[scale:0.97] data-[pop]:[animation:folder-float-pop_320ms_var(--ff-ease-out)] motion-reduce:[transition:opacity_200ms_ease] motion-reduce:group-data-[open]:[transition:opacity_200ms_ease_calc(var(--i)*var(--ff-stagger))] ${
+              className={`pointer-events-none absolute top-0 left-1/2 m-0 h-[36px] cursor-pointer rounded-[8px] border px-3.5 whitespace-nowrap opacity-0 shadow-[0_4px_14px_rgba(0,0,0,0.08)] outline-none [background:var(--ff-item)] [color:var(--ff-item-ink)] [font:inherit] [transform:translate(-50%,44px)_scale(0.6)] [transform-origin:50%_50%] [-webkit-tap-highlight-color:transparent] [transition:transform_var(--ff-close)_var(--ff-ease-out)_calc((var(--ff-n)-1-var(--i))*var(--ff-stagger)*0.5),opacity_160ms_ease_calc((var(--ff-n)-1-var(--i))*var(--ff-stagger)*0.5+var(--ff-close)*0.45),scale_160ms_var(--ff-ease-out)] group-data-[open]:pointer-events-auto group-data-[open]:opacity-100 group-data-[open]:[transform:translate(calc(-50%+var(--x)),var(--y))_rotate(var(--r))_scale(1)] group-data-[open]:[transition:transform_var(--ff-open)_var(--ff-spring)_calc(var(--i)*var(--ff-stagger)),opacity_160ms_ease_calc(var(--i)*var(--ff-stagger)),scale_160ms_var(--ff-ease-out)] group-data-[live]:cursor-grab group-data-[live]:[transition:scale_160ms_var(--ff-ease-out)] data-[drag]:!cursor-grabbing group-data-[open]:hover:[scale:1.05] group-data-[open]:active:[scale:0.97] data-[pop]:[animation:folder-float-pop_320ms_var(--ff-ease-out)] motion-reduce:[transition:opacity_200ms_ease] motion-reduce:group-data-[open]:[transition:opacity_200ms_ease_calc(var(--i)*var(--ff-stagger))] relative overflow-visible ${
                 isActive
-                  ? 'border-accent bg-surface ring-2 ring-accent/30 font-bold z-10'
-                  : 'border-line/60'
+                  ? 'border-accent bg-surface ring-2 ring-accent/30 font-bold z-10 shadow-md'
+                  : 'border-line/80 hover:border-accent/40 bg-surface'
               }`}
               tabIndex={open ? 0 : -1}
               aria-hidden={!open}
@@ -484,9 +484,13 @@ const FolderFloat: React.FC<FolderFloatProps> = ({
                 if (!world.current.live || e.detail === 0) pick(item, i);
               }}
             >
-              <span className="flex items-center gap-1.5 [animation:folder-float-drift_3.2s_ease-in-out_infinite] [animation-delay:calc(var(--i)*-0.7s)] [animation-play-state:paused] group-data-[open]:[animation-play-state:running] group-data-[physics]:[animation:none] group-data-[live]:[animation:none] motion-reduce:[animation:none]">
+              {/* Notches on Ticket Stub pill */}
+              <span className="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-canvas border-r border-line/70" />
+              <span className="absolute -right-1 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-canvas border-l border-line/70" />
+
+              <span className="flex items-center gap-2 [animation:folder-float-drift_3.2s_ease-in-out_infinite] [animation-delay:calc(var(--i)*-0.7s)] [animation-play-state:paused] group-data-[open]:[animation-play-state:running] group-data-[physics]:[animation:none] group-data-[live]:[animation:none] motion-reduce:[animation:none]">
                 {isActive && <span className="w-1.5 h-1.5 rounded-full bg-accent shrink-0" />}
-                <span>{item.label}</span>
+                <span className="text-[11px] font-mono tracking-tight">{item.label}</span>
               </span>
             </button>
           );
@@ -502,11 +506,29 @@ const FolderFloat: React.FC<FolderFloatProps> = ({
           aria-hidden="true"
         />
         <span
-          className="absolute right-0 bottom-0 left-0 z-[2] box-border flex h-[76%] flex-col justify-end gap-[5px] px-4 py-3.5 [border-radius:var(--ff-r)] [background:linear-gradient(180deg,color-mix(in_srgb,var(--ff-front)_92%,#fff),var(--ff-front)_60%)] [color:var(--ff-label)] shadow-[0_-10px_24px_rgba(0,0,0,0.28)] [transform:perspective(600px)_rotateX(calc(-1*var(--ff-rest)))] [transform-origin:50%_100%] [transition:transform_var(--ff-open)_var(--ff-ease-out)] group-data-[open]:[transform:perspective(600px)_rotateX(calc(-1*var(--ff-angle)))] motion-reduce:group-data-[open]:[transform:perspective(600px)_rotateX(calc(-1*var(--ff-rest)))] motion-reduce:[transition:opacity_200ms_ease]"
+          className="absolute right-0 bottom-0 left-0 z-[2] box-border flex h-[76%] flex-col justify-between px-4 py-3 [border-radius:var(--ff-r)] [background:linear-gradient(180deg,color-mix(in_srgb,var(--ff-front)_92%,#fff),var(--ff-front)_60%)] [color:var(--ff-label)] shadow-[0_-10px_24px_rgba(0,0,0,0.28)] [transform:perspective(600px)_rotateX(calc(-1*var(--ff-rest)))] [transform-origin:50%_100%] [transition:transform_var(--ff-open)_var(--ff-ease-out)] group-data-[open]:[transform:perspective(600px)_rotateX(calc(-1*var(--ff-angle)))] motion-reduce:group-data-[open]:[transform:perspective(600px)_rotateX(calc(-1*var(--ff-rest)))] motion-reduce:[transition:opacity_200ms_ease] border-t border-white/20"
           aria-hidden="true"
         >
-          <span className="text-[13px] font-medium">{label}</span>
-          <span className="text-[11px] opacity-55">{sub}</span>
+          {/* Top Debossed Foil Accent */}
+          <div className="flex items-center justify-between w-full">
+            <span className="text-[9px] font-mono tracking-widest uppercase opacity-75 font-semibold">
+              DOSSIER · EVENTMESH
+            </span>
+            <div className="w-2.5 h-2.5 rounded-full border border-amber-300/40 bg-gradient-to-tr from-amber-400 via-amber-200 to-amber-500 shadow-xs" />
+          </div>
+
+          {/* Bottom Title & Counter */}
+          <div className="space-y-0.5">
+            <span className="text-[12px] font-mono font-bold tracking-wider uppercase block text-white drop-shadow-xs">
+              {label}
+            </span>
+            <div className="flex items-center justify-between text-[10px] font-mono opacity-85">
+              <span>{sub}</span>
+              <span className="text-[9px] uppercase tracking-widest text-white/70">
+                {open ? 'Tap to Tuck ▲' : 'Tap to Open ▼'}
+              </span>
+            </div>
+          </div>
         </span>
         <button
           type="button"
