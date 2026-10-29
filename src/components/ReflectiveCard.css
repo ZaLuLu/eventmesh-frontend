@@ -1,10 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap');
+
 .reflective-card {
   position: relative;
   box-sizing: border-box;
   width: var(--rc-width);
   height: var(--rc-height);
   max-width: 100%;
-  perspective: 900px;
+  perspective: 1200px;
   color: var(--rc-ink);
   touch-action: pan-y;
   user-select: none;
@@ -16,14 +18,49 @@
   box-sizing: border-box;
   width: 100%;
   height: 100%;
-  overflow: hidden;
   border-radius: var(--rc-radius);
-  background: var(--rc-base);
   box-shadow: var(--rc-shadow);
   transform: translate3d(0, var(--rc-lift, 0px), 0) rotateX(var(--rc-rotate-x, 0deg)) rotateY(var(--rc-rotate-y, 0deg));
   opacity: var(--rc-presence, 1);
-  isolation: isolate;
+  transform-style: preserve-3d;
   will-change: transform;
+}
+
+.reflective-card__flipper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--rc-radius);
+  transform-style: preserve-3d;
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reflective-card__flipper--flipped {
+  transform: rotateY(180deg);
+}
+
+.reflective-card__face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--rc-radius);
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: var(--rc-base);
+  box-sizing: border-box;
+}
+
+.reflective-card__face--front {
+  z-index: 2;
+  transform: rotateY(0deg);
+}
+
+.reflective-card__face--back {
+  transform: rotateY(180deg);
+  background: linear-gradient(135deg, #1c1b22 0%, #2b2935 35%, #18171f 70%, #24222e 100%);
+  color: #f4f4f6;
 }
 
 .reflective-card__canvas {
@@ -44,9 +81,11 @@
   padding: var(--rc-pad);
 }
 
+/* Header */
 .reflective-card__header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   font-size: 13px;
   line-height: 20px;
@@ -57,112 +96,341 @@
   align-items: center;
   gap: 6px;
   color: var(--rc-ink);
-  font-weight: 500;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.reflective-card__header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
 }
 
 .reflective-card__status {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin-left: auto;
+  gap: 6px;
   color: var(--rc-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .reflective-card__dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--rc-status);
+  background: var(--rc-status, #10b981);
+  box-shadow: 0 0 8px var(--rc-status, #10b981);
 }
 
-.reflective-card__identity {
+.reflective-card__flip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--rc-rim, rgba(255, 255, 255, 0.15));
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--rc-ink);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.reflective-card__flip-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.04);
+}
+
+/* Front Face: Passholder Photo + Identity Row */
+.reflective-card__identity-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
   margin-top: auto;
+  margin-bottom: auto;
+  padding: 6px 0;
+}
+
+.reflective-card__photo-frame {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.25),
+    0 4px 12px rgba(0, 0, 0, 0.4);
+  background: #1e1b29;
+}
+
+.reflective-card__photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.reflective-card__photo-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%);
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.reflective-card__identity-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
 }
 
 .reflective-card__name {
   margin: 0;
   color: var(--rc-ink);
-  font-size: 24px;
-  font-weight: 500;
+  font-size: 20px;
+  font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.15;
-  text-wrap: balance;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .reflective-card__role {
-  margin: 4px 0 0;
+  margin: 0;
   color: var(--rc-muted);
-  font-size: 14px;
-  line-height: 1.4;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
+.reflective-card__semester-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(124, 58, 237, 0.2);
+  border: 1px solid rgba(196, 181, 253, 0.3);
+  color: #c4b5fd;
+  font-size: 11px;
+  font-weight: 700;
+  width: fit-content;
+}
+
+/* Front Footer */
 .reflective-card__footer {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
-  margin-top: 24px;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.reflective-card__id {
+.reflective-card__tier-info {
   display: flex;
-  min-width: 0;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .reflective-card__label {
   color: var(--rc-muted);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-.reflective-card__value {
-  overflow: hidden;
+.reflective-card__tier-value {
   color: var(--rc-ink);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 15px;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
-  line-height: 20px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
 }
 
-.reflective-card__tile {
+.reflective-card__flip-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: none;
+  color: var(--rc-muted);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.reflective-card__flip-hint:hover {
+  color: var(--rc-ink);
+  transform: translateX(2px);
+}
+
+/* BACK FACE CONTENT */
+.reflective-card__back-content {
   position: relative;
+  z-index: 1;
   box-sizing: border-box;
   display: flex;
-  width: 44px;
-  height: 44px;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--rc-tile-radius);
-  background: var(--rc-tile);
-  box-shadow: var(--rc-tile-shadow);
-  color: var(--rc-muted);
+  height: 100%;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--rc-pad);
 }
 
-.reflective-card__tile::after {
-  content: '';
+.reflective-card__back-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.reflective-card__back-pill {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a78bfa;
+  background: rgba(124, 58, 237, 0.2);
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid rgba(167, 139, 250, 0.3);
+}
+
+/* EVENTMESH BOLD CAPS Wordmark */
+.reflective-card__brand-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 0;
+  text-align: center;
+}
+
+.reflective-card__brand-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #ffffff;
+  line-height: 1;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    0 -1px 1px rgba(255, 255, 255, 0.15);
+}
+
+.reflective-card__brand-subtitle {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: 4px;
+}
+
+/* Cardholder Cursive Signature Strip */
+.reflective-card__signature-strip {
+  position: relative;
+  width: 100%;
+  height: 52px;
+  border-radius: 8px;
+  background: #fdfdfd;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.reflective-card__signature-pattern {
   position: absolute;
   inset: 0;
-  border-radius: inherit;
-  box-shadow:
-    inset 0 0 0 1px var(--rc-tile-edge),
-    inset 0 1px 0 var(--rc-tile-highlight);
+  opacity: 0.06;
+  background-image: repeating-linear-gradient(
+    45deg,
+    #000000 0,
+    #000000 1px,
+    transparent 0,
+    transparent 8px
+  );
   pointer-events: none;
 }
 
+.reflective-card__signature-ink {
+  font-family: 'Caveat', 'Dancing Script', 'Brush Script MT', 'Segoe Script', cursive;
+  font-size: 26px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: 0.02em;
+  transform: rotate(-1.5deg);
+  user-select: none;
+  line-height: 1;
+  z-index: 1;
+}
+
+.reflective-card__signature-label {
+  position: absolute;
+  bottom: 3px;
+  right: 8px;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+/* Back Face Footer */
+.reflective-card__back-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.reflective-card__back-disclaimer {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+}
+
+/* Rim Highlights */
 .reflective-card__rim {
   position: absolute;
   inset: 0;
   z-index: 2;
   border-radius: inherit;
   box-shadow:
-    inset 0 0 0 1px var(--rc-rim),
-    inset 0 1px 0 var(--rc-rim-highlight);
+    inset 0 0 0 1px var(--rc-rim, rgba(255, 255, 255, 0.1)),
+    inset 0 1px 0 var(--rc-rim-highlight, rgba(255, 255, 255, 0.2));
   pointer-events: none;
 }
 

@@ -553,9 +553,14 @@ const createRenderer = canvas => {
 export interface ReflectiveCardProps {
   name?: string;
   role?: string;
+  semester?: number | string;
+  photoUrl?: string;
   badge?: string;
   status?: string;
   statusColor?: string;
+  isFlipped?: boolean;
+  onFlipChange?: (flipped: boolean) => void;
+  allowFlip?: boolean;
   idLabel?: string;
   idValue?: string;
   children?: React.ReactNode;
@@ -586,11 +591,16 @@ export interface ReflectiveCardProps {
 const ReflectiveCard: React.FC<ReflectiveCardProps> = ({
   name = 'Alexander Doe',
   role = 'Senior Developer',
+  semester = 6,
+  photoUrl,
   badge = 'Verified',
   status = 'Active',
   statusColor = '#22c55e',
-  idLabel = 'ID number',
-  idValue = '8901 2345 6789',
+  isFlipped,
+  onFlipChange,
+  allowFlip = true,
+  idLabel,
+  idValue,
   children,
   theme = 'dark',
   videoSrc,
@@ -645,6 +655,17 @@ const ReflectiveCard: React.FC<ReflectiveCardProps> = ({
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
   errorRef.current = onWebcamError;
+
+  const [internalFlipped, setInternalFlipped] = useState(false);
+  const isCardFlipped = isFlipped !== undefined ? isFlipped : internalFlipped;
+
+  const handleToggleFlip = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (!allowFlip) return;
+    const next = !isCardFlipped;
+    setInternalFlipped(next);
+    onFlipChange?.(next);
+  };
 
   useEffect(() => {
     wakeRef.current?.();
@@ -1027,47 +1048,157 @@ const ReflectiveCard: React.FC<ReflectiveCardProps> = ({
   };
 
   return (
-    <div ref={rootRef} className={`reflective-card ${className}`.trim()} style={{ ...cardStyle, ...style }}>
+    <div
+      ref={rootRef}
+      className={`reflective-card ${className}`.trim()}
+      style={{ ...cardStyle, ...style }}
+      tabIndex={allowFlip ? 0 : undefined}
+      role={allowFlip ? 'region' : undefined}
+      aria-label="Passholder metallic credential (double-sided)"
+      onKeyDown={(e) => {
+        if (allowFlip && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          handleToggleFlip();
+        }
+      }}
+    >
       <div ref={bodyRef} className="reflective-card__body">
-        <canvas ref={canvasRef} className="reflective-card__canvas" aria-hidden="true" />
-        <div className="reflective-card__content">
-          {children ?? (
-            <>
-              {(badge || status) && (
-                <div className="reflective-card__header">
-                  {badge && (
-                    <span className="reflective-card__badge">
-                      <HugeiconsIcon icon={CheckmarkBadge01Icon} size={16} strokeWidth={1.8} />
-                      {badge}
-                    </span>
-                  )}
-                  {status && (
-                    <span className="reflective-card__status">
-                      <span className="reflective-card__dot" />
-                      {status}
-                    </span>
-                  )}
-                </div>
-              )}
-              <div className="reflective-card__identity">
-                {name && <h3 className="reflective-card__name">{name}</h3>}
-                {role && <p className="reflective-card__role">{role}</p>}
-              </div>
-              {(idLabel || idValue) && (
-                <div className="reflective-card__footer">
-                  <div className="reflective-card__id">
-                    {idLabel && <span className="reflective-card__label">{idLabel}</span>}
-                    {idValue && <span className="reflective-card__value">{idValue}</span>}
+        <div className={`reflective-card__flipper ${isCardFlipped ? 'reflective-card__flipper--flipped' : ''}`}>
+          {/* FRONT FACE */}
+          <div className="reflective-card__face reflective-card__face--front">
+            <canvas ref={canvasRef} className="reflective-card__canvas" aria-hidden="true" />
+            <div className="reflective-card__content">
+              {children ?? (
+                <>
+                  <div className="reflective-card__header">
+                    {badge && (
+                      <span className="reflective-card__badge">
+                        <HugeiconsIcon icon={CheckmarkBadge01Icon} size={15} strokeWidth={2} />
+                        {badge}
+                      </span>
+                    )}
+                    <div className="reflective-card__header-right">
+                      {status && (
+                        <span className="reflective-card__status">
+                          <span className="reflective-card__dot" />
+                          {status}
+                        </span>
+                      )}
+                      {allowFlip && (
+                        <button
+                          type="button"
+                          className="reflective-card__flip-btn"
+                          onClick={handleToggleFlip}
+                          aria-label="Flip card to inspect back"
+                          title="Flip card"
+                        >
+                          ↺ Flip
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <span className="reflective-card__tile">
-                    <HugeiconsIcon icon={FingerPrintIcon} size={22} strokeWidth={1.6} />
-                  </span>
-                </div>
+
+                  {/* Passholder Photo + Identity Cluster */}
+                  <div className="reflective-card__identity-row">
+                    <div className="reflective-card__photo-frame">
+                      {photoUrl ? (
+                        <img src={photoUrl} alt={name || 'Passholder'} className="reflective-card__photo-img" />
+                      ) : (
+                        <div className="reflective-card__photo-fallback">
+                          {name ? name.charAt(0).toUpperCase() : 'U'}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="reflective-card__identity-info">
+                      {name && <h3 className="reflective-card__name">{name}</h3>}
+                      {role && <p className="reflective-card__role">{role}</p>}
+                      {semester && (
+                        <div className="reflective-card__semester-badge">
+                          <span>⚡</span>
+                          <span>{typeof semester === 'number' ? `Semester ${semester}` : semester}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="reflective-card__footer">
+                    <div className="reflective-card__tier-info">
+                      <span className="reflective-card__label">PASS TIER</span>
+                      <span className="reflective-card__tier-value">MEMBER PASSHOLDER</span>
+                    </div>
+                    {allowFlip && (
+                      <button
+                        type="button"
+                        className="reflective-card__flip-hint"
+                        onClick={handleToggleFlip}
+                      >
+                        <span>Inspect Signature</span>
+                        <span>→</span>
+                      </button>
+                    )}
+                  </div>
+                </>
               )}
-            </>
-          )}
+            </div>
+            <span className="reflective-card__rim" />
+          </div>
+
+          {/* BACK FACE */}
+          <div className="reflective-card__face reflective-card__face--back">
+            <div className="reflective-card__back-content">
+              <div className="reflective-card__back-header">
+                <span className="reflective-card__back-pill">OFFICIAL PASS</span>
+                {allowFlip && (
+                  <button
+                    type="button"
+                    className="reflective-card__flip-btn"
+                    onClick={handleToggleFlip}
+                    aria-label="Flip back to front of card"
+                    title="Flip to front"
+                  >
+                    ↺ Front
+                  </button>
+                )}
+              </div>
+
+              {/* EVENTMESH BOLD CAPS Wordmark */}
+              <div className="reflective-card__brand-wrap">
+                <h2 className="reflective-card__brand-title">EVENTMESH</h2>
+                <span className="reflective-card__brand-subtitle">GLOBAL CAMPUS NETWORK</span>
+              </div>
+
+              {/* Cardholder Cursive Signature Strip */}
+              <div className="reflective-card__signature-strip">
+                <div className="reflective-card__signature-pattern" />
+                <div className="reflective-card__signature-ink">
+                  {name || 'Suraj Naik'}
+                </div>
+                <span className="reflective-card__signature-label">
+                  AUTHORIZED SIGNATURE · NOT TRANSFERABLE
+                </span>
+              </div>
+
+              {/* Back Face Footer */}
+              <div className="reflective-card__back-footer">
+                <span className="reflective-card__back-disclaimer">
+                  VERIFIED DIGITAL PASSHOLDER CREDENTIAL
+                </span>
+                {allowFlip && (
+                  <button
+                    type="button"
+                    className="reflective-card__flip-hint"
+                    onClick={handleToggleFlip}
+                  >
+                    <span>← Flip to front</span>
+                  </button>
+                )}
+              </div>
+            </div>
+            <span className="reflective-card__rim" />
+          </div>
         </div>
-        <span className="reflective-card__rim" />
       </div>
       <video
         ref={videoRef}

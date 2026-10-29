@@ -129,8 +129,9 @@ export const AttendeeDashboardPage: React.FC = () => {
       bloodGroup: s?.bloodGroup || 'O+',
       emergencyPhone: s?.emergencyPhone || s?.phone,
       phone: s?.phone || '',
+      avatar: avatarUrl || s?.avatar || undefined,
     }
-  }, [session, customStudentData, currentPlan])
+  }, [session, customStudentData, currentPlan, avatarUrl])
 
   const handleCopyRegNo = () => {
     navigator.clipboard.writeText(studentData.registrationNumber)
@@ -470,16 +471,17 @@ export const AttendeeDashboardPage: React.FC = () => {
 
         {/* Folio Upper Compartment: The Student Identification Pass & Telemetry Ledger */}
         <div className="p-6 sm:p-7 border-b border-line bg-canvas/30 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-          {/* Metallic Reflective Pass Card */}
+          {/* Metallic Reflective Pass Card (Double-Sided 3D Flippable) */}
           <div className="md:col-span-6 flex justify-center md:justify-start">
             <ReflectiveCard
               name={studentData.name}
-              role={`${studentData.degreeBranch} · Sem ${studentData.semester}`}
+              role={studentData.degreeBranch || 'Undergraduate Developer'}
+              semester={studentData.semester || 6}
+              photoUrl={avatarUrl || studentData.avatar}
               badge="EVENTMESH PASSHOLDER"
-              status={studentData.role}
+              status="ACTIVE"
               statusColor="#10b981"
-              idLabel="STUDENT ID"
-              idValue={studentData.registrationNumber}
+              allowFlip={true}
               width={450}
               height={265}
               radius={20}
