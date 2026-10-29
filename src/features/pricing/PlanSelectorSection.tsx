@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Check } from '@phosphor-icons/react';
 import PixelCard from '../../components/PixelCard';
 import './PlanSelectorSection.css';
 
@@ -6,12 +7,14 @@ export interface PlanSelectorSectionProps {
   currentPlan?: 'free' | 'pro' | 'industry';
   onSelectPlan?: (planId: 'free' | 'pro' | 'industry') => void;
   className?: string;
+  theme?: 'dark' | 'light' | 'auto';
 }
 
 export const PlanSelectorSection: React.FC<PlanSelectorSectionProps> = ({
   currentPlan = 'free',
   onSelectPlan,
   className = '',
+  theme = 'auto',
 }) => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
 
@@ -37,9 +40,9 @@ export const PlanSelectorSection: React.FC<PlanSelectorSectionProps> = ({
     {
       id: 'pro' as const,
       name: 'Pro Builder',
+      badge: 'POPULAR',
       tagline: 'For competitive hackathon builders & active workshop leaders.',
       pixelVariant: 'blue' as const,
-      badge: 'MOST POPULAR',
       priceMonthly: '$9',
       priceAnnual: '$7.50',
       periodLabel: billingCycle === 'annual' ? 'per month, billed $90/yr' : 'per month',
@@ -57,9 +60,9 @@ export const PlanSelectorSection: React.FC<PlanSelectorSectionProps> = ({
     {
       id: 'industry' as const,
       name: 'Industry Partner',
+      badge: 'PARTNER',
       tagline: 'For startup founders, student reps, and campus recruiters.',
       pixelVariant: 'yellow' as const,
-      badge: 'CAREER & SPONSOR',
       priceMonthly: '$29',
       priceAnnual: '$24',
       periodLabel: billingCycle === 'annual' ? 'per month, billed $288/yr' : 'per month',
@@ -79,11 +82,9 @@ export const PlanSelectorSection: React.FC<PlanSelectorSectionProps> = ({
   return (
     <section className={`plan-selector ${className}`.trim()}>
       <div className="plan-selector__header">
-        <span className="plan-selector__badge">Membership & Pass Tiers</span>
         <h2 className="plan-selector__title">Level Up Your Campus Journey</h2>
         <p className="plan-selector__subtitle">
-          Choose the right plan to unlock priority access, builder workshops, and direct recruiter
-          connections.
+          Unlock priority access, builder workshops, and direct recruiter connections with our student tiers.
         </p>
 
         <div className="plan-selector__toggle" role="radiogroup" aria-label="Billing Cycle">
@@ -123,26 +124,27 @@ export const PlanSelectorSection: React.FC<PlanSelectorSectionProps> = ({
               key={plan.id}
               variant={plan.pixelVariant}
               gap={plan.id === 'pro' ? 8 : 6}
-              speed={plan.id === 'pro' ? 40 : 30}
+              speed={plan.id === 'pro' ? 28 : 20}
               radius={20}
               trigger="hover"
+              theme={theme}
             >
               <div className="plan-card-content">
-                {plan.badge && (
-                  <div
-                    className={`plan-card__tier-pill ${
-                      isGold ? 'plan-card__tier-pill--gold' : ''
-                    }`}
-                  >
-                    {plan.badge}
-                  </div>
-                )}
-
                 <div>
-                  <div className="plan-card__tier-header">
+                  <div className="plan-card__header-top">
                     <h3 className="plan-card__tier-name">{plan.name}</h3>
-                    <p className="plan-card__tier-desc">{plan.tagline}</p>
+                    {plan.badge && (
+                      <span
+                        className={`plan-card__badge ${
+                          isGold ? 'plan-card__badge--gold' : 'plan-card__badge--purple'
+                        }`}
+                      >
+                        {plan.badge}
+                      </span>
+                    )}
                   </div>
+
+                  <p className="plan-card__tier-desc">{plan.tagline}</p>
 
                   <div className="plan-card__pricing">
                     <span className="plan-card__price">{price}</span>
@@ -152,14 +154,14 @@ export const PlanSelectorSection: React.FC<PlanSelectorSectionProps> = ({
                   <ul className="plan-card__features" aria-label={`${plan.name} features`}>
                     {plan.features.map((feature, idx) => (
                       <li key={idx} className="plan-card__feature-item">
-                        <span
+                        <Check
+                          size={15}
+                          weight="bold"
                           className={`plan-card__feature-icon ${
                             isGold ? 'plan-card__feature-icon--gold' : ''
                           }`}
                           aria-hidden="true"
-                        >
-                          ✓
-                        </span>
+                        />
                         <span>{feature}</span>
                       </li>
                     ))}
@@ -171,7 +173,7 @@ export const PlanSelectorSection: React.FC<PlanSelectorSectionProps> = ({
                   className={`plan-card__cta plan-card__cta--${plan.ctaType}`}
                   onClick={() => onSelectPlan && onSelectPlan(plan.id)}
                   disabled={isCurrent}
-                  style={isCurrent ? { opacity: 0.7, cursor: 'default' } : undefined}
+                  style={isCurrent ? { opacity: 0.65, cursor: 'default' } : undefined}
                 >
                   {plan.ctaLabel}
                 </button>

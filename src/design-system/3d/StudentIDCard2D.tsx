@@ -24,11 +24,10 @@ export interface StudentIDCard2DProps {
 /**
  * Modern Collegiate Student Identification Pass with Dynamic Specular Reflection
  * Styled strictly with EventMesh website design tokens:
- * - 1:1 Aspect-square avatar photo box
+ * - 1:1 Aspect-square avatar photo box with embossed holographic seal
  * - Student name in authentic cursive signature font directly below the photo
  * - Dynamic cursor-following 3D spring tilt
  * - Specular reflection sheen following cursor coordinates (No camera permission needed)
- * - Prismatic holographic security seal watermark
  * - Seamless 3D flip to back face with bold 'eventmesh' and student signature
  */
 export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
@@ -66,7 +65,7 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
       const py = (y / rect.height) * 100
       const nx = (x / rect.width) * 2 - 1
       const ny = (y / rect.height) * 2 - 1
-      const maxTilt = 8
+      const maxTilt = 7
 
       setTilt({
         x: -ny * maxTilt,
@@ -123,7 +122,7 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
         {/* FRONT FACE                                                                */}
         {/* ========================================================================= */}
         <div
-          className="absolute inset-0 w-full h-full rounded-[20px] sm:rounded-[24px] bg-card text-ink border-2 border-line/90 shadow-[0_12px_32px_rgba(0,0,0,0.08)] p-3 sm:p-5 flex flex-col justify-between overflow-hidden"
+          className="absolute inset-0 w-full h-full rounded-[20px] sm:rounded-[24px] bg-card text-ink border-2 border-line/90 shadow-[0_12px_32px_rgba(0,0,0,0.06)] p-3.5 sm:p-5 flex flex-col justify-between overflow-hidden"
           style={{
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
@@ -135,25 +134,11 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
               className="absolute inset-0 pointer-events-none rounded-[inherit] transition-opacity duration-300 z-30"
               style={{
                 opacity: glare.opacity,
-                background: `radial-gradient(circle 340px at ${glare.x}% ${glare.y}%, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.06) 45%, transparent 75%)`,
+                background: `radial-gradient(circle 320px at ${glare.x}% ${glare.y}%, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.05) 45%, transparent 75%)`,
                 mixBlendMode: 'overlay',
               }}
             />
           )}
-
-          {/* Holographic Security Seal Badge */}
-          <div
-            className="absolute top-2.5 right-11 sm:right-14 w-8 h-8 rounded-full pointer-events-none z-20 flex items-center justify-center overflow-hidden border border-white/20 shadow-xs"
-            style={{
-              background: `linear-gradient(${135 + tilt.y * 4}deg, rgba(255, 0, 128, 0.4), rgba(0, 255, 255, 0.4), rgba(255, 215, 0, 0.4), rgba(138, 43, 226, 0.4))`,
-              boxShadow: 'inset 0 0 6px rgba(255, 255, 255, 0.7)',
-            }}
-            title="Encrypted Holographic Security Seal"
-          >
-            <span className="text-[6.5px] font-mono font-black text-white drop-shadow-xs tracking-tighter">
-              SEAL
-            </span>
-          </div>
 
           {/* Subtle Halftone Background Dot Grid */}
           <div className="absolute inset-0 pointer-events-none opacity-[0.035] dark:opacity-[0.06] overflow-hidden">
@@ -168,14 +153,14 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
           </div>
 
           {/* Watermark accent */}
-          <div className="absolute -right-4 -bottom-6 pointer-events-none opacity-[0.04] dark:opacity-[0.06] font-display font-black text-6xl sm:text-7xl tracking-tighter text-ink select-none">
+          <div className="absolute -right-4 -bottom-6 pointer-events-none opacity-[0.035] dark:opacity-[0.05] font-display font-black text-6xl sm:text-7xl tracking-tighter text-ink select-none">
             EMESH
           </div>
 
           {/* TOP SECTION: 1:1 PHOTO & SIGNATURE (LEFT) + METADATA (RIGHT) */}
           <div className="flex gap-3 sm:gap-4 relative z-10">
-            {/* LEFT: 1:1 Square Photo + Signature Below */}
-            <div className="shrink-0 flex flex-col items-center">
+            {/* LEFT: 1:1 Square Photo + Holographic Stamp + Signature Below */}
+            <div className="shrink-0 flex flex-col items-center relative">
               <div
                 onClick={(e) => {
                   if (onAvatarClick) {
@@ -200,6 +185,20 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
                     </span>
                   </div>
                 )}
+              </div>
+
+              {/* Holographic Security Seal - positioned authentically over corner of photo */}
+              <div
+                className="absolute top-[64px] sm:top-[80px] right-[-6px] sm:right-[-8px] w-7 h-7 sm:w-8 sm:h-8 rounded-full pointer-events-none z-20 flex items-center justify-center overflow-hidden border border-white/40 shadow-xs"
+                style={{
+                  background: `linear-gradient(${135 + tilt.y * 5}deg, rgba(255, 0, 128, 0.45), rgba(0, 255, 255, 0.45), rgba(255, 215, 0, 0.45), rgba(138, 43, 226, 0.45))`,
+                  boxShadow: 'inset 0 0 5px rgba(255, 255, 255, 0.8), 0 2px 6px rgba(0,0,0,0.15)',
+                }}
+                title="Encrypted Holographic Security Seal"
+              >
+                <span className="text-[6px] sm:text-[6.5px] font-mono font-black text-white drop-shadow-xs tracking-tighter">
+                  SEAL
+                </span>
               </div>
 
               {/* Dynamic Name Signature below 1:1 Image */}
@@ -228,17 +227,14 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
                   <span className="font-mono text-[9px] text-ink-muted">· PASS</span>
                 </div>
 
-                <span className="inline-flex items-center gap-1 text-[7.5px] sm:text-[8.5px] font-mono uppercase bg-surface-subtle text-ink-soft hover:text-ink px-1.5 py-0.5 rounded-full border border-line transition-colors">
-                  <ArrowsClockwise size={9} /> Flip
+                <span className="inline-flex items-center gap-1 text-[7.5px] sm:text-[8.5px] font-mono uppercase bg-surface-subtle text-ink-soft hover:text-ink px-2 py-0.5 rounded-full border border-line transition-colors">
+                  <ArrowsClockwise size={10} /> Flip
                 </span>
               </div>
 
               {/* Student Name */}
-              <div className="mt-1.5">
-                <span className="text-[7px] sm:text-[8px] font-mono uppercase tracking-widest text-ink-muted block font-bold leading-tight">
-                  NAME
-                </span>
-                <span className="text-xs sm:text-sm font-display font-bold text-ink tracking-tight uppercase truncate block">
+              <div className="mt-1">
+                <span className="text-sm sm:text-base font-display font-extrabold text-ink tracking-tight uppercase truncate block">
                   {name}
                 </span>
               </div>
@@ -246,8 +242,8 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
               {/* Reg No & Issue Date */}
               <div className="grid grid-cols-2 gap-2 mt-1 sm:mt-1.5 font-mono">
                 <div>
-                  <span className="text-[7px] sm:text-[8px] uppercase tracking-wider text-ink-muted block font-bold leading-tight">
-                    REG NUMBER
+                  <span className="text-[7px] sm:text-[8px] uppercase tracking-wider text-ink-muted block font-semibold leading-tight">
+                    REG NO
                   </span>
                   <button
                     type="button"
@@ -264,8 +260,8 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
                   </button>
                 </div>
                 <div>
-                  <span className="text-[7px] sm:text-[8px] uppercase tracking-wider text-ink-muted block font-bold leading-tight">
-                    DATE OF ISSUE
+                  <span className="text-[7px] sm:text-[8px] uppercase tracking-wider text-ink-muted block font-semibold leading-tight">
+                    VALID THRU
                   </span>
                   <span className="text-[9.5px] sm:text-[11px] font-bold text-ink tracking-tight block">
                     {dateOfIssue}
@@ -275,10 +271,10 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
 
               {/* Degree / Branch */}
               <div className="mt-1 font-mono">
-                <span className="text-[7px] sm:text-[8px] uppercase tracking-wider text-ink-muted block font-bold leading-tight">
-                  PROGRAM / DEPARTMENT
+                <span className="text-[7px] sm:text-[8px] uppercase tracking-wider text-ink-muted block font-semibold leading-tight">
+                  DEPARTMENT
                 </span>
-                <span className="text-[9px] sm:text-[10.5px] font-semibold text-ink-soft truncate block">
+                <span className="text-[9px] sm:text-[10px] font-medium text-ink-soft truncate block">
                   {degreeBranch || 'Undergraduate Member'}
                 </span>
               </div>
@@ -288,7 +284,7 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
           {/* BOTTOM SECTION: Status pill + Campus verification */}
           <div className="relative z-10 pt-2 border-t border-line/80 flex items-center justify-between font-mono text-[8px] sm:text-[9px]">
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               <span className="font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
                 {role}
               </span>
@@ -304,7 +300,7 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
         {/* BACK FACE                                                                 */}
         {/* ========================================================================= */}
         <div
-          className="absolute inset-0 w-full h-full rounded-[20px] sm:rounded-[24px] bg-card text-ink border-2 border-line/90 shadow-[0_12px_32px_rgba(0,0,0,0.08)] p-4 sm:p-6 flex flex-col justify-between items-center text-center overflow-hidden"
+          className="absolute inset-0 w-full h-full rounded-[20px] sm:rounded-[24px] bg-card text-ink border-2 border-line/90 shadow-[0_12px_32px_rgba(0,0,0,0.06)] p-4 sm:p-6 flex flex-col justify-between items-center text-center overflow-hidden"
           style={{
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
@@ -317,7 +313,7 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
               className="absolute inset-0 pointer-events-none rounded-[inherit] transition-opacity duration-300 z-30"
               style={{
                 opacity: glare.opacity,
-                background: `radial-gradient(circle 340px at ${100 - glare.x}% ${glare.y}%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.05) 45%, transparent 75%)`,
+                background: `radial-gradient(circle 320px at ${100 - glare.x}% ${glare.y}%, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.05) 45%, transparent 75%)`,
                 mixBlendMode: 'overlay',
               }}
             />
@@ -339,7 +335,7 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
           <div className="relative z-10 w-full flex items-center justify-between text-[7.5px] sm:text-[8.5px] font-mono text-ink-muted uppercase border-b border-line/60 pb-1.5">
             <span>CENTRAL CAMPUS ADMISSION NETWORK</span>
             <span className="inline-flex items-center gap-1 text-ink-soft">
-              <ArrowsClockwise size={9} /> FLIP TO FRONT
+              <ArrowsClockwise size={10} /> FRONT
             </span>
           </div>
 
@@ -351,7 +347,7 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
               <span className="w-2.5 h-2.5 rounded-full bg-accent inline-block ml-0.5" />
             </h2>
 
-            {/* Student's name below eventmesh in the same signature cursive font */}
+            {/* Student's name below eventmesh in cursive font */}
             <div className="mt-2 text-center">
               <span className="text-[7.5px] sm:text-[8.5px] font-mono uppercase tracking-widest text-ink-muted block font-semibold">
                 OFFICIAL PASSHOLDER SIGNATURE

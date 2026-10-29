@@ -453,25 +453,7 @@ export const AttendeeDashboardPage: React.FC = () => {
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setIsOnboardingOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-accent/40 bg-accent/10 hover:bg-accent/20 text-xs font-semibold text-accent shadow-2xs transition-colors"
-              title="Launch Onboarding Stepper"
-            >
-              <Sparkle size={14} className="text-accent" />
-              <span>Setup Wizard</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsPlanSelectorOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-xs font-semibold text-amber-600 dark:text-amber-400 shadow-2xs transition-colors"
-              title="Inspect PixelCard Membership Plans"
-            >
-              <Ticket size={14} className="text-amber-500" />
-              <span>Membership Plans</span>
-            </button>
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setCalendarSyncOpen(true)}
@@ -547,6 +529,34 @@ export const AttendeeDashboardPage: React.FC = () => {
               <div className="p-2.5 rounded-xl bg-subtle/80">
                 <span className="text-[10px] text-text-3 font-mono uppercase tracking-wider block">Honors</span>
                 <span className="text-base font-bold font-mono tabular-nums text-amber-600 dark:text-amber-400">{certificates.length}</span>
+              </div>
+            </div>
+
+            {/* Membership Tier & Quick Plan Upgrade */}
+            <div className="pt-3 border-t border-line flex items-center justify-between text-xs">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-mono text-text-3 uppercase tracking-wider">Plan:</span>
+                <span className="font-bold font-mono text-accent text-xs">
+                  {currentPlan === 'pro' ? 'PRO BUILDER' : currentPlan === 'industry' ? 'INDUSTRY PARTNER' : 'FREE CAMPUS'}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsOnboardingOpen(true)}
+                  className="text-text-3 hover:text-text hover:underline flex items-center gap-1 text-[11px] font-sans"
+                  title="Run through onboarding stepper setup again"
+                >
+                  <Sparkle size={13} className="text-accent" />
+                  <span>Setup</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsPlanSelectorOpen(true)}
+                  className="font-semibold text-accent hover:underline flex items-center gap-1 text-[11px] font-sans"
+                >
+                  <span>Change Plan →</span>
+                </button>
               </div>
             </div>
           </div>

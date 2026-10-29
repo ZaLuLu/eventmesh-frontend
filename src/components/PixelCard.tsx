@@ -100,7 +100,7 @@ export interface PixelCardProps {
   intro?: boolean;
   introDelay?: number;
   noFocus?: boolean;
-  theme?: "dark" | "light";
+  theme?: "dark" | "light" | "auto";
   radius?: number;
   className?: string;
   style?: React.CSSProperties;
@@ -126,7 +126,7 @@ export const PixelCard: React.FC<PixelCardProps> = ({
   intro = true,
   introDelay = 0,
   noFocus,
-  theme = 'dark',
+  theme = 'auto',
   radius = 24,
   className = '',
   style,
@@ -138,7 +138,12 @@ export const PixelCard: React.FC<PixelCardProps> = ({
   const settingsRef = useRef<any>(null);
   const [active, setActive] = useState(false);
 
-  const tone = theme === 'light' ? 'light' : 'dark';
+  const isDocDark = typeof document !== 'undefined' && (
+    document.documentElement.classList.contains('dark') || 
+    document.body.classList.contains('dark') ||
+    document.documentElement.getAttribute('data-theme') === 'dark'
+  );
+  const tone = theme === 'auto' || !theme ? (isDocDark ? 'dark' : 'light') : theme;
   const preset = VARIANTS[variant] || VARIANTS.default;
   const palette = colors ? toList(colors) : preset.colors[tone];
   const focusOff = noFocus ?? preset.noFocus;
