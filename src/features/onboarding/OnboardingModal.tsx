@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Stepper } from '../../components/Stepper';
-import { StudentIDCard2D } from '../../design-system/3d/StudentIDCard2D';
+import ReflectiveCard from '../../components/ReflectiveCard';
 import './OnboardingModal.css';
 
 export interface OnboardingData {
@@ -298,21 +298,29 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           {currentStep === 3 && (
             <div>
               <div className="onboarding-step__header" style={{ textAlign: 'center' }}>
-                <h2 className="onboarding-step__title">Your Digital ID Pass is Ready!</h2>
+                <h2 className="onboarding-step__title">Your Metallic Pass is Ready!</h2>
                 <p className="onboarding-step__desc">
-                  Tilt or tap your card below to inspect the holographic security sheen.
+                  Move your cursor or touch your card below to inspect the light reflection.
                 </p>
               </div>
 
               <div className="onboarding-pass-preview">
-                <StudentIDCard2D
+                <ReflectiveCard
                   name={formData.name}
-                  avatarUrl={formData.avatarUrl}
-                  campus={formData.campus}
-                  degreeBranch={formData.degreeBranch}
-                  semester={formData.semester}
-                  registrationNumber={formData.registrationNumber}
-                  role="OFFICIAL PASSHOLDER"
+                  role={`${formData.degreeBranch} · Sem ${formData.semester}`}
+                  badge="EVENTMESH PASSHOLDER"
+                  status="AUTHENTICATED"
+                  statusColor="#10b981"
+                  idLabel="STUDENT ID"
+                  idValue={formData.registrationNumber}
+                  width={420}
+                  height={250}
+                  radius={18}
+                  metalness={1}
+                  roughness={0.28}
+                  shine={1.3}
+                  bevel={3.5}
+                  tiltStrength={11}
                 />
               </div>
             </div>

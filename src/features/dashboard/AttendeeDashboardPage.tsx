@@ -28,7 +28,7 @@ import { Registration, Certificate } from '@/api'
 import { useToast } from '@/design-system/primitives/Toast'
 import { fireCelebrationConfetti } from '@/lib/confetti'
 import { EventAdmissionTicket } from '@/design-system/micro/EventAdmissionTicket'
-import { StudentIDCard2D } from '@/design-system/3d/StudentIDCard2D'
+import ReflectiveCard from '@/components/ReflectiveCard'
 import { OnboardingModal, OnboardingData } from '@/features/onboarding/OnboardingModal'
 import { PlanSelectorSection } from '@/features/pricing/PlanSelectorSection'
 import { AvatarSelectorModal } from './components/AvatarSelectorModal'
@@ -475,19 +475,24 @@ export const AttendeeDashboardPage: React.FC = () => {
 
         {/* Folio Upper Compartment: The Student Identification Pass & Telemetry Ledger */}
         <div className="p-6 sm:p-7 border-b border-line bg-canvas/30 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-          {/* Physical 3D Landscape Smartcard */}
+          {/* Metallic Reflective Pass Card */}
           <div className="md:col-span-6 flex justify-center md:justify-start">
-            <StudentIDCard2D
+            <ReflectiveCard
               name={studentData.name}
-              registrationNumber={studentData.registrationNumber}
-              degreeBranch={studentData.degreeBranch}
-              semester={studentData.semester}
-              email={studentData.email}
-              role={studentData.role}
-              campus={studentData.campus}
-              avatarUrl={avatarUrl}
-              onAvatarClick={() => setIsAvatarModalOpen(true)}
-              interactive={true}
+              role={`${studentData.degreeBranch} · Sem ${studentData.semester}`}
+              badge="EVENTMESH PASSHOLDER"
+              status={studentData.role}
+              statusColor="#10b981"
+              idLabel="STUDENT ID"
+              idValue={studentData.registrationNumber}
+              width={450}
+              height={265}
+              radius={20}
+              metalness={1}
+              roughness={0.28}
+              shine={1.3}
+              bevel={3.5}
+              tiltStrength={11}
             />
           </div>
 
