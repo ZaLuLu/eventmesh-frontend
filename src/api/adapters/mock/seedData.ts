@@ -204,5 +204,6 @@ export const SEED_DEMO_USERS: UserSession[] = [
     bloodGroup: 'O+',
     phone: '+91 98765 43210',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+    onboarding_completed: true,
   },
 ]

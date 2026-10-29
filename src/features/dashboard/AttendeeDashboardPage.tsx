@@ -29,7 +29,6 @@ import { useToast } from '@/design-system/primitives/Toast'
 import { fireCelebrationConfetti } from '@/lib/confetti'
 import { EventAdmissionTicket } from '@/design-system/micro/EventAdmissionTicket'
 import ReflectiveCard from '@/components/ReflectiveCard'
-import { OnboardingModal, OnboardingData } from '@/features/onboarding/OnboardingModal'
 import { PlanSelectorSection } from '@/features/pricing/PlanSelectorSection'
 import { AvatarSelectorModal } from './components/AvatarSelectorModal'
 import { ProfileDetailsModal } from './components/ProfileDetailsModal'
@@ -80,10 +79,9 @@ export const AttendeeDashboardPage: React.FC = () => {
   const [selectedCertificateId, setSelectedCertificateId] = useState<string | null>(null)
   const [isBrightnessModalOpen, setIsBrightnessModalOpen] = useState(false)
   const [isVenueModalOpen, setIsVenueModalOpen] = useState(false)
-  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
   const [isPlanSelectorOpen, setIsPlanSelectorOpen] = useState(false)
   const [currentPlan, setCurrentPlan] = useState<'free' | 'pro' | 'industry'>('pro')
-  const [customStudentData, setCustomStudentData] = useState<Partial<OnboardingData> | null>(() => {
+  const [customStudentData, setCustomStudentData] = useState<Record<string, any> | null>(() => {
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       try {
         const saved = localStorage.getItem('eventmesh_onboarding_profile')
@@ -103,9 +101,6 @@ export const AttendeeDashboardPage: React.FC = () => {
       setIsProfileModalOpen(true)
     } else if (tab === 'plans' || tab === 'pricing') {
       setIsPlanSelectorOpen(true)
-    }
-    if (searchParams.get('onboarding') === 'true') {
-      setIsOnboardingOpen(true)
     }
   }, [searchParams])
 
@@ -546,15 +541,6 @@ export const AttendeeDashboardPage: React.FC = () => {
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsOnboardingOpen(true)}
-                  className="text-text-3 hover:text-text hover:underline flex items-center gap-1 text-[11px] font-sans"
-                  title="Run through onboarding stepper setup again"
-                >
-                  <Sparkle size={13} className="text-accent" />
-                  <span>Setup</span>
-                </button>
                 <button
                   type="button"
                   onClick={() => setIsPlanSelectorOpen(true)}
@@ -1220,17 +1206,6 @@ export const AttendeeDashboardPage: React.FC = () => {
           </div>
         </Modal>
       )}
-
-      {/* Onboarding Modal Powered by Stepper */}
-      <OnboardingModal
-        isOpen={isOnboardingOpen}
-        onClose={() => setIsOnboardingOpen(false)}
-        initialData={customStudentData || undefined}
-        onComplete={(data) => {
-          setCustomStudentData(data)
-          if (data.avatarUrl) setAvatarUrl(data.avatarUrl)
-        }}
-      />
 
       {/* Plan Selector Modal Powered by PixelCard */}
       {isPlanSelectorOpen && (

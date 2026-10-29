@@ -2087,6 +2087,7 @@ export const mockAuthApi: AuthApi = {
       campus: updatedProfile.institution_name || undefined,
       branch: updatedProfile.location || undefined,
       degreeBranch: updatedProfile.location || undefined,
+      onboarding_completed: true,
     }
     mockStore.save()
     try {

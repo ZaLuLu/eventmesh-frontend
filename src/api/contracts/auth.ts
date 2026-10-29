@@ -30,6 +30,9 @@ export const UserSessionSchema = z.object({
   degreeBranch: z.string().optional(),
   semester: z.number().optional(),
   bloodGroup: z.string().optional(),
+  onboarding_completed: z.boolean().optional(),
+  tagline: z.string().optional(),
+  interests: z.array(z.string()).optional(),
 })
 
 export type UserSession = z.infer<typeof UserSessionSchema>
@@ -133,6 +136,7 @@ export function profileToSession(profile: ProfileRead): UserSession {
     campus,
     branch,
     degreeBranch: branch,
+    onboarding_completed: profile.onboarding_completed,
   }
 }
 

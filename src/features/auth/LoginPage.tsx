@@ -27,6 +27,27 @@ export const LoginPage: React.FC = () => {
   const googleBtnContainerRef = useRef<HTMLDivElement>(null)
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([])
 
+  const navigateAfterAuth = (userSession?: any) => {
+    if (['platform_admin', 'org_admin', 'club_admin', 'volunteer'].includes(userSession?.role)) {
+      navigate('/admin')
+      return
+    }
+
+    let completed = Boolean(userSession?.onboarding_completed)
+    if (!completed) {
+      try {
+        const stored = localStorage.getItem('eventmesh_onboarding_completed')
+        if (stored === 'true') completed = true
+      } catch {}
+    }
+
+    if (!completed) {
+      navigate('/onboarding')
+    } else {
+      navigate('/attendee/dashboard')
+    }
+  }
+
   // 1. Process incoming OAuth redirect callback
   useEffect(() => {
     const hash = window.location.hash
@@ -60,7 +81,7 @@ export const LoginPage: React.FC = () => {
               type: 'success',
             })
             window.history.replaceState(null, '', window.location.pathname)
-            navigate('/attendee/dashboard')
+            navigateAfterAuth(session.user)
           } else if (sessionErr) {
             setError(sessionErr.message || 'Google authentication error.')
           }
@@ -120,7 +141,7 @@ export const LoginPage: React.FC = () => {
                 message: `Welcome back, ${userName}!`,
                 type: 'success',
               })
-              navigate('/attendee/dashboard')
+              navigateAfterAuth(user)
             } catch (err: any) {
               console.error('Google ID token authentication error:', err)
               setError(err?.message || 'Google sign-in was interrupted.')
@@ -272,7 +293,7 @@ export const LoginPage: React.FC = () => {
       if (['platform_admin', 'org_admin', 'club_admin', 'volunteer'].includes(session.role)) {
         navigate('/admin')
       } else {
-        navigate('/attendee/dashboard')
+        navigateAfterAuth(session)
       }
     } catch {
       setError('Invalid or expired verification code.')
