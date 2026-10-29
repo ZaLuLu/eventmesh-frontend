@@ -73,6 +73,9 @@ import {
   TriggerSyncResponse,
   TestEmailRequest,
   TestEmailResponse,
+  ProfileRead,
+  OnboardingSubmitPayload,
+  ProfileUpdatePayload,
 } from '../../contracts'
 import { SEED_ORGANIZATION, SEED_CLUBS, SEED_DEMO_USERS } from './seedData'
 import {
@@ -2041,6 +2044,56 @@ export const mockAuthApi: AuthApi = {
       mockStore.save()
     }
     return { role: 'organizer' }
+  },
+
+  async completeOnboarding(payload: OnboardingSubmitPayload): Promise<ProfileRead> {
+    await simulateLatency()
+    const currentSession = mockStore.currentSession || SEED_DEMO_USERS[0]
+    const names = (payload.display_name || currentSession.name).split(' ')
+    const updatedProfile: ProfileRead = {
+      id: currentSession.id,
+      email: currentSession.email,
+      handle: currentSession.email.split('@')[0],
+      display_name: payload.display_name || currentSession.name,
+      avatar_url: payload.avatar_url || currentSession.avatar || null,
+      first_name: payload.first_name || names[0] || 'Suraj',
+      middle_name: null,
+      last_name: payload.last_name || names.slice(1).join(' ') || 'Naik',
+      date_of_birth: null,
+      phone: payload.phone || currentSession.phone || '+91 98765 43210',
+      location: payload.degree_branch
+        ? payload.semester
+          ? `${payload.degree_branch} · Sem ${payload.semester}`
+          : payload.degree_branch
+        : currentSession.branch || 'Computer Science & Engineering',
+      college_email: currentSession.email,
+      college_id: payload.student_id || currentSession.studentId || 'CTU-2026-0814',
+      student_id: payload.student_id || currentSession.studentId || 'CTU-2026-0814',
+      institution_name: payload.institution_name || currentSession.campus || 'Central Technological University (CTU)',
+      onboarding_completed: true,
+      institution_verified: true,
+      institution_verified_at: new Date().toISOString(),
+      role: 'registered',
+      is_organizer: currentSession.role === 'org_admin',
+    }
+    mockStore.currentSession = {
+      ...currentSession,
+      name: updatedProfile.display_name!,
+      avatar: updatedProfile.avatar_url || undefined,
+      phone: updatedProfile.phone || undefined,
+      studentId: updatedProfile.student_id || undefined,
+      registrationNumber: updatedProfile.student_id || undefined,
+      institutionName: updatedProfile.institution_name || undefined,
+      campus: updatedProfile.institution_name || undefined,
+      branch: updatedProfile.location || undefined,
+      degreeBranch: updatedProfile.location || undefined,
+    }
+    mockStore.save()
+    try {
+      localStorage.setItem('eventmesh_session', JSON.stringify(mockStore.currentSession))
+      localStorage.setItem('eventmesh_onboarding_completed', 'true')
+    } catch {}
+    return updatedProfile
   },
 }
 

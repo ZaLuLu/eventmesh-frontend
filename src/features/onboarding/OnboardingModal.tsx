@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Stepper } from '../../components/Stepper';
 import ReflectiveCard from '../../components/ReflectiveCard';
+import { api } from '@/api';
+import { useToast } from '@/design-system/primitives/Toast';
+import { fireCelebrationConfetti } from '@/lib/confetti';
 import './OnboardingModal.css';
 
 export interface OnboardingData {
@@ -12,13 +16,15 @@ export interface OnboardingData {
   semester: number;
   registrationNumber: string;
   interests: string[];
+  phone?: string;
 }
 
 export interface OnboardingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onComplete: (data: OnboardingData) => void;
+  onComplete?: (data: OnboardingData) => void;
   initialData?: Partial<OnboardingData>;
+  title?: string;
 }
 
 const AVATAR_PRESETS = [
@@ -48,7 +54,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   onComplete,
   initialData,
 }) => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
   const [currentStep, setCurrentStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
   const [formData, setFormData] = useState<OnboardingData>({
     name: initialData?.name || 'Suraj Naik',
     avatarUrl: initialData?.avatarUrl || AVATAR_PRESETS[0],
@@ -57,8 +70,18 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     degreeBranch: initialData?.degreeBranch || 'Computer Science & Engineering',
     semester: initialData?.semester || 6,
     registrationNumber: initialData?.registrationNumber || 'CTU-2026-0814',
+    phone: initialData?.phone || '+91 98765 43210',
     interests: initialData?.interests || ['Hackathons & Coding', 'UI/UX Design'],
   });
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData((prev) => ({
+        ...prev,
+        ...initialData,
+      }));
+    }
+  }, [initialData]);
 
   if (!isOpen) return null;
 
@@ -80,18 +103,107 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     });
   };
 
+  const validateCurrentStep = (): boolean => {
+    const errors: Record<string, string> = {};
+    if (currentStep === 0) {
+      if (!formData.name.trim()) {
+        errors.name = 'Full name is required.';
+      }
+    } else if (currentStep === 1) {
+      if (!formData.campus.trim()) {
+        errors.campus = 'University or institution name is required.';
+      }
+      if (!formData.degreeBranch.trim()) {
+        errors.degreeBranch = 'Department / Major is required.';
+      }
+      if (!formData.registrationNumber.trim()) {
+        errors.registrationNumber = 'Registration / Roll Number is required.';
+      }
+    } else if (currentStep === 2) {
+      if (formData.interests.length === 0) {
+        errors.interests = 'Please select at least 1 interest to tailor events.';
+      }
+    }
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleNext = () => {
+    setSubmitError(null);
+    if (!validateCurrentStep()) return;
+
     if (currentStep < steps.length - 1) {
       setCurrentStep((s) => s + 1);
     } else {
-      onComplete(formData);
-      onClose();
+      handleSubmit();
     }
   };
 
   const handleBack = () => {
+    setSubmitError(null);
+    setValidationErrors({});
     if (currentStep > 0) {
       setCurrentStep((s) => s - 1);
+    }
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const nameParts = formData.name.trim().split(' ');
+      const firstName = nameParts[0] || formData.name.trim();
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      if (api.auth.completeOnboarding) {
+        await api.auth.completeOnboarding({
+          display_name: formData.name.trim(),
+          first_name: firstName,
+          last_name: lastName,
+          avatar_url: formData.avatarUrl,
+          institution_name: formData.campus.trim(),
+          student_id: formData.registrationNumber.trim(),
+          degree_branch: formData.degreeBranch.trim(),
+          semester: formData.semester,
+          tagline: formData.tagline.trim(),
+          interests: formData.interests,
+          phone: formData.phone?.trim() || '+91 98765 43210',
+        });
+      }
+
+      // Update local storage for seamless persistence
+      try {
+        localStorage.setItem('eventmesh_onboarding_profile', JSON.stringify(formData));
+        localStorage.setItem('eventmesh_onboarding_completed', 'true');
+      } catch {}
+
+      // Refresh queries and fire celebration
+      await queryClient.invalidateQueries({ queryKey: ['auth'] }).catch(() => {});
+
+      fireCelebrationConfetti();
+      toast({
+        title: 'Credentials Activated! 🚀',
+        message: 'Your official collegiate profile and metallic pass are now verified.',
+        type: 'success',
+      });
+
+      if (onComplete) {
+        onComplete(formData);
+      }
+      onClose();
+    } catch (err: any) {
+      console.error('Failed to save onboarding credentials:', err);
+      const isConflict =
+        err?.message?.includes('already registered') ||
+        err?.message?.includes('conflict') ||
+        err?.status === 409;
+      const msg = isConflict
+        ? 'That student ID is already registered at this institution. Please check your roll number or contact campus desk.'
+        : err?.message || 'Failed to submit onboarding profile. Please check your connection and try again.';
+      setSubmitError(msg);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -108,6 +220,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           className="onboarding-card__close"
           onClick={onClose}
           aria-label="Close onboarding modal"
+          disabled={isSubmitting}
         >
           ×
         </button>
@@ -116,10 +229,22 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           <Stepper
             steps={steps}
             activeStep={currentStep}
-            onStepChange={(idx) => setCurrentStep(idx)}
+            onStepChange={(idx) => {
+              if (!isSubmitting) {
+                setSubmitError(null);
+                setCurrentStep(idx);
+              }
+            }}
             framed
           />
         </div>
+
+        {submitError && (
+          <div className="onboarding-error-banner" role="alert">
+            <span>⚠️</span>
+            <span>{submitError}</span>
+          </div>
+        )}
 
         <div className="onboarding-card__step-body">
           {/* STEP 1: Profile */}
@@ -146,6 +271,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                           formData.avatarUrl === url ? 'onboarding-avatar-btn--selected' : ''
                         }`}
                         onClick={() => setFormData({ ...formData, avatarUrl: url })}
+                        aria-label={`Select avatar option ${i + 1}`}
                       >
                         <img src={url} alt={`Avatar option ${i + 1}`} />
                       </button>
@@ -155,16 +281,23 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
                 <div className="onboarding-form__group">
                   <label className="onboarding-form__label" htmlFor="fullName">
-                    Full Name
+                    Full Name *
                   </label>
                   <input
                     id="fullName"
                     type="text"
                     className="onboarding-form__input"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g. Alex Chen"
+                    onChange={(e) => {
+                      setFormData({ ...formData, name: e.target.value });
+                      if (validationErrors.name) setValidationErrors((prev) => ({ ...prev, name: '' }));
+                    }}
+                    placeholder="e.g. Suraj Naik"
+                    aria-invalid={Boolean(validationErrors.name)}
                   />
+                  {validationErrors.name && (
+                    <span className="onboarding-form__error">{validationErrors.name}</span>
+                  )}
                 </div>
 
                 <div className="onboarding-form__group">
@@ -197,30 +330,49 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               <div className="onboarding-form">
                 <div className="onboarding-form__group">
                   <label className="onboarding-form__label" htmlFor="campus">
-                    University / College Institution
+                    University / College Institution *
                   </label>
                   <input
                     id="campus"
                     type="text"
                     className="onboarding-form__input"
                     value={formData.campus}
-                    onChange={(e) => setFormData({ ...formData, campus: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, campus: e.target.value });
+                      if (validationErrors.campus)
+                        setValidationErrors((prev) => ({ ...prev, campus: '' }));
+                    }}
+                    placeholder="e.g. Central Technological University (CTU)"
+                    aria-invalid={Boolean(validationErrors.campus)}
                   />
+                  {validationErrors.campus && (
+                    <span className="onboarding-form__error">{validationErrors.campus}</span>
+                  )}
                 </div>
 
                 <div className="onboarding-form__row onboarding-form__row--2">
                   <div className="onboarding-form__group">
                     <label className="onboarding-form__label" htmlFor="degreeBranch">
-                      Department / Program
+                      Department / Program *
                     </label>
                     <input
                       id="degreeBranch"
                       type="text"
                       className="onboarding-form__input"
                       value={formData.degreeBranch}
-                      onChange={(e) => setFormData({ ...formData, degreeBranch: e.target.value })}
-                      placeholder="e.g. Computer Science"
+                      onChange={(e) => {
+                        setFormData({ ...formData, degreeBranch: e.target.value });
+                        if (validationErrors.degreeBranch)
+                          setValidationErrors((prev) => ({ ...prev, degreeBranch: '' }));
+                      }}
+                      placeholder="e.g. Computer Science & Engineering"
+                      aria-invalid={Boolean(validationErrors.degreeBranch)}
                     />
+                    {validationErrors.degreeBranch && (
+                      <span className="onboarding-form__error">
+                        {validationErrors.degreeBranch}
+                      </span>
+                    )}
                   </div>
 
                   <div className="onboarding-form__group">
@@ -244,20 +396,44 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   </div>
                 </div>
 
-                <div className="onboarding-form__group">
-                  <label className="onboarding-form__label" htmlFor="regNo">
-                    Student Registration Number / Roll No.
-                  </label>
-                  <input
-                    id="regNo"
-                    type="text"
-                    className="onboarding-form__input"
-                    value={formData.registrationNumber}
-                    onChange={(e) =>
-                      setFormData({ ...formData, registrationNumber: e.target.value })
-                    }
-                    placeholder="e.g. CTU-2026-0814"
-                  />
+                <div className="onboarding-form__row onboarding-form__row--2">
+                  <div className="onboarding-form__group">
+                    <label className="onboarding-form__label" htmlFor="regNo">
+                      Student Registration / Roll No. *
+                    </label>
+                    <input
+                      id="regNo"
+                      type="text"
+                      className="onboarding-form__input"
+                      value={formData.registrationNumber}
+                      onChange={(e) => {
+                        setFormData({ ...formData, registrationNumber: e.target.value });
+                        if (validationErrors.registrationNumber)
+                          setValidationErrors((prev) => ({ ...prev, registrationNumber: '' }));
+                      }}
+                      placeholder="e.g. CTU-2026-0814"
+                      aria-invalid={Boolean(validationErrors.registrationNumber)}
+                    />
+                    {validationErrors.registrationNumber && (
+                      <span className="onboarding-form__error">
+                        {validationErrors.registrationNumber}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="onboarding-form__group">
+                    <label className="onboarding-form__label" htmlFor="phone">
+                      Contact Phone
+                    </label>
+                    <input
+                      id="phone"
+                      type="tel"
+                      className="onboarding-form__input"
+                      value={formData.phone || ''}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="e.g. +91 98765 43210"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -269,8 +445,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               <div className="onboarding-step__header">
                 <h2 className="onboarding-step__title">Campus Passions & Preferences</h2>
                 <p className="onboarding-step__desc">
-                  Pick at least 2 topics so EventMesh can tailor relevant workshops and team
-                  invites.
+                  Pick at least 2 topics so EventMesh can tailor relevant workshops, hackathons, and team invites.
                 </p>
               </div>
 
@@ -284,13 +459,23 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       className={`onboarding-tag-btn ${
                         selected ? 'onboarding-tag-btn--selected' : ''
                       }`}
-                      onClick={() => handleInterestToggle(interest)}
+                      onClick={() => {
+                        handleInterestToggle(interest);
+                        if (validationErrors.interests)
+                          setValidationErrors((prev) => ({ ...prev, interests: '' }));
+                      }}
                     >
                       {selected ? '✓ ' : '+ '} {interest}
                     </button>
                   );
                 })}
               </div>
+
+              {validationErrors.interests && (
+                <div style={{ marginTop: '0.75rem' }}>
+                  <span className="onboarding-form__error">{validationErrors.interests}</span>
+                </div>
+              )}
             </div>
           )}
 
@@ -322,6 +507,18 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   bevel={3.5}
                   tiltStrength={11}
                 />
+
+                <div className="onboarding-pass-summary">
+                  <span className="onboarding-pass-chip onboarding-pass-chip--accent">
+                    🎓 {formData.campus}
+                  </span>
+                  <span className="onboarding-pass-chip">
+                    ⚡ {formData.interests.length} Interests Selected
+                  </span>
+                  <span className="onboarding-pass-chip">
+                    🔒 Biometric RFID Pass
+                  </span>
+                </div>
               </div>
             </div>
           )}
@@ -333,17 +530,27 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             type="button"
             className="onboarding-btn onboarding-btn--secondary"
             onClick={handleBack}
-            disabled={currentStep === 0}
+            disabled={currentStep === 0 || isSubmitting}
           >
-            Back
+            ← Back
           </button>
 
           <button
             type="button"
             className="onboarding-btn onboarding-btn--primary"
             onClick={handleNext}
+            disabled={isSubmitting}
           >
-            {currentStep === steps.length - 1 ? 'Finish & Launch Dashboard 🚀' : 'Continue →'}
+            {isSubmitting ? (
+              <>
+                <div className="onboarding-spinner" />
+                <span>Saving Credentials...</span>
+              </>
+            ) : currentStep === steps.length - 1 ? (
+              'Finish & Launch Dashboard 🚀'
+            ) : (
+              'Continue →'
+            )}
           </button>
         </div>
       </div>

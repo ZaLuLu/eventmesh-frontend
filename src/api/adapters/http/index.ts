@@ -32,6 +32,7 @@ import {
   AttendeeRead,
   ProfileRead,
   ProfileUpdatePayload,
+  OnboardingSubmitPayload,
   OrganizationRead,
   MemberRead,
   CreateOrgPayload,
@@ -1329,6 +1330,12 @@ export const httpAuthApi: AuthApi = {
   updateProfile: (payload: ProfileUpdatePayload) =>
     requestJson<ProfileRead>(`${V1}/users/me`, {
       method: 'PATCH',
+      body: JSON.stringify(payload),
+    }),
+
+  completeOnboarding: (payload: OnboardingSubmitPayload) =>
+    requestJson<ProfileRead>(`${V1}/users/me/onboarding`, {
+      method: 'POST',
       body: JSON.stringify(payload),
     }),
 

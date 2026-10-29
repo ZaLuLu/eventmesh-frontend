@@ -95,6 +95,20 @@ export interface ProfileUpdatePayload {
   college_id?: string | null
 }
 
+export interface OnboardingSubmitPayload {
+  display_name?: string
+  first_name?: string
+  last_name?: string
+  avatar_url?: string | null
+  institution_name?: string | null
+  student_id?: string | null
+  degree_branch?: string | null
+  semester?: number | null
+  tagline?: string | null
+  interests?: string[]
+  phone?: string | null
+}
+
 export function profileToSession(profile: ProfileRead): UserSession {
   const regNumber = profile.student_id || undefined
   const branch = profile.location || (profile as any).branch || undefined

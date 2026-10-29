@@ -27,6 +27,7 @@ import {
   AttendeeRead,
   ProfileRead,
   ProfileUpdatePayload,
+  OnboardingSubmitPayload,
   PayoutAccount,
   PayoutAccountCreate,
   SettlementRecord,
@@ -288,6 +289,7 @@ export interface AuthApi {
   switchDemoAccount(role: string, clubId?: string): Promise<UserSession>
   getProfile?(): Promise<ProfileRead | null>
   updateProfile?(payload: ProfileUpdatePayload): Promise<ProfileRead>
+  completeOnboarding?(payload: OnboardingSubmitPayload): Promise<ProfileRead>
   becomeOrganizer?(): Promise<ProfileRead>
   deleteAccount?(): Promise<void>
 }

@@ -1229,15 +1229,6 @@ export const AttendeeDashboardPage: React.FC = () => {
         onComplete={(data) => {
           setCustomStudentData(data)
           if (data.avatarUrl) setAvatarUrl(data.avatarUrl)
-          try {
-            localStorage.setItem('eventmesh_onboarding_profile', JSON.stringify(data))
-          } catch {}
-          fireCelebrationConfetti()
-          toast({
-            title: 'Profile & Pass Updated!',
-            message: 'Your official collegiate credentials have been saved.',
-            type: 'success',
-          })
         }}
       />
 
