@@ -29,6 +29,8 @@ import { useToast } from '@/design-system/primitives/Toast'
 import { fireCelebrationConfetti } from '@/lib/confetti'
 import { EventAdmissionTicket } from '@/design-system/micro/EventAdmissionTicket'
 import { StudentIDCard2D } from '@/design-system/3d/StudentIDCard2D'
+import { OnboardingModal, OnboardingData } from '@/features/onboarding/OnboardingModal'
+import { PlanSelectorSection } from '@/features/pricing/PlanSelectorSection'
 import { AvatarSelectorModal } from './components/AvatarSelectorModal'
 import { ProfileDetailsModal } from './components/ProfileDetailsModal'
 import { resolveUserAvatar } from '@/lib/avatars'
@@ -78,6 +80,18 @@ export const AttendeeDashboardPage: React.FC = () => {
   const [selectedCertificateId, setSelectedCertificateId] = useState<string | null>(null)
   const [isBrightnessModalOpen, setIsBrightnessModalOpen] = useState(false)
   const [isVenueModalOpen, setIsVenueModalOpen] = useState(false)
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
+  const [isPlanSelectorOpen, setIsPlanSelectorOpen] = useState(false)
+  const [currentPlan, setCurrentPlan] = useState<'free' | 'pro' | 'industry'>('pro')
+  const [customStudentData, setCustomStudentData] = useState<Partial<OnboardingData> | null>(() => {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('eventmesh_onboarding_profile')
+        if (saved) return JSON.parse(saved)
+      } catch {}
+    }
+    return null
+  })
   const [gateCountdown, setGateCountdown] = useState<string>('')
   const [qrDataUrl, setQrDataUrl] = useState<string>('')
 
@@ -87,6 +101,11 @@ export const AttendeeDashboardPage: React.FC = () => {
       setViewHistoryArchive(true)
     } else if (tab === 'profile') {
       setIsProfileModalOpen(true)
+    } else if (tab === 'plans' || tab === 'pricing') {
+      setIsPlanSelectorOpen(true)
+    }
+    if (searchParams.get('onboarding') === 'true') {
+      setIsOnboardingOpen(true)
     }
   }, [searchParams])
 
@@ -99,24 +118,24 @@ export const AttendeeDashboardPage: React.FC = () => {
   // Student Identity Data
   const studentData = useMemo(() => {
     const s = session as any
-    const rawName = s?.name || 'EventMesh Member'
+    const rawName = customStudentData?.name || s?.name || 'Suraj Naik'
     const cleanName = rawName
       .replace(/\s*\([^)]*\)/g, '')
-      .trim() || 'EventMesh Member'
+      .trim() || 'Suraj Naik'
 
     return {
       name: cleanName,
-      registrationNumber: s?.registrationNumber || s?.studentId || 'CTU-2026-0814',
-      degreeBranch: s?.degreeBranch || s?.branch || 'B.Tech Computer Science & Eng.',
-      semester: s?.semester || 6,
-      email: s?.email || '',
-      role: 'EVENTMESH MEMBER',
-      campus: s?.campus || s?.institutionName || 'Central Technological University (CTU Main Campus)',
+      registrationNumber: customStudentData?.registrationNumber || s?.registrationNumber || s?.studentId || 'CTU-2026-0814',
+      degreeBranch: customStudentData?.degreeBranch || s?.degreeBranch || s?.branch || 'Computer Science & Engineering',
+      semester: customStudentData?.semester || s?.semester || 6,
+      email: s?.email || 'ceosuraj@email.com',
+      role: currentPlan === 'pro' ? 'PRO BUILDER' : currentPlan === 'industry' ? 'INDUSTRY PARTNER' : 'STUDENT PASSHOLDER',
+      campus: customStudentData?.campus || s?.campus || s?.institutionName || 'Central Technological University (CTU)',
       bloodGroup: s?.bloodGroup || 'O+',
       emergencyPhone: s?.emergencyPhone || s?.phone,
       phone: s?.phone || '',
     }
-  }, [session])
+  }, [session, customStudentData, currentPlan])
 
   const handleCopyRegNo = () => {
     navigator.clipboard.writeText(studentData.registrationNumber)
@@ -434,7 +453,25 @@ export const AttendeeDashboardPage: React.FC = () => {
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsOnboardingOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-accent/40 bg-accent/10 hover:bg-accent/20 text-xs font-semibold text-accent shadow-2xs transition-colors"
+              title="Launch Onboarding Stepper"
+            >
+              <Sparkle size={14} className="text-accent" />
+              <span>Setup Wizard</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsPlanSelectorOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-xs font-semibold text-amber-600 dark:text-amber-400 shadow-2xs transition-colors"
+              title="Inspect PixelCard Membership Plans"
+            >
+              <Ticket size={14} className="text-amber-500" />
+              <span>Membership Plans</span>
+            </button>
             <button
               type="button"
               onClick={() => setCalendarSyncOpen(true)}
@@ -1165,6 +1202,53 @@ export const AttendeeDashboardPage: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Onboarding Modal Powered by Stepper */}
+      <OnboardingModal
+        isOpen={isOnboardingOpen}
+        onClose={() => setIsOnboardingOpen(false)}
+        initialData={customStudentData || undefined}
+        onComplete={(data) => {
+          setCustomStudentData(data)
+          if (data.avatarUrl) setAvatarUrl(data.avatarUrl)
+          try {
+            localStorage.setItem('eventmesh_onboarding_profile', JSON.stringify(data))
+          } catch {}
+          fireCelebrationConfetti()
+          toast({
+            title: 'Profile & Pass Updated!',
+            message: 'Your official collegiate credentials have been saved.',
+            type: 'success',
+          })
+        }}
+      />
+
+      {/* Plan Selector Modal Powered by PixelCard */}
+      {isPlanSelectorOpen && (
+        <Modal
+          isOpen={isPlanSelectorOpen}
+          onClose={() => setIsPlanSelectorOpen(false)}
+          title="Campus Membership Plans"
+          subtitle="Explore Free, Pro Builder, and Industry Partner tiers with interactive pixel cards."
+          maxWidth="max-w-6xl"
+        >
+          <div className="pt-2 pb-4">
+            <PlanSelectorSection
+              currentPlan={currentPlan}
+              onSelectPlan={(plan) => {
+                setCurrentPlan(plan)
+                fireCelebrationConfetti()
+                toast({
+                  title: `Switched to ${plan.toUpperCase()} Plan!`,
+                  message: `Your account benefits and collegiate pass have been updated.`,
+                  type: 'success',
+                })
+                setIsPlanSelectorOpen(false)
+              }}
+            />
           </div>
         </Modal>
       )}

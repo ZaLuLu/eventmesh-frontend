@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useCallback } from 'react'
 import { Copy, Check, ArrowsClockwise } from '@phosphor-icons/react'
 
 export interface StudentIDCard2DProps {
@@ -18,14 +18,17 @@ export interface StudentIDCard2DProps {
   interactive?: boolean
   initialSide?: 'front' | 'back'
   onAvatarClick?: () => void
+  enableReflection?: boolean
 }
 
 /**
- * Modern Collegiate Student Identification Pass
+ * Modern Collegiate Student Identification Pass with Dynamic Specular Reflection
  * Styled strictly with EventMesh website design tokens:
  * - 1:1 Aspect-square avatar photo box
  * - Student name in authentic cursive signature font directly below the photo
- * - Website-native theme tokens (bg-card, border-line, text-ink, text-accent)
+ * - Dynamic cursor-following 3D spring tilt
+ * - Specular reflection sheen following cursor coordinates (No camera permission needed)
+ * - Prismatic holographic security seal watermark
  * - Seamless 3D flip to back face with bold 'eventmesh' and student signature
  */
 export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
@@ -43,9 +46,45 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
   interactive = true,
   initialSide = 'front',
   onAvatarClick,
+  enableReflection = true,
 }) => {
   const [side, setSide] = useState<'front' | 'back'>(initialSide)
   const [copied, setCopied] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  // 3D tilt and specular reflection states
+  const [tilt, setTilt] = useState({ x: 0, y: 0 })
+  const [glare, setGlare] = useState({ x: 50, y: 50, opacity: 0 })
+
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!interactive || !enableReflection || !cardRef.current) return
+      const rect = cardRef.current.getBoundingClientRect()
+      const x = e.clientX - rect.left
+      const y = e.clientY - rect.top
+      const px = (x / rect.width) * 100
+      const py = (y / rect.height) * 100
+      const nx = (x / rect.width) * 2 - 1
+      const ny = (y / rect.height) * 2 - 1
+      const maxTilt = 8
+
+      setTilt({
+        x: -ny * maxTilt,
+        y: nx * maxTilt,
+      })
+      setGlare({
+        x: px,
+        y: py,
+        opacity: 1,
+      })
+    },
+    [interactive, enableReflection]
+  )
+
+  const handlePointerLeave = useCallback(() => {
+    setTilt({ x: 0, y: 0 })
+    setGlare((g) => ({ ...g, opacity: 0 }))
+  }, [])
 
   const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -60,18 +99,24 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
     setSide((s) => (s === 'front' ? 'back' : 'front'))
   }
 
+  const baseRotateY = side === 'back' ? 180 : 0
+  const combinedTransform = `rotateX(${tilt.x}deg) rotateY(${baseRotateY + tilt.y}deg)`
+
   return (
     <div
+      ref={cardRef}
       className={`relative select-none cursor-pointer group w-full max-w-[460px] h-[250px] sm:h-[285px] shrink-0 ${className}`}
       style={{ perspective: 1200 }}
       onClick={handleFlip}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
       title="Click card to flip between Front and Back"
     >
       <div
-        className="relative w-full h-full transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className="relative w-full h-full transition-transform duration-300 ease-out"
         style={{
           transformStyle: 'preserve-3d',
-          transform: side === 'back' ? 'rotateY(180deg)' : 'rotateY(0deg)',
+          transform: combinedTransform,
         }}
       >
         {/* ========================================================================= */}
@@ -84,6 +129,32 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
             WebkitBackfaceVisibility: 'hidden',
           }}
         >
+          {/* Dynamic Specular Reflection Glare Overlay */}
+          {enableReflection && (
+            <div
+              className="absolute inset-0 pointer-events-none rounded-[inherit] transition-opacity duration-300 z-30"
+              style={{
+                opacity: glare.opacity,
+                background: `radial-gradient(circle 340px at ${glare.x}% ${glare.y}%, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.06) 45%, transparent 75%)`,
+                mixBlendMode: 'overlay',
+              }}
+            />
+          )}
+
+          {/* Holographic Security Seal Badge */}
+          <div
+            className="absolute top-2.5 right-11 sm:right-14 w-8 h-8 rounded-full pointer-events-none z-20 flex items-center justify-center overflow-hidden border border-white/20 shadow-xs"
+            style={{
+              background: `linear-gradient(${135 + tilt.y * 4}deg, rgba(255, 0, 128, 0.4), rgba(0, 255, 255, 0.4), rgba(255, 215, 0, 0.4), rgba(138, 43, 226, 0.4))`,
+              boxShadow: 'inset 0 0 6px rgba(255, 255, 255, 0.7)',
+            }}
+            title="Encrypted Holographic Security Seal"
+          >
+            <span className="text-[6.5px] font-mono font-black text-white drop-shadow-xs tracking-tighter">
+              SEAL
+            </span>
+          </div>
+
           {/* Subtle Halftone Background Dot Grid */}
           <div className="absolute inset-0 pointer-events-none opacity-[0.035] dark:opacity-[0.06] overflow-hidden">
             <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -240,6 +311,18 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
             transform: 'rotateY(180deg)',
           }}
         >
+          {/* Dynamic Specular Reflection Glare Overlay on Back */}
+          {enableReflection && (
+            <div
+              className="absolute inset-0 pointer-events-none rounded-[inherit] transition-opacity duration-300 z-30"
+              style={{
+                opacity: glare.opacity,
+                background: `radial-gradient(circle 340px at ${100 - glare.x}% ${glare.y}%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.05) 45%, transparent 75%)`,
+                mixBlendMode: 'overlay',
+              }}
+            />
+          )}
+
           {/* Subtle Halftone Background Dot Grid */}
           <div className="absolute inset-0 pointer-events-none opacity-[0.035] dark:opacity-[0.06]">
             <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -292,3 +375,5 @@ export const StudentIDCard2D: React.FC<StudentIDCard2DProps> = ({
     </div>
   )
 }
+
+export default StudentIDCard2D

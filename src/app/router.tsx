@@ -43,6 +43,9 @@ const AttendeeDashboardPage = lazy(() =>
 const VerifyCertificatePage = lazy(() =>
   import('@/features/certificates/VerifyCertificatePage').then((m) => ({ default: m.VerifyCertificatePage }))
 )
+const PricingPage = lazy(() =>
+  import('@/features/pricing/PricingPage').then((m) => ({ default: m.PricingPage }))
+)
 const StyleguidePage = lazy(() =>
   import('@/features/styleguide/StyleguidePage').then((m) => ({ default: m.StyleguidePage }))
 )
@@ -195,6 +198,15 @@ export const router = createBrowserRouter([
           </Suspense>
         ),
       },
+      {
+        path: 'pricing',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <PricingPage />
+          </Suspense>
+        ),
+      },
+      { path: 'plans', element: <Navigate to="/pricing" replace /> },
       ...(import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEV_TOOLS === 'true'
         ? [
             {
