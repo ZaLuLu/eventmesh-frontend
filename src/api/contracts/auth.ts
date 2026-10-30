@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 export const UserRoleSchema = z.enum([
+  'super_admin',
   'platform_admin',
   'org_admin',
   'club_admin',
@@ -118,6 +119,25 @@ export function profileToSession(profile: ProfileRead): UserSession {
   const campus = profile.institution_name || (profile as any).college_name || undefined
   const phone = profile.phone || undefined
 
+  const emailClean = (profile.email || '').toLowerCase().trim()
+  const isSuper = emailClean === 'nayaklabs.ai@gmail.com'
+
+  let mappedRole: UserRole = 'attendee'
+  const rawRole = (profile.role || '').toLowerCase().trim()
+  if (rawRole === 'super_admin' || isSuper) {
+    mappedRole = 'super_admin'
+  } else if (rawRole === 'platform_admin' || rawRole === 'admin') {
+    mappedRole = 'platform_admin'
+  } else if (rawRole === 'org_admin' || rawRole === 'organizer' || profile.is_organizer) {
+    mappedRole = 'org_admin'
+  } else if (rawRole === 'moderator') {
+    mappedRole = 'org_admin'
+  } else if (rawRole === 'club_admin' || rawRole === 'volunteer') {
+    mappedRole = rawRole as UserRole
+  } else {
+    mappedRole = 'attendee'
+  }
+
   return {
     id: profile.id,
     name:
@@ -126,7 +146,7 @@ export function profileToSession(profile: ProfileRead): UserSession {
       profile.handle ||
       profile.email,
     email: profile.email,
-    role: profile.is_organizer ? 'org_admin' : 'attendee',
+    role: isSuper ? 'super_admin' : mappedRole,
     orgId: profile.institution_name || 'campus',
     avatar: profile.avatar_url || undefined,
     phone,
@@ -139,4 +159,3 @@ export function profileToSession(profile: ProfileRead): UserSession {
     onboarding_completed: profile.onboarding_completed,
   }
 }
-

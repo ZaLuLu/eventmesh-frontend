@@ -5,9 +5,11 @@
  */
 
 export type UserRole =
+  | 'super_admin'
   | 'platform_admin'
   | 'org_admin'
   | 'club_admin'
+  | 'organizer'
   | 'volunteer'
   | 'attendee'
 
@@ -64,8 +66,12 @@ export function can(
     return false
   }
 
-  // 1. Platform Admin: Superuser with universal access
-  if (user.role === 'platform_admin') {
+  // 1. Superadmin & Platform Admin: Sovereign universal access across all platform entities
+  const isSuper =
+    user.role === 'super_admin' ||
+    (Boolean(user.email) && user.email.toLowerCase().trim() === 'nayaklabs.ai@gmail.com')
+
+  if (isSuper || user.role === 'platform_admin') {
     return true
   }
 
@@ -74,8 +80,8 @@ export function can(
     return false
   }
 
-  // 2. Org Admin: Scoped to their entire organization
-  if (user.role === 'org_admin') {
+  // 2. Org Admin & Individual Organizer: Scoped to their organization
+  if (user.role === 'org_admin' || user.role === 'organizer') {
     return true
   }
 
@@ -136,5 +142,19 @@ export function can(
  */
 export function canAccessAdmin(user: UserContext | null | undefined): boolean {
   if (!user) return false
-  return ['platform_admin', 'org_admin', 'club_admin', 'volunteer'].includes(user.role)
+  if (Boolean(user.email) && user.email.toLowerCase().trim() === 'nayaklabs.ai@gmail.com') return true
+  return ['super_admin', 'platform_admin', 'org_admin', 'club_admin', 'organizer', 'volunteer'].includes(user.role)
+}
+
+/**
+ * Helper to check if a user is allowed into the Sovereign Superadmin Console.
+ * Strictly limited to the platform superadmin role.
+ */
+export function canAccessSuperAdmin(user: UserContext | null | undefined): boolean {
+  if (!user) return false
+  return (
+    user.role === 'super_admin' ||
+    (user.role as string) === 'platform_admin' ||
+    (Boolean(user.email) && user.email.toLowerCase().trim() === 'nayaklabs.ai@gmail.com')
+  )
 }
