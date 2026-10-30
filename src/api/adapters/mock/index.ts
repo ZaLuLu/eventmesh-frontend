@@ -65,6 +65,7 @@ import {
   InstitutionCandidate,
   PlatformAuditLog,
   PlatformOrganizationItem,
+  PlatformUserItem,
   AdminWithdrawalReviewPayload,
   RefundOrderRequest,
   RefundOrderResponse,
@@ -831,6 +832,7 @@ export const mockEventsAdminApi: EventsAdminApi = {
       features: eventData.features || { certificate: true, checkin: true, paid: false, team: false },
       teamConfig: eventData.teamConfig,
       formSchema: eventData.formSchema || [],
+      refundPolicy: eventData.refundPolicy || (eventData as any).refund_policy || null,
       status: eventData.status || 'draft',
       results: [],
       photos: [],
@@ -880,6 +882,10 @@ export const mockEventsAdminApi: EventsAdminApi = {
     })
     mockStore.save()
     return updated
+  },
+
+  async deleteOrgEvent(slug: string, eventId: string): Promise<void> {
+    return this.deleteEvent(eventId)
   },
 
   async deleteEvent(id: string): Promise<void> {
@@ -947,6 +953,25 @@ export const mockEventsAdminApi: EventsAdminApi = {
     mockStore.events[index].status = 'archived'
     mockStore.save()
     return mockStore.events[index]
+  },
+
+  async reviewPlatformEvent(eventId: string, action: string, reason?: string): Promise<any> {
+    await simulateLatency()
+    const index = mockStore.events.findIndex((e) => e.id === eventId || e.slug === eventId)
+    if (index !== -1) {
+      if (action === 'publish' || action === 'approve') {
+        mockStore.events[index].status = 'published'
+      } else if (action === 'hide') {
+        mockStore.events[index].status = 'hidden' as any
+      } else if (action === 'unhide') {
+        mockStore.events[index].status = 'published'
+      } else if (action === 'cancel') {
+        mockStore.events[index].status = 'cancelled'
+      }
+      mockStore.save()
+      return mockStore.events[index]
+    }
+    return { id: eventId, action, reason, success: true }
   },
 }
 
@@ -1825,6 +1850,25 @@ export const mockPayoutsApi: PayoutsApi = {
       created_at: new Date().toISOString(),
     }
   },
+
+  async getPlatformPayoutsOverview(): Promise<any> {
+    await simulateLatency()
+    return {
+      total_gross_sales_cents: 14250000,
+      total_gross_sales_inr: 142500.0,
+      total_organizer_share_cents: 13537500,
+      total_organizer_share_inr: 135375.0,
+      total_platform_fee_cents: 712500,
+      total_platform_fee_inr: 7125.0,
+      total_settled_cents: 9500000,
+      total_settled_inr: 95000.0,
+      total_withdrawn_cents: 7500000,
+      total_withdrawn_inr: 75000.0,
+      total_pending_cents: 2000000,
+      total_pending_inr: 20000.0,
+      active_payout_accounts_count: 8,
+    }
+  },
 }
 
 export const mockClubsApi: ClubsApi = {
@@ -1981,6 +2025,89 @@ export const mockUsersRolesApi: UsersRolesApi = {
       role,
       clubId,
       clubName: club?.name,
+    }
+  },
+
+  async listPlatformUsers(params?: { query?: string; role?: string; limit?: number; offset?: number }): Promise<PlatformUserItem[]> {
+    await simulateLatency()
+    let list: PlatformUserItem[] = [
+      {
+        id: 'usr-super-root',
+        email: 'nayaklabs.ai@gmail.com',
+        display_name: 'Nayak Labs Superadmin',
+        first_name: 'Nayak',
+        last_name: 'Labs',
+        role: 'super_admin',
+        is_organizer: true,
+        institution_name: 'EventMesh Platform Root',
+        student_id: 'ROOT-01',
+        created_at: new Date(Date.now() - 90 * 86400000).toISOString(),
+      },
+      {
+        id: 'usr-org-admin-1',
+        email: 'president@apex.edu',
+        display_name: 'Aarav Deshmukh',
+        first_name: 'Aarav',
+        last_name: 'Deshmukh',
+        role: 'org_admin',
+        is_organizer: true,
+        institution_name: 'Apex Institute of Technology',
+        student_id: 'AIT-2024-001',
+        institution_verified: true,
+        created_at: new Date(Date.now() - 45 * 86400000).toISOString(),
+      },
+      {
+        id: 'usr-club-admin-1',
+        email: 'lead@cpclub.org',
+        display_name: 'Sameer Kulkarni',
+        first_name: 'Sameer',
+        last_name: 'Kulkarni',
+        role: 'club_admin',
+        is_organizer: true,
+        institution_name: 'Apex Institute of Technology',
+        student_id: 'AIT-2024-042',
+        institution_verified: true,
+        created_at: new Date(Date.now() - 30 * 86400000).toISOString(),
+      },
+      {
+        id: 'usr-regular-1',
+        email: 'priya.sharma@apex.edu',
+        display_name: 'Priya Sharma',
+        first_name: 'Priya',
+        last_name: 'Sharma',
+        role: 'registered',
+        is_organizer: false,
+        institution_name: 'Apex Institute of Technology',
+        student_id: 'AIT-2025-108',
+        institution_verified: true,
+        created_at: new Date(Date.now() - 15 * 86400000).toISOString(),
+      },
+    ]
+
+    if (params?.role && params.role !== 'ALL') {
+      list = list.filter((u) => u.role === params.role)
+    }
+    if (params?.query) {
+      const q = params.query.toLowerCase()
+      list = list.filter(
+        (u) =>
+          u.email?.toLowerCase().includes(q) ||
+          u.display_name?.toLowerCase().includes(q) ||
+          u.student_id?.toLowerCase().includes(q)
+      )
+    }
+    return list
+  },
+
+  async updatePlatformUserRole(userId: string, role: string): Promise<PlatformUserItem> {
+    await simulateLatency()
+    return {
+      id: userId,
+      email: 'user@example.com',
+      display_name: 'User',
+      role,
+      is_organizer: role === 'org_admin' || role === 'club_admin' || role === 'super_admin',
+      created_at: new Date().toISOString(),
     }
   },
 }

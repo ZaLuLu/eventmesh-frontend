@@ -22,6 +22,7 @@ import {
 } from '../../ports'
 import {
   ApiError,
+  Event,
   normalizeBackendEvent,
   normalizeBackendRegistration,
   profileToSession,
@@ -63,6 +64,7 @@ import {
   InstitutionCandidate,
   PlatformAuditLog,
   PlatformOrganizationItem,
+  PlatformUserItem,
   AdminWithdrawalReviewPayload,
   RefundOrderRequest,
   RefundOrderResponse,
@@ -74,7 +76,9 @@ import {
   TeamLookupResult,
 } from '../../contracts'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://eventmesh-api.onrender.com'
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  'https://eventmesh-api.gentlegrass-e0258cb8.centralindia.azurecontainerapps.io'
 const V1 = '/api/v1'
 
 function getAuthToken(): string | null {
@@ -174,7 +178,10 @@ async function fetchWithRetry(url: string, options: RequestInit = {}, retries = 
 import { mockEventsApi, mockAuthApi } from '../mock'
 
 function parseUserRole(roleStr: string | null | undefined): UserRole {
+  if (roleStr === 'admin') return 'platform_admin'
+  if (roleStr === 'organizer') return 'org_admin'
   if (
+    roleStr === 'super_admin' ||
     roleStr === 'platform_admin' ||
     roleStr === 'org_admin' ||
     roleStr === 'club_admin' ||
@@ -244,7 +251,7 @@ export const httpEventsApi: EventsApi = {
       const query = new URLSearchParams()
       if (filter?.category) query.set('category', filter.category)
       if (filter?.search) query.set('q', filter.search)
-      if (filter?.limit) query.set('limit', String(filter.limit))
+      query.set('limit', filter?.limit ? String(filter.limit) : '50')
       if (filter?.dateFilter && filter.dateFilter !== 'all') {
         query.set('date_range', filter.dateFilter === 'weekend' ? 'week' : filter.dateFilter)
       }
@@ -254,34 +261,51 @@ export const httpEventsApi: EventsApi = {
       if (filter?.online !== undefined) query.set('online', String(filter.online))
       if (filter?.cursor) query.set('offset', filter.cursor)
       const qs = query.toString()
+
+      // Fetch native EventMesh events so real club/platform events are never drowned out by scraped ones
+      let nativeItems: Event[] = []
+      if (!filter?.source || filter.source === 'eventmesh') {
+        try {
+          const nativeRes = await requestJson<EventBrowseResponse>(`${V1}/events?source=eventmesh&limit=100`)
+          nativeItems = (nativeRes.items || []).map(normalizeBackendEvent)
+          for (const e of nativeRes.items || []) {
+            if (e.id && e.slug) registerEventSlugMapping(e.id, e.slug)
+          }
+        } catch {
+          // ignore
+        }
+      }
+
       const browseRes = await requestJson<EventBrowseResponse>(`${V1}/events${qs ? `?${qs}` : ''}`)
       const items = (browseRes.items || []).map(normalizeBackendEvent)
       for (const e of browseRes.items || []) {
         if (e.id && e.slug) registerEventSlugMapping(e.id, e.slug)
       }
-      const hasScraped = items.some(
-        (e) => e.provider === 'eventbrite' || e.provider === 'meetup' || e.provider === 'luma'
-      )
-      if (items.length > 0 && hasScraped) {
-        return {
-          items,
-          nextCursor: browseRes.next_offset ? String(browseRes.next_offset) : undefined,
-          totalCount: browseRes.total || items.length,
+
+      const seenIds = new Set<string>()
+      const combinedItems: Event[] = []
+      for (const item of nativeItems) {
+        if (!seenIds.has(item.id)) {
+          seenIds.add(item.id)
+          combinedItems.push(item)
         }
       }
-      const mockResult = await mockEventsApi.getEvents(filter)
-      if (items.length > 0) {
-        const mockScraped = mockResult.items.filter(
-          (e) => e.provider === 'eventbrite' || e.provider === 'meetup' || e.provider === 'luma'
-        )
-        const combined = [...items, ...mockScraped]
-        return {
-          items: combined,
-          nextCursor: browseRes.next_offset ? String(browseRes.next_offset) : undefined,
-          totalCount: combined.length,
+      for (const item of items) {
+        if (!seenIds.has(item.id)) {
+          seenIds.add(item.id)
+          combinedItems.push(item)
         }
       }
-      return mockResult
+
+      if (combinedItems.length > 0) {
+        return {
+          items: combinedItems,
+          nextCursor: browseRes.next_offset ? String(browseRes.next_offset) : undefined,
+          totalCount: Math.max(browseRes.total || 0, combinedItems.length),
+        }
+      }
+
+      return mockEventsApi.getEvents(filter)
     } catch {
       return mockEventsApi.getEvents(filter)
     }
@@ -292,9 +316,10 @@ export const httpEventsApi: EventsApi = {
       const event = await requestJson<EventRead | VisibleEventRead>(`${V1}/events/${slug}`)
       return normalizeBackendEvent(event)
     } catch (error) {
-      if ((error as ApiError).code === 'HTTP_404' || (error as ApiError).code === 'NOT_FOUND') {
-        return mockEventsApi.getEventBySlug(slug)
-      }
+      try {
+        const adminEvt = await requestJson<EventRead>(`${V1}/admin/events/${slug}`)
+        if (adminEvt) return normalizeBackendEvent(adminEvt)
+      } catch {}
       return mockEventsApi.getEventBySlug(slug)
     }
   },
@@ -304,9 +329,10 @@ export const httpEventsApi: EventsApi = {
       const event = await requestJson<EventRead | VisibleEventRead>(`${V1}/events/${id}`)
       return normalizeBackendEvent(event)
     } catch (error) {
-      if ((error as ApiError).code === 'HTTP_404' || (error as ApiError).code === 'NOT_FOUND') {
-        return mockEventsApi.getEventById(id)
-      }
+      try {
+        const adminEvt = await requestJson<EventRead>(`${V1}/admin/events/${id}`)
+        if (adminEvt) return normalizeBackendEvent(adminEvt)
+      } catch {}
       return mockEventsApi.getEventById(id)
     }
   },
@@ -424,15 +450,16 @@ async function resolveTargetOrgSlug(hint?: string): Promise<string> {
     }
   } catch {}
 
-  if (hint && hint !== 'org-1' && hint !== 'current') {
+  const invalidHints = new Set(['org-1', 'current', 'campus', 'club-devcraft', 'apex-design-lab', 'root'])
+  if (hint && !invalidHints.has(hint)) {
     const matched = userManagedOrgs.find(
       (o) => o.slug === hint || o.id === hint || o.name.toLowerCase() === hint.toLowerCase()
     )
     if (matched) return matched.slug
-    if (userManagedOrgs.length > 0) {
-      return userManagedOrgs[0].slug
-    }
-    return hint
+    try {
+      const directOrg = await requestJson<OrganizationRead>(`${V1}/organizations/${hint}`)
+      if (directOrg && directOrg.slug) return directOrg.slug
+    } catch {}
   }
 
   if (userManagedOrgs.length > 0) {
@@ -440,7 +467,17 @@ async function resolveTargetOrgSlug(hint?: string): Promise<string> {
     return club ? club.slug : userManagedOrgs[0].slug
   }
 
-  return 'apex-design-lab'
+  try {
+    const current = await requestJson<OrganizationRead>(`${V1}/organizations/current`)
+    if (current && current.slug) return current.slug
+  } catch {}
+
+  try {
+    const insts = await requestJson<OrganizationRead[]>(`${V1}/institutions`)
+    if (insts && insts.length > 0) return insts[0].slug
+  } catch {}
+
+  return 'eventmesh'
 }
 
 const eventIdToSlugMap = new Map<string, string>()
@@ -505,8 +542,24 @@ export const httpEventsAdminApi: EventsAdminApi = {
       body: JSON.stringify(updates),
     }),
 
-  deleteOrgEvent: (slug: string, eventId: string) =>
-    requestJson<void>(`${V1}/organizations/${slug}/events/${eventId}`, { method: 'DELETE' }),
+  deleteOrgEvent: async (slug: string, eventId: string) => {
+    try {
+      return await requestJson<void>(`${V1}/admin/events/${eventId}`, { method: 'DELETE' })
+    } catch (err: any) {
+      if (err?.status && err.status !== 404 && err.status !== 405) {
+        throw err
+      }
+      try {
+        return await requestJson<void>(`${V1}/events/${eventId}`, { method: 'DELETE' })
+      } catch (err2: any) {
+        if (err2?.status && err2.status !== 404 && err2.status !== 405) {
+          throw err2
+        }
+        const s = await resolveTargetOrgSlug(slug)
+        return requestJson<void>(`${V1}/organizations/${s}/events/${eventId}`, { method: 'DELETE' })
+      }
+    }
+  },
 
   eventLifecycleAction: (slug: string, eventId: string, action: string) =>
     requestJson<EventRead>(`${V1}/organizations/${slug}/events/${eventId}/${action}`, {
@@ -514,6 +567,17 @@ export const httpEventsAdminApi: EventsAdminApi = {
     }),
 
   getAdminEvents: async (scope) => {
+    if (scope.isPlatform) {
+      try {
+        const items = await requestJson<any[]>(`${V1}/admin/events`)
+        for (const e of items || []) {
+          if (e.id && e.slug) registerEventSlugMapping(e.id, e.slug)
+        }
+        return (items || []).map(normalizeBackendEvent)
+      } catch {
+        // fallback
+      }
+    }
     const s = await resolveTargetOrgSlug(scope.clubId || scope.orgId)
     const items = await requestJson<EventRead[]>(`${V1}/organizations/${s}/events`)
     for (const e of items || []) {
@@ -522,8 +586,13 @@ export const httpEventsAdminApi: EventsAdminApi = {
     return (items || []).map(normalizeBackendEvent)
   },
 
+  reviewPlatformEvent: (eventId: string, action: string, reason?: string) =>
+    requestJson<any>(`${V1}/admin/events/${eventId}/review`, {
+      method: 'POST',
+      body: JSON.stringify({ action, reason }),
+    }),
+
   createEvent: async (event: any) => {
-    const s = await resolveTargetOrgSlug(event.orgSlug || event.orgId || event.clubId || event.organizerId)
     const startIso = event.startsAt || event.date || new Date(Date.now() + 86400000).toISOString()
     const endIso = event.endsAt || new Date(Date.now() + 86400000 + 3 * 3600000).toISOString()
 
@@ -534,30 +603,51 @@ export const httpEventsAdminApi: EventsAdminApi = {
       ? 'online'
       : 'offline'
 
-    const created = await requestJson<EventRead>(`${V1}/organizations/${s}/events`, {
-      method: 'POST',
-      body: JSON.stringify({
-        title: event.title || 'Untitled Event',
-        description: event.description || '',
-        audience_type: event.eligibility?.toLowerCase().includes('institution') ? 'institution_only' : 'public',
-        event_type: validEventType,
-        start_time: startIso,
-        end_time: endIso,
-        city: event.city || event.venue?.name || 'Bengaluru',
-        venue_name: event.venue?.name || 'Main Hall',
-        venue_address: event.venue?.address || '',
-        is_free: event.isFree !== false && (!event.price || event.price === 0),
-        price_cents: event.price ? Math.round(event.price * 100) : 0,
-        currency: 'INR',
-        capacity: event.capacity ?? null,
-        registration_required: true,
-      }),
-    })
-    return normalizeBackendEvent(created)
+    const payload = {
+      title: event.title || 'Untitled Event',
+      description: event.description || '',
+      audience_type: event.eligibility?.toLowerCase().includes('institution') ? 'institution_only' : 'public',
+      event_type: validEventType,
+      start_time: startIso,
+      end_time: endIso,
+      city: event.city || event.venue?.name || 'Bengaluru',
+      venue_name: event.venue?.name || 'Main Hall',
+      venue_address: event.venue?.address || '',
+      timezone: event.timezone || 'Asia/Kolkata',
+      is_free: event.isFree !== false && (!event.price || event.price === 0),
+      price_cents: event.price ? Math.round(event.price * 100) : 0,
+      currency: 'INR',
+      capacity: event.capacity ?? null,
+      registration_required: true,
+      refund_policy: event.refundPolicy ?? event.refund_policy ?? null,
+      cover_image_url: event.poster || event.banner || event.cover_image_url || null,
+    }
+
+    try {
+      const created = await requestJson<EventRead>(`${V1}/admin/events`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      })
+      return normalizeBackendEvent(created)
+    } catch {
+      try {
+        const created = await requestJson<EventRead>(`${V1}/events`, {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        })
+        return normalizeBackendEvent(created)
+      } catch {
+        const s = await resolveTargetOrgSlug(event.orgSlug || event.orgId || event.clubId || event.organizerId)
+        const created = await requestJson<EventRead>(`${V1}/organizations/${s}/events`, {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        })
+        return normalizeBackendEvent(created)
+      }
+    }
   },
 
   updateEvent: async (id, updates: any) => {
-    const s = await resolveTargetOrgSlug(updates.orgSlug || updates.orgId || updates.clubId || updates.organizerId)
     const bodyUpdates: any = { ...updates }
     if (updates.type || updates.event_type) {
       const rawType = (updates.event_type || updates.type || '').toLowerCase()
@@ -565,54 +655,128 @@ export const httpEventsAdminApi: EventsAdminApi = {
         ? rawType
         : 'offline'
     }
-    const updated = await requestJson<EventRead>(`${V1}/organizations/${s}/events/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(bodyUpdates),
-    })
-    return normalizeBackendEvent(updated)
-  },
+    if (updates.refundPolicy !== undefined || updates.refund_policy !== undefined) {
+      bodyUpdates.refund_policy = updates.refundPolicy ?? updates.refund_policy ?? null
+    }
+    if (updates.poster !== undefined || updates.banner !== undefined || updates.cover_image_url !== undefined) {
+      bodyUpdates.cover_image_url = updates.poster || updates.banner || updates.cover_image_url || null
+    }
 
-  deleteEvent: async (id) => {
-    const s = await resolveTargetOrgSlug()
-    return requestJson<void>(`${V1}/organizations/${s}/events/${id}`, { method: 'DELETE' })
-  },
-
-  publishEvent: async (id) => {
-    const s = await resolveTargetOrgSlug()
     try {
-      const submitted = await requestJson<EventRead>(`${V1}/organizations/${s}/events/${id}/submit`, { method: 'POST' })
-      if (submitted && (submitted.status === 'published' || (submitted as any).status === 'published')) {
+      const updated = await requestJson<EventRead>(`${V1}/admin/events/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(bodyUpdates),
+      })
+      return normalizeBackendEvent(updated)
+    } catch {
+      try {
+        const updated = await requestJson<EventRead>(`${V1}/events/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(bodyUpdates),
+        })
+        return normalizeBackendEvent(updated)
+      } catch {
+        const s = await resolveTargetOrgSlug(updates.orgSlug || updates.orgId || updates.clubId || updates.organizerId)
+        const updated = await requestJson<EventRead>(`${V1}/organizations/${s}/events/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(bodyUpdates),
+        })
+        return normalizeBackendEvent(updated)
+      }
+    }
+  },
+
+  deleteEvent: async (id: string, orgSlugHint?: string) => {
+    try {
+      return await requestJson<void>(`${V1}/admin/events/${id}`, { method: 'DELETE' })
+    } catch (err: any) {
+      if (err?.status && err.status !== 404 && err.status !== 405) {
+        throw err
+      }
+      try {
+        return await requestJson<void>(`${V1}/events/${id}`, { method: 'DELETE' })
+      } catch (err2: any) {
+        if (err2?.status && err2.status !== 404 && err2.status !== 405) {
+          throw err2
+        }
+        const s = await resolveTargetOrgSlug(orgSlugHint)
+        return requestJson<void>(`${V1}/organizations/${s}/events/${id}`, { method: 'DELETE' })
+      }
+    }
+  },
+
+  publishEvent: async (id, orgSlugHint?: string) => {
+    try {
+      const res = await requestJson<EventRead>(`${V1}/admin/events/${id}/publish`, { method: 'POST' })
+      return normalizeBackendEvent(res)
+    } catch (err: any) {
+      if (err?.status && err.status !== 404 && err.status !== 405) {
+        throw err
+      }
+      try {
+        const res = await requestJson<EventRead>(`${V1}/events/${id}/publish`, { method: 'POST' })
+        return normalizeBackendEvent(res)
+      } catch (err2: any) {
+        if (err2?.status && err2.status !== 404 && err2.status !== 405) {
+          throw err2
+        }
+        const s = await resolveTargetOrgSlug(orgSlugHint)
+        try {
+          const submitted = await requestJson<EventRead>(`${V1}/organizations/${s}/events/${id}/submit`, { method: 'POST' })
+          if (submitted && (submitted.status === 'published' || (submitted as any).status === 'published')) {
+            return normalizeBackendEvent(submitted)
+          }
+        } catch (errSub: any) {
+          if (errSub?.code === 'HTTP_409' || errSub?.message?.includes('published')) {
+            const current = await requestJson<EventRead>(`${V1}/organizations/${s}/events/${id}`).catch(() => null)
+            if (current) return normalizeBackendEvent(current)
+          }
+        }
+
+        try {
+          const published = await requestJson<EventRead>(`${V1}/organizations/${s}/events/${id}/publish`, { method: 'POST' })
+          return normalizeBackendEvent(published)
+        } catch (errPub: any) {
+          if (errPub?.code === 'HTTP_409' || errPub?.message?.includes('published')) {
+            const current = await requestJson<EventRead>(`${V1}/organizations/${s}/events/${id}`).catch(() => null)
+            if (current) return normalizeBackendEvent(current)
+          }
+          throw errPub
+        }
+      }
+    }
+  },
+
+  submitForApproval: async (id, orgSlugHint?: string) => {
+    try {
+      const res = await requestJson<EventRead>(`${V1}/admin/events/${id}/submit`, { method: 'POST' })
+      return normalizeBackendEvent(res)
+    } catch {
+      try {
+        const res = await requestJson<EventRead>(`${V1}/events/${id}/submit`, { method: 'POST' })
+        return normalizeBackendEvent(res)
+      } catch {
+        const s = await resolveTargetOrgSlug(orgSlugHint)
+        const submitted = await requestJson<EventRead>(`${V1}/organizations/${s}/events/${id}/submit`, { method: 'POST' })
         return normalizeBackendEvent(submitted)
       }
-    } catch (err: any) {
-      if (err?.code === 'HTTP_409' || err?.message?.includes('published')) {
-        const current = await requestJson<EventRead>(`${V1}/organizations/${s}/events/${id}`).catch(() => null)
-        if (current) return normalizeBackendEvent(current)
-      }
     }
+  },
 
+  approveEvent: async (id, orgSlugHint?: string) => {
     try {
-      const published = await requestJson<EventRead>(`${V1}/organizations/${s}/events/${id}/publish`, { method: 'POST' })
-      return normalizeBackendEvent(published)
-    } catch (err: any) {
-      if (err?.code === 'HTTP_409' || err?.message?.includes('published')) {
-        const current = await requestJson<EventRead>(`${V1}/organizations/${s}/events/${id}`).catch(() => null)
-        if (current) return normalizeBackendEvent(current)
+      const res = await requestJson<EventRead>(`${V1}/admin/events/${id}/publish`, { method: 'POST' })
+      return normalizeBackendEvent(res)
+    } catch {
+      try {
+        const res = await requestJson<EventRead>(`${V1}/events/${id}/publish`, { method: 'POST' })
+        return normalizeBackendEvent(res)
+      } catch {
+        const s = await resolveTargetOrgSlug(orgSlugHint)
+        const published = await requestJson<EventRead>(`${V1}/organizations/${s}/events/${id}/publish`, { method: 'POST' })
+        return normalizeBackendEvent(published)
       }
-      throw err
     }
-  },
-
-  submitForApproval: async (id) => {
-    const s = await resolveTargetOrgSlug()
-    const submitted = await requestJson<EventRead>(`${V1}/organizations/${s}/events/${id}/submit`, { method: 'POST' })
-    return normalizeBackendEvent(submitted)
-  },
-
-  approveEvent: async (id) => {
-    const s = await resolveTargetOrgSlug()
-    const published = await requestJson<EventRead>(`${V1}/organizations/${s}/events/${id}/publish`, { method: 'POST' })
-    return normalizeBackendEvent(published)
   },
 
   cancelEvent: async (id) => {
@@ -643,10 +807,44 @@ export const httpRegistrationsApi: RegistrationsApi = {
       method: 'POST',
     }),
 
-  cancelRegistration: (eventSlug: string) =>
-    requestJson<void>(`${V1}/events/${eventSlug}/register`, {
-      method: 'DELETE',
-    }),
+  cancelRegistration: async (eventSlugOrId: string) => {
+    try {
+      await requestJson<void>(`${V1}/events/${encodeURIComponent(eventSlugOrId)}/register`, {
+        method: 'DELETE',
+      })
+    } catch {
+      try {
+        await requestJson<void>(`${V1}/registrations/${encodeURIComponent(eventSlugOrId)}`, {
+          method: 'DELETE',
+        })
+      } catch {
+        await requestJson<void>(`${V1}/events/${encodeURIComponent(eventSlugOrId)}/cancel`, {
+          method: 'POST',
+        })
+      }
+    }
+  },
+
+  cancelMyRegistration: async (registrationIdOrSlug: string) => {
+    try {
+      await requestJson<any>(`${V1}/registrations/${encodeURIComponent(registrationIdOrSlug)}`, {
+        method: 'DELETE',
+      })
+      return true
+    } catch {
+      try {
+        await requestJson<any>(`${V1}/events/${encodeURIComponent(registrationIdOrSlug)}/register`, {
+          method: 'DELETE',
+        })
+        return true
+      } catch {
+        await requestJson<any>(`${V1}/events/${encodeURIComponent(registrationIdOrSlug)}/cancel`, {
+          method: 'POST',
+        })
+        return true
+      }
+    }
+  },
 
   getEventAttendees: (eventSlug: string) =>
     requestJson<AttendeeRead[]>(`${V1}/events/${eventSlug}/registrations`),
@@ -947,9 +1145,21 @@ export const httpPaymentsApi: PaymentsApi = {
   createOrder: (payload: OrderCreateRequest) => {
     const rawType = String(payload.type || 'EVENT_REGISTRATION')
     const type = rawType.toUpperCase() as any
+    const eventSlug = payload.eventSlug || (payload as any).event_slug
+    const eventId = payload.eventId || (payload as any).event_id
+    const returnUrl = payload.returnUrl || (payload as any).return_url
+
+    const body: Record<string, any> = {
+      ...payload,
+      type,
+      ...(eventSlug ? { event_slug: eventSlug, eventSlug } : {}),
+      ...(eventId ? { event_id: eventId, eventId } : {}),
+      ...(returnUrl ? { return_url: returnUrl, returnUrl } : {}),
+    }
+
     return requestJson<OrderCreateResponse>(`${V1}/payments/orders`, {
       method: 'POST',
-      body: JSON.stringify({ ...payload, type }),
+      body: JSON.stringify(body),
     })
   },
 
@@ -1036,6 +1246,9 @@ export const httpPayoutsApi: PayoutsApi = {
       body: JSON.stringify(payload),
     })
   },
+
+  getPlatformPayoutsOverview: () =>
+    requestJson<any>(`${V1}/admin/payouts/overview`),
 }
 
 export const httpOrganizationsApi: OrganizationsApi = {
@@ -1057,11 +1270,39 @@ export const httpOrganizationsApi: OrganizationsApi = {
     }),
   getClubs: (slug: string) =>
     requestJson<OrganizationRead[]>(`${V1}/organizations/${slug}/clubs`),
-  createClub: (slug: string, payload: CreateClubPayload) =>
-    requestJson<OrganizationRead>(`${V1}/organizations/${slug}/clubs`, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    }),
+  createClub: async (slug: string, payload: CreateClubPayload) => {
+    let resolvedSlug = slug
+    try {
+      resolvedSlug = await resolveTargetOrgSlug(slug)
+    } catch {}
+
+    try {
+      return await requestJson<OrganizationRead>(`${V1}/organizations/${resolvedSlug}/clubs`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      })
+    } catch {
+      try {
+        return await requestJson<OrganizationRead>(`${V1}/organizations/clubs`, {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        })
+      } catch {
+        // Fallback: create standalone club organization directly under platform root
+        return requestJson<OrganizationRead>(`${V1}/organizations`, {
+          method: 'POST',
+          body: JSON.stringify({
+            name: payload.name,
+            slug: payload.slug,
+            description: payload.description,
+            website: payload.website,
+            type: 'club',
+            contact_email: payload.contact_email,
+          }),
+        })
+      }
+    }
+  },
   getMembers: (slug: string) =>
     requestJson<MemberRead[]>(`${V1}/organizations/${slug}/members`),
   addMember: (slug: string, payload) =>
@@ -1142,7 +1383,7 @@ export const httpOrganizationsApi: OrganizationsApi = {
   revokeInstitution: (slug: string, reason?: string) =>
     requestJson<InstitutionCandidate>(`${V1}/admin/institutions/${slug}/revoke`, {
       method: 'POST',
-      body: JSON.stringify({ reason }),
+      body: JSON.stringify({ reason: reason || 'Revoked by platform superadmin.' }),
     }),
 
   getPlatformOrganizations: (status?: string) => {
@@ -1233,8 +1474,34 @@ export const httpGalleryApi: GalleryApi = {
 }
 
 export const httpAnalyticsApi: AnalyticsApi = {
-  getStats: (scope) =>
-    requestJson(`/admin/analytics?clubId=${scope.clubId || ''}`),
+  getStats: async (_scope) => {
+    try {
+      const res = await requestJson<any>(`${V1}/admin/analytics`)
+      return {
+        eventsCount: res.events_count ?? 0,
+        upcomingCount: res.upcoming_count ?? 0,
+        registrationsCount: res.registrations_count ?? 0,
+        checkinsCount: res.checkins_count ?? 0,
+        certificatesCount: res.certificates_count ?? 0,
+        notificationsCount: res.notifications_count ?? 0,
+        totalRevenueCents: res.total_revenue_cents ?? 0,
+        totalRevenueInr: res.total_revenue_inr ?? 0,
+        registrationsTimeline: res.registrations_timeline || [],
+      }
+    } catch {
+      return {
+        eventsCount: 0,
+        upcomingCount: 0,
+        registrationsCount: 0,
+        checkinsCount: 0,
+        certificatesCount: 0,
+        notificationsCount: 0,
+        totalRevenueCents: 0,
+        totalRevenueInr: 0,
+        registrationsTimeline: [],
+      }
+    }
+  },
 }
 
 export const httpAuditApi: AuditApi = {
@@ -1280,6 +1547,22 @@ export const httpUsersRolesApi: UsersRolesApi = {
       role: updated.role,
       clubId: slug,
     }
+  },
+  listPlatformUsers: async (params) => {
+    const searchParams = new URLSearchParams()
+    if (params?.query) searchParams.set('query', params.query)
+    if (params?.role) searchParams.set('role', params.role)
+    if (params?.limit) searchParams.set('limit', String(params.limit))
+    if (params?.offset) searchParams.set('offset', String(params.offset))
+    const queryStr = searchParams.toString()
+    const url = `${V1}/admin/users${queryStr ? '?' + queryStr : ''}`
+    return requestJson<PlatformUserItem[]>(url)
+  },
+  updatePlatformUserRole: async (userId, role) => {
+    return requestJson<PlatformUserItem>(`${V1}/admin/users/${encodeURIComponent(userId)}/role`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role }),
+    })
   },
 }
 
@@ -1418,14 +1701,8 @@ export const httpAuthApi: AuthApi = {
         }
       } catch {}
 
-      const storedRole = localStorage.getItem('eventmesh_user_role')
-      if (storedRole) {
-        const localRole = parseUserRole(storedRole)
-        session.role = localRole
-        session.clubId =
-          localRole !== 'attendee'
-            ? localStorage.getItem('eventmesh_user_club_id') || 'club-devcraft'
-            : undefined
+      if (session.role !== 'attendee' && !session.clubId) {
+        session.clubId = localStorage.getItem('eventmesh_user_club_id') || undefined
       }
       return session
     } catch {
@@ -1440,7 +1717,8 @@ export const httpAuthApi: AuthApi = {
               payload.user_metadata?.full_name ||
               payload.user_metadata?.name ||
               (email ? email.split('@')[0] : 'User')
-            const localRole = parseUserRole(localStorage.getItem('eventmesh_user_role'))
+            const isSuper = (email || '').toLowerCase().trim() === 'nayaklabs.ai@gmail.com'
+            const localRole = isSuper ? 'super_admin' : parseUserRole(localStorage.getItem('eventmesh_user_role'))
 
             let phone: string | undefined
             let regNumber: string | undefined
@@ -1461,7 +1739,7 @@ export const httpAuthApi: AuthApi = {
               id: payload.sub || 'usr_auth',
               name,
               email,
-              role: localRole,
+              role: isSuper ? 'super_admin' : localRole,
               clubId:
                 localRole !== 'attendee'
                   ? localStorage.getItem('eventmesh_user_club_id') || 'club-devcraft'

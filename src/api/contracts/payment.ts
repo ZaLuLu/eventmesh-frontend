@@ -87,9 +87,20 @@ export const OrderCreateRequestSchema = z.object({
   type: PaymentTypeSchema.default('event_registration'),
   event_slug: z.string().optional(),
   event_id: z.string().optional(),
+  eventSlug: z.string().optional(),
+  eventId: z.string().optional(),
   plan_id: z.string().optional(),
+  planId: z.string().optional(),
   organization_id: z.string().optional(),
+  organizationId: z.string().optional(),
   return_url: z.string().optional(),
+  returnUrl: z.string().optional(),
+  amount: z.number().optional(),
+  amount_cents: z.number().optional(),
+  customerName: z.string().optional(),
+  customerEmail: z.string().optional(),
+  customerPhone: z.string().optional(),
+  customResponses: z.record(z.any()).optional(),
 })
 export type OrderCreateRequest = z.infer<typeof OrderCreateRequestSchema>
 

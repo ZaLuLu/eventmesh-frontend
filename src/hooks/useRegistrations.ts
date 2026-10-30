@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api, RegisterPayload, RegistrationStatus } from '@/api'
+import { api, RegisterPayload, Registration, RegistrationStatus } from '@/api'
 
 export function useRegister() {
   const queryClient = useQueryClient()
@@ -32,16 +32,28 @@ export function useRegisterPass() {
 
 export function useCancelRegistration() {
   const queryClient = useQueryClient()
-  return useMutation<void, Error, string>({
-    mutationFn: async (eventSlug: string) => {
+  return useMutation<any, Error, string>({
+    mutationFn: async (eventSlugOrId: string) => {
       if (api.registrations.cancelRegistration) {
-        return api.registrations.cancelRegistration(eventSlug)
+        return api.registrations.cancelRegistration(eventSlugOrId)
+      }
+      if (api.registrations.cancelMyRegistration) {
+        return api.registrations.cancelMyRegistration(eventSlugOrId)
       }
       return Promise.resolve()
     },
-    onSuccess: () => {
+    onSuccess: (_, eventSlugOrId) => {
+      queryClient.setQueriesData<Registration[]>({ queryKey: ['my-registrations'] }, (old) => {
+        if (!old) return []
+        return old.map((r) =>
+          r.id === eventSlugOrId || r.eventSlug === eventSlugOrId || r.eventId === eventSlugOrId
+            ? { ...r, status: 'cancelled' as RegistrationStatus }
+            : r
+        )
+      })
       queryClient.invalidateQueries({ queryKey: ['registrations'] })
       queryClient.invalidateQueries({ queryKey: ['my-registrations'] })
+      queryClient.invalidateQueries({ queryKey: ['event'] })
       queryClient.invalidateQueries({ queryKey: ['events'] })
     },
   })
@@ -80,15 +92,31 @@ export function useUpdateRegistrationStatus() {
 export function useCancelMyRegistration() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (registrationId: string) => {
-      if (api.registrations.cancelMyRegistration) {
-        return api.registrations.cancelMyRegistration(registrationId)
+    mutationFn: async (param: string | { registrationId?: string; eventSlug?: string }) => {
+      const regId = typeof param === 'string' ? param : (param.registrationId || param.eventSlug)
+      const eventSlug = typeof param === 'object' ? param.eventSlug : undefined
+
+      if (api.registrations.cancelMyRegistration && regId) {
+        return api.registrations.cancelMyRegistration(regId)
+      }
+      if (api.registrations.cancelRegistration && (eventSlug || regId)) {
+        return api.registrations.cancelRegistration(eventSlug || regId!)
       }
       return Promise.resolve(true)
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      const targetId = typeof variables === 'string' ? variables : (variables.registrationId || variables.eventSlug)
+      queryClient.setQueriesData<Registration[]>({ queryKey: ['my-registrations'] }, (old) => {
+        if (!old) return []
+        return old.map((r) =>
+          r.id === targetId || r.eventSlug === targetId || r.eventId === targetId
+            ? { ...r, status: 'cancelled' as RegistrationStatus }
+            : r
+        )
+      })
       queryClient.invalidateQueries({ queryKey: ['registrations'] })
       queryClient.invalidateQueries({ queryKey: ['my-registrations'] })
+      queryClient.invalidateQueries({ queryKey: ['event'] })
       queryClient.invalidateQueries({ queryKey: ['events'] })
     },
   })

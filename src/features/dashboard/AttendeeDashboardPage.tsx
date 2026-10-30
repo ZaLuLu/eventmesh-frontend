@@ -48,23 +48,23 @@ export const AttendeeDashboardPage: React.FC = () => {
 
   // Cache passes to localStorage so students can display tickets offline at venue gates
   useEffect(() => {
-    if (rawRegistrations && rawRegistrations.length > 0) {
+    if (!regsLoading && Array.isArray(rawRegistrations)) {
       try {
         localStorage.setItem('eventmesh_cached_passes', JSON.stringify(rawRegistrations))
       } catch {}
     }
-  }, [rawRegistrations])
+  }, [rawRegistrations, regsLoading])
 
   const registrations = useMemo<Registration[]>(() => {
-    if (rawRegistrations && rawRegistrations.length > 0) return rawRegistrations
+    if (!regsLoading && Array.isArray(rawRegistrations)) return rawRegistrations
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       try {
         const cached = localStorage.getItem('eventmesh_cached_passes')
         if (cached) return JSON.parse(cached)
       } catch {}
     }
-    return []
-  }, [rawRegistrations])
+    return rawRegistrations || []
+  }, [rawRegistrations, regsLoading])
 
   const [searchParams] = useSearchParams()
   const [selectedTicket, setSelectedTicket] = useState<Registration | null>(null)
@@ -142,6 +142,25 @@ export const AttendeeDashboardPage: React.FC = () => {
     })
   }
 
+  const handleCancelPass = async (reg: Registration) => {
+    if (window.confirm('Are you sure you want to cancel this ticket pass?')) {
+      try {
+        await cancelMutation.mutateAsync(reg.id || reg.eventSlug || reg.eventId)
+        setSelectedTicket(null)
+        toast({
+          title: 'Pass cancelled',
+          message: 'Your registration was cancelled and the seat returned to the pool.',
+          type: 'info',
+        })
+      } catch (err: any) {
+        toast({
+          title: 'Cancellation failed',
+          message: err?.message || 'Could not cancel pass.',
+          type: 'error',
+        })
+      }
+    }
+  }
   const downloadCertificatePDF = async (cert: Certificate) => {
     try {
       const { jsPDF } = await import('jspdf')

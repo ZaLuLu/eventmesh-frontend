@@ -45,6 +45,10 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
   const { session, isAuthenticated, logout } = useAuth()
   const { canAccessAdmin } = usePermission()
   const { data: myRegistrations = [] } = useMyRegistrations()
+  const activeRegistrations = useMemo(
+    () => myRegistrations.filter((r) => r.status !== 'cancelled'),
+    [myRegistrations]
+  )
   const [accountOpen, setAccountOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -188,9 +192,9 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
               >
                 <Ticket size={15} weight="bold" />
                 <span>My Passes</span>
-                {myRegistrations.length > 0 && (
+                {activeRegistrations.length > 0 && (
                   <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-mono font-bold rounded-full bg-white text-violet-700">
-                    {myRegistrations.length}
+                    {activeRegistrations.length}
                   </span>
                 )}
               </Link>
@@ -272,7 +276,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                       className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-medium text-ink-soft hover:bg-surface-subtle hover:text-accent transition-colors"
                     >
                       <Ticket size={15} className="text-ink-muted shrink-0" />
-                      <span>My Passes ({myRegistrations.length})</span>
+                      <span>My Passes ({activeRegistrations.length})</span>
                     </Link>
 
                     <Link
@@ -289,17 +293,44 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                   <div className="border-t border-line my-1" />
 
                   {/* Open Admin / Organizer Studio Button */}
-                  <Link
-                    to="/admin"
-                    onClick={closeMenus}
-                    className="flex items-center justify-between rounded-xl px-2.5 py-2 text-xs font-semibold bg-accent-soft text-accent hover:bg-accent hover:text-white transition-colors group"
-                  >
-                    <span className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-accent group-hover:bg-white" />
-                      <span>Organizer Studio</span>
-                    </span>
-                    <span className="font-mono text-[10px] uppercase opacity-80">Desk →</span>
-                  </Link>
+                  {session?.role === 'super_admin' || (Boolean(session?.email) && session?.email?.toLowerCase().trim() === 'nayaklabs.ai@gmail.com') ? (
+                    <div className="space-y-1">
+                      <Link
+                        to="/superadmin"
+                        onClick={closeMenus}
+                        className="flex items-center justify-between rounded-xl px-2.5 py-2 text-xs font-semibold bg-accent text-white hover:bg-accent/90 transition-colors"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-white" />
+                          <span>Superadmin Console</span>
+                        </span>
+                        <span className="font-mono text-[10px] uppercase opacity-90 font-bold bg-white/20 px-1.5 py-0.5 rounded">Root</span>
+                      </Link>
+                      <Link
+                        to="/admin"
+                        onClick={closeMenus}
+                        className="flex items-center justify-between rounded-xl px-2.5 py-2 text-xs font-semibold bg-accent-soft text-accent hover:bg-accent hover:text-white transition-colors group"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-accent group-hover:bg-white" />
+                          <span>Organizer Studio</span>
+                        </span>
+                        <span className="font-mono text-[10px] uppercase opacity-80">Desk →</span>
+                      </Link>
+                    </div>
+                  ) : canAccessAdmin() ? (
+                    <Link
+                      to="/admin"
+                      onClick={closeMenus}
+                      className="flex items-center justify-between rounded-xl px-2.5 py-2 text-xs font-semibold bg-accent-soft text-accent hover:bg-accent hover:text-white transition-colors group"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-accent group-hover:bg-white" />
+                        <span>Organizer Studio</span>
+                      </span>
+                      <span className="font-mono text-[10px] uppercase opacity-80">Desk →</span>
+                    </Link>
+                  ) : null}
 
                   {/* Divider */}
                   <div className="border-t border-line my-1" />
@@ -376,7 +407,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
                 className="flex items-center justify-center gap-2 w-full text-center py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold shadow-xs active:scale-[0.98] transition-transform"
               >
                 <Ticket size={16} weight="bold" />
-                <span>My Passes ({myRegistrations.length})</span>
+                <span>My Passes ({activeRegistrations.length})</span>
               </Link>
               <Link
                 to="/admin"
@@ -385,6 +416,32 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({ onSearchOpen }) => {
               >
                 ⚡ Organizer Studio
               </Link>
+              {session?.role === 'super_admin' || (Boolean(session?.email) && session?.email?.toLowerCase().trim() === 'nayaklabs.ai@gmail.com') ? (
+                <>
+                  <Link
+                    to="/superadmin"
+                    onClick={closeMenus}
+                    className="block text-center py-2 text-xs font-bold uppercase tracking-[0.08em] text-accent bg-accent/10 rounded-[8px]"
+                  >
+                    Superadmin console
+                  </Link>
+                  <Link
+                    to="/admin"
+                    onClick={closeMenus}
+                    className="block text-center py-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-white/80 hover:text-white"
+                  >
+                    Organizer studio
+                  </Link>
+                </>
+              ) : canAccessAdmin() && (
+                <Link
+                  to="/admin"
+                  onClick={closeMenus}
+                  className="block text-center py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white/80 hover:text-white"
+                >
+                  Admin console
+                </Link>
+              )}
               <button
                 type="button"
                 onClick={() => {
