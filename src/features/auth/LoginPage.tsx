@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, CheckCircle } from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
+import { api } from '@/api'
 import { useToast } from '@/design-system/primitives/Toast'
 import {
   supabase,
@@ -27,7 +28,11 @@ export const LoginPage: React.FC = () => {
   const googleBtnContainerRef = useRef<HTMLDivElement>(null)
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([])
 
-  const navigateAfterAuth = (userSession?: any) => {
+  const navigateAfterAuth = (userSession?: any, isSuper?: boolean) => {
+    if (isSuper || userSession?.role === 'super_admin') {
+      navigate('/superadmin')
+      return
+    }
     if (['platform_admin', 'org_admin', 'club_admin', 'volunteer'].includes(userSession?.role)) {
       navigate('/admin')
       return
@@ -57,7 +62,7 @@ export const LoginPage: React.FC = () => {
       setIsGoogleLoading(true)
       supabase.auth
         .getSession()
-        .then(({ data: { session }, error: sessionErr }: any) => {
+        .then(async ({ data: { session }, error: sessionErr }: any) => {
           if (session?.access_token) {
             localStorage.setItem('eventmesh_auth_token', session.access_token)
             const userName =
@@ -66,11 +71,14 @@ export const LoginPage: React.FC = () => {
               session.user.email?.split('@')[0] ||
               'User'
 
+            const userEmail = (session.user.email || '').toLowerCase().trim()
+            const isSuper = userEmail === 'nayaklabs.ai@gmail.com'
+
             queryClient.setQueryData(['auth', 'session'], {
               id: session.user.id || 'usr_auth',
               name: userName,
               email: session.user.email || '',
-              role: 'attendee',
+              role: isSuper ? 'super_admin' : 'attendee',
               orgId: session.user.user_metadata?.institution_name || 'campus',
               avatar: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture,
             })
@@ -81,7 +89,16 @@ export const LoginPage: React.FC = () => {
               type: 'success',
             })
             window.history.replaceState(null, '', window.location.pathname)
-            navigateAfterAuth(session.user)
+            try {
+              const backendSession = await api.auth.getSession()
+              if (backendSession) {
+                if (isSuper) backendSession.role = 'super_admin'
+                queryClient.setQueryData(['auth', 'session'], backendSession)
+                navigateAfterAuth(backendSession, isSuper)
+                return
+              }
+            } catch {}
+            navigateAfterAuth(session.user, isSuper)
           } else if (sessionErr) {
             setError(sessionErr.message || 'Google authentication error.')
           }
@@ -125,11 +142,14 @@ export const LoginPage: React.FC = () => {
                 user?.email?.split('@')[0] ||
                 'User'
 
+              const userEmail = (user?.email || '').toLowerCase().trim()
+              const isSuper = userEmail === 'nayaklabs.ai@gmail.com'
+
               queryClient.setQueryData(['auth', 'session'], {
                 id: user?.id || 'usr_auth',
                 name: userName,
                 email: user?.email || '',
-                role: 'attendee',
+                role: isSuper ? 'super_admin' : 'attendee',
                 orgId: user?.user_metadata?.institution_name || 'campus',
                 avatar: user?.user_metadata?.avatar_url || user?.user_metadata?.picture,
               })
@@ -141,7 +161,16 @@ export const LoginPage: React.FC = () => {
                 message: `Welcome back, ${userName}!`,
                 type: 'success',
               })
-              navigateAfterAuth(user)
+              try {
+                const backendSession = await api.auth.getSession()
+                if (backendSession) {
+                  if (isSuper) backendSession.role = 'super_admin'
+                  queryClient.setQueryData(['auth', 'session'], backendSession)
+                  navigateAfterAuth(backendSession, isSuper)
+                  return
+                }
+              } catch {}
+              navigateAfterAuth(user, isSuper)
             } catch (err: any) {
               console.error('Google ID token authentication error:', err)
               setError(err?.message || 'Google sign-in was interrupted.')
@@ -290,7 +319,9 @@ export const LoginPage: React.FC = () => {
         message: `Welcome back, ${session.name}!`,
         type: 'success',
       })
-      if (['platform_admin', 'org_admin', 'club_admin', 'volunteer'].includes(session.role)) {
+      if (session.role === 'super_admin') {
+        navigate('/superadmin')
+      } else if (['platform_admin', 'org_admin', 'club_admin', 'volunteer'].includes(session.role)) {
         navigate('/admin')
       } else {
         navigateAfterAuth(session)
